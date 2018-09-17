@@ -131,7 +131,7 @@ AS_IF([test "x$no_x" != xyes],
 # The check below did not work on Darwin (quote in AC_PATH_X: Do not try a
 # hair to link a X-program), therefore, use hard-coded XLIBS
 # Further below, though, linking with -lXpm or -lXaw works.
-XLIBS="-lXt -lX11"
+XLIBS="-lXft -lfontconfig -lXt -lX11"
 # (2) Do not give up, check in unusual places.
 #AC_SEARCH_LIBS([XBell], [X11])
 #AC_SEARCH_LIBS([XtName], [Xt])

@@ -29,6 +29,7 @@
  */
 
 /* IMPORTS */
+#include <X11/Xft/Xft.h>
 
 #include "fig.h"
 #include "figx.h"
@@ -119,6 +120,76 @@ void init_font(void)
 	file_msg("Can't load font: %s, using %s\n",
 		appres.buttonFont, appres.normalFont);
 	button_font = XLoadQueryFont(tool_d, appres.normalFont);
+    }
+
+    if (appres.DEBUG) {
+	fprintf(stderr, "button_font: %s, fid: %lu\n", appres.buttonFont,
+		    button_font->fid);
+	fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
+		    roman_font->fid);
+	fprintf(stderr, "bold_font: %s, fid: %lu\n", appres.boldFont,
+		    bold_font->fid);
+	XftFont	*mono_font;
+	XftFont	*button_xftfont;
+	char	*s;
+	char	buf[420];
+	Bool	out;
+	double	d;
+	mono_font = XftFontOpenName(tool_d, tool_sn, "monospace-12");
+	button_xftfont = XftFontOpenXlfd(tool_d, tool_sn,
+		//"6x13");
+		"-*-fixed-*-r-*--13-*-*-*-*-*-iso8859-1");
+	if (XftPatternGetString(mono_font->pattern, XFT_FAMILY, 0, &s) ==
+		XftResultMatch)
+	    fprintf(stderr, "monospace: %s\n", s);
+	else
+	    fprintf(stderr, "No family field in monospace font.\n");
+
+
+	if (XftPatternGetBool(mono_font->pattern, XFT_ANTIALIAS, 0, &out) ==
+		XftResultMatch)
+	    fputs(out ? "monospace font is aa\n" : "monospace is not AA\n",
+		    stderr);
+	else
+	    fprintf(stderr, "No Antialias field in monospace font.\n");
+
+	if (XftPatternGetDouble(mono_font->pattern, XFT_SCALE, 0, &d) ==
+		XftResultMatch)
+	    fprintf(stderr, "Monospace scale = %.2f\n", d);
+	else
+	    fprintf(stderr, "No Scale field in monospace font.\n");
+
+	if (XftPatternGetBool(mono_font->pattern, XFT_CORE, 0, &out) ==
+		XftResultMatch)
+	    fputs(out ? "monospace font is Core\n" : "monospace is not core\n",
+		    stderr);
+	else
+	    fprintf(stderr, "No Core field in monospace font.\n");
+
+	if (button_xftfont &&
+		XftPatternGetString(button_xftfont->pattern, XFT_XLFD, 0, &s) ==
+		XftResultMatch) {
+	    //if (out) fputs("button font is Xfld\n", stderr);
+	    fprintf(stderr, "Button font: %s\n", s);
+	} else
+	    fprintf(stderr, "No XLFD field in button font.\n");
+
+#define	XFTPAT	"mono-10:spacing=mono"
+	if (XftNameUnparse(XftNameParse(XFTPAT), buf, 120)) {
+		XftPattern	*p;
+		XftResult	l;
+
+		p = XftFontMatch(tool_d, tool_sn, XftNameParse(XFTPAT), &l);
+		if (l == XftResultMatch) {
+			if (!XftNameUnparse(p, buf, 420))
+				fprintf(stderr, "result: %s\n", buf);
+			else
+				fputs("No result.\n", stderr);
+		}
+	}
+
+	XftFontClose(tool_d, mono_font);
+	XftFontClose(tool_d, button_xftfont);
     }
     /*
      * Now initialize the font structure for the X fonts corresponding to the
@@ -222,8 +293,8 @@ void init_font(void)
 			    nf->next = newfont;
 			nf = newfont;	/* keep current ptr */
 			nf->size = ss;	/* store the size here */
-			if (appres.DEBUG)
-			    fprintf(stderr,"Font: %s\n",flist[i].fn);
+			/* if (appres.DEBUG)
+			    fprintf(stderr,"Font: %s\n",flist[i].fn); */
 			nf->fname = flist[i].fn;	/* keep actual name */
 			nf->fstruct = NULL;
 		        nf->fset = NULL;
