@@ -181,6 +181,5 @@ extern void save_user_colors (void);
 extern int popup_query(int query_type, char *message);
 extern void create_bitmaps(void);
 extern void splash_screen(void);
-extern int xallncol(char *name, XColor *color, XColor *exact);
 
 #endif /* W_UTIL_H */

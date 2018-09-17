@@ -71,6 +71,9 @@ static XRectangle clip[1];
 static int	parsesize(char *name);
 static Boolean	openwinfonts;
 static Boolean  font_scalable[NUM_FONTS];
+#ifdef TRY_XFT
+static XftFont	*sans_font;
+#endif
 
 #define MAXNAMES 300
 
@@ -122,6 +125,9 @@ void init_font(void)
 	button_font = XLoadQueryFont(tool_d, appres.normalFont);
     }
 
+#ifdef TRY_XFT
+    sans_font = XftFontOpenName(tool_d, tool_sn,
+		    "sans-12:bold:antialias=false");
     if (appres.DEBUG) {
 	fprintf(stderr, "button_font: %s, fid: %lu\n", appres.buttonFont,
 		    button_font->fid);
@@ -191,6 +197,7 @@ void init_font(void)
 	XftFontClose(tool_d, mono_font);
 	XftFontClose(tool_d, button_xftfont);
     }
+#endif /* TRY_XFT */
     /*
      * Now initialize the font structure for the X fonts corresponding to the
      * Postscript fonts for the canvas.	 OpenWindows can use any LaserWriter
@@ -534,6 +541,49 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
     /* if depth == MAX_DEPTH+1 then the caller wants the original color no matter what */
     if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth)))
 	color = MED_GRAY;
+
+    /* get the X colors */
+    xfg = x_color(color);
+    xbg = x_color(background);
+    if ((xfg != gc_color[op]) ||
+	(background != COLOR_NONE && (xbg != gc_background[op]))) {
+	    /* don't change the colors for ERASE */
+	    if (op == PAINT || op == INV_PAINT) {
+		if (op == PAINT)
+		    set_x_fg_color(gccache[op], color);
+		else
+		    XSetForeground(tool_d,gccache[op], xfg ^ x_bg_color.pixel);
+		gc_color[op] = xfg;
+		if (background != COLOR_NONE) {
+		    set_x_bg_color(gccache[op], background);
+		    gc_background[op] = xbg;
+		}
+	    }
+    }
+
+    /* check for preview cancel here.  The text call may take some time if
+       a large font has to be rotated. */
+    if (check_cancel())
+	return ;
+
+    if (background != COLOR_NONE) {
+	zXRotDrawImageString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
+    } else {
+	zXRotDrawString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
+    }
+}
+
+void
+pw_redtext(Window w, int x, int y, char *string)
+{
+	int		xfg, xbg;
+	const int	op = INV_PAINT;
+	const int	depth = MAXDEPTH + 1;
+	const float	angle = 0.0;
+	Color		color = RED;
+	Color		background = COLOR_NONE;
+	XftColor	xftred;
+
 
     /* get the X colors */
     xfg = x_color(color);

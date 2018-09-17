@@ -145,6 +145,10 @@ extern Boolean		 update_figs;
 extern XpmAttributes	 xfig_icon_attr;
 #endif
 extern fig_colors	 colorNames[NUM_STD_COLS + 1];
+#ifdef TRY_XFT
+//extern XftColor		 xftcolors[NUM_STD_COLS + 1];
+extern XftColor		 redxft;
+#endif
 extern char		*short_clrNames[NUM_STD_COLS + 1];
 extern Pixel		 colors[NUM_STD_COLS+MAX_USR_COLS];
 extern XColor		 user_colors[MAX_USR_COLS];

@@ -36,6 +36,9 @@
 #include "w_setup.h"
 
 #include <X11/IntrinsicP.h> /* XtResizeWidget() */
+#ifdef TRY_XFT
+#include <X11/extensions/Xrender.h>
+#endif
 
 #ifdef I18N
 #include "d_text.h"
@@ -69,7 +72,8 @@ Pixmap	  mouse_l=(Pixmap) 0,		/* mouse indicator bitmaps for the balloons */
 /* LOCALS */
 
 DeclareStaticArgs(14);
-static void _installscroll(Widget parent, Widget widget);
+static void	_installscroll(Widget parent, Widget widget);
+static int	xallncol(char *name, XColor *color, XColor *exact);
 
 static Pixmap	spinup_bm=0;	/* pixmaps for spinners */
 static Pixmap	spindown_bm=0;
@@ -1613,6 +1617,11 @@ check_colors(void)
 	/* put the colorcell number in the color array */
 	colors[i] = color.pixel;
     }
+#ifdef	TRY_XFT
+    XRenderColor redXRenderColor = {0xffff, 0, 0, 0xffff};
+    XftColorAllocValue(tool_d, tool_v, tool_cm, &redXRenderColor, &redxft);
+#endif
+
 
     /* get two grays for insensitive spinners */
     if (tool_cells == 2 || appres.monochrome) {
@@ -1682,7 +1691,7 @@ void XSyncOff(void)
  * names.  Some servers can't parse the hex form for XAllocNamedColor()
  */
 
-int
+static int
 xallncol(char *name, XColor *color, XColor *exact)
 {
     unsigned	short r,g,b;

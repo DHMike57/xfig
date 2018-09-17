@@ -181,6 +181,7 @@ boxsize_msg(int fact)
 	else
 	    sdy = -2.0/zoomscale;
 
+#define	pw_text(w, x, y, op, d, f, a, s, c, b)	pw_redtext(w, x, y, s)
 	/* erase old text */
 	if (!first_lenmsg) {
 	    pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufx,
