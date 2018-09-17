@@ -22,7 +22,7 @@
 # The default ARFLAGS are "cru". However, ar now outputs the warning
 # "`u' modifier ignored since `D' is the default...".
 ARFLAGS = cr
-AM_CPPFLAGS = $(XCPPFLAGS) -DNDEBUG -DXFIGLIBDIR="\"$(compkeydbdir)\"" \
+AM_CPPFLAGS = -I$(oldincludedir)/freetype2 $(XCPPFLAGS) -DNDEBUG -DXFIGLIBDIR="\"$(compkeydbdir)\"" \
 	-DOBJLIBDIR="\"$(pkgdatadir)/Libraries\"" -DXFIGDOCDIR="\"$(docdir)\""
 AM_LDFLAGS = $(XLDFLAGS)
 # LIBOBJS must be placed in LDADD or xfig_LDADD - otherwise, the

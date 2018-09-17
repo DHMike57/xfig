@@ -106,6 +106,7 @@ dnl AC_CHECK_PROG(XDG_MENU, [xdg-desktop-menu], [xdg-desktop-menu])
 AC_SEARCH_LIBS([pow], [m])dnl
 dnl AC_SEARCH_LIBS([deflate], [z])  # libz is not needed.
 AC_SEARCH_LIBS([png_read_info], [png])
+AC_SEARCH_LIBS([FcInit], [fontconfig])
 AS_IF([test "x$ac_cv_search_pow" = xno \
 	|| test "x$ac_cv_search_png_read_info" = xno],
     [AC_MSG_ERROR([Necessary libraries not found.])])
@@ -131,7 +132,7 @@ AS_IF([test "x$no_x" != xyes],
 # The check below did not work on Darwin (quote in AC_PATH_X: Do not try a
 # hair to link a X-program), therefore, use hard-coded XLIBS
 # Further below, though, linking with -lXpm or -lXaw works.
-XLIBS="-lXft -lfontconfig -lXt -lX11"
+XLIBS="-lXft -lXt -lX11"
 # (2) Do not give up, check in unusual places.
 #AC_SEARCH_LIBS([XBell], [X11])
 #AC_SEARCH_LIBS([XtName], [Xt])
