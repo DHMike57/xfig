@@ -13,16 +13,14 @@
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
  *
+ *  Modified 2018-09-18 by Thomas Loimer <thomas.loimer@tuwien.ac.at> 
+ *
  */
 
 /* ************************************************************************ */
 
 #ifndef W_ROTTEXT_H
 #define W_ROTTEXT_H
-
-#ifndef _XVERTEXT_INCLUDED_
-#define _XVERTEXT_INCLUDED_
-
 
 #define XV_VERSION      5.0
 #define XV_COPYRIGHT \
@@ -48,44 +46,13 @@
 
 /* ---------------------------------------------------------------------- */
 
-/* this shoulf be C++ compliant, thanks to
-     vlp@latina.inesc.pt (Vasco Lopes Paulo) */
-
-#if defined(__cplusplus) || defined(c_plusplus)
-
-extern "C" {
-float   XRotVersion(char*, int);
-void    XRotSetMagnification(float);
-void    XRotSetBoundingBoxPad(int);
-int     XRotDrawString(Display*, XFontStruct*, float,
-                       Drawable, GC, int, int, char*);
-int     XRotDrawImageString(Display*, XFontStruct*, float,
-                            Drawable, GC, int, int, char*);
-int     XRotDrawAlignedString(Display*, XFontStruct*, float,
-                              Drawable, GC, int, int, char*, int);
-int     XRotDrawAlignedImageString(Display*, XFontStruct*, float,
-                                   Drawable, GC, int, int, char*, int);
-XPoint *XRotTextExtents(XFontStruct*, float,
-			int, int, char*, int);
-}
-
-#else
-
 extern float   XRotVersion(char *str, int n);
 extern void    XRotSetMagnification(float m);
 extern void    XRotSetBoundingBoxPad(int p);
 extern int     XRotDrawString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *str);
 extern int     XRotDrawImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *str);
-extern int     XRotDrawAlignedString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align);
-extern int     XRotDrawAlignedImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align);
-extern XPoint *XRotTextExtents(XFontStruct *font, float angle, int x, int y, char *text, int align);
-
-#endif /* __cplusplus */
 
 /* ---------------------------------------------------------------------- */
-
-
-#endif /* _XVERTEXT_INCLUDED_ */
 
 
 #endif /* W_ROTTEXT_H */
