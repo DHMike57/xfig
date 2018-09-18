@@ -29,7 +29,9 @@
  */
 
 /* IMPORTS */
+#ifdef TRY_XFT
 #include <X11/Xft/Xft.h>
+#endif
 
 #include "fig.h"
 #include "figx.h"
@@ -51,6 +53,26 @@
 #include "w_cursor.h"
 #include "w_file.h"
 #include "w_rottext.h"
+
+#define zXDrawArc(disp,win,gc,x,y,d1,d2,a1,a2)\
+    XDrawArc(disp,win,gc,ZOOMX(x),ZOOMY(y), \
+	     (short)round(zoomscale*(d1)),(short)round(zoomscale*(d2)),\
+	     a1,a2)
+
+#define zXFillArc(disp,win,gc,x,y,d1,d2,a1,a2)\
+    XFillArc(disp,win,gc,ZOOMX(x),ZOOMY(y), \
+	     (short)round(zoomscale*(d1)),(short)round(zoomscale*(d2)),\
+	     a1,a2)
+
+#define zXRotDrawString(disp,font,ang,win,gc,x,y,s)\
+    XRotDrawString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
+
+#define zXRotDrawImageString(disp,font,ang,win,gc,x,y,s)\
+    XRotDrawImageString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
+
+#define zXFillRectangle(disp,win,gc,x,y,w,h)\
+    XFillRectangle(disp,win,gc,ZOOMX(x),ZOOMY(y),\
+		(short)round(zoomscale*(w)),(short)round(zoomscale*(h)))
 
 /* EXPORTS */
 
@@ -564,7 +586,7 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
     /* check for preview cancel here.  The text call may take some time if
        a large font has to be rotated. */
     if (check_cancel())
-	return ;
+	return;
 
     if (background != COLOR_NONE) {
 	zXRotDrawImageString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
@@ -573,48 +595,50 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
     }
 }
 
+#ifdef TRY_XFT
 void
 pw_redtext(Window w, int x, int y, char *string)
 {
 	int		xfg, xbg;
 	const int	op = INV_PAINT;
-	const int	depth = MAXDEPTH + 1;
-	const float	angle = 0.0;
 	Color		color = RED;
 	Color		background = COLOR_NONE;
-	XftColor	xftred;
+	char		str1[120];
+	int		len;
 
+	if (string == NULL || *string=='\0') {
+		if (appres.DEBUG) puts("Empty string.");
+		return;
+	}
 
-    /* get the X colors */
-    xfg = x_color(color);
-    xbg = x_color(background);
-    if ((xfg != gc_color[op]) ||
-	(background != COLOR_NONE && (xbg != gc_background[op]))) {
-	    /* don't change the colors for ERASE */
-	    if (op == PAINT || op == INV_PAINT) {
-		if (op == PAINT)
-		    set_x_fg_color(gccache[op], color);
-		else
-		    XSetForeground(tool_d,gccache[op], xfg ^ x_bg_color.pixel);
+	/* get the X colors */
+	xfg = x_color(color);
+	xbg = x_color(background);
+	if (xfg != gc_color[op] ||
+		    (background != COLOR_NONE && xbg != gc_background[op])) {
+		/* don't change the colors for ERASE */
+		XSetForeground(tool_d, gccache[op], xfg ^ x_bg_color.pixel);
 		gc_color[op] = xfg;
 		if (background != COLOR_NONE) {
-		    set_x_bg_color(gccache[op], background);
-		    gc_background[op] = xbg;
+			set_x_bg_color(gccache[op], background);
+			gc_background[op] = xbg;
 		}
-	    }
-    }
+	}
 
-    /* check for preview cancel here.  The text call may take some time if
-       a large font has to be rotated. */
-    if (check_cancel())
-	return ;
+	/* check for preview cancel here.  The text call may take some time if
+	   a large font has to be rotated. */
+	if (check_cancel())
+		return;
 
-    if (background != COLOR_NONE) {
-	zXRotDrawImageString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
-    } else {
-	zXRotDrawString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
-    }
+	len = snprintf(str1, (size_t)120, "xft: %s", string);
+	if (str1==NULL)
+		return;
+
+	/* draw string onto bitmap */
+	XftDrawStringUtf8(main_xftdraw, &redxft, sans_font, ZOOMX(x), ZOOMY(y),
+			(XftChar8 *)str1, len);
 }
+#endif
 
 PR_SIZE
 textsize(XFontStruct *fstruct, int n, char *s)

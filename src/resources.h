@@ -23,6 +23,12 @@
 #ifndef PATH_MAX
 #define PATH_MAX	1024
 #endif
+#ifdef TRY_XFT
+#include <X11/Xft/Xft.h>
+//extern XftColor		 xftcolors[NUM_STD_COLS + 1];
+extern XftColor		 redxft;
+extern XftDraw		*main_xftdraw;
+#endif
 
 #define NUMSHADEPATS	21
 #define NUMTINTPATS	20
@@ -145,10 +151,6 @@ extern Boolean		 update_figs;
 extern XpmAttributes	 xfig_icon_attr;
 #endif
 extern fig_colors	 colorNames[NUM_STD_COLS + 1];
-#ifdef TRY_XFT
-//extern XftColor		 xftcolors[NUM_STD_COLS + 1];
-extern XftColor		 redxft;
-#endif
 extern char		*short_clrNames[NUM_STD_COLS + 1];
 extern Pixel		 colors[NUM_STD_COLS+MAX_USR_COLS];
 extern XColor		 user_colors[MAX_USR_COLS];

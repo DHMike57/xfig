@@ -61,28 +61,9 @@ extern void init_gc(void);
 #define BACKX(x) round(x/zoomscale+zoomxoff)
 #define BACKY(y) round(y/zoomscale+zoomyoff)
 
-#define zXDrawArc(disp,win,gc,x,y,d1,d2,a1,a2)\
-    XDrawArc(disp,win,gc,ZOOMX(x),ZOOMY(y), \
-	     (short)round(zoomscale*(d1)),(short)round(zoomscale*(d2)),\
-	     a1,a2)
-
-#define zXFillArc(disp,win,gc,x,y,d1,d2,a1,a2)\
-    XFillArc(disp,win,gc,ZOOMX(x),ZOOMY(y), \
-	     (short)round(zoomscale*(d1)),(short)round(zoomscale*(d2)),\
-	     a1,a2)
 #define zXDrawLine(disp,win,gc,x1,y1,x2,y2)\
     XDrawLine(disp,win,gc,ZOOMX(x1),ZOOMY(y1), \
 	      ZOOMX(x2),ZOOMY(y2))
-
-#define zXRotDrawString(disp,font,ang,win,gc,x,y,s)\
-    XRotDrawString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
-
-#define zXRotDrawImageString(disp,font,ang,win,gc,x,y,s)\
-    XRotDrawImageString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
-
-#define zXFillRectangle(disp,win,gc,x,y,w,h)\
-    XFillRectangle(disp,win,gc,ZOOMX(x),ZOOMY(y),\
-		(short)round(zoomscale*(w)),(short)round(zoomscale*(h)))
 
 #define zXDrawRectangle(disp,win,gc,x,y,w,h)\
     XDrawRectangle(disp,win,gc,ZOOMX(x),ZOOMY(y),\
