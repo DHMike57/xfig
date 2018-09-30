@@ -255,3 +255,48 @@ int latexfontnum(char *font)
 		return (i);
     return(DEF_LATEX_FONT);
 }
+
+XftFont *
+getxftfont(int psflag, int fnum, int size)
+{
+	XftPattern	*want, *have;
+	XftResult	res;
+	XftFont		*xftfont;
+
+	/* sanitize fnum */
+	if (fnum < 0 || psflag && fnum >= NUM_FONTS ||
+			!psflag && fnum >= NUM_LATEX_FONTS) {
+		file_msg("Illegal font number, using default font.");
+		fnum = 0;
+	}
+	if (!psflag)
+		fnum = latex_fontinfo[fnum].xfontnum;
+
+	/* assign the base pattern */
+	if (xftbasepattern[fnum] == NULL) {
+		xftbasepattern[fnum] = XftNameParse(xftname[
+				psflag ? fnum : latex_fontinfo[fnum].xfontnum]);
+		// XftPatternAddBool... after debugging ...
+		replaceelement(xftbasepattern[fnum], XFT_ANTIALIAS, XftTypeBool,
+			       false);
+		replaceelement(xftbasepattern[fnum], "hinting", false);
+	}
+	want = XftPatternDuplicate(xftbasepattern[fnum]);
+
+	replaceelement(want, XFT_SIZE, XftTypeDouble, (double) size);
+	/* Use this below, after debugging whether SIZE is really never set. */
+	// XftPatternAddDouble(pat, XFT_SIZE, (double) size);
+
+	/* add caching here */
+
+	have = XftFontMatch(tool_d, tool_sn, want, res);
+	if (res != Success && fnum) {
+		xftfont = getxftfont(1, 0, size);
+	} else {
+		xftfont = XftFontOpenPattern(tool_d, have);
+	}
+
+	XftPatternDestroy(want);
+	XftPatternDestroy(have);
+	return xftfont;
+}
