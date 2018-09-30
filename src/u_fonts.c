@@ -19,6 +19,8 @@
 #include "object.h"
 #include "w_msgpanel.h"
 
+#include <X11/Xft/Xft.h>
+
 /* X11 font names */
 
 struct _xfstruct x_fontinfo[NUM_FONTS] = {
@@ -144,6 +146,67 @@ struct _fstruct ps_fontinfo[NUM_FONTS + 1] = {
     {"ZapfChancery-MediumItalic",	33},
     {"ZapfDingbats",			34},
 };
+
+/*
+ * Xft font names
+ * These are really the free-form fontconfig patterns.
+ * The "Adobe..."-names usually select an X bitmap font.
+ * Fontconfig seems to ignore space or uppercase. Nevertheless, for
+ * readability, some uppercase letters are retained.
+ * Microsoft names, viz., Times New Roman, Courier New, Arial, are
+ * probably selected by fontconfig, thus do not mention them explicitly.
+ */
+const char *const xft_name[NUM_FONTS] = {
+	"times,AdobeTimes,serif:roman",		/* Times-Roman */
+	"times,AdobeTimes,serif:italic",	/* Times-Italic */
+	"times,AdobeTimes,serif:bold",		/* Times-Bold */
+	"times,AdobeTimes,serif:bold:italic",	/* Times-BoldItalic */
+	"avantgarde:book",			/* AvantGarde-Book */
+	"avantgarde:book:oblique",		/* AvantGarde-BookOblique */
+	"avantgarde:demibold",			/* AvantGarde-Demi */
+	"avantgarde:demibold:oblique",		/* AvantGarde-DemiOblique */
+	"bookman:light",			/* Bookman-Light */
+	"bookman:light:italic",			/* Bookman-LightItalic */
+	"bookman:demibold",			/* Bookman-Demi */
+	"bookman:demibold:italic",		/* Bookman-DemiItalic */
+	"courier,AdobeCourier,monospace",	/* Courier */
+	"courier,AdobeCourier,monospace:oblique",	/* Courier-Oblique */
+	"courier,AdobeCourier,monospace:bold",		/* Courier-Bold */
+	"courier,AdobeCourier,monospace:bold:oblique",	/* Courier-BoldOblique*/
+	"helvetica,sans",			/* Helvetica */
+	"helvetica,sans:oblique",		/* Helvetica-Oblique */
+	"helvetica,sans:bold",			/* Helvetica-Bold */
+	"helvetica,sans:bold:oblique",		/* Helvetica-BoldOblique */
+	"helveticanarrow,sans:semicondensed",	/* Helvetica-Narrow */
+	"helveticanarrow,sans:semicondensed:oblique",
+					/* Helvetica-Narrow-Oblique */
+	"helveticanarrow,sans:semicondensed:bold",
+					/* Helvetica-Narrow-Bold */
+	"helveticanarrow,sans:semicondensed:bold:oblique",
+					/* Helvetica-Narrow-BoldOblique */
+	"newcenturyschoolbook,AdobeNewCenturySchoolbook",
+					/* NewCenturySchlbk-Roman */
+	"newcenturyschoolbook,AdobeNewCenturySchoolbook:italic",
+					/* NewCenturySchlbk-Italic */
+	"newcenturyschoolbook,AdobeNewCenturySchoolbook:bold",
+					/* NewCenturySchlbk-Bold */
+	"newcenturyschoolbook,AdobeNewCenturySchoolbook:bold:italic",
+					/* NewCenturySchlbk-BoldItalic */
+	"palatino",				/* Palatino-Roman */
+	"palatino:italic",			/* Palatino-Italic */
+	"palatino:bold",			/* Palatino-Bold */
+	"palatino.bold:italic",			/* Palatino-BoldItalic */
+	"symbol",				/* Symbol */
+	"zapfchancery:medium:italic",		/* ZapfChancery-MediumItalic */
+	"zapfdingbats"				/* ZapfDingbats */
+};
+
+/*
+ * On first call, the xftbasepattern[] will be set to the result from
+ * calling XftNameParse() on the corresponding xft_name above.
+ */
+XftPattern *
+xftbasepattern[NUMFONTS];
 
 /* LaTeX font names and the corresponding PostScript font index into ps_fontinfo */
 

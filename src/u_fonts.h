@@ -14,9 +14,10 @@
  */
 
 
-
 #ifndef U_FONTS_H
 #define U_FONTS_H
+
+#include <X11/Xft/Xft.h>
 
 #define DEF_FONTSIZE		12		/* default font size in pts */
 #define DEF_PS_FONT		0
@@ -58,10 +59,10 @@ struct _xfstruct {
 
 extern int		psfontnum(char *font);
 extern int		latexfontnum(char *font);
-
+extern int		x_fontnum(int psflag, int fnum);
+extern XftPattern	*xftbasepattern[];
 extern struct _xfstruct	x_fontinfo[], x_backup_fontinfo[];
 extern struct _fstruct	ps_fontinfo[];
 extern struct _fstruct	latex_fontinfo[];
 
-int		x_fontnum(int psflag, int fnum);
 #endif /* U_FONTS_H */
