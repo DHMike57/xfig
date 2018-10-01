@@ -15,6 +15,8 @@
  *
  */
 
+#include <X11/IntrinsicP.h> /* XtResizeWidget() */
+
 #include "fig.h"
 #include "figx.h"
 #include "resources.h"
@@ -34,11 +36,6 @@
 #include "w_print.h"
 #include "w_util.h"
 #include "w_setup.h"
-
-#include <X11/IntrinsicP.h> /* XtResizeWidget() */
-#ifdef TRY_XFT
-#include <X11/extensions/Xrender.h>
-#endif
 
 #ifdef I18N
 #include "d_text.h"
@@ -1617,11 +1614,6 @@ check_colors(void)
 	/* put the colorcell number in the color array */
 	colors[i] = color.pixel;
     }
-#ifdef	TRY_XFT
-    XRenderColor redXRenderColor = {0xffff, 0, 0, 0xffff};
-    XftColorAllocValue(tool_d, tool_v, tool_cm, &redXRenderColor, &redxft);
-#endif
-
 
     /* get two grays for insensitive spinners */
     if (tool_cells == 2 || appres.monochrome) {

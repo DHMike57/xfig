@@ -18,17 +18,15 @@
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
-#include "paintop.h"
 #include <limits.h>		/* PATH_MAX, below */
+#include <X11/Xft/Xft.h>
+
+#include "paintop.h"
 #ifndef PATH_MAX
 #define PATH_MAX	1024
 #endif
-#ifdef TRY_XFT
-#include <X11/Xft/Xft.h>
 //extern XftColor		 xftcolors[NUM_STD_COLS + 1];
-extern XftColor		 redxft;
 extern XftDraw		*main_xftdraw;
-#endif
 
 #define NUMSHADEPATS	21
 #define NUMTINTPATS	20

@@ -12,7 +12,7 @@
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
  *
- *  Modified 2018-09-18 by Thomas Loimer <thomas.loimer@tuwien.ac.at> 
+ *  Modified 2018-09-18 by Thomas Loimer <thomas.loimer@tuwien.ac.at>
  *
  */
 

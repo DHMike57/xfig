@@ -68,12 +68,8 @@
 #endif  /* I18N */
 
 #include <X11/IntrinsicP.h>
-
-#ifdef TRY_XFT
 #include <X11/Xft/Xft.h>
 XftDraw	*main_xftdraw;
-XftColor	redxft;
-#endif
 
 /* EXPORTS */
 
@@ -1117,9 +1113,7 @@ main(int argc, char **argv)
     /* keep main_canvas for the case when we set a temporary cursor and
        the canvas_win is set the figure preview (when loading figures) */
     main_canvas = canvas_win = XtWindow(canvas_sw);
-#ifdef TRY_XFT
     main_xftdraw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
-#endif
 
     /* create some global bitmaps like arrows, etc */
     create_bitmaps();
