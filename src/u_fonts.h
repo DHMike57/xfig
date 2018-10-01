@@ -20,7 +20,6 @@
 #include <X11/Xft/Xft.h>
 
 #define DEF_FONTSIZE		12		/* default font size in pts */
-#define DEF_PS_FONT		0
 #define DEF_LATEX_FONT		0
 #define PS_FONTPANE_WD		290
 #define LATEX_FONTPANE_WD	112

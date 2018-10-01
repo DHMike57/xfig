@@ -13,13 +13,15 @@
  *
  */
 
+#include <X11/Xft/Xft.h>
+
 #include "fig.h"
 #include "resources.h"
 #include "u_fonts.h"
 #include "object.h"
 #include "w_msgpanel.h"
 
-#include <X11/Xft/Xft.h>
+#define DEF_PS_FONT		0
 
 /* X11 font names */
 
@@ -267,33 +269,39 @@ getxftfont(int psflag, int fnum, int size)
 	if (fnum < 0 || psflag && fnum >= NUM_FONTS ||
 			!psflag && fnum >= NUM_LATEX_FONTS) {
 		file_msg("Illegal font number, using default font.");
-		fnum = 0;
+		fnum = DEF_PS_FONT;
 	}
 	if (!psflag)
 		fnum = latex_fontinfo[fnum].xfontnum;
 
 	/* assign the base pattern */
 	if (xftbasepattern[fnum] == NULL) {
-		xftbasepattern[fnum] = XftNameParse(xftname[
-				psflag ? fnum : latex_fontinfo[fnum].xfontnum]);
-		// XftPatternAddBool... after debugging ...
-		replaceelement(xftbasepattern[fnum], XFT_ANTIALIAS, XftTypeBool,
-			       false);
-		replaceelement(xftbasepattern[fnum], "hinting", false);
+		char	buf[BUFSIZ];	/* DEBUG */
+		xftbasepattern[fnum] = XftNameParse(xftname[fnum]);
+		XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ); /* DEBUG */
+		fprintf(stderr,"request %s, result:\n%s\n", xftname[fnum], buf);
+
+		/* erasing, rotation would not work with antialiased text */
+		fprintf(stderr,"result code (0, I presume): %d\n",
+		XftPatternAddBool(xftbasepattern[fnum], XFT_ANTIALIAS, False));
+		XftPatternAddBool(xftbasepattern[fnum], "hinting", False);
 	}
 	want = XftPatternDuplicate(xftbasepattern[fnum]);
+	XftPatternAddDouble(want, XFT_SIZE, (double)size);
 
-	replaceelement(want, XFT_SIZE, XftTypeDouble, (double) size);
-	/* Use this below, after debugging whether SIZE is really never set. */
-	// XftPatternAddDouble(pat, XFT_SIZE, (double) size);
-
-	/* add caching here */
+	/*
+	 * man xft(3) says, "XftFonts are internally allocated,
+	 * reference-counted, and freed by Xft;"
+	 * Do not create a self-made cache.
+	 */
 
 	have = XftFontMatch(tool_d, tool_sn, want, res);
-	if (res != Success && fnum) {
-		xftfont = getxftfont(1, 0, size);
+	if (res != XftResultMatch && fnum != DEF_PS_FONT) {
+		xftfont = getxftfont(1, DEF_PS_FONT, size);
 	} else {
-		xftfont = XftFontOpenPattern(tool_d, have);
+		/* why should this find a result, if XftFontMatch() fails? */
+		fprintf(stderr, "trying XftFontOpenPattern!\n");
+		xftfont = XftFontOpenPattern(tool_d, want);
 	}
 
 	XftPatternDestroy(want);
