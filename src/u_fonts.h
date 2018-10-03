@@ -59,6 +59,7 @@ struct _xfstruct {
 extern int		psfontnum(char *font);
 extern int		latexfontnum(char *font);
 extern int		x_fontnum(int psflag, int fnum);
+extern XftFont		*getxftfont(int psflag, int fnum, int size);
 extern XftPattern	*xftbasepattern[];
 extern struct _xfstruct	x_fontinfo[], x_backup_fontinfo[];
 extern struct _fstruct	ps_fontinfo[];

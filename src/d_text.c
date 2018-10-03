@@ -51,6 +51,9 @@
 #include <X11/Xatom.h>
 #include <wchar.h>
 
+#include <X11/Xft/Xft.h>
+//#include <X11/extensions/Xrender.h>
+
 #ifdef SEL_TEXT
 #include <X11/Xmu/Atoms.h>
 Boolean	text_selection_active;
@@ -684,11 +687,24 @@ init_text_input(int x, int y)
 #endif /* SEL_TEXT */
 }
 
+static void
+xfttextextents(XftFont *font, const char *s, int len,
+		int *width, int *ascent, int *descent)
+{
+	XGlyphInfo	extents;
+
+	XftTextExtentsUtf8(tool_d, font, (XftChar8 *)s, len, &extents);
+	*width = ZOOM_FACTOR * extents.xOff;	/* see Xft.tutorial */
+	*ascent = ZOOM_FACTOR * extents.y;
+	*descent = ZOOM_FACTOR * (extents.height - extents.y);
+}
+
 static F_text *
 new_text(void)
 {
     F_text	   *text;
     PR_SIZE	    size;
+    int		i;	/* DEBUG */
 
     if ((text = create_text()) == NULL)
 	return (NULL);
@@ -700,17 +716,29 @@ new_text(void)
     text->type = work_textjust;
     text->font = work_font;	/* put in current font number */
     text->fontstruct = work_fontstruct;
+    text->xftfont = getxftfont(work_psflag, work_font, work_fontsize);
     text->zoom = zoomscale;
     text->size = work_fontsize;
     text->angle = work_angle;
     text->flags = work_flags;
-    text->color = cur_pencolor;
+    text->color = cur_pencolor;		/* sienna? */
+    i = XftColorAllocName(tool_d, tool_v, tool_cm, "goldenrod",
+		    &text->xftcolor);
+    fprintf(stderr, "Result %d, goldenrod pixel: %lu, rgb: %hx %hx %hx %hx \n",
+		    i, text->xftcolor.pixel, text->xftcolor.color.red,
+		    text->xftcolor.color.green, text->xftcolor.color.blue,
+		    text->xftcolor.color.alpha);
     text->depth = work_depth;
     text->pen_style = -1;
     size = textsize(canvas_font, leng_prefix, prefix);
     text->length = size.length;
     text->ascent = size.ascent;
     text->descent = size.descent;
+    xfttextextents(text->xftfont, prefix, leng_prefix, &size.length,
+		    &size.ascent, &size.descent);
+    fprintf(stderr, "Text sizes (X, xft): width %d %d, ascent %d %d, descent %d %d \n",
+		    text->length, size.length, text->ascent, size.ascent,
+		    text->descent, size.descent);
     text->base_x = base_x;
     text->base_y = base_y;
     strcpy(text->cstring, prefix);

@@ -1613,6 +1613,7 @@ check_colors(void)
 	}
 	/* put the colorcell number in the color array */
 	colors[i] = color.pixel;
+	/* TODO: store rgb Xcolor values */
     }
 
     /* get two grays for insensitive spinners */
