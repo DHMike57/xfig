@@ -70,6 +70,7 @@
 #include <X11/IntrinsicP.h>
 #include <X11/Xft/Xft.h>
 XftDraw	*main_xftdraw;
+XftColor xftwhite;
 
 /* EXPORTS */
 
@@ -1067,6 +1068,7 @@ main(int argc, char **argv)
      */
     check_colors();
 
+
     /*
      * parse any canvas background or foreground color the user wants
      */
@@ -1114,6 +1116,7 @@ main(int argc, char **argv)
        the canvas_win is set the figure preview (when loading figures) */
     main_canvas = canvas_win = XtWindow(canvas_sw);
     main_xftdraw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
+    XftColorAllocName(tool_d, tool_v, tool_cm, "white", &xftwhite);
 
     /* create some global bitmaps like arrows, etc */
     create_bitmaps();

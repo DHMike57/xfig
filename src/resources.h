@@ -27,6 +27,7 @@
 #endif
 //extern XftColor		 xftcolors[NUM_STD_COLS + 1];
 extern XftDraw		*main_xftdraw;
+extern XftColor		xftwhite;
 
 #define NUMSHADEPATS	21
 #define NUMTINTPATS	20

@@ -474,11 +474,19 @@ lookfont(int fnum, int size)
 	return (nf->fstruct);
 }
 
+
+void
+pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *xftfont,
+		char *s, int len, XftColor *xftcolor, float zoom)
+{
+	fprintf(stderr, "paint %s\n", s);
+	XftDrawStringUtf8(xftdraw, xftcolor, xftfont, ZOOMX(x), ZOOMY(y), s, len);
+}
+
 /* print "string" in window "w" using font specified in fstruct at angle
 	"angle" (radians) at (x,y)
    If background is != COLOR_NONE, draw background color ala DrawImageString
 */
-
 void
 pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 	float angle, char *string, Color color, Color background)
