@@ -71,6 +71,9 @@
 #include <X11/Xft/Xft.h>
 XftDraw	*main_xftdraw;
 XftColor xftwhite;
+XftFont	*xftsmall;
+XftFont *xftbig;
+XftFont *xftrot;
 
 /* EXPORTS */
 
@@ -1117,6 +1120,63 @@ main(int argc, char **argv)
     main_canvas = canvas_win = XtWindow(canvas_sw);
     main_xftdraw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
     XftColorAllocName(tool_d, tool_v, tool_cm, "white", &xftwhite);
+
+    {	/* DEBUG */
+	XftPattern	*xftbase;
+	XftPattern	*tmp;
+	XftPattern	*fpbig, *fpsmall, *fprot;
+	XftResult	res;
+	XftFontInfo	*ismall;
+	XftFontInfo	*ibig;
+	XftFontInfo	*irot;
+	double		rot = .5 * sqrt(2.);
+	XftMatrix	mm = {rot, -rot, rot, rot};
+
+	xftbase = XftNameParse("Comfortaa:bold");
+	XftPatternAddBool(xftbase, XFT_ANTIALIAS, False);
+	XftPatternAddBool(xftbase, "hinting", False);
+	tmp = XftPatternDuplicate(xftbase);
+	XftPatternAddDouble(tmp, XFT_DPI, 144.);
+	XftPatternAddDouble(tmp, XFT_SIZE, 6.);
+	fpsmall = XftFontMatch(tool_d, tool_sn, tmp, &res);
+	xftsmall = XftFontOpenPattern(tool_d, fpsmall);
+	ismall = XftFontInfoCreate(tool_d, xftsmall->pattern);
+
+	XftPatternDestroy(tmp);
+	tmp = XftPatternDuplicate(xftbase);
+	XftPatternAddDouble(tmp, XFT_DPI, 36.);
+	XftPatternAddDouble(tmp, XFT_SIZE, 24.);
+	fpbig = XftFontMatch(tool_d, tool_sn, tmp, &res);
+	xftbig = XftFontOpenPattern(tool_d, fpbig);
+	ibig = XftFontInfoCreate(tool_d, xftbig->pattern);
+	if (XftFontInfoEqual(ismall, ibig))
+		fputs("small and big are equal!\n", stderr);
+	else
+		fputs("small and big are unequal.\n", stderr);
+
+	XftPatternDestroy(tmp);
+	tmp = XftPatternDuplicate(xftbase);
+	XftPatternAddDouble(tmp, XFT_DPI, 72.);
+	XftPatternAddDouble(tmp, XFT_SIZE, 36.);
+	XftPatternAddDouble(tmp, XFT_SIZE, 24.);
+	XftPatternAddMatrix(tmp, XFT_MATRIX, &mm);
+	fprot = XftFontMatch(tool_d, tool_sn, tmp, &res);
+	xftrot = XftFontOpenPattern(tool_d, fprot);
+	irot = XftFontInfoCreate(tool_d, xftrot->pattern);
+	if (XftFontInfoEqual(irot, ibig))
+		fputs("rot and big are equal!\n", stderr);
+	else
+		fputs("rot and big are unequal.\n", stderr);
+	
+	XftFontInfoDestroy(tool_d, ismall);
+	XftFontInfoDestroy(tool_d, ibig);
+	XftFontInfoDestroy(tool_d, irot);
+	XftPatternDestroy(xftbase);
+	XftPatternDestroy(tmp);
+	XftPatternDestroy(fpsmall);
+	XftPatternDestroy(fpbig);
+	XftPatternDestroy(fprot);
+    }	/* END DEBUG */
 
     /* create some global bitmaps like arrows, etc */
     create_bitmaps();

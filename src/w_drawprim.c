@@ -479,8 +479,14 @@ void
 pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *xftfont,
 		char *s, int len, XftColor *xftcolor, float zoom)
 {
+	int	zy = ZOOMY(y);
+	int	zx = ZOOMX(x);
+
 	fprintf(stderr, "paint %s\n", s);
-	XftDrawStringUtf8(xftdraw, xftcolor, xftfont, ZOOMX(x), ZOOMY(y), s, len);
+	XftDrawStringUtf8(xftdraw, xftcolor, xftfont, zx, zy, s, len);
+	XftDrawStringUtf8(xftdraw, xftcolor, xftsmall, zx, 2*zy, s, len);
+	XftDrawStringUtf8(xftdraw, xftcolor, xftbig, 2*zx, 2*zy, s, len);
+	XftDrawStringUtf8(xftdraw, xftcolor, xftrot, zx, 3*zy, s, len);
 }
 
 /* print "string" in window "w" using font specified in fstruct at angle
