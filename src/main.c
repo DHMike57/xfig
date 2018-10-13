@@ -68,12 +68,15 @@
 #endif  /* I18N */
 
 #include <X11/IntrinsicP.h>
-#include <X11/Xft/Xft.h>
+/* XFT DEBUG START */
+/* #include <X11/Xft/Xft.h>
 XftDraw	*main_xftdraw;
 XftColor xftwhite;
 XftFont	*xftsmall;
 XftFont *xftbig;
 XftFont *xftrot;
+*/
+/* XFT DEBUG END */
 
 /* EXPORTS */
 
@@ -1118,10 +1121,20 @@ main(int argc, char **argv)
     /* keep main_canvas for the case when we set a temporary cursor and
        the canvas_win is set the figure preview (when loading figures) */
     main_canvas = canvas_win = XtWindow(canvas_sw);
-    main_xftdraw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
+    /* XFT DEBUG START */
+    /*
+     * It seems, that a given font is linearly scaled to different sizes:
+     * size 6 and dpi 192 is the same as size 12 and dpi 96, see
+     * https://graphicdesign.stackexchange.com/questions/\
+     *	5850/ttf-and-other-modern-font-systems-and-font-size-differences
+     * Optical sizes come with different font names (see, e.g., TU Text, TU
+     * Headline, or also https://www.typenetwork.com/news/article/\
+     *	inside-the-fonts-optical-sizes
+     */
+/*    main_xftdraw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
     XftColorAllocName(tool_d, tool_v, tool_cm, "white", &xftwhite);
-
-    {	/* DEBUG */
+    {
+	char		buf[BUFSIZ];
 	XftPattern	*xftbase;
 	XftPattern	*tmp;
 	XftPattern	*fpbig, *fpsmall, *fprot;
@@ -1131,21 +1144,24 @@ main(int argc, char **argv)
 	XftFontInfo	*irot;
 	double		rot = .5 * sqrt(2.);
 	XftMatrix	mm = {rot, -rot, rot, rot};
-
-	xftbase = XftNameParse("Comfortaa:bold");
+	XftMatrix	oo = {8., 0., 0., 8.};
+	xftbase = XftNameParse("Bookman:demibold:italic");
 	XftPatternAddBool(xftbase, XFT_ANTIALIAS, False);
 	XftPatternAddBool(xftbase, "hinting", False);
 	tmp = XftPatternDuplicate(xftbase);
-	XftPatternAddDouble(tmp, XFT_DPI, 144.);
+	XftPatternAddDouble(tmp, "dpi", 96.);
 	XftPatternAddDouble(tmp, XFT_SIZE, 6.);
+	XftPatternAddMatrix(tmp, XFT_MATRIX, &oo);
 	fpsmall = XftFontMatch(tool_d, tool_sn, tmp, &res);
 	xftsmall = XftFontOpenPattern(tool_d, fpsmall);
 	ismall = XftFontInfoCreate(tool_d, xftsmall->pattern);
+	XftNameUnparse(xftsmall->pattern, buf, BUFSIZ);
+	fputs(buf, stderr); putc('\n', stderr);
 
 	XftPatternDestroy(tmp);
 	tmp = XftPatternDuplicate(xftbase);
-	XftPatternAddDouble(tmp, XFT_DPI, 36.);
-	XftPatternAddDouble(tmp, XFT_SIZE, 24.);
+	XftPatternAddDouble(tmp, "dpi", 96.);
+	XftPatternAddDouble(tmp, XFT_SIZE, 48.);
 	fpbig = XftFontMatch(tool_d, tool_sn, tmp, &res);
 	xftbig = XftFontOpenPattern(tool_d, fpbig);
 	ibig = XftFontInfoCreate(tool_d, xftbig->pattern);
@@ -1153,21 +1169,24 @@ main(int argc, char **argv)
 		fputs("small and big are equal!\n", stderr);
 	else
 		fputs("small and big are unequal.\n", stderr);
+	XftNameUnparse(xftbig->pattern, buf, BUFSIZ);
+	fputs(buf, stderr); putc('\n', stderr);
 
 	XftPatternDestroy(tmp);
 	tmp = XftPatternDuplicate(xftbase);
-	XftPatternAddDouble(tmp, XFT_DPI, 72.);
-	XftPatternAddDouble(tmp, XFT_SIZE, 36.);
+	XftPatternAddDouble(tmp, XFT_DPI, 192.);
 	XftPatternAddDouble(tmp, XFT_SIZE, 24.);
 	XftPatternAddMatrix(tmp, XFT_MATRIX, &mm);
 	fprot = XftFontMatch(tool_d, tool_sn, tmp, &res);
 	xftrot = XftFontOpenPattern(tool_d, fprot);
 	irot = XftFontInfoCreate(tool_d, xftrot->pattern);
-	if (XftFontInfoEqual(irot, ibig))
-		fputs("rot and big are equal!\n", stderr);
+	if (XftFontInfoEqual(irot, ismall))
+		fputs("rot and small are equal!\n", stderr);
 	else
-		fputs("rot and big are unequal.\n", stderr);
-	
+		fputs("rot and small are unequal.\n", stderr);
+	XftNameUnparse(xftrot->pattern, buf, BUFSIZ);
+	fputs(buf, stderr); putc('\n', stderr);
+
 	XftFontInfoDestroy(tool_d, ismall);
 	XftFontInfoDestroy(tool_d, ibig);
 	XftFontInfoDestroy(tool_d, irot);
@@ -1176,7 +1195,9 @@ main(int argc, char **argv)
 	XftPatternDestroy(fpsmall);
 	XftPatternDestroy(fpbig);
 	XftPatternDestroy(fprot);
-    }	/* END DEBUG */
+    }
+*/
+    /* XFT DEBUG END */
 
     /* create some global bitmaps like arrows, etc */
     create_bitmaps();

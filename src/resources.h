@@ -25,12 +25,16 @@
 #ifndef PATH_MAX
 #define PATH_MAX	1024
 #endif
+/* XFT DEBUG START */
+/*
 //extern XftColor		 xftcolors[NUM_STD_COLS + 1];
 extern XftDraw		*main_xftdraw;
 extern XftColor		xftwhite;
-extern XftFont	*xftsmall;	/* DEBUG */
-extern XftFont	*xftbig;	/* DEBUG */
-extern XftFont	*xftrot;	/* DEBUG */
+extern XftFont	*xftsmall;
+extern XftFont	*xftbig;
+extern XftFont	*xftrot;
+*/
+/* XFT DEBUG END */
 
 #define NUMSHADEPATS	21
 #define NUMTINTPATS	20

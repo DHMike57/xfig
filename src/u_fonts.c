@@ -258,6 +258,7 @@ int latexfontnum(char *font)
     return(DEF_LATEX_FONT);
 }
 
+/* XFT DEBUG START */
 XftFont *
 getxftfont(int psflag, int fnum, int size)
 {
@@ -315,3 +316,4 @@ getxftfont(int psflag, int fnum, int size)
 	XftPatternDestroy(have);
 	return xftfont;
 }
+/* XFT DEBUG END */

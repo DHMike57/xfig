@@ -1271,17 +1271,21 @@ void draw_text(F_text *text, int op)
 	    greek_text(text, x1, y1, x2, y2);
 	} else {
 	    /* Otherwise, draw the text normally */
+	    /* XFT DEBUG START */
+	    /*
 	    if (fabs(text->angle) < 0.0001) {
 		XftColor	*xftcolor;
 		if (op == PAINT)
 			xftcolor = &text->xftcolor;
-		else /* ERASE */
+		else
 			xftcolor = &xftwhite;
 		pw_xfttext(main_xftdraw, x, y, text->depth, text->xftfont,
 				text->cstring, (int)strlen(text->cstring),
 				xftcolor, display_zoomscale);
 	    }
 	    else
+	    */
+	    /* XFT DEBUG END */
 	    pw_text(canvas_win, x, y, op, text->depth, text->fontstruct,
 		text->angle, text->cstring, text->color, COLOR_NONE);
 	}
