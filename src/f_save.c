@@ -21,6 +21,7 @@
 #include "object.h"
 #include "f_read.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "w_export.h"
 #include "w_indpanel.h"

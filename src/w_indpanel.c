@@ -24,6 +24,7 @@
 #include "paintop.h"
 #include "d_text.h"
 #include "e_edit.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_draw.h"
 #include "u_fonts.h"

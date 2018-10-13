@@ -61,6 +61,7 @@
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
+#include "u_colors.h"
 #include "w_drawprim.h"
 #include "w_indpanel.h"
 #include "w_color.h"

@@ -20,6 +20,8 @@
 #define MODE_H
 
 #include <limits.h>	/* PATH_MAX, below */
+#include "u_colors.h"	/* Color */
+
 #ifndef PATH_MAX
 #define PATH_MAX	1024
 #endif

@@ -23,6 +23,7 @@
 #include "mode.h"
 #include "f_read.h"
 #include "u_fonts.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "w_canvas.h"
 #include "w_drawprim.h"

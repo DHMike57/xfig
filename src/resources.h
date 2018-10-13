@@ -19,22 +19,11 @@
 #define RESOURCES_H
 
 #include <limits.h>		/* PATH_MAX, below */
-#include <X11/Xft/Xft.h>
 
 #include "paintop.h"
 #ifndef PATH_MAX
 #define PATH_MAX	1024
 #endif
-/* XFT DEBUG START */
-/*
-//extern XftColor		 xftcolors[NUM_STD_COLS + 1];
-extern XftDraw		*main_xftdraw;
-extern XftColor		xftwhite;
-extern XftFont	*xftsmall;
-extern XftFont	*xftbig;
-extern XftFont	*xftrot;
-*/
-/* XFT DEBUG END */
 
 #define NUMSHADEPATS	21
 #define NUMTINTPATS	20
@@ -85,19 +74,12 @@ extern XftFont	*xftrot;
 #define MIN_TANGNORMLEN 0
 #define MAX_TANGNORMLEN 20
 
-/* number of standard colors */
-#define NUM_STD_COLS	32
-/* max number of user-defined colors */
-#define MAX_USR_COLS	512
-
 /* number of paper sizes (A4, B5, letter, etc. [see resources.c]) */
 #define NUMPAPERSIZES	29
 
 /* define these positions so we can start with default paper size */
 #define PAPER_LETTER	0
 #define PAPER_A4	13
-
-#define	Color		int
 
 /* default number of colors to use for GIF/XPM */
 /* this can be overridden in resources or command-line arg */
@@ -106,9 +88,6 @@ extern XftFont	*xftrot;
 /* max and default number of recently used files for File menu */
 #define MAX_RECENT_FILES	9
 #define DEF_RECENT_FILES	5
-
-/* for picture files */
-#define	MAX_COLORMAP_SIZE	MAX_USR_COLS
 
 /* for JPEG export */
 #define	DEF_JPEG_QUALITY	75
@@ -125,16 +104,6 @@ extern XftFont	*xftrot;
 #define	IMAGE_PALETTE	0	/* colormapped screen capture */
 #define IMAGE_RGB	1	/* RGB (TrueColor) screen capture */
 
-struct Cmap {
-	unsigned short red, green, blue;
-	unsigned long pixel;
-};
-
-typedef struct {
-		char *name,
-		     *rgb;
-		} fig_colors ;
-
 /* for the xfig icon */
 extern Pixmap		 fig_icon;
 
@@ -143,8 +112,6 @@ extern char		 xfig_version[];
 
 /* these are allocated in main() in case we aren't using default colormap
    (so we can't use BlackPixelOfScreen... */
-
-extern XColor		 black_color, white_color;
 
 /* original directory where xfig started */
 extern char		 orig_dir[PATH_MAX+2];
@@ -156,22 +123,7 @@ extern Boolean		 update_figs;
 #include <X11/xpm.h>
 extern XpmAttributes	 xfig_icon_attr;
 #endif
-extern fig_colors	 colorNames[NUM_STD_COLS + 1];
-extern char		*short_clrNames[NUM_STD_COLS + 1];
-extern Pixel		 colors[NUM_STD_COLS+MAX_USR_COLS];
-extern XColor		 user_colors[MAX_USR_COLS];
-extern XColor		 undel_user_color;
-extern XColor		 n_user_colors[MAX_USR_COLS];
-extern XColor		 save_colors[MAX_USR_COLS];
-extern int		 num_usr_cols, n_num_usr_cols;
 extern int		 current_memory;
-extern Boolean		 colorUsed[MAX_USR_COLS];
-extern Boolean		 colorFree[MAX_USR_COLS];
-extern Boolean		 n_colorFree[MAX_USR_COLS];
-extern Boolean		 all_colors_available;
-extern Pixel		 dark_gray_color, med_gray_color, lt_gray_color;
-extern Pixel		 pageborder_color;
-extern Pixel		 axis_lines_color;
 extern int		 max_depth, min_depth;
 extern char		 tool_name[200];
 extern int		 export_background_color; /* current export/print background color */
@@ -181,11 +133,6 @@ extern struct _pics	*pictures;		/* common repository to share imported pictures 
 extern float		 scale_factor;		/* scale drawing as it is read in */
 extern char		 minor_grid[40], major_grid[40]; /* export/print grid values */
 extern Boolean		 draw_parent_gray;	/* in open compound, draw rest in gray */
-
-/* number of colors we want to use for GIF/XPM images */
-extern int		avail_image_cols;
-/* colormap used for same */
-extern XColor		image_cells[MAX_COLORMAP_SIZE];
 
 /* resources structure */
 
@@ -391,13 +338,8 @@ extern GC	border_gc, button_gc, ind_button_gc, mouse_button_gc, pic_gc,
 		tr_gc, tr_xor_gc, tr_erase_gc,	/* for the rulers */
 		sr_gc, sr_xor_gc, sr_erase_gc;
 
-extern Color	grid_color;
 extern Pixmap	fill_pm[NUMFILLPATS],fill_but_pm[NUMPATTERNS];
 extern float	fill_pm_zoom[NUMFILLPATS],fill_but_pm_zoom[NUMFILLPATS];
-extern XColor	x_fg_color, x_bg_color;
-extern unsigned long but_fg, but_bg;
-extern unsigned long ind_but_fg, ind_but_bg;
-extern unsigned long mouse_but_fg, mouse_but_bg;
 
 /* will contain environment variable XFIGTMPDIR, if any */
 extern char    *TMPDIR;

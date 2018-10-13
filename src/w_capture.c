@@ -22,6 +22,7 @@
 #include "fig.h"
 #include "resources.h"
 #include "object.h"
+//#include "u_colors.h"
 #include "w_capture.h"
 #include "w_msgpanel.h"
 

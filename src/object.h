@@ -19,6 +19,8 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include "u_colors.h"
+
 /* values to signify color used for transparent GIF color */
 
 #define CANVAS_BG		-7	/* use canvas background color */
@@ -296,11 +298,11 @@ typedef struct f_text {
 #define T_RIGHT_JUSTIFIED	2
 	int font;
 	XFontStruct *fontstruct;
-	XftFont *xftfont;
+	//XftFont *xftfont;	XFT DEBUG
 	float zoom;		/* to keep track of when it needs rescaling */
 	int size;		/* point size */
 	Color color;
-	XftColor xftcolor;
+	//XftColor xftcolor;	XFT DEBUG
 	int depth;
 	float angle;		/* in radians */
 

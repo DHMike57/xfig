@@ -37,6 +37,7 @@
 #include "paintop.h"
 #include "mode.h"
 #include "object.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "w_canvas.h"

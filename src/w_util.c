@@ -24,6 +24,7 @@
 #include "mode.h"
 #include "object.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_cmdpanel.h"

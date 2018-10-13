@@ -33,6 +33,7 @@
 #include "u_fonts.h"
 #include "u_search.h"
 #include "u_list.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_draw.h"
 #include "u_markers.h"

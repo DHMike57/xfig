@@ -22,6 +22,8 @@
 # The default ARFLAGS are "cru". However, ar now outputs the warning
 # "`u' modifier ignored since `D' is the default...".
 ARFLAGS = cr
+# Xft #includes <ft2build.h>, not <freetype2/ft2build.h>, hence freetype2
+# must be put into the search path.
 AM_CPPFLAGS = -I$(oldincludedir)/freetype2 $(XCPPFLAGS) -DNDEBUG -DXFIGLIBDIR="\"$(compkeydbdir)\"" \
 	-DOBJLIBDIR="\"$(pkgdatadir)/Libraries\"" -DXFIGDOCDIR="\"$(docdir)\""
 AM_LDFLAGS = $(XLDFLAGS)
@@ -51,26 +53,26 @@ xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	f_readxbm.c f_readxbm.h f_readxpm.h f_save.c f_save.h f_util.c \
 	f_util.h f_wrpcx.c f_wrpng.c f_wrpng.h main.c main.h mode.c mode.h \
 	object.c object.h paintop.h pcx.h resources.c resources.h \
-	u_bound.c u_bound.h u_create.c u_create.h u_drag.c u_drag.h u_draw.c \
-	u_draw.h u_elastic.c u_elastic.h u_error.c u_error.h u_fonts.c \
-	u_fonts.h u_free.c u_free.h u_geom.c u_geom.h u_list.c u_list.h \
-	u_markers.c u_markers.h u_pan.c u_pan.h u_print.c u_print.h \
-	u_quartic.c u_quartic.h u_redraw.c u_redraw.h u_scale.c u_scale.h \
-	u_search.c u_search.h u_smartsearch.c u_smartsearch.h u_translate.c \
-	u_translate.h u_undo.c u_undo.h w_browse.c w_browse.h w_canvas.c \
-	w_canvas.h w_capture.c w_capture.h w_cmdpanel.c w_cmdpanel.h w_color.c \
-	w_color.h w_cursor.c w_cursor.h w_digitize.c w_digitize.h w_dir.c \
-	w_dir.h w_drawprim.c w_drawprim.h w_export.c w_export.h w_file.c \
-	w_file.h w_fontbits.c w_fontbits.h w_fontpanel.c w_fontpanel.h \
-	w_grid.c w_grid.h w_help.c w_help.h w_icons.c w_icons.h w_indpanel.c \
-	w_indpanel.h w_intersect.c w_intersect.h w_keyboard.c w_keyboard.h \
-	w_layers.c w_layers.h w_library.c w_library.h w_listwidget.c \
-	w_listwidget.h w_listwidgetP.h w_modepanel.c w_modepanel.h \
-	w_mousefun.c w_mousefun.h w_msgpanel.c w_msgpanel.h w_print.c \
-	w_print.h w_rottext.c w_rottext.h w_rulers.c w_rulers.h w_setup.c \
-	w_setup.h w_snap.c w_snap.h w_srchrepl.c w_srchrepl.h w_style.c \
-	w_style.h w_util.c w_util.h w_zoom.c w_zoom.h Xfuncs.h Xosdefs.h \
-	splash.xbm version.xbm
+	u_bound.c u_bound.h u_colors.c u_colors.h u_create.c u_create.h \
+	u_drag.c u_drag.h u_draw.c u_draw.h u_elastic.c u_elastic.h u_error.c \
+	u_error.h u_fonts.c u_fonts.h u_free.c u_free.h u_geom.c u_geom.h \
+	u_list.c u_list.h \ u_markers.c u_markers.h u_pan.c u_pan.h u_print.c \
+	u_print.h u_quartic.c u_quartic.h u_redraw.c u_redraw.h u_scale.c \
+	u_scale.h u_search.c u_search.h u_smartsearch.c u_smartsearch.h \
+	u_translate.c u_translate.h u_undo.c u_undo.h w_browse.c w_browse.h \
+	w_canvas.c w_canvas.h w_capture.c w_capture.h w_cmdpanel.c \
+	w_cmdpanel.h w_color.c w_color.h w_cursor.c w_cursor.h w_digitize.c \
+	w_digitize.h w_dir.c w_dir.h w_drawprim.c w_drawprim.h w_export.c \
+	w_export.h w_file.c w_file.h w_fontbits.c w_fontbits.h w_fontpanel.c \
+	w_fontpanel.h w_grid.c w_grid.h w_help.c w_help.h w_icons.c w_icons.h \
+	w_indpanel.c w_indpanel.h w_intersect.c w_intersect.h w_keyboard.c \
+	w_keyboard.h w_layers.c w_layers.h w_library.c w_library.h \
+	w_listwidget.c w_listwidget.h w_listwidgetP.h w_modepanel.c \
+	w_modepanel.h w_mousefun.c w_mousefun.h w_msgpanel.c w_msgpanel.h \
+	w_print.c w_print.h w_rottext.c w_rottext.h w_rulers.c w_rulers.h \
+	w_setup.c w_setup.h w_snap.c w_snap.h w_srchrepl.c w_srchrepl.h \
+	w_style.c w_style.h w_util.c w_util.h w_zoom.c w_zoom.h Xfuncs.h \
+	Xosdefs.h splash.xbm version.xbm
 
 if USE_XPM
 xfig_SOURCES += f_readxpm.c f_readxpm.h

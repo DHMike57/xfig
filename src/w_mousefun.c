@@ -18,6 +18,7 @@
 #include "figx.h"
 #include "resources.h"
 #include <X11/keysym.h>
+#include "u_colors.h"
 #include "w_icons.h"
 #include "w_drawprim.h"
 #include "w_indpanel.h"

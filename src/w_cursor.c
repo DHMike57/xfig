@@ -20,6 +20,7 @@
 #include "resources.h"
 #include "paintop.h"
 
+#include "u_colors.h"
 #include "w_util.h"
 
 #define magnify_width 16
