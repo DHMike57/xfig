@@ -924,14 +924,6 @@ main(int argc, char **argv)
     /* set maximum number of colors for imported images */
     set_max_image_colors();
 
-    /* allocate black and white in case we aren't using the default colormap */
-    /* (in which case we could have just used BlackPixelOfScreen...) */
-
-    XAllocNamedColor(tool_d, tool_cm, (String) "white", &dumcolor, &dumcolor);
-    white_color = dumcolor;
-    XAllocNamedColor(tool_d, tool_cm, (String) "black", &dumcolor, &dumcolor);
-    black_color = dumcolor;
-
     /* copy initial appres settings to current variables */
     init_settings();
 

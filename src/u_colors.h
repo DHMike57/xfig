@@ -16,11 +16,11 @@
  *
  */
 
-/**
- * @file	u_colors.h
- * @author	Thomas Loimer, 2018
+/*
+ * u_colors.h
+ * Author: Thomas Loimer, 2018
  *
- * @brief	Provide variables and routines related to color.
+ *	Provide variables and routines related to color.
  *
  */
 
@@ -44,10 +44,28 @@ extern XftFont	*xftrot;
 
 /* Color definition */
 #define	Color		int
-#define NUM_STD_COLS	32	/**< Number of standard colors. */
-#define MAX_USR_COLS	512	/**< Maximum number of user-defined colors. */
-#define	MAX_COLORMAP_SIZE	MAX_USR_COLS	//!< for picture files
+#define NUM_STD_COLS	32	/* Number of standard colors. */
+#define MAX_USR_COLS	512	/* Maximum number of user-defined colors. */
+#define	MAX_COLORMAP_SIZE	MAX_USR_COLS	/* For picture files. */
 
+/* indices of special colors */
+#define CANVAS_BG	(-7)	/* canvas background color */
+#define DARK_GRAY	(-6)	/* color to greek small text */
+#define MED_GRAY	(-5)	/* color to gray out inactive layers */
+#define LT_GRAY		(-4)
+#define TRANSP_BACKGROUND (-3)	/* use background of figure as transp color */
+#define TRANSP_NONE	(-2)	/* no transp color */
+#define COLOR_NONE	(-2)	/* no background color (exporting) */
+
+#define BLACK		0
+#define BLUE		1
+#define GREEN		2
+#define CYAN		3
+#define RED		4
+#define MAGENTA		5
+#define YELLOW		6
+#define WHITE		7
+#define GREEN4		12
 
 /* forward declaration */
 struct XColor;
@@ -57,16 +75,18 @@ struct Cmap {
 	unsigned long pixel;
 };
 typedef struct {
-	char	*name;
-	char	*rgb;
-} fig_colors;
+	char		*name;
+	char		*shrt;
+	unsigned short	red;
+	unsigned short	green;
+	unsigned short	blue;
+} fig_color;
 
 /* Globals */
 extern Boolean		all_colors_available;
 extern Boolean		colorUsed[MAX_USR_COLS];
 extern Boolean		colorFree[MAX_USR_COLS];
 extern Boolean		n_colorFree[MAX_USR_COLS];
-extern char		*short_clrNames[NUM_STD_COLS + 1];
 extern int		num_usr_cols, n_num_usr_cols;
 extern unsigned long	axis_lines_color;
 extern unsigned long	colors[NUM_STD_COLS+MAX_USR_COLS];
@@ -82,7 +102,7 @@ extern XColor		save_colors[MAX_USR_COLS];
 extern XColor		user_colors[MAX_USR_COLS];
 extern XColor		undel_user_color;
 extern XColor		x_fg_color, x_bg_color;
-extern fig_colors	colorNames[NUM_STD_COLS + 1];
+extern fig_color	colorNames[NUM_STD_COLS + 1];
 
 /* For GIF/XPM images */
 /* number of colors we want to use for GIF/XPM images */

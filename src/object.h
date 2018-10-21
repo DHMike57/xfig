@@ -19,17 +19,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "u_colors.h"
-
-/* values to signify color used for transparent GIF color */
-
-#define CANVAS_BG		-7	/* use canvas background color */
-#define DARK_GRAY		-6	/* pseudo color to Greek small text */
-#define MED_GRAY		-5	/* pseudo colors to gray out inactive layers */
-#define LT_GRAY			-4
-#define TRANSP_BACKGROUND	-3	/* use background of figure as transp color */
-#define TRANSP_NONE		-2	/* no transp color */
-#define COLOR_NONE		-2	/* no background color (exporting) */
+//#include "u_colors.h"
 
 /* DEFAULT is used for many things - font, color etc */
 
@@ -44,16 +34,6 @@
 
 #define RUBBER_LINE		11
 #define PANEL_LINE		12
-
-#define BLACK			0
-#define BLUE			1
-#define GREEN			2
-#define CYAN			3
-#define RED			4
-#define MAGENTA			5
-#define YELLOW			6
-#define WHITE			7
-#define GREEN4			12
 
 /* defaults for line attributes */
 
