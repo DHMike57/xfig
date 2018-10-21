@@ -433,13 +433,13 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		    if (all_colors_available) {
 			NextArg(XtNlabel, "");
 		    } else {	/* on a monochrome system give short colornames */
-			NextArg(XtNlabel, short_clrNames[i+1]);
+			NextArg(XtNlabel, colorNames[i+1].shrt);
 		    }
 		    NextArg(XtNwidth, STD_COL_W);
 		} else {				/* it's the default color */
 		    NextArg(XtNforeground, x_bg_color.pixel);
 		    NextArg(XtNbackground, x_fg_color.pixel);
-		    NextArg(XtNlabel, short_clrNames[0]);
+		    NextArg(XtNlabel, colorNames[0],shrt);
 		    NextArg(XtNwidth, STD_COL_W*2+4);
 		}
 		NextArg(XtNfromVert, below);

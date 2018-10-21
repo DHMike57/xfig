@@ -3330,7 +3330,8 @@ show_dimline(ind_sw_info *sw)
 	    break;
 	case 1:
 	    if (cur_dimline_color < NUM_STD_COLS)
-		sprintf(indbuf, "Line col=%s", short_clrNames[cur_dimline_color+1]);
+		sprintf(indbuf, "Line col=%s",
+				colorNames[cur_dimline_color+1].shrt);
 	    else
 		sprintf(indbuf, "Line col=%d", cur_dimline_color);
 	    break;
@@ -3357,13 +3358,15 @@ show_dimline(ind_sw_info *sw)
 	    break;
 	case 9:
 	    if (cur_dimline_boxcolor < NUM_STD_COLS)
-		sprintf(indbuf, "Box col=%s", short_clrNames[cur_dimline_boxcolor+1]);
+		sprintf(indbuf, "Box col=%s",
+				colorNames[cur_dimline_boxcolor+1].shrt);
 	    else
 		sprintf(indbuf, "Box col=%d", cur_dimline_boxcolor);
 	    break;
 	case 10:
 	    if (cur_dimline_textcolor < NUM_STD_COLS)
-		sprintf(indbuf, "Text col=%s", short_clrNames[cur_dimline_textcolor+1]);
+		sprintf(indbuf, "Text col=%s",
+				colorNames[cur_dimline_textcolor+1].shrt);
 	    else
 		sprintf(indbuf, "Text col=%d", cur_dimline_textcolor);
 	    break;
