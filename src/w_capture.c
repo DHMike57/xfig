@@ -448,8 +448,8 @@ selectedRootArea(int *x_r, int *y_r, unsigned int *w_r, unsigned int *h_r, Windo
     height = 0;
 
     /* Nobble our GC to let us draw a box over everything */
-    gcv.foreground = x_color(BLACK) ^ x_color(WHITE);
-    gcv.background = x_color(WHITE);
+    gcv.foreground = getpixel(BLACK) ^ getpixel(WHITE);
+    gcv.background = getpixel(WHITE);
     gcv.function = GXxor;
     gcmask = GCFunction | GCForeground | GCBackground;
     rectGC = XCreateGC(tool_d, XtWindow(canvas_sw), gcmask, &gcv);

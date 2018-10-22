@@ -265,7 +265,6 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 {
 	intptr_t	 i;
 	choice_info	*choice;
-	XColor		 col;
 	Pixel		 form_fg;
 	Widget		 below, beside, stdForm, stdLabel;
 	Widget		 sb;
@@ -410,15 +409,14 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		/* standard color menu */
 		if (i < NUM_STD_COLS && i >= 0) {
 		    if (all_colors_available) {
-			col.pixel = x_color(i);
-			XQueryColor(tool_d, tool_cm, &col);
-			if ((0.3 * col.red + 0.59 * col.green + 0.11 * col.blue) < 0.5 * (255 << 8))
+			if ((0.3*getred(i) + 0.59*getgreen(i) + 0.11*getblue(i))
+					< 0.5 * (255 << 8))
 				form_fg = colors[WHITE];
 			else
 				form_fg = colors[BLACK];
 			/* set same so we don't get white or black when click on color */
-			NextArg(XtNforeground, x_color(i));
-			NextArg(XtNbackground, x_color(i));
+			NextArg(XtNforeground, getpixel(i));
+			NextArg(XtNbackground, getpixel(i));
 		    /* mono display */
 		    } else {
 			if (i == WHITE) {
@@ -477,7 +475,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	/* label to show count of colors actually in use */
 
 	FirstArg(XtNlabel, "x In use");
-	NextArg(XtNforeground, x_color(GREEN4));
+	NextArg(XtNforeground, getpixel(GREEN4));
 	NextArg(XtNfromVert, stdForm);
 	NextArg(XtNfromHoriz, userLabel);
 	NextArg(XtNhorizDistance, 25);
@@ -818,8 +816,8 @@ void restore_mixed_colors(void)
 	save0 = mixed_color[0].pixel;
 	save1 = mixed_color[1].pixel;
 
-	mixed_color[0].pixel = x_color(cur_pencolor);
-	mixed_color[1].pixel = x_color(cur_fillcolor);
+	mixed_color[0].pixel = getpixel(cur_pencolor);
+	mixed_color[1].pixel = getpixel(cur_fillcolor);
 	XQueryColors(tool_d, tool_cm, mixed_color, 2);
 	/* keep lower 8 bits 0 */
 	mixed_color[0].red &= 0xff00;
@@ -1305,7 +1303,7 @@ void create_cell(int indx, XColor color)
 	XtNbackground, (all_colors_available?
 		user_colors[indx].pixel: x_fg_color.pixel),
 	XtNwidth, USR_COL_W, XtNheight, USR_COL_H,
-	XtNborder, (colors_used[indx]? x_color(GREEN):x_color(BLACK)),
+	XtNborder, colors_used[indx]? getpixel(GREEN): getpixel(BLACK),
 	XtNborderWidth, 2,
 	NULL);
     XtOverrideTranslations(colorMemory[indx],
@@ -1539,7 +1537,7 @@ set_std_color(int color)
 	mixed_color_indx[edit_fill] = color;
 
 	save = mixed_color[edit_fill].pixel;
-	mixed_color[edit_fill].pixel = x_color(mixed_color_indx[edit_fill]);
+	mixed_color[edit_fill].pixel = getpixel(mixed_color_indx[edit_fill]);
 	/* put the colorname in the indicator */
 	set_mixed_name(edit_fill,color);
 	/* look up color rgb values given the pixel number */
@@ -1699,7 +1697,7 @@ draw_boxed(int which)
 {
 	if (which < 0)
 		return;
-	FirstArg(XtNborder, x_color(RED));
+	FirstArg(XtNborder, getpixel(RED));
 	SetValues(colorMemory[which]);
 }
 
@@ -1712,9 +1710,9 @@ erase_boxed(int which)
 	if (which < 0)
 		return;
 	if (colors_used[which]) {
-	    FirstArg(XtNborder, x_color(GREEN));
+	    FirstArg(XtNborder, getpixel(GREEN));
 	} else {
-	    FirstArg(XtNborder, x_color(BLACK));
+	    FirstArg(XtNborder, getpixel(BLACK));
 	}
 	SetValues(colorMemory[which]);
 }

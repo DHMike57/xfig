@@ -51,7 +51,7 @@ static char	mousefun_sh_r[MOUSEFUN_MAX];
 static char	lr_blank[]  = "                  ";
 /* give the middle button label the same */
 static char	mid_blank[] = "                  ";
-
+static unsigned long	mouse_but_fg, mouse_but_bg;
 static Pixmap	mousefun_pm;
 static Pixmap	keybd_pm;
 

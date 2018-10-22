@@ -530,7 +530,7 @@ popup_library_panel(void)
     FirstArg(XtNbackground, &unsel_color);
     GetValues(icon_box);
     /* use black for "selected" border color */
-    sel_color = x_color(BLACK);
+    sel_color = getpixel(BLACK);
 
     /* if the file message window is up add it to the grab */
     file_msg_add_grab();

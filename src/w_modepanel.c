@@ -435,8 +435,9 @@ init_mode_panel(Widget tool)
 
 void setup_mode_panel(void)
 {
-    register int    i;
-    register mode_sw_info *msw;
+    int			i;
+    mode_sw_info	*msw;
+    unsigned long	but_fg, but_bg;
 
     blank_gc = XCreateGC(tool_d, XtWindow(mode_panel), (unsigned long) 0, NULL);
     FirstArg(XtNforeground, &but_fg);

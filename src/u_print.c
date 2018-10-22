@@ -676,14 +676,11 @@ exec_prcmd(char *command, char *msg)
 void
 make_rgb_string(int color, char *rgb_string)
 {
-	XColor xcolor;
 	if (color >= 0) {
-		xcolor.pixel = x_color(color);
-		XQueryColor(tool_d, tool_cm, &xcolor);
-		sprintf(rgb_string,"#%02x%02x%02x",
-				xcolor.red>>8,
-				xcolor.green>>8,
-				xcolor.blue>>8);
+		sprintf(rgb_string, "#%02x%02x%02x",
+				getred(color)>>8,
+				getgreen(color)>>8,
+				getblue(color)>>8);
 	} else {
 		rgb_string[0] = '\0';	/* no background wanted by user */
 	}

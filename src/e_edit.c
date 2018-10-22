@@ -3715,10 +3715,10 @@ update_fill_image(Widget w, XtPointer dummy, XtPointer dummy2)
 	}
 
 	/* get current colors into the gc */
-	XSetForeground(tool_d,fill_image_gc,x_color(fill_color));
+	XSetForeground(tool_d, fill_image_gc, getpixel(fill_color));
 	/* shade (use BLACK) or tint (use WHITE)? */
 	bg = (val <= 100? BLACK: WHITE);
-	XSetBackground(tool_d,fill_image_gc,x_color(bg));
+	XSetBackground(tool_d,fill_image_gc,getpixel(bg));
 
 	/* convert intensity to shade/tint index */
 	val = val / (200 / (NUMSHADEPATS+NUMTINTPATS-1));
@@ -3746,8 +3746,8 @@ update_fill_image(Widget w, XtPointer dummy, XtPointer dummy2)
 	    val += NUMSHADEPATS+NUMTINTPATS;
 
 	    /* get current colors into the gc */
-	    XSetForeground(tool_d,fill_image_gc,x_color(pen_color));
-	    XSetBackground(tool_d,fill_image_gc,x_color(fill_color));
+	    XSetForeground(tool_d, fill_image_gc, getpixel(pen_color));
+	    XSetBackground(tool_d, fill_image_gc, getpixel(fill_color));
 
 	    /* update the pixmap */
 	    set_image_pm(val);
@@ -3780,8 +3780,8 @@ void fill_style_menu(int fill, int fill_flag)
 	int	i,j;
 	Pixel	fg,bg;
 
-	fg = x_color(pen_color);
-	bg = x_color(fill_color);
+	fg = getpixel(pen_color);
+	bg = getpixel(fill_color);
 	if (!fill_image_bm_exist) {
 	    fill_image_bm_exist = True;
 	    fill_image_gc = makegc(PAINT, fg, bg);

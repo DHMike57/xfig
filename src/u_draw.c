@@ -976,14 +976,14 @@ void create_pic_pixmap(F_line *box, int rotation, int width, int height, int fli
 	    }
 
 	    if (box->pic->pic_cache->subtype == T_PIC_XBM) {
-		fg = x_color(box->pen_color);		/* xbm, use object pen color */
+		fg = getpixel(box->pen_color);	/* xbm, use object pen color */
 		bg = x_bg_color.pixel;
 	    } else if (box->pic->pic_cache->subtype == T_PIC_EPS) {
-		fg = black_color.pixel;			/* pbm from gs is inverted */
-		bg = white_color.pixel;
+		fg = getpixel(BLACK);		/* pbm from gs is inverted */
+		bg = getpixel(WHITE);
 	    } else {
-		fg = white_color.pixel;			/* gif, xpm after map_to_mono */
-		bg = black_color.pixel;
+		fg = getpixel(WHITE);		/* gif, xpm after map_to_mono */
+		bg = getpixel(BLACK);
 	    }
 
 	    box->pic->pixmap = XCreatePixmapFromBitmapData(tool_d, canvas_win,

@@ -1271,7 +1271,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
     FirstArg(XtNbackground, &pb);
     GetValues(preview_label);
     /* set it to red while previewing */
-    FirstArg(XtNbackground, x_color(YELLOW));
+    FirstArg(XtNbackground, getpixel(YELLOW));
     SetValues(preview_label);
 
     /* give filename a chance to appear in the Filename field */

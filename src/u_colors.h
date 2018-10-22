@@ -50,12 +50,14 @@ extern XftFont	*xftrot;
 
 /* indices of special colors */
 #define CANVAS_BG	(-7)	/* canvas background color */
+#define SPECIAL_COLS	7	/* number of special colors */
 #define DARK_GRAY	(-6)	/* color to greek small text */
 #define MED_GRAY	(-5)	/* color to gray out inactive layers */
 #define LT_GRAY		(-4)
 #define TRANSP_BACKGROUND (-3)	/* use background of figure as transp color */
 #define TRANSP_NONE	(-2)	/* no transp color */
 #define COLOR_NONE	(-2)	/* no background color (exporting) */
+/*	DEFAULT		(-1)	*/
 
 #define BLACK		0
 #define BLUE		1
@@ -89,14 +91,8 @@ extern Boolean		colorFree[MAX_USR_COLS];
 extern Boolean		n_colorFree[MAX_USR_COLS];
 extern int		num_usr_cols, n_num_usr_cols;
 extern unsigned long	axis_lines_color;
-extern unsigned long	colors[NUM_STD_COLS+MAX_USR_COLS];
-extern unsigned long	dark_gray_color, med_gray_color, lt_gray_color;
+//extern unsigned long	colors[NUM_STD_COLS+MAX_USR_COLS];
 extern unsigned long	pageborder_color;
-extern unsigned long	but_fg, but_bg;
-extern unsigned long	ind_but_fg, ind_but_bg;
-extern unsigned long	mouse_but_fg, mouse_but_bg;
-extern Color		grid_color;
-extern XColor		black_color, white_color;
 extern XColor		n_user_colors[MAX_USR_COLS];
 extern XColor		save_colors[MAX_USR_COLS];
 extern XColor		user_colors[MAX_USR_COLS];
@@ -109,5 +105,9 @@ extern fig_color	colorNames[NUM_STD_COLS + 1];
 extern int		avail_image_cols;
 /* colormap used for same */
 extern XColor		image_cells[MAX_COLORMAP_SIZE];
+
+extern void		xtoxftcolor(XColor *in, int color)
+extern unsigned long	getpixel(int color);
+extern unsigned short	getred(int color), getgreen(int color), getblue(int c);
 
 #endif /* U_COLORS_H */

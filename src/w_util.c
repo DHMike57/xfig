@@ -480,16 +480,16 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
 	NextArg(XtNfromVert, label);
 	if (i==TRANSP_BACKGROUND) {
 	    /* make its background transparent by using color of parent */
-	    NextArg(XtNforeground, black_color.pixel);
+	    NextArg(XtNforeground, getpixel(BLACK));
 	    NextArg(XtNbackground, bgcolor);
 	    /* and it is a little wider due to the longer name */
 	    NextArg(XtNwidth, COLOR_BUT_WID+14);
 	} else if (i==TRANSP_NONE) {
-	    NextArg(XtNforeground, black_color.pixel);
-	    NextArg(XtNbackground, white_color.pixel);
+	    NextArg(XtNforeground, getpixel(BLACK));
+	    NextArg(XtNbackground, getpixel(WHITE));
 	} else {
-	    NextArg(XtNforeground, white_color.pixel);
-	    NextArg(XtNbackground, black_color.pixel);
+	    NextArg(XtNforeground, getpixel(WHITE));
+	    NextArg(XtNbackground, getpixel(BLACK));
 	}
 	entry = XtCreateManagedWidget(buf, commandWidgetClass, pop_form, Args, ArgCount);
 	XtAddCallback(entry, XtNcallback, callback, (XtPointer) i);
@@ -582,17 +582,15 @@ set_color_name(int color, char *buf)
  */
 
 void
-set_but_col(Widget widget, Pixel color)
+set_but_col(Widget widget, int color)
 {
 	XColor		 xcolor;
-	Pixel		 but_col;
-	char		 buf[50];
+	char		 buf[12];
 
 	/* put the color name in the label and the color itself as the background */
 	set_color_name(color, buf);
-	but_col = x_color(color);
 	FirstArg(XtNlabel, buf);
-	NextArg(XtNbackground, but_col);  /* set color of button */
+	NextArg(XtNbackground, getpixel(color));  /* set color of button */
 	SetValues(widget);
 
 	/* now set foreground to contrasting color */
@@ -853,10 +851,10 @@ MakeSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget b
     if (spinup_bm == 0 || spindown_bm == 0) {
 	spinup_bm = XCreatePixmapFromBitmapData(tool_d, XtWindow(ind_panel),
 		    (char *) spinup_bits, spinup_width, spinup_height,
-		    x_color(BLACK), bgcolor, tool_dpth);
+		    getpixel(BLACK), bgcolor, tool_dpth);
 	spindown_bm = XCreatePixmapFromBitmapData(tool_d, XtWindow(ind_panel),
 		    (char *) spindown_bits, spindown_width, spindown_height,
-		    x_color(BLACK), bgcolor, tool_dpth);
+		    getpixel(BLACK), bgcolor, tool_dpth);
     }
 
     /* a form to put them in */

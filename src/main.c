@@ -1895,6 +1895,10 @@ parse_canvas_colors(void)
 	/* get the rgb values for it */
 	XQueryColor(tool_d, tool_cm, &x_fg_color);
     }
+    /* write the colors to the xftcolor array */
+    xtoxftcolor(&x_bg_color, CANVAS_BG);
+    xtoxftcolor(&x_fg_color, DEFAULT);
+
     /* now set the canvas to the user's choice, if any */
     FirstArg(XtNbackground, x_bg_color.pixel);
     NextArg(XtNforeground, x_fg_color.pixel);
@@ -1921,7 +1925,7 @@ set_xpm_icon(void)
 	/*  make a window for the icon */
 	iconWindow = XCreateSimpleWindow(tool_d, DefaultRootWindow(tool_d),
 					 0, 0, 1, 1, 0,
-					black_color.pixel, black_color.pixel);
+					getpixel(BLACK), getpixel(BLACK));
 	xfig_icon_attr.valuemask = XpmReturnPixels;
 	xfig_icon_attr.colormap = tool_cm;
 	/* use full color icon if TrueColor display */
@@ -2048,7 +2052,7 @@ set_autorefresh(void)
 	    FirstArg(XtNlabel, "Autorefresh Mode");
 	    NextArg(XtNfromVert, cmd_form);
 	    NextArg(XtNborderWidth, 0);
-	    NextArg(XtNbackground, x_color(RED));
+	    NextArg(XtNbackground, getpixel(RED));
 	    refresh_indicator = XtCreateWidget("autorefresh", labelWidgetClass,
 				    tool_form, Args, ArgCount);
 	}

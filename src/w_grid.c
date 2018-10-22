@@ -28,6 +28,8 @@
 
 #include "u_redraw.h"
 
+unsigned long	 grid_color;
+
 #define null_width 32
 #define null_height 32
 

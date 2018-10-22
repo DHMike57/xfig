@@ -23,6 +23,7 @@
 #include "mode.h"
 #include "e_edit.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "u_print.h"
 #include "w_dir.h"
 #include "w_drawprim.h"		/* for max_char_height */
@@ -338,11 +339,8 @@ do_export(Widget w)
 				x_bg_color.blue>>8);
 	    /* make other color transp */
 	    } else {
-		XColor  col;
-		col.pixel = x_color(transp);
-		XQueryColor(tool_d, tool_cm, &col);
-		sprintf(transparent,"#%02x%02x%02x",
-				col.red>>8, col.green>>8, col.blue>>8);
+		sprintf(transparent,"#%02x%02x%02x", getred(transp)>>8,
+				getgreen(transp)>>8, getblue(transp)>>8);
 		use_transp_backg = False;
 	    }
 	}

@@ -49,7 +49,6 @@ extern void reset_clip_window (void);
 extern void set_clip_window (int xmin, int ymin, int xmax, int ymax);
 extern void set_fill_gc (int fill_style, int op, int pencolor, int fillcolor, int xorg, int yorg);
 extern void set_line_stuff (int width, int style, float style_val, int join_style, int cap_style, int op, int color);
-extern int x_color (int col);
 extern void init_gc(void);
 
 /* convert Fig units to pixels at current zoom */
@@ -110,7 +109,7 @@ extern unsigned char	shade_images[NUMSHADEPATS][128];
 		    ((font)->per_char[(char)-(font)->min_char_or_byte2].width):\
 		    ((font)->max_bounds.width))
 
-#define set_x_fg_color(gc,col) XSetForeground(tool_d,gc, x_color(col))
-#define set_x_bg_color(gc,col) XSetBackground(tool_d,gc, x_color(col))
+#define set_x_fg_color(gc,col) XSetForeground(tool_d,gc, getpixel(col))
+#define set_x_bg_color(gc,col) XSetBackground(tool_d,gc, getpixel(col))
 
 #endif /* W_DRAWPRIM_H */

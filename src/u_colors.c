@@ -31,21 +31,20 @@ Boolean		colorFree[MAX_USR_COLS];
 Boolean		n_colorFree[MAX_USR_COLS];
 int		num_usr_cols = 0;
 int		n_num_usr_cols;
-XftColor	color_storage[SPECIAL_COLS + NUM_STD_COLS + MAX_USR_COLS];
+static XftColor	color_storage[SPECIAL_COLS + NUM_STD_COLS + MAX_USR_COLS];
 /* Convenience pointers into interesting positions of color_storage. */
-XftColor	*colors = color_storage + SPECIAL_COLS;
-XftColor	*user_colors = color_storage + SPECIAL_COLS + NUM_STD_COLS;
-// TODO: eliminate dark_gray_color, med_gray_color, black_color, white_color 
-unsigned long	dark_gray_color, med_gray_color, lt_gray_color;
+static XftColor	*xftcolor = color_storage + SPECIAL_COLS;
+XftColor	*user_color = color_storage + SPECIAL_COLS + NUM_STD_COLS;
+// TODO: eliminate x_color from w_util.c
+// TODO search for TRANSP_BACKGROUND and fix usage therein
+// TODO w_color.c: get rgb values directly, not by XQueryColor
 unsigned long	pageborder_color;
 unsigned long	axis_lines_color;
-unsigned long	but_fg, but_bg;
-unsigned long	ind_but_fg, ind_but_bg;
-unsigned long	mouse_but_fg, mouse_but_bg;
-Color		grid_color;
+// TODO: see grid_color, x_fg_color, x_bg_color, and do not set them in
+// disparate places, but collect them together (into check_colors?).
 
-/* TODO: change to colors[Black], colors[WHITE] */
-
+// TODO: fixe n_user_colors, save_colors, user_colors, undel...,
+// for use with XftColor
 XftColor	n_user_colors[MAX_USR_COLS];
 XftColor	save_colors[MAX_USR_COLS];
 XftColor	user_colors[MAX_USR_COLS];
@@ -124,15 +123,27 @@ writexftcolor(fig_color *in, XftColor *out)
 	buf.blue = in->blue;
 	buf.flags = DoRed | DoGreen | DoBlue;
 	if (status = XAllocColor(tool_d, tool_cm, &buf)) {
+		out->pixel = buf.pixel;
 		out->color.red = buf.red;
 		out->color.green = buf.green;
 		out->color.blue = buf.blue;
 		out->color.alpha = OPAQUE;
-		out->pixel = buf.pixel;
 	}
 	return status;
 }
 
+/*
+ * Set xftcolor[c] to the color specified in XColor *in.
+ */
+void
+xtoxftcolor(XColor *in, int c)
+{
+	xftcolor[c].pixel = in->pixel;
+	xftcolor[c].color.red = in->red;
+	xftcolor[c].color.green = in->green;
+	xftcolor[c].color.blue = in->blue;
+	xftcolor[c].color.alpha = OPAQUE;
+}
 
 /*
  * Allocate standard colors, three gray colors, the pageborder and
@@ -146,7 +157,7 @@ check_colors(void)
 {
 	int		i;
 	XColor		x_color;
-	figcolors	grays[LAST_GRAY - FIRST_GRAY + 1] = {
+	figcolor	grays[LAST_GRAY - FIRST_GRAY + 1] = {
 				{"", "", 166, 166, 166},	/* gray65 */ 
 				{"", "", 204, 204, 204},	/* gray80 */ 
 				{"", "", 229, 229, 229}		/* gray90 */ 
@@ -165,17 +176,17 @@ check_colors(void)
 		/* set all colors to black, except white */
 		for (i = 0; i < NUM_STD_COLS; ++i)
 			if (i == WHITE)
-				getxftcolor(&colorNames[i + 1], &colors[i]);
+				getxftcolor(&colorNames[i + 1], &xftcolor[i]);
 			else
 				getxftcolor(&colorNames[BLACK + 1],
-						&colors[i]);
+						&xftcolor[i]);
 
 		/* set all grays to white */
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i)
-			colors[i] = colors[WHITE];
+			xftcolor[i] = xftcolor[WHITE];
 
-		pageborder_color = colors[BLACK].pixel;
-		axis_lines_color = colors[BLACK].pixel;
+		pageborder_color = xftcolor[BLACK].pixel;
+		axis_lines_color = xftcolor[BLACK].pixel;
 
 		return;
 	}
@@ -191,43 +202,44 @@ check_colors(void)
 
 		/* Standard colors */
 		for (i = 0; i < NUM_STD_COLS; ++i) {
-			getxftcolor(&colorNames[i + 1], &colors[i]);
+			getxftcolor(&colorNames[i + 1], &xftcolor[i]);
 		}
 		/* Gray colors */
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i)
-			getxftcolor(&grays[i], &colors[i + FIRST_GRAY]);
+			getxftcolor(&grays[i], &xftcolor[i + FIRST_GRAY]);
 
 	} else { /* !TrueColor */
 
 		/* Allocate the standard colors, otherwise set to black. */
 		for (i = 0; i < NUM_STD_COLS; ++i) {
 			if (i == WHITE) {
-				writexftcolor(&colorNames[i + 1], &colors[i]);
+				writexftcolor(&colorNames[i + 1], &xftcolor[i]);
 			} else if (!all_colors_available) {
-				colors[i] = colors[BLACK];
+				xftcolor[i] = xftcolor[BLACK];
 			} else if (!writexftcolor(&colorNames[i + 1],
-						&colors[i])) {
+						&xftcolor[i])) {
 				if (!switch_colormap() || !writexftcolor(
 							&colorNames[i + 1],
-							&colors[i])) {
+							&xftcolor[i])) {
 #define CMAPERR	"Not enough colormap entries available for basic colors, using monochrome mode.\n"
 					fprintf(stderr, CMAPERR);
 					all_colors_available = False;
-					colors[i] = colors[BLACK];
+					xftcolor[i] = xftcolor[BLACK];
 				}
 			}
 		}
 
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i) {
 			if (!all_colors_available) {
-				colors[i + FIRST_GRAY] = colors[WHITE];
+				xftcolor[i + FIRST_GRAY] = xftcolor[WHITE];
 			} else if (!writexftcolor(&grays[i],
-						&colors[i + FIRST_GRAY])) {
+						&xftcolor[i + FIRST_GRAY])) {
 				if (!switch_colormap() || !writexftcolor(
-							&grays[i], &colors[i +
+							&grays[i], &xftcolor[i +
 							FIRST_GRAY])) {
 					all_colors_available = False;
-					colors[i + FIRST_GRAY] = colors[WHITE];
+					xftcolor[i + FIRST_GRAY] =
+								xftcolor[WHITE];
 				}
 			}
 		}
@@ -240,12 +252,36 @@ check_colors(void)
 	if (XAllocColor(tool_d, tool_cm, &x_color))
 		pageborder_color = x_color.pixel;
 	else
-		pageborder_color = colors[BLACK].pixel;
+		pageborder_color = xftcolor[BLACK].pixel;
 
 	/* axis lines color */
 	XParseColor(tool_d, tool_cm, appres.axislines, &x_color);
 	if (XAllocColor(tool_d, tool_cm, &x_color))
 		axis_lines_color = x_color.pixel;
 	else
-		axis_lines_color = colors[BLACK].pixel;
+		axis_lines_color = xftcolor[BLACK].pixel;
+}
+
+unsigned long
+getpixel(int c)
+{
+	return xftcolor[c].pixel;
+}
+
+unsigned short
+getred(int c)
+{
+	return xftcolor[c].color.red;
+}
+
+unsigned short
+getgreen(int c)
+{
+	return xftcolor[c].color.green;
+}
+
+unsigned short
+getblue(int c)
+{
+	return xftcolor[c].color.blue;
 }

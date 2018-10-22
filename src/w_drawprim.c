@@ -523,8 +523,8 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 	color = MED_GRAY;
 
     /* get the X colors */
-    xfg = x_color(color);
-    xbg = x_color(background);
+    xfg = getpixel(color);
+    xbg = getpixel(background);
     if ((xfg != gc_color[op]) ||
 	(background != COLOR_NONE && (xbg != gc_background[op]))) {
 	    /* don't change the colors for ERASE */
@@ -632,11 +632,10 @@ void init_gc(void)
     if (XAllocColor(tool_d, tool_cm, &tmp_color)==0) {
 	fprintf(stderr,"Can't allocate color for grid \n");
         grid_color = x_fg_color.pixel;
-	grid_gc = makegc(PAINT, grid_color, x_bg_color.pixel);
     } else {
         grid_color = tmp_color.pixel;
-	grid_gc = makegc(PAINT, grid_color, x_bg_color.pixel);
     }
+    grid_gc = makegc(PAINT, grid_color, x_bg_color.pixel);
 
     for (i = 0; i < NUMOPS; i++) {
 	gc_color[i] = -1;
@@ -675,7 +674,7 @@ void init_fill_gc(void)
     gcv.fill_rule = EvenOddRule /* WindingRule */ ;
     for (i = 0; i < NUMFILLPATS; i++) {
 	/* all the bits are recolored in set_fill_gc() */
-	fill_gc[i] = makegc(PAINT, x_fg_color.pixel, x_color(BLACK));
+	fill_gc[i] = makegc(PAINT, x_fg_color.pixel, getpixel(BLACK));
 	mask = GCFillStyle | GCFillRule | GCArcMode;
 	if (fill_pm[i]) {
 	    gcv.stipple = fill_pm[i];
@@ -1356,18 +1355,19 @@ void set_fill_gc(int fill_style, int op, int pencolor, int fillcolor, int xorg, 
     if (op != ERASE) {
 	/* if a pattern, color the lines in the pen color and the field in fill color */
 	if (fill_style >= NUMSHADEPATS+NUMTINTPATS) {
-	    fg = x_color(pencolor);
-	    bg = x_color(fillcolor);
+	    fg = getpixel(pencolor);
+	    bg = getpixel(fillcolor);
 	} else {
 	    if (fillcolor == BLACK) {
-		fg = x_color(BLACK);
-		bg = x_color(WHITE);
+		fg = getpixel(BLACK);
+		bg = getpixel(WHITE);
 	    } else if (fillcolor == DEFAULT) {
 		fg = x_fg_color.pixel;
 		bg = x_bg_color.pixel;
 	    } else {
-		fg = x_color(fillcolor);
-		bg = (fill_style < NUMSHADEPATS? x_color(BLACK): x_color(WHITE));
+		fg = getpixel(fillcolor);
+		bg = (fill_style < NUMSHADEPATS ?
+				getpixel(BLACK) : getpixel(WHITE));
 	    }
 	}
     } else {
@@ -1443,7 +1443,7 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
     if (width == gc_thickness[op] && style == gc_line_style[op] &&
 	join_style == gc_join_style[op] &&
 	cap_style == gc_cap_style[op] &&
-	(x_color(color) == gc_color[op]) &&
+	(getpixel(color) == gc_color[op]) &&
 	((style != DASH_LINE && style != DOTTED_LINE &&
           style != DASH_DOT_LINE && style != DASH_2_DOTS_LINE &&
           style != DASH_3_DOTS_LINE) ||
@@ -1453,10 +1453,10 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
     gcv.line_width = width;
     mask = GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle;
     if (op == PAINT) {
-	gcv.foreground = x_color(color);
+	gcv.foreground = getpixel(color);
 	mask |= GCForeground;
     } else if (op == INV_PAINT) {
-	gcv.foreground = x_color(color) ^ x_bg_color.pixel;
+	gcv.foreground = getpixel(color) ^ x_bg_color.pixel;
 	mask |= GCForeground;
     }
     gcv.join_style = join_styles[join_style];
@@ -1518,42 +1518,7 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
     gc_line_style[op] = style;
     gc_join_style[op] = join_style;
     gc_cap_style[op] = cap_style;
-    gc_color[op] = x_color(color);
-}
-
-int
-x_color(int col)
-{
-	int	pix;
-	if (!all_colors_available) {
-		pix = colors[BLACK];
-	} else if (col == LT_GRAY) {
-		pix = lt_gray_color;
-	} else if (col == DARK_GRAY) {
-		pix = dark_gray_color;
-	} else if (col == MED_GRAY) {
-		pix = med_gray_color;
-	} else if (col == TRANSP_BACKGROUND) {
-		pix = med_gray_color;
-	} else if (col == COLOR_NONE) {
-		pix = colors[WHITE];
-	} else if (col==WHITE) {
-		pix = colors[WHITE];
-	} else if (col==BLACK) {
-		pix = colors[BLACK];
-	} else if (col==DEFAULT) {
-		pix = x_fg_color.pixel;
-	} else if (col==CANVAS_BG) {
-		pix = x_bg_color.pixel;
-	} else {
-	   if (col < 0)
-		col = BLACK;
-	   if (col >= NUM_STD_COLS+num_usr_cols)
-	       pix = x_fg_color.pixel;
-	   else
-	       pix = colors[col];
-	}
-	return pix;
+    gc_color[op] = getpixel(color);
 }
 
 /* resize the fill patterns for the current display_zoomscale */

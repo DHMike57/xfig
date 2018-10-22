@@ -80,6 +80,7 @@ static int	cur_anglegeom = L_UNCONSTRAINED;
 static int	cur_flagshown = 0;
 static int	cur_arrowsizeshown = 0;
 static int	cur_dimlineshown = 0;
+static unsigned long	ind_but_fg, ind_but_bg;
 static Pixel	arrow_size_bg, arrow_size_fg;
 static Boolean	save_use_abs;
 
@@ -1324,10 +1325,10 @@ set_arrow_size_state(Widget w, XtPointer closure, XtPointer call_data)
     XtSetSensitive(m_h_spin, state);
 
     /* now make the insensitive ones gray and the sensitive ones their original bg */
-    bg1 = state? dark_gray_color: arrow_size_bg;
-    bg2 = state? arrow_size_bg: dark_gray_color;
-    fg1 = state? lt_gray_color: arrow_size_fg;
-    fg2 = state? arrow_size_fg: lt_gray_color;
+    bg1 = state? getpixel(DARK_GRAY): arrow_size_bg;
+    bg2 = state? arrow_size_bg: getpixel(DARK_GRAY);
+    fg1 = state? getpixel(LT_GRAY): arrow_size_fg;
+    fg2 = state? arrow_size_fg: getpixel(LT_GRAY);
 
     FirstArg(XtNbackground, bg1);
     NextArg(XtNforeground, fg1);
@@ -3438,15 +3439,15 @@ show_linewidth(ind_sw_info *sw)
     /* if the line width if small, draw black text with white background around it.
        Otherwise, draw it xor'ed on the thick line we just drew */
     if (cur_linewidth < 10) {
-	gcv.foreground = x_color(BLACK);
-	gcv.background = x_color(WHITE);
+	gcv.foreground = getpixel(BLACK);
+	gcv.background = getpixel(WHITE);
 	XChangeGC(tool_d, ind_button_gc, GCForeground|GCBackground, &gcv);
 	XDrawImageString(tool_d, sw->pixmap, ind_button_gc,
 			DEF_IND_SW_WD-size.width-6, (DEF_IND_SW_HT+height)/2,
 		        indbuf, strlen(indbuf));
     } else {
-	gcv.foreground = x_color(WHITE) ^ x_color(BLACK);
-	gcv.background = x_color(WHITE);
+	gcv.foreground = getpixel(WHITE) ^ getpixel(BLACK);
+	gcv.background = getpixel(WHITE);
 	gcv.function = GXxor;
 	XChangeGC(tool_d, ind_button_gc, GCForeground|GCBackground|GCFunction, &gcv);
 	XDrawString(tool_d, sw->pixmap, ind_button_gc,

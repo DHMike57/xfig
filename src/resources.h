@@ -127,6 +127,7 @@ extern int		 current_memory;
 extern int		 max_depth, min_depth;
 extern char		 tool_name[200];
 extern int		 export_background_color; /* current export/print background color */
+extern unsigned long	 grid_color;	/* defined in w_grid.c */
 extern Boolean		 display_fractions;	/* whether to display fractions in lengths */
 extern char		*userhome;		/* user's home directory */
 extern struct _pics	*pictures;		/* common repository to share imported pictures */

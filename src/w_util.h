@@ -82,7 +82,7 @@ extern	void	check_colors(void);
 extern	Widget	make_pulldown_menu(char **entries, Cardinal nent, int divide_line, char *divide_message, Widget parent, XtCallbackProc callback);
 extern	Widget	make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolean include_transp, Boolean include_backg);
 extern	void	set_color_name(int color, char *buf);
-extern	void	set_but_col(Widget widget, Pixel color);
+extern	void	set_but_col(Widget widget, int color);
 extern	Widget	MakeIntSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget beside, XtCallbackProc callback, char *string, int min, int max, int inc, int width);
 extern	Widget	MakeFloatSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget beside, XtCallbackProc callback, char *string, float min, float max, float inc, int width);
 extern	Widget	CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, Widget beside, Boolean manage, Boolean large, Boolean *value, XtCallbackProc user_callback, Widget *togwidg);
