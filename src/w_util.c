@@ -525,7 +525,6 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
 
     /* now make the buttons in the box */
     for (i = 0; i < NUM_STD_COLS+num_usr_cols; i++) {
-	XColor		xcolor;
 	Pixel		col;
 
 	/* only those user-defined colors that are defined */
@@ -535,17 +534,15 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
 	FirstArg(XtNwidth, COLOR_BUT_WID);
 	NextArg(XtNborderWidth, COLOR_BUT_BD_WID);
 	if (all_colors_available) {
-	    xcolor.pixel = colors[i];
 	    /* get RGB of the color to check intensity */
-	    XQueryColor(tool_d, tool_cm, &xcolor);
 	    /* make contrasting label */
-	    if ((0.3 * xcolor.red + 0.59 * xcolor.green + 0.11 * xcolor.blue) <
+	    if ((0.3 * getred(i) + 0.59 * getgreen(i) + 0.11 * getblue(i)) <
 			0.55 * (255 << 8))
-		col = colors[WHITE];
+		col = getpixel(WHITE);
 	    else
-		col = colors[BLACK];
+		col = getpixel(BLACK);
 	    NextArg(XtNforeground, col);
-	    NextArg(XtNbackground, colors[i]);
+	    NextArg(XtNbackground, getpixel(i));
 	}
 	entry = XtCreateManagedWidget(buf, commandWidgetClass, color_box,
 				      Args, ArgCount);
@@ -594,7 +591,7 @@ set_but_col(Widget widget, int color)
 	SetValues(widget);
 
 	/* now set foreground to contrasting color */
-	xcolor.pixel = but_col;
+	xcolor.pixel = getpixel(color);
 	XQueryColor(tool_d, tool_cm, &xcolor);
 	pick_contrast(xcolor, widget);
 }
@@ -1208,19 +1205,18 @@ void create_bitmaps(void)
 	/* make pixmap for red checkmark */
 	check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) check_bits, check_width, check_height,
-		    colors[RED], colors[WHITE], tool_dpth);
+		    getpixel(RED), getpixel(WHITE), tool_dpth);
 	/* and make one same size but all white */
 	null_check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) check_bits, check_width, check_height,
-		    colors[WHITE], colors[WHITE], tool_dpth);
-	/* and one for a smaller checkmark */
+		    getpixel(WHITE), getpixel(WHITE), tool_dpth); /* and one for a smaller checkmark */
 	sm_check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) sm_check_bits, sm_check_width, sm_check_height,
-		    colors[RED], colors[WHITE], tool_dpth);
+		    getpixel(RED), getpixel(WHITE), tool_dpth);
 	/* and make one same size but all white */
 	sm_null_check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) sm_check_bits, sm_check_width, sm_check_height,
-		    colors[WHITE], colors[WHITE], tool_dpth);
+		    getpixel(WHITE), getpixel(WHITE), tool_dpth);
 	/* create two bitmaps to show on/off state */
 	balloons_on_bitmap = XCreateBitmapFromData(tool_d, tool_w,
 				 (char *) balloons_on_bits,

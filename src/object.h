@@ -19,7 +19,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-//#include "u_colors.h"
+#include "u_colors.h"			/* Color */
 
 /* DEFAULT is used for many things - font, color etc */
 

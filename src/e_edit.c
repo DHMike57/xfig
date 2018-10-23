@@ -29,6 +29,7 @@
 #include "d_text.h"
 #include "f_read.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_search.h"
@@ -1676,10 +1677,10 @@ void make_window_line(F_line *l)
 	    NextArg(XtNright, XtChainLeft);
 	    /* make box red indicating this type of picture file */
 	    if (new_l->pic != 0 && new_l->pic->pic_cache && new_l->pic->pic_cache->subtype == i+1) {
-		NextArg(XtNbackground, colors[RED]);
+		NextArg(XtNbackground, getpixel(RED));
 		NextArg(XtNsensitive, True);
 	    } else {
-		NextArg(XtNbackground, colors[WHITE]);
+		NextArg(XtNbackground, getpixel(WHITE));
 		NextArg(XtNsensitive, False);
 	    }
 	    NextArg(XtNlabel, " ");
@@ -2072,10 +2073,10 @@ get_new_line_values(void)
 	/* make box red indicating this type of picture file */
 	for (i=0; i<NUM_PIC_TYPES; i++) {
 	    if (new_l->pic->pic_cache->subtype == i+1) {
-		FirstArg(XtNbackground, colors[RED]);
+		FirstArg(XtNbackground, getpixel(RED));
 		NextArg(XtNsensitive, True);
 	    } else {
-		FirstArg(XtNbackground, colors[WHITE]);
+		FirstArg(XtNbackground, getpixel(WHITE));
 		NextArg(XtNsensitive, False);
 	    }
 	    SetValues(pic_type_box[i]);
@@ -4916,22 +4917,19 @@ color_select(Widget w, Color color)
     NextArg(XtNwidth, COLOR_BUT_WID);
 
     if (all_colors_available) { /* set color if possible */
-	XColor		xcolor;
 	Pixel		col;
 
 	/* background in the color selected */
 	col = (color < 0 || color >= NUM_STD_COLS+num_usr_cols) ?
-			x_fg_color.pixel : colors[color];
+			x_fg_color.pixel : getpixel(color);
 	NextArg(XtNbackground, col);
-	xcolor.pixel = col;
 	/* get RGB of the color to check intensity */
-	XQueryColor(tool_d, tool_cm, &xcolor);
 	/* set the foreground in a contrasting color (white or black) */
-	if ((0.3 * xcolor.red + 0.59 * xcolor.green + 0.11 * xcolor.blue) <
+	if ((0.3 * getred(col) + 0.59 * getgreen(col) + 0.11 * getblue(col)) <
 			0.55 * (255 << 8))
-	    col = colors[WHITE];
+	    col = getpixel(WHITE);
 	else
-	    col = colors[BLACK];
+	    col = getpixel(BLACK);
 	NextArg(XtNforeground, col);
     }
     SetValues(w);

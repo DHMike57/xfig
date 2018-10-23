@@ -19,6 +19,7 @@
 #define RESOURCES_H
 
 #include <limits.h>		/* PATH_MAX, below */
+#include <X11/Intrinsic.h>	/* Boolean */
 
 #include "paintop.h"
 #ifndef PATH_MAX

@@ -411,9 +411,9 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		    if (all_colors_available) {
 			if ((0.3*getred(i) + 0.59*getgreen(i) + 0.11*getblue(i))
 					< 0.5 * (255 << 8))
-				form_fg = colors[WHITE];
+				form_fg = getpixel(WHITE);
 			else
-				form_fg = colors[BLACK];
+				form_fg = getpixel(BLACK);
 			/* set same so we don't get white or black when click on color */
 			NextArg(XtNforeground, getpixel(i));
 			NextArg(XtNbackground, getpixel(i));
@@ -437,7 +437,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		} else {				/* it's the default color */
 		    NextArg(XtNforeground, x_bg_color.pixel);
 		    NextArg(XtNbackground, x_fg_color.pixel);
-		    NextArg(XtNlabel, colorNames[0],shrt);
+		    NextArg(XtNlabel, colorNames[0].shrt);
 		    NextArg(XtNwidth, STD_COL_W*2+4);
 		}
 		NextArg(XtNfromVert, below);
@@ -647,8 +647,8 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	NextArg(XtNheight, SCROLL_H);
 	NextArg(XtNthumb, None);
 	if (all_colors_available) {
-	    NextArg(XtNforeground, colors[RED]);
-	    NextArg(XtNborderColor, colors[RED]);
+	    NextArg(XtNforeground, getpixel(RED));
+	    NextArg(XtNborderColor, getpixel(RED));
 	}
 
 	NextArg(XtNfromVert, redLocked);
@@ -659,8 +659,8 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	NextArg(XtNheight, SCROLL_H);
 	NextArg(XtNthumb, None);
 	if (all_colors_available) {
-	    NextArg(XtNforeground, colors[GREEN]);
-	    NextArg(XtNborderColor, colors[GREEN]);
+	    NextArg(XtNforeground, getpixel(GREEN));
+	    NextArg(XtNborderColor, getpixel(GREEN));
 	}
 	NextArg(XtNfromHoriz, redScroll);
 	NextArg(XtNfromVert, greenLocked);
@@ -672,8 +672,8 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	NextArg(XtNheight, SCROLL_H);
 	NextArg(XtNthumb, None);
 	if (all_colors_available) {
-	    NextArg(XtNforeground, colors[BLUE]);
-	    NextArg(XtNborderColor, colors[BLUE]);
+	    NextArg(XtNforeground, getpixel(BLUE));
+	    NextArg(XtNborderColor, getpixel(BLUE));
 	}
 	NextArg(XtNfromHoriz, greenScroll);
 	NextArg(XtNfromVert, blueLocked);
@@ -926,9 +926,9 @@ void pick_contrast(XColor color, Widget widget)
     if ((0.30 * color.red +
 	 0.59 * color.green +
 	 0.11 * color.blue) < 0.5 * (255 << 8))
-	    cell_fg = colors[WHITE];
+	    cell_fg = getpixel(WHITE);
     else
-	    cell_fg = colors[BLACK];
+	    cell_fg = getpixel(BLACK);
     FirstArg(XtNforeground, cell_fg);
     SetValues(widget);
 }
@@ -1670,13 +1670,13 @@ lock_toggle(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    else {
 		    switch (button) {
 			case S_RED:
-				args[0].value = colors[RED];
+				args[0].value = getpixel(RED);
 				break;
 			case S_GREEN:
-				args[0].value = colors[GREEN];
+				args[0].value = getpixel(GREEN);
 				break;
 			case S_BLUE:
-				args[0].value = colors[BLUE];
+				args[0].value = getpixel(BLUE);
 				break;
 			default:
 				return;
@@ -2084,7 +2084,7 @@ show_pencolor(void)
     if (cur_pencolor == DEFAULT)
 	color = x_fg_color.pixel;
     else
-	color = all_colors_available ? colors[cur_pencolor] :
+	color = all_colors_available ? getpixel(cur_pencolor) :
 			(cur_pencolor == WHITE? x_bg_color.pixel: x_fg_color.pixel);
 
     recolor_fillstyles();	/* change the colors of the fill style indicators */
@@ -2156,7 +2156,7 @@ show_fillcolor(void)
     if (cur_fillcolor == DEFAULT)
 	color = x_fg_color.pixel;
     else
-	color = all_colors_available ? colors[cur_fillcolor] :
+	color = all_colors_available ? getpixel(cur_fillcolor) :
 			(cur_fillcolor == WHITE? x_bg_color.pixel: x_fg_color.pixel);
 
     recolor_fillstyles();	/* change the colors of the fill style indicators */

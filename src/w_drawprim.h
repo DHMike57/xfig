@@ -18,6 +18,7 @@
 #ifndef W_DRAWPRIM_H
 #define W_DRAWPRIM_H
 
+#include "u_colors.h"		/* Color */
 #include "w_zoom.h"
 
 /* our version of XPoint */

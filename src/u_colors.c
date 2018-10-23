@@ -19,6 +19,7 @@
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>			/* XColor, Status */
 
+#include "resources.h"		/* tool_d, tool_v,.., appres */
 #include "u_colors.h"
 
 #define OPAQUE		0xffff		/* opaque alpha mask */
@@ -35,20 +36,25 @@ static XftColor	color_storage[SPECIAL_COLS + NUM_STD_COLS + MAX_USR_COLS];
 /* Convenience pointers into interesting positions of color_storage. */
 static XftColor	*xftcolor = color_storage + SPECIAL_COLS;
 XftColor	*user_color = color_storage + SPECIAL_COLS + NUM_STD_COLS;
-// TODO: eliminate x_color from w_util.c
-// TODO search for TRANSP_BACKGROUND and fix usage therein
 // TODO w_color.c: get rgb values directly, not by XQueryColor
 unsigned long	pageborder_color;
 unsigned long	axis_lines_color;
+/* TODO: x_fg_color and x_bg_color are queried and set in
+ * main.c`parse_canvas_colors; Move parse_canvas_colors to u_colors.c and
+ * see, whether XftColors could be used in most places. */
 // TODO: see grid_color, x_fg_color, x_bg_color, and do not set them in
 // disparate places, but collect them together (into check_colors?).
 
 // TODO: fixe n_user_colors, save_colors, user_colors, undel...,
 // for use with XftColor
-XftColor	n_user_colors[MAX_USR_COLS];
+/*XftColor	n_user_colors[MAX_USR_COLS];
 XftColor	save_colors[MAX_USR_COLS];
 XftColor	user_colors[MAX_USR_COLS];
-XftColor	undel_user_color;
+XftColor	undel_user_color; */
+XColor	n_user_colors[MAX_USR_COLS];
+XColor	save_colors[MAX_USR_COLS];
+XColor	user_colors[MAX_USR_COLS];
+XColor	undel_user_color;
 XColor		x_fg_color, x_bg_color;
 
 /* Number of colors we want to use for pictures. This will be determined
@@ -94,9 +100,9 @@ fig_color colorNames[] = {
 	{"Gold",	"Gld",		0xff00, 0xd700, 0x0000}
 };
 
-/* Given a figcolor, return the corresponding XftColor. */
+/* For TrueColor visuals: Given a fig_color, return the XftColor. */
 static void
-getxftcolor(fig_color *in, XftColor *out)
+write_xftcolor_true(fig_color *in, int c)
 {
 	XRenderColor	buf;
 
@@ -105,15 +111,19 @@ getxftcolor(fig_color *in, XftColor *out)
 	buf.blue = in->blue;
 	buf.alpha = OPAQUE;
 
-	XftColorAllocValue(tool_d, tool_v, tool_cm, &buf, out);
+	XftColorAllocValue(tool_d, tool_v, tool_cm, &buf, &xftcolor[c]);
 }
 
 /*
- * For non-TrueColor visuals, I do not trust XftColorAllocValue().
- * Therefore, write the XftColor struct with the values we get.
+ * For non-TrueColor visuals, given a fig_color, return the XftColor.
+ *
+ * For non-TrueColor visuals, I believe, XftColorAllocValue() returns the
+ * requested color, which may be different from the really allocated color, see
+ * https://gitlab.freedesktop.org/xorg/lib/libxft/issues/7 .
+ * Therefore, call XallocColor() and use that result.
  */
-static void
-writexftcolor(fig_color *in, XftColor *out)
+static Status
+write_xftcolor_nontrue(fig_color *in, int c)
 {
 	XColor	buf;
 	Status	status;
@@ -123,11 +133,11 @@ writexftcolor(fig_color *in, XftColor *out)
 	buf.blue = in->blue;
 	buf.flags = DoRed | DoGreen | DoBlue;
 	if (status = XAllocColor(tool_d, tool_cm, &buf)) {
-		out->pixel = buf.pixel;
-		out->color.red = buf.red;
-		out->color.green = buf.green;
-		out->color.blue = buf.blue;
-		out->color.alpha = OPAQUE;
+		xftcolor[c].pixel = buf.pixel;
+		xftcolor[c].color.red = buf.red;
+		xftcolor[c].color.green = buf.green;
+		xftcolor[c].color.blue = buf.blue;
+		xftcolor[c].color.alpha = OPAQUE;
 	}
 	return status;
 }
@@ -157,11 +167,11 @@ check_colors(void)
 {
 	int		i;
 	XColor		x_color;
-	figcolor	grays[LAST_GRAY - FIRST_GRAY + 1] = {
+	fig_color	grays[LAST_GRAY - FIRST_GRAY + 1] = {
 				{"", "", 166, 166, 166},	/* gray65 */ 
 				{"", "", 204, 204, 204},	/* gray80 */ 
 				{"", "", 229, 229, 229}		/* gray90 */ 
-			}
+			};
 
 	/* initialize user color cells */
 	for (i = 0; i < MAX_USR_COLS; ++i) {
@@ -176,10 +186,9 @@ check_colors(void)
 		/* set all colors to black, except white */
 		for (i = 0; i < NUM_STD_COLS; ++i)
 			if (i == WHITE)
-				getxftcolor(&colorNames[i + 1], &xftcolor[i]);
+				write_xftcolor_true(&colorNames[i + 1], i);
 			else
-				getxftcolor(&colorNames[BLACK + 1],
-						&xftcolor[i]);
+				write_xftcolor_true(&colorNames[BLACK + 1], i);
 
 		/* set all grays to white */
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i)
@@ -202,25 +211,25 @@ check_colors(void)
 
 		/* Standard colors */
 		for (i = 0; i < NUM_STD_COLS; ++i) {
-			getxftcolor(&colorNames[i + 1], &xftcolor[i]);
+			write_xftcolor_true(&colorNames[i + 1], i);
 		}
 		/* Gray colors */
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i)
-			getxftcolor(&grays[i], &xftcolor[i + FIRST_GRAY]);
+			write_xftcolor_true(&grays[i], i + FIRST_GRAY);
 
 	} else { /* !TrueColor */
 
 		/* Allocate the standard colors, otherwise set to black. */
 		for (i = 0; i < NUM_STD_COLS; ++i) {
 			if (i == WHITE) {
-				writexftcolor(&colorNames[i + 1], &xftcolor[i]);
+				write_xftcolor_nontrue(&colorNames[i + 1], i);
 			} else if (!all_colors_available) {
 				xftcolor[i] = xftcolor[BLACK];
-			} else if (!writexftcolor(&colorNames[i + 1],
-						&xftcolor[i])) {
-				if (!switch_colormap() || !writexftcolor(
-							&colorNames[i + 1],
-							&xftcolor[i])) {
+			} else if (!write_xftcolor_nontrue(
+						&colorNames[i + 1], i)) {
+				if (!switch_colormap() ||
+						!write_xftcolor_nontrue(
+						    &colorNames[i + 1], i)) {
 #define CMAPERR	"Not enough colormap entries available for basic colors, using monochrome mode.\n"
 					fprintf(stderr, CMAPERR);
 					all_colors_available = False;
@@ -232,11 +241,12 @@ check_colors(void)
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i) {
 			if (!all_colors_available) {
 				xftcolor[i + FIRST_GRAY] = xftcolor[WHITE];
-			} else if (!writexftcolor(&grays[i],
-						&xftcolor[i + FIRST_GRAY])) {
-				if (!switch_colormap() || !writexftcolor(
-							&grays[i], &xftcolor[i +
-							FIRST_GRAY])) {
+			} else if (!write_xftcolor_nontrue(&grays[i],
+						i + FIRST_GRAY)) {
+				if (!switch_colormap() ||
+						!write_xftcolor_nontrue(
+							&grays[i],
+							i + FIRST_GRAY)) {
 					all_colors_available = False;
 					xftcolor[i + FIRST_GRAY] =
 								xftcolor[WHITE];
