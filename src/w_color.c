@@ -235,30 +235,55 @@ void move_lock (void);
 void StoreMix_and_Mem (void);
 void ThumbHSV (Widget w, float top);
 
-void YStoreColor(Colormap colormap, XColor *color)
+void
+YStoreColor(Colormap colormap, XftColor *color)
 {
-	switch( tool_vclass ){
-	    case GrayScale:
-	    case PseudoColor:
-		XStoreColor(tool_d,colormap,color);
-		break;
-	    case StaticGray:
-	    case StaticColor:
-	    case DirectColor:
-	    case TrueColor:
-		XAllocColor(tool_d,colormap,color);
-		break;
-	    default:
-		fprintf(stderr,"Unknown Visual Class\n");
+	if (tool_vclass == TrueColor) {
+		XRenderColor	buf;
+
+		buf.red = color->color.red;
+		buf.green = color->color.green;
+		buf.blue = color->color.blue;
+		buf.alpha = OPAQUE;
+
+		XftColorAllocValue(tool_d, tool_v, tool_cm, &buf, color)
+	} else {
+		XColor		buf;
+
+		buf.pixel = color->pixel;
+		buf.red = color->color.red;
+		buf.green = color->color.green;
+		buf.blue = color->color.blue;
+		/* buf.flags not used by XAllocColor */
+
+		switch (tool_vclass ){
+			case GrayScale:
+			case PseudoColor:
+				buf.flags = DoRed | DoGreen | DoBlue;
+				XStoreColor(tool_d, colormap, &buf);
+				break;
+			case StaticGray:
+			case StaticColor:
+			case DirectColor:
+				XAllocColor(tool_d, colormap, &buf);
+				color->pixel = buf.pixel;
+				color->color.red = buf.red;
+				color->color.green = buf.green;
+				color->color.blue = buf.blue;
+				color->color.alpha = OPAQUE;
+				break;
+			default:
+				fputs("Unknown Visual Class\n", stderr);
+		}
 	}
 }
 
-void YStoreColors(Colormap colormap, XColor *color, int ncolors)
+void YStoreColors(Colormap colormap, XftColor *color, int ncolors)
 {
-	int		 i;
+	int	i;
 
-	for( i=0; i<ncolors; i++ )
-	    YStoreColor(colormap,&color[i]);
+	for (i = 0; i < ncolors; ++i)
+		YStoreColor(colormap, &color[i]);
 }
 
 void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *isw)
@@ -1239,6 +1264,7 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 	user_colors[indx].blue = b*256;
 	user_colors[indx].flags = DoRed|DoGreen|DoBlue;
 	user_colors[indx].pixel = pixels[0];
+	/* FIXME */
 	/* in case we have read-only colormap, get the pixel value now */
 	if (all_colors_available)
 	    YStoreColor(tool_cm,&user_colors[indx]);

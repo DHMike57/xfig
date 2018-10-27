@@ -77,20 +77,35 @@ Widget		comments_widget;
 Pixmap		preview_land_pixmap, preview_port_pixmap;
 Boolean		cancel_preview = False;
 Boolean		preview_in_progress = False;
-void		load_request(Widget w, XButtonEvent *ev);		/* this is needed by main() */
+void		load_request(Widget w, XButtonEvent *ev); /* needed by main() */
 
 /* LOCALS */
 
-static void	file_preview_stop(Widget w, XButtonEvent *ev);
 static Boolean	file_cancel_request = False;
 static Boolean	file_load_request = False;
 static Boolean	file_save_request = False;
 static Boolean	file_merge_request = False;
 static char	save_file_dir[PATH_MAX];
 
-/* these are in fig units */
+static Boolean	user_colors_saved = False;
+static XftColor	saved_user_colors[MAX_USR_COLS];
+static Boolean	saved_userFree[MAX_USR_COLS];
+static int	saved_user_num;
 
-static float	offset_unit_conv[] = { (float)PIX_PER_INCH, (float)PIX_PER_CM, 1.0 };
+static Boolean	nuser_colors_saved = False;
+static XftColor	saved_nuser_colors[MAX_USR_COLS];
+static Boolean	saved_nuserFree[MAX_USR_COLS];
+static int	saved_nuser_num;
+
+
+static void	file_preview_stop(Widget w, XButtonEvent *ev);
+
+/* these are in fig units */
+static float	offset_unit_conv[] = {
+	(float)PIX_PER_INCH,
+	(float)PIX_PER_CM,
+	1.0
+};
 
 static char	*load_msg = "The current figure is modified.\nDo you want to discard it and load the new file?";
 static char	buf[40];
@@ -1507,3 +1522,137 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	request_redraw = False;
     }
 }
+
+/* save user colors into temp vars */
+void save_user_colors(void)
+{
+	int	i;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Saving user colors. Before: bool user_colors_saved = %d\n",
+		user_colors_saved);
+
+	user_colors_saved = True;
+
+	/* TODO: *After* the change to XftColor works,
+	   put the below into one loop.		*/
+	/* first save the current colors because del_color_cell destroys them */
+	for (i = 0; i < num_usr_cols; ++i)
+		saved_user_colors[i] = user_color[i];
+	/* and save Free entries */
+	for (i = 0; i < num_usr_cols; ++i)
+		saved_userFree[i] = colorFree[i];
+	/* now free any previously defined user colors */
+	for (i = 0; i < num_usr_cols; ++i)
+		del_color_cell(i);	/* remove widget and colormap entry */
+	}
+	saved_user_num = num_usr_cols;
+}
+
+/* save n_user colors into temp vars */
+void save_nuser_colors(void)
+{
+	int		i;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Saving n_user colors. Before: bool nuser_colors_saved = %d\n",
+			user_colors_saved);
+
+	nuser_colors_saved = True;
+
+	/* TODO: *After* the change to XftColor works,
+	   put the below into one loop.		*/
+	/* first save the current colors because del_color_cell destroys them */
+	for (i = 0; i < n_num_usr_cols; ++i)
+		saved_nuser_colors[i] = n_user_colors[i];
+	/* and save Free entries */
+	for (i = 0; i < n_num_usr_cols; ++i)
+		saved_nuserFree[i] = n_colorFree[i];
+	saved_nuser_num = n_num_usr_cols;
+}
+
+/* restore user colors from temp vars */
+void restore_user_colors(void)
+{
+	int	i, num;
+
+	if (!user_colors_saved)
+		return;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Restoring user colors. Before: bool user_colors_saved = %d\n",
+			user_colors_saved);
+
+	user_colors_saved = False;
+
+	/* first free any previously defined user colors */
+	for (i = 0; i < num_usr_cols; ++i) {
+		del_color_cell(i);	/* remove widget and colormap entry */
+	}
+
+	num_usr_cols = saved_user_num;
+
+	/* TODO: *After* the change to XftColor works,
+	   put the below into one loop.		*/
+	/* now restore the orig user colors */
+	for (i = 0; i < num_usr_cols; ++i)
+		user_color[i] = saved_user_colors[i];
+	/* and Free entries */
+	for (i = 0; i < num_usr_cols; ++i)
+		colorFree[i] = saved_userFree[i];
+
+	/* now try to allocate those colors */
+	if (num_usr_cols > 0) {
+		num = num_usr_cols;
+		num_usr_cols = 0;
+		/* fill the colormap and the color memories */
+		for (i = 0; i < num; ++i) {
+			if (colorFree[i]) {
+				colorUsed[i] = False;
+				continue;
+			}
+			/* and add a widget and colormap entry */
+			// FIXME: add_color_cell -> changet to XftColor
+			if (add_color_cell(USE_EXISTING_COLOR, i,
+						user_color[i].color.red/256,
+						user_color[i].color.green/256,
+						user_color[i].color.blue/256)
+					== -1) {
+				file_msg("Can't allocate more than %d user colors, not enough colormap entries",
+						num_usr_cols);
+				return;
+			}
+			colorUsed[i] = True;
+		}
+	}
+}
+
+/* Restore user colors from temp vars into n_user_...  */
+void restore_nuser_colors(void)
+{
+	int	i;
+
+	if (!nuser_colors_saved)
+		return;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Restoring user colors into n_user colors\n");
+
+	nuser_colors_saved = False;
+
+	n_num_usr_cols = saved_nuser_num;
+
+	/* TODO: *After* the change to XftColor works,
+	   put the below into one loop.		*/
+	/* now restore the orig user colors */
+	for (i = 0; i < n_num_usr_cols; ++i)
+		n_user_colors[i] = saved_nuser_colors[i];
+	/* and Free entries */
+	for (i = 0; i < n_num_usr_cols; ++i)
+		n_colorFree[i] = saved_nuserFree[i];
+}
+

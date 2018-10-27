@@ -113,8 +113,6 @@ extern	void	InstallScroll(Widget widget);
 extern	void	InstallScrollParent(Widget widget);
 extern  void fix_converters(void);
 
-extern	Boolean	user_colors_saved;
-extern	Boolean	nuser_colors_saved;
 
 /*
  * Author:	Doyle C. Davidson

@@ -69,6 +69,8 @@ extern XftFont	*xftrot;
 #define WHITE		7
 #define GREEN4		12
 
+#define OPAQUE		0xffff		/* opaque alpha mask */
+
 /* forward declaration */
 struct XColor;
 

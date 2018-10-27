@@ -22,7 +22,6 @@
 #include "resources.h"		/* tool_d, tool_v,.., appres */
 #include "u_colors.h"
 
-#define OPAQUE		0xffff		/* opaque alpha mask */
 #define FIRST_GRAY	DARK_GRAY
 #define LAST_GRAY	LT_GRAY
 
@@ -131,7 +130,7 @@ write_xftcolor_nontrue(fig_color *in, int c)
 	buf.red = in->red;
 	buf.green = in->green;
 	buf.blue = in->blue;
-	buf.flags = DoRed | DoGreen | DoBlue;
+	/* buf.flags = DoRed | DoGreen | DoBlue; not used by XAllocColor() */
 	if (status = XAllocColor(tool_d, tool_cm, &buf)) {
 		xftcolor[c].pixel = buf.pixel;
 		xftcolor[c].color.red = buf.red;
@@ -207,7 +206,7 @@ check_colors(void)
 	 * XftColorAllocValue() for TrueColor visuals only, otherwise use
 	 * XAllocColor etc.
 	 */
-	if (tool_v == TrueColor) {
+	if (tool_vclass == TrueColor) {
 
 		/* Standard colors */
 		for (i = 0; i < NUM_STD_COLS; ++i) {
