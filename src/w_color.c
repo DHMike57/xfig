@@ -1310,8 +1310,10 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 	 array is probably not correct, but the color_borders() proc
 	 is called after this anyway. */
 
-void create_cell(int indx, XColor color)
+static void
+create_cell(int indx, XColor color)
 {
+	/* FIXME: Parameter color is unused */
     char	labl[5];
 
     /* put the user color number in all the time */
@@ -1321,7 +1323,7 @@ void create_cell(int indx, XColor color)
 	XtNlabel, labl,
 	XtNforeground, x_bg_color.pixel,
 	XtNbackground, (all_colors_available?
-		user_colors[indx].pixel: x_fg_color.pixel),
+		user_color[indx].pixel: x_fg_color.pixel),
 	XtNwidth, USR_COL_W, XtNheight, USR_COL_H,
 	XtNborder, colors_used[indx]? getpixel(GREEN): getpixel(BLACK),
 	XtNborderWidth, 2,
@@ -1329,7 +1331,7 @@ void create_cell(int indx, XColor color)
     XtOverrideTranslations(colorMemory[indx],
 		XtParseTranslationTable(user_color_translations));
     /* pick contrasting color for label */
-    pick_contrast(user_colors[indx],colorMemory[indx]);
+    pick_contrast(&user_color[indx], colorMemory[indx]);
 }
 
 /*
@@ -1547,7 +1549,6 @@ static void
 set_std_color(int c)
 {
 	//Pixel	save;
-	//XftColor	save;
 
 	/* make sliders insensitive */
 	XtSetSensitive(mixingForm, False);
@@ -1556,8 +1557,6 @@ set_std_color(int c)
 	modified[edit_fill] = True;
 
 	mixed_color_indx[edit_fill] = c;
-
-	save = mixed_color[edit_fill];
 
 	xftcolor_fromcolor(&mixed_color[edit_fill], c);
 	/* put the colorname in the indicator */
