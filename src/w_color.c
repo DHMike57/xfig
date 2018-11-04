@@ -234,55 +234,60 @@ void move_lock (void);
 void StoreMix_and_Mem (void);
 void ThumbHSV (Widget w, float top);
 
-void
-YStoreColor(Colormap colormap, XftColor *color)
+/*
+ * For read-only visuals (StaticGray, StaticColor, TrueColor) and for
+ * DirectColor, obtain the pixel value corresponding to the rgb-values given in
+ * XftColor *c. For writeable visuals (GrayScale and PseudoColor), store the
+ * color given by the rgb-values in *c in the pixel also given there.
+ */
+static void
+alloc_or_store_color(XftColor *c)
 {
 	if (tool_vclass == TrueColor) {
 		XRenderColor	buf;
 
-		buf.red = color->color.red;
-		buf.green = color->color.green;
-		buf.blue = color->color.blue;
-		buf.alpha = OPAQUE;
+		buf.red = c->color.red;
+		buf.green = c->color.green;
+		buf.blue = c->color.blue;
 
-		XftColorAllocValue(tool_d, tool_v, tool_cm, &buf, color)
+		XftColorAllocValue(tool_d, tool_v, tool_cm, &buf, c);
+
+	} else if (tool_vclass == StaticGray || tool_vclass == StaticColor ||
+			tool_vclass == DirectColor) {
+		XColor	buf;
+
+		buf.red = c->color.red;
+		buf.green = c->color.green;
+		buf.blue = c->color.blue;
+
+		XAllocColor(tool_d, tool_cm, &buf);
+
+		xtoxftcolor(c, &buf);
+
+	} else if (tool_vclass == GrayScale || tool_vclass == PseudoColor) {
+		XColor	buf;
+
+		buf.pixel = c->pixel;
+		buf.red = c->color.red;
+		buf.green = c->color.green;
+		buf.blue = c->color.blue;
+		buf.flags = DoRed | DoGreen | DoBlue;
+
+		XStoreColor(tool_d, tool_cm, &buf);
+
 	} else {
-		XColor		buf;
-
-		buf.pixel = color->pixel;
-		buf.red = color->color.red;
-		buf.green = color->color.green;
-		buf.blue = color->color.blue;
-		/* buf.flags not used by XAllocColor */
-
-		switch (tool_vclass ){
-			case GrayScale:
-			case PseudoColor:
-				buf.flags = DoRed | DoGreen | DoBlue;
-				XStoreColor(tool_d, colormap, &buf);
-				break;
-			case StaticGray:
-			case StaticColor:
-			case DirectColor:
-				XAllocColor(tool_d, colormap, &buf);
-				color->pixel = buf.pixel;
-				color->color.red = buf.red;
-				color->color.green = buf.green;
-				color->color.blue = buf.blue;
-				color->color.alpha = OPAQUE;
-				break;
-			default:
-				fputs("Unknown Visual Class\n", stderr);
-		}
+		fprintf(stderr, "Unknown Visual Class %d\n", tool_vclass);
 	}
 }
 
-void YStoreColors(Colormap colormap, XftColor *color, int ncolors)
+
+void
+alloc_or_store_colors(const XftColor *restrict c, int ncolors)
 {
 	int	i;
 
 	for (i = 0; i < ncolors; ++i)
-		YStoreColor(colormap, &color[i]);
+		alloc_or_store_color(&color[i]);
 }
 
 void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *isw)
