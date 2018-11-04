@@ -141,16 +141,17 @@ static void set_mixed_name(int i, int col);
 /* thickness (height) of the scrollbar (fraction of total) */
 #define	THUMB_H		0.04
 
-#define COLOR(color_el,rgb) ((color_el<0)? \
-			mixed_color[color_el+2].rgb/256: user_colors[color_el].rgb/256)
+#define COLOR(color_el,rgb)	((color_el < 0) ?	\
+		mixed_color[color_el+2].color.rgb/256 :	\
+		get ## rgb(color_el)/256)
 #define CHANGE_RED(element) \
-		pass_value = 1.0 - (float)(COLOR(element,red)/255.0); \
+		pass_value = 1.0 - (float)(COLOR(element, red)/255.0); \
 		Thumbed(redScroll, (XtPointer)S_RED, (XtPointer)(&pass_value))
 #define CHANGE_GREEN(element) \
-		pass_value = 1.0 - (float)(COLOR(element,green)/255.0); \
-		Thumbed(greenScroll, (XtPointer)S_GREEN, (XtPointer)(&pass_value))
+		pass_value = 1.0 - (float)(COLOR(element, green)/255.0); \
+		Thumbed(greenScroll,(XtPointer)S_GREEN,(XtPointer)(&pass_value))
 #define CHANGE_BLUE(element) \
-		pass_value = 1.0 - (float)(COLOR(element,blue)/255.0); \
+		pass_value = 1.0 - (float)(COLOR(element, blue)/255.0); \
 		Thumbed(blueScroll, (XtPointer)S_BLUE, (XtPointer)(&pass_value))
 
 static RGB	rgb_values[2];
