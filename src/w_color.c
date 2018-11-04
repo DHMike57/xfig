@@ -114,6 +114,7 @@ static void draw_boxed(int which);
 static void erase_boxed(int which);
 static void c_user_colors(F_compound *obj);
 static void set_mixed_name(int i, int col);
+static void set_mixed_color(int which);
 
 #define S_RED    1
 #define S_GREEN  2
@@ -166,9 +167,9 @@ static Boolean	do_change = True;
 static Boolean	modified[2];
 static intptr_t	edit_fill;
 static Pixel	original_background;
-static XColor	mixed_color[2];
+static XftColor	mixed_color[2];
 static int	mixed_color_indx[2];
-static int	colors_used[MAX_USR_COLS];
+static Boolean	colors_used[MAX_USR_COLS];
 
 static Boolean	moving_hsv = False;
 
@@ -225,15 +226,15 @@ static String triple_translations =
 	"<Key>Return: update_from_triple()\n";
 
 
-void create_cell (int indx, XColor color);
-void set_cmap (Window window);
-void set_slider_sensitivity (void);
-void pick_contrast (XftColor *c, Widget widget);
-int add_color_cell (Boolean use_exist, int indx, int r, int g, int b);
-void count_one (int color);
-void move_lock (void);
-void StoreMix_and_Mem (void);
-void ThumbHSV (Widget w, float top);
+static void	create_cell(int indx, XColor color);
+void		set_cmap(Window window);
+static void	set_slider_sensitivity(void);
+void		pick_contrast(XftColor *c, Widget widget);
+int		add_color_cell(Boolean use_exist, int indx, int r, int g,int b);
+static void	count_one(int color);
+static void	move_lock(void);
+static void	StoreMix_and_Mem(void);
+static void	ThumbHSV(Widget w, float top);
 
 /*
  * For read-only visuals (StaticGray, StaticColor, TrueColor) and for
