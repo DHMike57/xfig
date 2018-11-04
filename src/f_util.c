@@ -1068,9 +1068,9 @@ update_fig_files(int argc, char **argv)
 	    /* copy user colors */
 	    for (col=0; col<MAX_USR_COLS; col++) {
 		colorUsed[col] = !n_colorFree[col];
-		user_colors[col].red = n_user_colors[col].red;
-		user_colors[col].green = n_user_colors[col].green;
-		user_colors[col].blue = n_user_colors[col].blue;
+		user_colors[col].red = n_user_colors[col].color.red;
+		user_colors[col].green = n_user_colors[col].color.green;
+		user_colors[col].blue = n_user_colors[col].color.blue;
 	    }
 	    /* now write out the new one */
 	    num_usr_cols = MAX_USR_COLS;

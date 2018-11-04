@@ -72,6 +72,7 @@ static char	  *attach_comments(void);
 static void	   count_lines_correctly(FILE *fp);
 static int	   read_return(int status);
 static Boolean	   contains_picture(F_compound *compound);
+static XftColor		save_colors[MAX_USR_COLS];
 
 #define FILL_CONVERT(f) \
 	   ((proto >= 22) ? (f): \
@@ -600,9 +601,9 @@ read_colordef(FILE *fp)
     }
     /* make in the range 0...MAX_USR_COLS */
     c -= NUM_STD_COLS;
-    n_user_colors[c].red = r*256;
-    n_user_colors[c].green = g*256;
-    n_user_colors[c].blue = b*256;
+    n_user_colors[c].color.red = r*256;
+    n_user_colors[c].color.green = g*256;
+    n_user_colors[c].color.blue = b*256;
     n_colorFree[c] = False;
     /* keep track of highest color number */
     n_num_usr_cols = max2(c, n_num_usr_cols);
@@ -1819,9 +1820,10 @@ void merge_colors(F_compound *objects)
 		for (j=0; j<num_usr_cols; j++)
 		    /* compare only the upper 8-bits because the server may change the lower */
 		    if (colorUsed[j] &&
-			 (user_color[j].color.red>>8 == n_user_colors[i].red>>8) &&
-			 (user_color[j].color.green>>8 == n_user_colors[i].green>>8) &&
-			 (user_color[j].color.blue>>8 == n_user_colors[i].blue>>8)) {
+			 (user_color[j].color.red>>8 == n_user_colors[i].color.red>>8) &&
+			 (user_color[j].color.green>>8 ==
+			  n_user_colors[i].color.green>>8) &&
+			 (user_color[j].color.blue>>8 == n_user_colors[i].color.blue>>8)) {
 			    renum[i] = j;	/* yes, use it */
 			    found_exist=True;
 			    break;		/* skip to next */

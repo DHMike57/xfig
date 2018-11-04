@@ -49,7 +49,6 @@ unsigned long	axis_lines_color;
 /*XftColor	n_user_colors[MAX_USR_COLS];
 XftColor	save_colors[MAX_USR_COLS]; */
 XftColor	n_user_colors[MAX_USR_COLS];
-XColor	save_colors[MAX_USR_COLS];
 XColor	user_colors[MAX_USR_COLS];
 XColor		x_fg_color, x_bg_color;
 
