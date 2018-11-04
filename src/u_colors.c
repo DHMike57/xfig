@@ -47,12 +47,10 @@ unsigned long	axis_lines_color;
 // TODO: fixe n_user_colors, save_colors, user_colors, undel...,
 // for use with XftColor
 /*XftColor	n_user_colors[MAX_USR_COLS];
-XftColor	save_colors[MAX_USR_COLS];
-XftColor	undel_user_color; */
+XftColor	save_colors[MAX_USR_COLS]; */
 XftColor	n_user_colors[MAX_USR_COLS];
 XColor	save_colors[MAX_USR_COLS];
 XColor	user_colors[MAX_USR_COLS];
-XColor	undel_user_color;
 XColor		x_fg_color, x_bg_color;
 
 /* Number of colors we want to use for pictures. This will be determined

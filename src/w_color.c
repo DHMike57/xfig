@@ -168,6 +168,7 @@ static Boolean	modified[2];
 static intptr_t	edit_fill;
 static Pixel	original_background;
 static XftColor	mixed_color[2];
+static XftColor	undel_user_color;
 static int	mixed_color_indx[2];
 static Boolean	colors_used[MAX_USR_COLS];
 
@@ -1040,9 +1041,10 @@ undel_color(Widget w, XtPointer closure, XtPointer call_data)
 	int	    indx;
 
 	XtSetSensitive(undelColor, False);
-	if ((indx=add_color_cell(DONT_USE_EXISTING_COLOR, 0, undel_user_color.red/256,
-		undel_user_color.green/256,
-		undel_user_color.blue/256)) == -1) {
+	if ((indx=add_color_cell(DONT_USE_EXISTING_COLOR, 0,
+					undel_user_color.color.red/256,
+		undel_user_color.color.green/256,
+		undel_user_color.color.blue/256)) == -1) {
 		    put_msg("Can't allocate more than %d user colors, not enough colormap entries",
 				num_usr_cols);
 		    return;
