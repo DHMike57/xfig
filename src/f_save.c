@@ -243,9 +243,9 @@ void write_colordefs(FILE *fp)
 	if (colorUsed[i])
 	    fprintf(fp, "%s %d #%02x%02x%02x\n", appres.write_v40? "  Ucol": "0",
 		i+NUM_STD_COLS,
-		user_colors[i].red/256,
-		user_colors[i].green/256,
-		user_colors[i].blue/256);
+		user_color[i].color.red/256,
+		user_color[i].color.green/256,
+		user_color[i].color.blue/256);
     }
     if (appres.write_v40)
 	fprintf(fp, "}\n");

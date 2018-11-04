@@ -1732,7 +1732,7 @@ void swap_colors(void)
 
     /* first save the current colors because del_color_cell destroys them */
     for (i=0; i<num_usr_cols; i++)
-	save_colors[i] = user_colors[i];
+	save_colors[i] = user_color[i];
     /* and save Free entries */
     for (i=0; i<num_usr_cols; i++)
 	saveFree[i] = colorFree[i];
@@ -1742,7 +1742,7 @@ void swap_colors(void)
     }
     /* now swap old colors with new */
     for (i=0; i<n_num_usr_cols; i++)
-	user_colors[i] = n_user_colors[i];
+	user_color[i] = n_user_colors[i];
     for (i=0; i<num_usr_cols; i++)
 	n_user_colors[i] = save_colors[i];
     /* and swap Free entries */
@@ -1765,9 +1765,10 @@ void swap_colors(void)
 		colorUsed[i] = False;
 	    } else {
 		/* and add a widget and colormap entry */
-		if (add_color_cell(USE_EXISTING_COLOR, i, user_colors[i].red/256,
-			user_colors[i].green/256,
-			user_colors[i].blue/256) == -1) {
+		if (add_color_cell(USE_EXISTING_COLOR, i,
+					user_color[i].color.red/256,
+			user_color[i].color.green/256,
+			user_color[i].color.blue/256) == -1) {
 			    file_msg("Can't allocate more than %d user colors, not enough colormap entries",
 					num_usr_cols);
 			    return;
@@ -1818,9 +1819,9 @@ void merge_colors(F_compound *objects)
 		for (j=0; j<num_usr_cols; j++)
 		    /* compare only the upper 8-bits because the server may change the lower */
 		    if (colorUsed[j] &&
-			 (user_colors[j].red>>8 == n_user_colors[i].red>>8) &&
-			 (user_colors[j].green>>8 == n_user_colors[i].green>>8) &&
-			 (user_colors[j].blue>>8 == n_user_colors[i].blue>>8)) {
+			 (user_color[j].color.red>>8 == n_user_colors[i].red>>8) &&
+			 (user_color[j].color.green>>8 == n_user_colors[i].green>>8) &&
+			 (user_color[j].color.blue>>8 == n_user_colors[i].blue>>8)) {
 			    renum[i] = j;	/* yes, use it */
 			    found_exist=True;
 			    break;		/* skip to next */
@@ -1852,12 +1853,12 @@ void merge_colors(F_compound *objects)
     /* now create colorcells for the new colors */
     for (i=0; i<n_num_usr_cols; i++) {
 	if (x_colorFree[i] != 1) {
-	    user_colors[i] = n_user_colors[i];
+	    user_color[i] = n_user_colors[i];
 	    /* and add a widget and colormap entry */
 	    if (add_color_cell(USE_EXISTING_COLOR, i,
-		user_colors[i].red/256,
-		user_colors[i].green/256,
-		user_colors[i].blue/256) == -1) {
+		user_color[i].color.red/256,
+		user_color[i].color.green/256,
+		user_color[i].color.blue/256) == -1) {
 		    file_msg("Can't allocate more than %d user colors, not enough colormap entries",
 				n_num_usr_cols);
 		    return;

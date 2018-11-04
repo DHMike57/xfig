@@ -1013,7 +1013,7 @@ del_color(Widget w, XtPointer closure, XtPointer call_data)
 	/* get rid of the box drawn around this cell */
 	erase_boxed(current_memory);
 	/* save it to undelete */
-	undel_user_color = user_colors[current_memory];
+	undel_user_color = user_color[current_memory];
 	del_color_cell(current_memory);
 	/* inactivate the delete color button until user clicks on colorcell */
 	XtSetSensitive(delColor, False);
@@ -1137,7 +1137,7 @@ del_unused_user_colors(void)
 	if (colors_used[i] == False && !colorFree[i]) {
 	    deleted = True;
 	    /* save it to undelete */
-	    undel_user_color = user_colors[i];
+	    undel_user_color = user_color[i];
 	    del_color_cell(i);
 	    /* if user deletes selected cell */
 	    if (i==current_memory) {
@@ -1281,7 +1281,7 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 		/* already exists, just set its color and map it */
 		FirstArg(XtNforeground, x_bg_color.pixel);
 		NextArg(XtNbackground, (all_colors_available?
-			user_colors[indx].pixel: x_fg_color.pixel));
+			user_color[indx].pixel: x_fg_color.pixel));
 		SetValues(colorMemory[indx]);
 		XtManageChild(colorMemory[indx]);
 	    }
@@ -1413,7 +1413,7 @@ void del_color_cell(int indx)
 	    XtUnmanageChild(colorMemory[indx]);
 
 	/* free up this colormap entry */
-	pixels[0] = user_colors[indx].pixel;
+	pixels[0] = user_color[indx].pixel;
 	if (all_colors_available)
 	    XFreeColors(tool_d, tool_cm, pixels, 1, 0);
 
