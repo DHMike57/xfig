@@ -23,7 +23,7 @@
 extern	void	show_pencolor(void), next_pencolor(ind_sw_info *sw), prev_pencolor(ind_sw_info *sw);
 extern	void	show_fillcolor(void), next_fillcolor(ind_sw_info *sw), prev_fillcolor(ind_sw_info *sw);
 extern	void	count_user_colors(void);
-extern void YStoreColors (Colormap colormap, XColor *color, int ncolors);
+extern void	alloc_or_store_colors(const XftColor *restrict col, int ncols);
 extern int add_color_cell (Boolean use_exist, int indx, int r, int g, int b);
 extern void color_borders (void);
 extern void create_color_panel (Widget form, Widget label, Widget cancel, ind_sw_info *isw);

@@ -331,7 +331,7 @@ void remap_imagecolors(void)
 	    image_cells[i].green = (unsigned short) clrtab[i][N_GRN] << 8;
 	    image_cells[i].blue  = (unsigned short) clrtab[i][N_BLU] << 8;
 	}
-	YStoreColors(tool_cm, image_cells, avail_image_cols);
+	alloc_or_store_colors(image_cells, avail_image_cols);
 	reset_cursor();
 
 	/* check if user pressed cancel button */
@@ -351,7 +351,7 @@ void remap_imagecolors(void)
 	for (i=0; i<scol; i++) {
 	    image_cells[i].flags = DoRed|DoGreen|DoBlue;
 	}
-	YStoreColors(tool_cm, image_cells, scol);
+	alloc_or_store_colors(image_cells, scol);
 	scol = 0;	/* global color counter */
 	readjust_cmap();
 	if (appres.DEBUG)
@@ -1068,9 +1068,9 @@ update_fig_files(int argc, char **argv)
 	    /* copy user colors */
 	    for (col=0; col<MAX_USR_COLS; col++) {
 		colorUsed[col] = !n_colorFree[col];
-		user_colors[col].red = n_user_colors[col].color.red;
-		user_colors[col].green = n_user_colors[col].color.green;
-		user_colors[col].blue = n_user_colors[col].color.blue;
+		user_color[col].color.red = n_user_colors[col].color.red;
+		user_color[col].color.green = n_user_colors[col].color.green;
+		user_color[col].color.blue = n_user_colors[col].color.blue;
 	    }
 	    /* now write out the new one */
 	    num_usr_cols = MAX_USR_COLS;

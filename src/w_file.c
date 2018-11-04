@@ -199,7 +199,7 @@ file_panel_dismiss(void)
 	    image_cells[i].blue  = save_image_cells[i].blue;
 	    image_cells[i].flags  = DoRed|DoGreen|DoBlue;
         }
-	YStoreColors(tool_cm, image_cells, avail_image_cols);
+	alloc_or_store_colors(image_cells, avail_image_cols);
 	image_colors_are_saved = False;
     }
     FirstArg(XtNstring, "\0");

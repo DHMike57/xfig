@@ -100,8 +100,8 @@ fig_color colorNames[] = {
  * Set XftColor *out to the color values given in XColor *in.
  * Does not set the alpha value. TODO: rewrite as a macro?
  */
-void
-xtoxftcolor(XftColor *out, const XColor *restrict in)
+static void
+xtoxftcolor(XftColor *out, const XColor *in)
 {
 	out->pixel = in->pixel;
 	out->color.red = in->red;
