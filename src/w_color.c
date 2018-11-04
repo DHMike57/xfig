@@ -841,42 +841,42 @@ void pen_fill_activate(int func)
 
 void restore_mixed_colors(void)
 {
-	int	save0,save1,save_edit;
-
-	/* initialize the two color cells to the current pen/fill colors */
-	save0 = mixed_color[0].pixel;
-	save1 = mixed_color[1].pixel;
-
-	mixed_color[0].pixel = getpixel(cur_pencolor);
-	mixed_color[1].pixel = getpixel(cur_fillcolor);
-	XQueryColors(tool_d, tool_cm, mixed_color, 2);
-	/* keep lower 8 bits 0 */
-	mixed_color[0].red &= 0xff00;
-	mixed_color[0].green &= 0xff00;
-	mixed_color[0].blue &= 0xff00;
-	mixed_color[1].red &= 0xff00;
-	mixed_color[1].green &= 0xff00;
-	mixed_color[1].blue &= 0xff00;
+	int		save_edit;
 
 	/* put the color name or number in the indicators */
 	set_mixed_name(0, cur_pencolor);
 	set_mixed_name(1, cur_fillcolor);
+
+	/* In dire straits, set the background of the mixed color widgets
+	   to black or white and return. */
 	if (!all_colors_available) {
-	    if (mixedColor[0] != (Widget) 0) {
-		/* change the background of the widgets */
-		FirstArg(XtNbackground,
-			(cur_pencolor==WHITE? x_bg_color.pixel: x_fg_color.pixel));
-		SetValues(mixedColor[0]);
-		FirstArg(XtNbackground,
-			(cur_fillcolor==WHITE? x_bg_color.pixel: x_fg_color.pixel));
-		SetValues(mixedColor[1]);
-	    }
-	    return;
+		if (mixedColor[0] != (Widget) 0) {
+			FirstArg(XtNbackground, cur_pencolor == WHITE ?
+					x_bg_color.pixel : x_fg_color.pixel);
+			SetValues(mixedColor[0]);
+			FirstArg(XtNbackground, cur_fillcolor == WHITE ?
+					x_bg_color.pixel : x_fg_color.pixel);
+			SetValues(mixedColor[1]);
+		}
+		return;
 	}
-	mixed_color[0].pixel = save0;
-	mixed_color[1].pixel = save1;
-	/* now change the background of the widgets if StaticGray, StaticColor,
-	   DirectColor or TrueColor visuals */
+
+	/*
+	 * Could use `mixed_color[0] = xftcolor[cur_pencolor]'
+	 * if the xftcolor array is not kept opaque - but keep lower
+	 * 8 bits to zero, whatever this is good for.
+	 */
+	mixed_color[0].pixel = getpixel(cur_pencolor);
+	mixed_color[0].color.red = getred(cur_pencolor) & 0xff00;
+	mixed_color[0].color.green = getgreen(cur_pencolor) & 0xff00;
+	mixed_color[0].color.blue = getblue(cur_pencolor) & 0xff00;
+	mixed_color[0].color.alpha = OPAQUE;
+	mixed_color[1].pixel = getpixel(cur_fillcolor);
+	mixed_color[1].color.red = getred(cur_fillcolor) & 0xff00;
+	mixed_color[1].color.green = getgreen(cur_fillcolor) & 0xff00;
+	mixed_color[1].color.blue = getblue(cur_fillcolor) & 0xff00;
+	mixed_color[1].color.alpha = OPAQUE;
+
 	set_mixed_color(0);
 	set_mixed_color(1);
 
