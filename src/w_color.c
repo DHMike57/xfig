@@ -839,6 +839,15 @@ void pen_fill_activate(int func)
 	XawToggleSetCurrent(mixedEdit[0],(XtPointer) (intptr_t)(func==I_PEN_COLOR? 1:2));
 }
 
+static void
+xftcolor_fromcolor(XftColor *out, int c)
+{
+	out->pixel = getpixel(c);
+	out->color.red = getred(c) & 0xff00;
+	out->color.green = getgreen(c) & 0xff00;
+	out->color.blue = getblue(c) & 0xff00;
+}
+
 void restore_mixed_colors(void)
 {
 	int		save_edit;
@@ -861,21 +870,9 @@ void restore_mixed_colors(void)
 		return;
 	}
 
-	/*
-	 * Could use `mixed_color[0] = xftcolor[cur_pencolor]'
-	 * if the xftcolor array is not kept opaque - but keep lower
-	 * 8 bits to zero, whatever this is good for.
-	 */
-	mixed_color[0].pixel = getpixel(cur_pencolor);
-	mixed_color[0].color.red = getred(cur_pencolor) & 0xff00;
-	mixed_color[0].color.green = getgreen(cur_pencolor) & 0xff00;
-	mixed_color[0].color.blue = getblue(cur_pencolor) & 0xff00;
-	mixed_color[0].color.alpha = OPAQUE;
-	mixed_color[1].pixel = getpixel(cur_fillcolor);
-	mixed_color[1].color.red = getred(cur_fillcolor) & 0xff00;
-	mixed_color[1].color.green = getgreen(cur_fillcolor) & 0xff00;
-	mixed_color[1].color.blue = getblue(cur_fillcolor) & 0xff00;
-	mixed_color[1].color.alpha = OPAQUE;
+	/* Copy current pen- and fillcolor to mixed_color[] */
+	xftcolor_fromcolor(&mixed_color[0], cur_pencolor);
+	xftcolor_fromcolor(&mixed_color[1], cur_fillcolor);
 
 	set_mixed_color(0);
 	set_mixed_color(1);
@@ -889,39 +886,29 @@ void restore_mixed_colors(void)
 
 	/* and update the hex values */
 	save_edit = edit_fill;
-	edit_fill=0;
+	edit_fill = 0;
 	update_triple();
-	edit_fill=1;
+	edit_fill = 1;
 	update_triple();
 	edit_fill = save_edit;
 }
 
 /*
-   For the StaticGray, StaticColor, DirectColor and TrueColor visual classes
-   change the background color of the mixed color widget specified by which
-   (0=pen, 1=fill).  For the other classes, we changed the color for the
-   allocated pixel when we called YStoreColor().
-*/
+ * Change the background and the label color of the
+ * mixedColor widget specified by `which' (0 = pen, 1 = fill).
+ */
+static void
+set_mixed_color(int which) {
 
-void set_mixed_color(int which)
-{
 	if (!all_colors_available)
-	    return;
+		return;
 
-	if( tool_vclass == StaticGray ||
-	    tool_vclass == StaticColor ||
-	    tool_vclass == DirectColor ||
-	    tool_vclass == TrueColor) {
-		XAllocColor(tool_d, tool_cm, &mixed_color[which]);
-		FirstArg(XtNbackground, mixed_color[which].pixel);
-		SetValues(mixedColor[which]);
-	} else {
-		XStoreColor(tool_d, tool_cm, &mixed_color[which]);
-	}
-	/* now make contrasting color for the label */
-	if (colorMemory[which]) {
-	    pick_contrast(mixed_color[which],mixedColor[which]);
-	}
+	FirstArg(XtNbackground, mixed_color[which].pixel);
+	SetValues(mixedColor[which]);
+
+	/* make contrasting color for the label */
+	if (mixedColor[which])
+		pick_contrast(&mixed_color[which], mixedColor[which]);
 }
 
 /* This is similar to set_mixed_color() except it is for the user colors */
@@ -1086,7 +1073,7 @@ count_user_colors(void)
 
     /* keep array of counts of each color */
     for (i=0; i<num_usr_cols; i++)
-	colors_used[i] = 0;
+	colors_used[i] = False;
 
     /* count colors in main list */
     c_user_colors(&objects);
@@ -1140,10 +1127,10 @@ void c_user_colors(F_compound *obj)
     }
 }
 
-void count_one(int color)
+void count_one(int c)
 {
-   if (color >= NUM_STD_COLS)
-	colors_used[color-NUM_STD_COLS] = 1;
+   if (c >= NUM_STD_COLS)
+	colors_used[c - NUM_STD_COLS] = True;
 }
 
 /* delete unused user colors */
@@ -1158,7 +1145,7 @@ del_unused_user_colors(void)
     /* first unmanage the Box that the color cells are in */
     XtUnmanageChild(userBox);
     for (i=0; i<num_usr_cols; i++)
-	if (colors_used[i] == 0 && !colorFree[i]) {
+	if (colors_used[i] == False && !colorFree[i]) {
 	    deleted = True;
 	    /* save it to undelete */
 	    undel_user_color = user_colors[i];
@@ -1557,9 +1544,10 @@ _set_std_color(Widget w, choice_info *sel_choice, XButtonEvent *ev)
 }
 
 static void
-set_std_color(int color)
+set_std_color(int c)
 {
-	Pixel	save;
+	//Pixel	save;
+	//XftColor	save;
 
 	/* make sliders insensitive */
 	XtSetSensitive(mixingForm, False);
@@ -1567,43 +1555,33 @@ set_std_color(int color)
 	/* set flag saying we've modified either the pen or fill color */
 	modified[edit_fill] = True;
 
-	mixed_color_indx[edit_fill] = color;
+	mixed_color_indx[edit_fill] = c;
 
-	save = mixed_color[edit_fill].pixel;
-	mixed_color[edit_fill].pixel = getpixel(mixed_color_indx[edit_fill]);
+	save = mixed_color[edit_fill];
+
+	xftcolor_fromcolor(&mixed_color[edit_fill], c);
 	/* put the colorname in the indicator */
-	set_mixed_name(edit_fill,color);
+	set_mixed_name(edit_fill, c);
 	/* look up color rgb values given the pixel number */
-	if (all_colors_available) {
-	    XQueryColor(tool_d, tool_cm, &mixed_color[edit_fill]);
-	    /* keep lower 8 bits 0 */
-	    mixed_color[edit_fill].red &= 0xff00;
-	    mixed_color[edit_fill].green &= 0xff00;
-	    mixed_color[edit_fill].blue &= 0xff00;
-	} else {
+	if (!all_colors_available) {
 	    /* look up color rgb values from the name */
-	    if (color == DEFAULT) {
+	    if (c == DEFAULT) {
 		mixed_color[edit_fill].red = x_bg_color.red;
 		  mixed_color[edit_fill].green = x_bg_color.green;
 		  mixed_color[edit_fill].blue = x_bg_color.blue;
-	    } else {
-		XParseColor(tool_d, tool_cm,
-			colorNames[color+1].rgb, &mixed_color[edit_fill]);
 	    }
 	    /* now change the background of the widget */
-	    if (color == WHITE)
+	    if (c == WHITE)
 		FirstArg(XtNbackground, x_bg_color.pixel);
 	    else
 		FirstArg(XtNbackground, x_fg_color.pixel);
 	    SetValues(mixedColor[edit_fill]);
 	}
-	mixed_color[edit_fill].pixel = save;
 
-	/* get the rgb values for that color */
-	rgb_values[edit_fill].r = mixed_color[edit_fill].red;
-	rgb_values[edit_fill].g = mixed_color[edit_fill].green;
-	rgb_values[edit_fill].b = mixed_color[edit_fill].blue;
 	set_mixed_color(edit_fill);
+
+	/* update_triple() also sets rgb_values[edit_fill] */
+	update_triple();
 
 	/* undraw any box around the current user-memory cell */
 	erase_boxed(current_memory);
@@ -1614,7 +1592,6 @@ set_std_color(int color)
 			(float)(1.0 - rgb_values[edit_fill].g/65536.0), THUMB_H);
 	XawScrollbarSetThumb(blueScroll,
 			(float)(1.0 - rgb_values[edit_fill].b/65536.0), THUMB_H);
-	update_triple();
 	/* inactivate the current_memory cell */
 	current_memory = -1;
 	/* and the hexadecimal window */
@@ -1653,9 +1630,10 @@ pick_memory(int which)
 	/* put the color number in the mixed index */
 	mixed_color_indx[edit_fill] = current_memory+NUM_STD_COLS;
 	/* put the color name in the indicator */
-	set_mixed_name(edit_fill,mixed_color_indx[edit_fill]);
+	set_mixed_name(edit_fill, mixed_color_indx[edit_fill]);
 
 	if (!colorFree[current_memory]) {
+fprintf(stderr, "Entered pick_memory` !colorFree\n");
 		do_change = False;
 		CHANGE_RED(current_memory);
 		CHANGE_GREEN(current_memory);
@@ -1665,12 +1643,12 @@ pick_memory(int which)
 		update_scrl_triple((Widget)NULL, (XEvent *)NULL,
 			(String *)NULL, (Cardinal *)NULL);
 	} else {
-		user_colors[current_memory].red =
-				mixed_color[edit_fill].red;
-		user_colors[current_memory].green =
-				mixed_color[edit_fill].green;
-		user_colors[current_memory].blue =
-				mixed_color[edit_fill].blue;
+		user_color[current_memory].color.red =
+				mixed_color[edit_fill].color.red;
+		user_color[current_memory].color.green =
+				mixed_color[edit_fill].color.green;
+		user_color[current_memory].color.blue =
+				mixed_color[edit_fill].color.blue;
 		set_user_color(current_memory);
 	}
 	/* activate the delete color button */
@@ -1835,9 +1813,9 @@ update_triple(void)
 	NextArg(XtNinsertPosition, 7/*strlen(hexvalue)*/);
 	SetValues(tripleValue[edit_fill]);
 
-	rgb_values[edit_fill].r = mixed_color[edit_fill].red;
-	rgb_values[edit_fill].g = mixed_color[edit_fill].green;
-	rgb_values[edit_fill].b = mixed_color[edit_fill].blue;
+	rgb_values[edit_fill].r = mixed_color[edit_fill].color.red;
+	rgb_values[edit_fill].g = mixed_color[edit_fill].color.green;
+	rgb_values[edit_fill].b = mixed_color[edit_fill].color.blue;
 
 	if (!moving_hsv) {
 	  hsv_values = RGBToHSV(rgb_values[edit_fill]);
@@ -1921,10 +1899,11 @@ move_scroll(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void StoreMix_and_Mem(void)
 {
 	set_mixed_color(edit_fill);
-	set_mixed_color(edit_fill);
-	user_colors[current_memory].red = mixed_color[edit_fill].red;
-	user_colors[current_memory].green = mixed_color[edit_fill].green;
-	user_colors[current_memory].blue = mixed_color[edit_fill].blue;
+	user_color[current_memory].color.red = mixed_color[edit_fill].color.red;
+	user_color[current_memory].color.green =
+			mixed_color[edit_fill].color.green;
+	user_color[current_memory].color.blue =
+			mixed_color[edit_fill].color.blue;
 	set_user_color(current_memory);
 }
 
