@@ -577,23 +577,18 @@ set_color_name(int color, char *buf)
  * Set the color name in the label of widget, set its foreground to
  * that color, and set its background to a contrasting color
  */
-
 void
 set_but_col(Widget widget, int color)
 {
-	XColor		 xcolor;
-	char		 buf[12];
+	char	buf[12];
 
-	/* put the color name in the label and the color itself as the background */
 	set_color_name(color, buf);
 	FirstArg(XtNlabel, buf);
 	NextArg(XtNbackground, getpixel(color));  /* set color of button */
 	SetValues(widget);
 
 	/* now set foreground to contrasting color */
-	xcolor.pixel = getpixel(color);
-	XQueryColor(tool_d, tool_cm, &xcolor);
-	pick_contrast(xcolor, widget);
+	pick_contrast(&user_color[color], widget);
 }
 
 static void

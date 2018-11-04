@@ -227,8 +227,7 @@ static String triple_translations =
 void create_cell (int indx, XColor color);
 void set_cmap (Window window);
 void set_slider_sensitivity (void);
-void set_mixed_color (int which);
-void pick_contrast (XColor color, Widget widget);
+void pick_contrast (XftColor *c, Widget widget);
 int add_color_cell (Boolean use_exist, int indx, int r, int g, int b);
 void count_one (int color);
 void move_lock (void);
@@ -945,17 +944,18 @@ void set_user_color(int which)
 	}
 }
 
-void pick_contrast(XColor color, Widget widget)
+void
+pick_contrast(XftColor *c, Widget widget)
 {
-    Pixel cell_fg;
-    if ((0.30 * color.red +
-	 0.59 * color.green +
-	 0.11 * color.blue) < 0.5 * (255 << 8))
-	    cell_fg = getpixel(WHITE);
-    else
-	    cell_fg = getpixel(BLACK);
-    FirstArg(XtNforeground, cell_fg);
-    SetValues(widget);
+	Pixel cell_fg;
+
+	if (0.30 * c->color.red + 0.59 * c->color.green + 0.11 * c->color.blue
+			< 0.5 * (255 << 8))
+		cell_fg = getpixel(WHITE);
+	else
+		cell_fg = getpixel(BLACK);
+	FirstArg(XtNforeground, cell_fg);
+	SetValues(widget);
 }
 
 /* change the label of the mixedColor widget[i] to the name of the color */
