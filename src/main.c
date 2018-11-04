@@ -1896,8 +1896,14 @@ parse_canvas_colors(void)
 	XQueryColor(tool_d, tool_cm, &x_fg_color);
     }
     /* write the colors to the xftcolor array */
-    xtoxftcolor(&x_bg_color, CANVAS_BG);
-    xtoxftcolor(&x_fg_color, DEFAULT);
+    x_bg_color.pixel = getpixel(CANVAS_BG);
+    x_bg_color.red = getred(CANVAS_BG);
+    x_bg_color.green = getgreen(CANVAS_BG);
+    x_bg_color.blue = getblue(CANVAS_BG);
+    x_fg_color.pixel = getpixel(DEFAULT);
+    x_fg_color.red = getred(DEFAULT);
+    x_fg_color.green = getgreen(DEFAULT);
+    x_fg_color.blue = getblue(DEFAULT);
 
     /* now set the canvas to the user's choice, if any */
     FirstArg(XtNbackground, x_bg_color.pixel);
