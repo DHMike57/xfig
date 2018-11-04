@@ -108,7 +108,8 @@ extern int		avail_image_cols;
 /* colormap used for same */
 extern XColor		image_cells[MAX_COLORMAP_SIZE];
 
-extern void		xtoxftcolor(XColor *in, int color);
+extern void		xtoxftcolor(XftColor *out, const XColor *restrict in);
+extern void		setcolor_fromXColor(int c, const XColor *restrict in);
 extern unsigned long	getpixel(int color);
 extern unsigned short	getred(int color), getgreen(int color), getblue(int c);
 

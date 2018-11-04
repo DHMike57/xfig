@@ -99,6 +99,21 @@ fig_color colorNames[] = {
 	{"Gold",	"Gld",		0xff00, 0xd700, 0x0000}
 };
 
+
+/*
+ * Set XftColor *out to the color values given in XColor *in.
+ * Does not set the alpha value. TODO: rewrite as a macro?
+ */
+void
+xtoxftcolor(XftColor *out, const XColor *restrict in)
+{
+	out->pixel = in->pixel;
+	out->color.red = in->red;
+	out->color.green = in->green;
+	out->color.blue = in->blue;
+}
+
+
 /* For TrueColor visuals: Given a fig_color, return the XftColor. */
 static void
 write_xftcolor_true(fig_color *in, int c)
@@ -122,7 +137,7 @@ write_xftcolor_true(fig_color *in, int c)
  * Therefore, call XallocColor() and use that result.
  */
 static Status
-write_xftcolor_nontrue(fig_color *in, int c)
+write_xftcolor_nontrue(const fig_color *restrict in, int c)
 {
 	XColor	buf;
 	Status	status;
@@ -132,10 +147,7 @@ write_xftcolor_nontrue(fig_color *in, int c)
 	buf.blue = in->blue;
 	/* buf.flags = DoRed | DoGreen | DoBlue; not used by XAllocColor() */
 	if (status = XAllocColor(tool_d, tool_cm, &buf)) {
-		xftcolor[c].pixel = buf.pixel;
-		xftcolor[c].color.red = buf.red;
-		xftcolor[c].color.green = buf.green;
-		xftcolor[c].color.blue = buf.blue;
+		xtoxftcolor(&xftcolor[c], &buf);
 		xftcolor[c].color.alpha = OPAQUE;
 	}
 	return status;
@@ -145,7 +157,7 @@ write_xftcolor_nontrue(fig_color *in, int c)
  * Set xftcolor[c] to the color specified in XColor *in.
  */
 void
-xtoxftcolor(XColor *in, int c)
+setcolor_fromXColor(int c, const XColor *restrict in)
 {
 	xftcolor[c].pixel = in->pixel;
 	xftcolor[c].color.red = in->red;
