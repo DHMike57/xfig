@@ -912,29 +912,62 @@ set_mixed_color(int which) {
 }
 
 /* This is similar to set_mixed_color() except it is for the user colors */
-
-void set_user_color(int which)
+/*
+ * Set the pixel, given rgb-values, or store the rgb-values into the cell
+ * indicated by the pixel.
+ */
+static void set_user_color(int which)
 {
 	if (!all_colors_available)
 	    return;
 
-	if( tool_vclass == StaticGray ||
+	if (tool_vclass == StaticGray ||
 	    tool_vclass == StaticColor ||
 	    tool_vclass == DirectColor ||
 	    tool_vclass == TrueColor) {
-		XAllocColor(tool_d, tool_cm, &user_colors[which]);
-		/* update colors pixel value */
-		colors[which+NUM_STD_COLS] = user_colors[which].pixel;
-		if (colorMemory[which]) {
-		    FirstArg(XtNbackground, user_colors[which].pixel);
-		    SetValues(colorMemory[which]);
+		if (tool_vclass == TrueColor) {
+			XRenderColor	buf;
+
+			buf.red = user_color[which].color.red;
+			buf.green = user_color[which].color.green;
+			buf.blue = user_color[which].color.blue;
+			buf.alpha = OPAQUE;
+
+			XftColorAllocValue(tool_d, tool_v, tool_cm, &buf,
+					&user_color[which]);
+		} else {
+			XColor	buf;
+
+			buf.red = user_color[which].color.red;
+			buf.green = user_color[which].color.green;
+			buf.blue = user_color[which].color.blue;
+
+			XAllocColor(tool_d, tool_cm, &buf);
+
+			user_color[which].pixel = buf.pixel;
+			user_color[which].color.red = buf.red;
+			user_color[which].color.green = buf.green;
+			user_color[which].color.blue = buf.blue;
 		}
-	} else {
-		XStoreColor(tool_d, tool_cm, &user_colors[which]);
+		if (colorMemory[which]) {
+			FirstArg(XtNbackground, user_color[which].pixel);
+			SetValues(colorMemory[which]);
+		}
+	} else { /* GrayScale or PseudoColor */
+		XColor	buf;
+
+		/* TODO: this below is repeated in several places */
+		buf.pixel = user_color[which].pixel;
+		buf.red = user_color[which].color.red;
+		buf.green = user_color[which].color.green;
+		buf.blue = user_color[which].color.blue;
+		buf.flags = DoRed | DoGreen | DoBlue;
+
+		XStoreColor(tool_d, tool_cm, &buf);
 	}
 	/* make the label in a contrasting color */
 	if (colorMemory[which]) {
-	    pick_contrast(user_colors[which],colorMemory[which]);
+		pick_contrast(&user_color[which], colorMemory[which]);
 	}
 }
 
