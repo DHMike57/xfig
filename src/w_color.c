@@ -226,7 +226,7 @@ static String triple_translations =
 	"<Key>Return: update_from_triple()\n";
 
 
-static void	create_cell(int indx, XColor color);
+static void	create_cell(int indx);
 void		set_cmap(Window window);
 static void	set_slider_sensitivity(void);
 void		pick_contrast(XftColor *c, Widget widget);
@@ -558,7 +558,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	/* create the color cells */
 	for (i = 0; i < num_usr_cols; i++) {
 	    if (!colorFree[i]) {
-		create_cell(i,user_colors[i]);
+		create_cell(i);
 	    }
 	}
 
@@ -1262,7 +1262,7 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 	    if (new) {
 		/* if new color is at the end of the list, just create it now */
 		if (indx == num_usr_cols-1) {
-		   create_cell(indx, user_colors[indx]);
+		   create_cell(indx);
 		} else {
 		    /* otherwise, delete all after it and recreate them */
 		    /* first unmanage the Box that they're in */
@@ -1273,7 +1273,7 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 		    /* now add the new and the old ones back in */
 		    for (i=indx; i<num_usr_cols; i++)
 			if (!colorFree[i])
-			    create_cell(i, user_colors[indx]);
+			    create_cell(i);
 		    /* remanage the Box */
 		    XtManageChild(userBox);
 		}
@@ -1299,9 +1299,8 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 	 is called after this anyway. */
 
 static void
-create_cell(int indx, XColor color)
+create_cell(int indx)
 {
-	/* FIXME: Parameter color is unused */
     char	labl[5];
 
     /* put the user color number in all the time */
