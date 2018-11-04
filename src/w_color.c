@@ -1242,17 +1242,16 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 	    new = True;
 	}
 
-	user_colors[indx].red = r*256;
-	user_colors[indx].green = g*256;
-	user_colors[indx].blue = b*256;
-	user_colors[indx].flags = DoRed|DoGreen|DoBlue;
-	user_colors[indx].pixel = pixels[0];
-	/* FIXME */
+	user_color[indx].color.red = r*256;
+	user_color[indx].color.green = g*256;
+	user_color[indx].color.blue = b*256;
+	user_color[indx].color.alpha = OPAQUE;
+	user_color[indx].pixel = pixels[0];
 	/* in case we have read-only colormap, get the pixel value now */
 	if (all_colors_available)
-	    YStoreColor(tool_cm,&user_colors[indx]);
+		alloc_or_store_color(&user_color[indx]);
 	/* and put it in main colors */
-	colors[NUM_STD_COLS+indx] = user_colors[indx].pixel;
+	// TODO: remove colors[NUM_STD_COLS+indx] = user_colors[indx].pixel;
 
 	colorFree[indx] = False;
 	colorUsed[indx] = False;
