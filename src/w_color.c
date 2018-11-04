@@ -1172,7 +1172,6 @@ del_unused_user_colors(void)
 
 /* lookup color from another window - the user clicks the mouse
    on a color and a new cell is created with that color */
-
 static void
 lookup_color(Widget w, XtPointer closure, XtPointer call_data)
 {
@@ -1191,10 +1190,11 @@ lookup_color(Widget w, XtPointer closure, XtPointer call_data)
     add_color(w, closure, call_data);
 
     /* and store the chosen color (keep lower 8 bits 0) */
-    user_colors[current_memory].red   = xcol.red   & 0xff00;
-    user_colors[current_memory].green = xcol.green & 0xff00;
-    user_colors[current_memory].blue  = xcol.blue  & 0xff00;
-    user_colors[current_memory].flags = DoRed|DoGreen|DoBlue;
+    user_color[current_memory].color.red   = xcol.red   & 0xff00;
+    user_color[current_memory].color.green = xcol.green & 0xff00;
+    user_color[current_memory].color.blue  = xcol.blue  & 0xff00;
+    user_color[current_memory].color.alpha  = OPAQUE;
+    alloc_or_store_color(&user_color[current_memory]);
     set_user_color(current_memory);
     pick_memory(current_memory);
 }
