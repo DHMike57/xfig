@@ -50,7 +50,7 @@ unsigned long	axis_lines_color;
 XftColor	save_colors[MAX_USR_COLS];
 XftColor	user_colors[MAX_USR_COLS];
 XftColor	undel_user_color; */
-XColor	n_user_colors[MAX_USR_COLS];
+XftColor	n_user_colors[MAX_USR_COLS];
 XColor	save_colors[MAX_USR_COLS];
 XColor	user_colors[MAX_USR_COLS];
 XColor	undel_user_color;

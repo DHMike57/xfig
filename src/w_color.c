@@ -289,7 +289,7 @@ alloc_or_store_colors(const XftColor *restrict c, int ncolors)
 	int	i;
 
 	for (i = 0; i < ncolors; ++i)
-		alloc_or_store_color(&color[i]);
+		alloc_or_store_color(&c[i]);
 }
 
 void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *isw)
@@ -1503,13 +1503,13 @@ set_color_ok(Widget w, char *dum, XButtonEvent *ev, Boolean disp)
 	int	i,indx;
 
 	/* put the color pixel value in the table */
-	/* this is done here because if the visual is TrueColor, etc. the value of
-	   the pixel changes with the color itself */
-	for (i=0; i<=1; i++) {
+	/* this is done here because if the visual is TrueColor, etc.
+	   the value of the pixel changes with the color itself */
+	/* for (i=0; i<=1; i++) {
 	    indx = mixed_color_indx[i];
 	    if (indx >= NUM_STD_COLS)
 		colors[indx] = user_colors[indx-NUM_STD_COLS].pixel;
-	}
+	} */
 
 	/* have either the fill or pen color been modified? */
 
@@ -1553,9 +1553,9 @@ set_std_color(int c)
 	if (!all_colors_available) {
 	    /* look up color rgb values from the name */
 	    if (c == DEFAULT) {
-		mixed_color[edit_fill].red = x_bg_color.red;
-		  mixed_color[edit_fill].green = x_bg_color.green;
-		  mixed_color[edit_fill].blue = x_bg_color.blue;
+		mixed_color[edit_fill].color.red = x_bg_color.red;
+		  mixed_color[edit_fill].color.green = x_bg_color.green;
+		  mixed_color[edit_fill].color.blue = x_bg_color.blue;
 	    }
 	    /* now change the background of the widget */
 	    if (c == WHITE)
@@ -1760,9 +1760,9 @@ update_from_triple(Widget w, XEvent *event, String *params, Cardinal *num_params
 		put_msg("Bad hex value");
 		return;
 	}
-	mixed_color[edit_fill].red = red*256;
-	mixed_color[edit_fill].green = green*256;
-	mixed_color[edit_fill].blue = blue*256;
+	mixed_color[edit_fill].color.red = red*256;
+	mixed_color[edit_fill].color.green = green*256;
+	mixed_color[edit_fill].color.blue = blue*256;
 
 	/* and update hsv and rgb scrollbars etc from the new hex value */
 	update_scrl_triple(w,event,params,num_params);
@@ -1837,17 +1837,17 @@ move_scroll(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	last_pos = event->xmotion.y;
 
 	if (buttons_down & S_RED) {
-		red_pos = mixed_color[edit_fill].red/256;
+		red_pos = mixed_color[edit_fill].color.red/256;
 		ADJUST_CHANGE(red_pos);
 	}
 
 	if (buttons_down & S_GREEN) {
-		green_pos = mixed_color[edit_fill].green/256;
+		green_pos = mixed_color[edit_fill].color.green/256;
 		ADJUST_CHANGE(green_pos);
 	}
 
 	if (buttons_down & S_BLUE) {
-		blue_pos = mixed_color[edit_fill].blue/256;
+		blue_pos = mixed_color[edit_fill].color.blue/256;
 		ADJUST_CHANGE(blue_pos);
 	}
 
@@ -2003,15 +2003,15 @@ Thumbed(Widget w, XtPointer closure, XtPointer call_data)
 
 	switch (which) {
 		case S_RED:
-			mixed_color[edit_fill].red = mix;
+			mixed_color[edit_fill].color.red = mix;
 			red_top = top;
 			break;
 		case S_GREEN:
-			mixed_color[edit_fill].green = mix;
+			mixed_color[edit_fill].color.green = mix;
 			green_top = top;
 			break;
 		case S_BLUE:
-			mixed_color[edit_fill].blue = mix;
+			mixed_color[edit_fill].color.blue = mix;
 			blue_top = top;
 			break;
 		case S_LOCKED:

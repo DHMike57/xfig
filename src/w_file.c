@@ -1546,7 +1546,7 @@ void save_user_colors(void)
 	/* now free any previously defined user colors */
 	for (i = 0; i < num_usr_cols; ++i)
 		del_color_cell(i);	/* remove widget and colormap entry */
-	}
+
 	saved_user_num = num_usr_cols;
 }
 

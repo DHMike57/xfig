@@ -29,7 +29,7 @@ extern void color_borders (void);
 extern void create_color_panel (Widget form, Widget label, Widget cancel, ind_sw_info *isw);
 extern void del_color_cell (int indx);
 extern void pen_fill_activate (int func);
-extern void pick_contrast (XColor color, Widget widget);
+extern void pick_contrast (XftColor *c, Widget widget);
 extern void restore_mixed_colors (void);
 extern void set_cmap (Window window);
 
