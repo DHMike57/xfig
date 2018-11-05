@@ -17,6 +17,8 @@
 #ifndef W_COLOR_H
 #define W_COLOR_H
 
+#include "w_indpanel.h"
+
 #define USE_EXISTING_COLOR	True
 #define DONT_USE_EXISTING_COLOR	False
 
@@ -45,7 +47,7 @@ extern	Widget	delunusedColors;
  * Date:	Sun Dec 13 1987
  */
 
-Boolean switch_colormap(void);
+extern Boolean switch_colormap(void);
 extern Boolean alloc_color_cells(Pixel *pixels, int n);
 
 /*

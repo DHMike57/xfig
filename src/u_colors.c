@@ -21,6 +21,7 @@
 
 #include "resources.h"		/* tool_d, tool_v,.., appres */
 #include "u_colors.h"
+#include "w_color.h"		/* switch_colormap() */
 
 #define FIRST_GRAY	DARK_GRAY
 #define LAST_GRAY	LT_GRAY
