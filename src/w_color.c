@@ -285,7 +285,7 @@ alloc_or_store_color(XftColor *c)
 
 
 void
-alloc_or_store_colors(const XftColor *restrict c, int ncolors)
+alloc_or_store_colors(XftColor *restrict c, int ncolors)
 {
 	int	i;
 

@@ -24,7 +24,7 @@
 #include "u_create.h"
 #include "w_file.h"
 #include "w_indpanel.h"
-//#include "w_color.h"
+#include "w_color.h"
 #include "w_util.h"
 #include "w_icons.h"
 #include "w_msgpanel.h"
@@ -35,25 +35,27 @@
 
 #include <time.h>
 
+XftColor	image_cells[MAX_COLORMAP_SIZE];
+
 /* LOCALS */
 
-int	count_colors(void);
-int	count_pixels(void);
+static int	count_colors(void);
+static int	count_pixels(void);
 
 
 /* PROCEDURES */
 
 
 void beep (void);
-void alloc_imagecolors (int num);
-void add_all_pixels (void);
-void remap_image_colormap (void);
-void extract_cmap (void);
-void readjust_cmap (void);
-void free_pixmaps (F_compound *obj);
-void add_recent_file (char *file);
-int strain_out (char *name);
-void finish_update_xfigrc (void);
+static void alloc_imagecolors (int num);
+static void add_all_pixels (void);
+static void remap_image_colormap (void);
+static void extract_cmap (void);
+static void readjust_cmap (void);
+static void free_pixmaps (F_compound *obj);
+static void add_recent_file (char *file);
+static int strain_out (char *name);
+static void finish_update_xfigrc (void);
 
 int
 emptyname(char *name)
@@ -327,9 +329,9 @@ void remap_imagecolors(void)
 	/* now change the color cells with the new colors */
 	/* clrtab[][] is the colormap produced by neu_clrtab */
 	for (i=0; i<avail_image_cols; i++) {
-	    image_cells[i].red   = (unsigned short) clrtab[i][N_RED] << 8;
-	    image_cells[i].green = (unsigned short) clrtab[i][N_GRN] << 8;
-	    image_cells[i].blue  = (unsigned short) clrtab[i][N_BLU] << 8;
+	    image_cells[i].color.red   = (unsigned short) clrtab[i][N_RED] << 8;
+	    image_cells[i].color.green = (unsigned short) clrtab[i][N_GRN] << 8;
+	    image_cells[i].color.blue  = (unsigned short) clrtab[i][N_BLU] << 8;
 	}
 	alloc_or_store_colors(image_cells, avail_image_cols);
 	reset_cursor();
@@ -348,9 +350,6 @@ void remap_imagecolors(void)
 	scol = 0;	/* global color counter */
 	set_temp_cursor(wait_cursor);
 	extract_cmap();
-	for (i=0; i<scol; i++) {
-	    image_cells[i].flags = DoRed|DoGreen|DoBlue;
-	}
 	alloc_or_store_colors(image_cells, scol);
 	scol = 0;	/* global color counter */
 	readjust_cmap();
@@ -371,7 +370,6 @@ void alloc_imagecolors(int num)
     /* see if we can get all user wants */
     avail_image_cols = num;
     for (i=0; i<avail_image_cols; i++) {
-	image_cells[i].flags = DoRed|DoGreen|DoBlue;
 	if (!alloc_color_cells(&image_cells[i].pixel, 1)) {
 	    break;
 	}
@@ -459,9 +457,9 @@ void extract_cmap(void)
     for (pics = pictures; pics; pics = pics->next)
 	if (pics->bitmap != NULL && pics->numcols > 0) {
 	    for (i=0; i<pics->numcols; i++) {
-		image_cells[scol].red   = pics->cmap[i].red << 8;
-		image_cells[scol].green = pics->cmap[i].green << 8;
-		image_cells[scol].blue  = pics->cmap[i].blue << 8;
+		image_cells[scol].color.red   = pics->cmap[i].red << 8;
+		image_cells[scol].color.green = pics->cmap[i].green << 8;
+		image_cells[scol].color.blue  = pics->cmap[i].blue << 8;
 		pics->cmap[i].pixel = scol;
 		scol++;
 	    }

@@ -103,8 +103,6 @@ extern fig_color	colorNames[NUM_STD_COLS + 1];
 /* For GIF/XPM images */
 /* number of colors we want to use for GIF/XPM images */
 extern int		avail_image_cols;
-/* colormap used for same */
-extern XColor		image_cells[MAX_COLORMAP_SIZE];
 
 extern void		xtoxftcolor(XftColor *out, const XColor *restrict in);
 extern void		setcolor_fromXColor(int c, const XColor *restrict in);

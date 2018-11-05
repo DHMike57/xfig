@@ -112,7 +112,7 @@ static char	buf[40];
 
 /* to save image colors when doing a figure preview */
 
-static XColor	save_image_cells[MAX_COLORMAP_SIZE];
+static XftColor	save_image_cells[MAX_COLORMAP_SIZE];
 static int	save_avail_image_cols;
 static Boolean	image_colors_are_saved = False;
 
@@ -194,10 +194,9 @@ file_panel_dismiss(void)
 	/* restore image colors on canvas */
 	avail_image_cols = save_avail_image_cols;
 	for (i=0; i<avail_image_cols; i++) {
-	    image_cells[i].red   = save_image_cells[i].red;
-	    image_cells[i].green = save_image_cells[i].green;
-	    image_cells[i].blue  = save_image_cells[i].blue;
-	    image_cells[i].flags  = DoRed|DoGreen|DoBlue;
+	    image_cells[i].color.red   = save_image_cells[i].color.red;
+	    image_cells[i].color.green = save_image_cells[i].color.green;
+	    image_cells[i].color.blue  = save_image_cells[i].color.blue;
         }
 	alloc_or_store_colors(image_cells, avail_image_cols);
 	image_colors_are_saved = False;
@@ -1317,9 +1316,9 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	image_colors_are_saved = True;
 	/* save current canvas image colors */
 	for (i=0; i<avail_image_cols; i++) {
-	    save_image_cells[i].red   = image_cells[i].red;
-	    save_image_cells[i].green = image_cells[i].green;
-	    save_image_cells[i].blue  = image_cells[i].blue;
+	    save_image_cells[i].color.red   = image_cells[i].color.red;
+	    save_image_cells[i].color.green = image_cells[i].color.green;
+	    save_image_cells[i].color.blue  = image_cells[i].color.blue;
 	}
 	save_avail_image_cols = avail_image_cols;
     }

@@ -56,8 +56,6 @@ XColor		x_fg_color, x_bg_color;
    when the first picture is used. We will take
    min(number_of_free_colorcells, 100, appres.maximagecolors) */
 int		avail_image_cols = -1;
-/* colormaps used for the pictures */
-XColor		image_cells[MAX_COLORMAP_SIZE];
 
 fig_color colorNames[] = {
 	{"Default",	"Default",	0,	0,	0},

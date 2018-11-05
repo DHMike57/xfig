@@ -18,6 +18,10 @@
  *
  */
 
+#include "u_colors.h"
+
+extern XftColor	image_cells[MAX_COLORMAP_SIZE];
+
 extern char	*xf_basename(char *filename);
 extern int	 emptyfigure(void);
 extern char	*safe_strcpy(char *p1, char *p2);
