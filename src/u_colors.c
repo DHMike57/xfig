@@ -111,7 +111,7 @@ xtoxftcolor(XftColor *out, const XColor *restrict in)
 
 /* For TrueColor visuals: Given a fig_color, return the XftColor. */
 static void
-write_xftcolor_true(fig_color *in, int c)
+write_xftcolor_true(const fig_color *restrict in, const int c)
 {
 	XRenderColor	buf;
 
@@ -132,7 +132,7 @@ write_xftcolor_true(fig_color *in, int c)
  * Therefore, call XallocColor() and use that result.
  */
 static Status
-write_xftcolor_nontrue(const fig_color *restrict in, int c)
+write_xftcolor_nontrue(const fig_color *restrict in, const int c)
 {
 	XColor	buf;
 	Status	status;
@@ -221,7 +221,7 @@ check_colors(void)
 		}
 		/* Gray colors */
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i)
-			write_xftcolor_true(&grays[i], i + FIRST_GRAY);
+			write_xftcolor_true(&grays[i + FIRST_GRAY], i);
 
 	} else { /* !TrueColor */
 
@@ -247,12 +247,12 @@ check_colors(void)
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i) {
 			if (!all_colors_available) {
 				xftcolor[i + FIRST_GRAY] = xftcolor[WHITE];
-			} else if (!write_xftcolor_nontrue(&grays[i],
-						i + FIRST_GRAY)) {
+			} else if (!write_xftcolor_nontrue(&grays[i+FIRST_GRAY],
+						i)) {
 				if (!switch_colormap() ||
 						!write_xftcolor_nontrue(
-							&grays[i],
-							i + FIRST_GRAY)) {
+							&grays[i+FIRST_GRAY], i)
+						) {
 					all_colors_available = False;
 					xftcolor[i + FIRST_GRAY] =
 								xftcolor[WHITE];
