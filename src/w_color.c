@@ -1731,6 +1731,18 @@ WhichButton(String name)
 	return 0;
 }
 
+static void
+change_color(XftColor *restrict c, int red, int green, int blue)
+{
+	if (tool_vclass != TrueColor && (tool_vclass == StaticGray ||
+			tool_vclass == StaticColor ||
+			tool_vclass == DirectColor))
+		XFreeColors(tool_d, tool_cm, c->pixel, 1, 0);
+	c->color.red = red;
+	c->color.green = green;
+	c->color.blue = blue;
+	alloc_or_store_color(c);
+}
 
 static void
 update_from_triple(Widget w, XEvent *event, String *params, Cardinal *num_params)
@@ -1753,19 +1765,7 @@ update_from_triple(Widget w, XEvent *event, String *params, Cardinal *num_params
 		return;
 	}
 
-	/* TODO: free color for readable colormaps
-	XftColorFree(tool_d, tool_v, tool_cm, &mixed_color[edit_fill]); */
-	/* TODO: this below is re-used - write free_readonly_color(XftColor *c)?
-	   also, set is_readonly_visual? */
-	if (tool_vclass != TrueColor && (tool_vclass == StaticGray ||
-			tool_vclass == StaticColor ||
-			tool_vclass == DirectColor))
-		XFreeColors(tool_d, tool_cm, &(mixed_color[edit_fill].pixel),
-				1, 0);
-	mixed_color[edit_fill].color.red = red*256;
-	mixed_color[edit_fill].color.green = green*256;
-	mixed_color[edit_fill].color.blue = blue*256;
-	alloc_or_store_color(&mixed_color[edit_fill]);
+	change_color(&mixed_color[edit_fill], red<<8, green<<8, blue<<8);
 
 	/* and update hsv and rgb scrollbars etc from the new hex value */
 	update_scrl_triple(w,event,params,num_params);
@@ -1890,18 +1890,10 @@ move_scroll(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void StoreMix_and_Mem(void)
 {
 	set_mixed_color(edit_fill);
-	if (tool_vclass != TrueColor && (tool_vclass == StaticGray ||
-			tool_vclass == StaticColor ||
-			tool_vclass == DirectColor))
-		XFreeColors(tool_d, tool_cm,
-				&(user_color[current_memory].pixel), 1, 0);
-	user_color[current_memory].color.red =
-			mixed_color[edit_fill].color.red;
-	user_color[current_memory].color.green =
-			mixed_color[edit_fill].color.green;
-	user_color[current_memory].color.blue =
-			mixed_color[edit_fill].color.blue;
-	alloc_or_store_color(&user_color[current_memory]);
+	change_color(&user_color[current_memory],
+			mixed_color[edit_fill].color.red,
+			mixed_color[edit_fill].color.green,
+			mixed_color[edit_fill].color.blue);
 	set_user_color(current_memory);
 }
 
@@ -2007,6 +1999,7 @@ Thumbed(Widget w, XtPointer closure, XtPointer call_data)
 	int mix;
 	float top = *(float*) call_data;
 	XEvent event;
+	XftColor	old;
 
 	mix = ((int) ((1.0 - top) * 256.0)) << 8;
 	if (mix > 0xFFFF)
@@ -2035,6 +2028,12 @@ Thumbed(Widget w, XtPointer closure, XtPointer call_data)
 	}
 	if (do_change) {
 	    if (current_memory >= 0) {
+		    /* no need to store an "old" color, since the pixel
+		       was not varied above */
+		change_color(&mixed_color[edit_fill],
+				mixed_color[edit_fill].color.red,
+				mixed_color[edit_fill].color.green,
+				mixed_color[edit_fill].color.blue);
 		StoreMix_and_Mem();
 		if (!colorUsed[current_memory])
 			colorUsed[current_memory] = True;
