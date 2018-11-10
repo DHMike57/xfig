@@ -1417,6 +1417,7 @@ void del_color_cell(int indx)
 	pixels[0] = user_color[indx].pixel;
 	if (all_colors_available)
 	    XFreeColors(tool_d, tool_cm, pixels, 1, 0);
+app_flush(); /* DEBUG */
 
 	/* now set free flag for that cell */
 	colorFree[indx] = True;
@@ -1537,8 +1538,6 @@ _set_std_color(Widget w, choice_info *sel_choice, XButtonEvent *ev)
 static void
 set_std_color(int c)
 {
-	//Pixel	save;
-
 	/* make sliders insensitive */
 	XtSetSensitive(mixingForm, False);
 
@@ -1621,7 +1620,6 @@ pick_memory(int which)
 	set_mixed_name(edit_fill, mixed_color_indx[edit_fill]);
 
 	if (!colorFree[current_memory]) {
-fprintf(stderr, "Entered pick_memory` !colorFree\n");
 		do_change = False;
 		CHANGE_RED(current_memory);
 		CHANGE_GREEN(current_memory);
@@ -1761,21 +1759,33 @@ update_from_triple(Widget w, XEvent *event, String *params, Cardinal *num_params
 		put_msg("Bad hex value");
 		return;
 	}
+
+	/* TODO: free color for readable colormaps
+	XftColorFree(tool_d, tool_v, tool_cm, &mixed_color[edit_fill]); */
+	/* TODO: this below is re-used - write free_readonly_color(XftColor *c)?
+	   also, set is_readonly_visual? */
+	if (tool_vclass != TrueColor && (tool_vclass == StaticGray ||
+			tool_vclass == StaticColor ||
+			tool_vclass == DirectColor))
+		XFreeColors(tool_d, tool_cm, &(mixed_color[edit_fill].pixel),
+				1, 0);
 	mixed_color[edit_fill].color.red = red*256;
 	mixed_color[edit_fill].color.green = green*256;
 	mixed_color[edit_fill].color.blue = blue*256;
+	alloc_or_store_color(&mixed_color[edit_fill]);
 
 	/* and update hsv and rgb scrollbars etc from the new hex value */
 	update_scrl_triple(w,event,params,num_params);
 
-	do_change = False;
-	pass_value = 1.0 - rgb_values[edit_fill].r/65536.0;
-	Thumbed(redScroll, (XtPointer)S_RED, (XtPointer)(&pass_value));
-	pass_value = 1.0 - rgb_values[edit_fill].g/65536.0;
-	Thumbed(greenScroll, (XtPointer)S_GREEN, (XtPointer)(&pass_value));
-	do_change = True;
-	pass_value = 1.0 - rgb_values[edit_fill].b/65536.0;
-	Thumbed(blueScroll, (XtPointer)S_BLUE, (XtPointer)(&pass_value));
+	XawScrollbarSetThumb(redScroll, 1.0f - red/256.f, THUMB_H);
+	XawScrollbarSetThumb(greenScroll, 1.0f - green/256.f, THUMB_H);
+	XawScrollbarSetThumb(blueScroll, 1.0f - blue/256.f, THUMB_H);
+
+	if (current_memory >= 0) {
+		StoreMix_and_Mem();
+		if (!colorUsed[current_memory])
+			colorUsed[current_memory] = True;
+	}
 }
 
 /* front-end to update_triple called by scrolling in the scrollbars.
@@ -1887,11 +1897,18 @@ move_scroll(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void StoreMix_and_Mem(void)
 {
 	set_mixed_color(edit_fill);
-	user_color[current_memory].color.red = mixed_color[edit_fill].color.red;
+	if (tool_vclass != TrueColor && (tool_vclass == StaticGray ||
+			tool_vclass == StaticColor ||
+			tool_vclass == DirectColor))
+		XFreeColors(tool_d, tool_cm,
+				&(user_color[current_memory].pixel), 1, 0);
+	user_color[current_memory].color.red =
+			mixed_color[edit_fill].color.red;
 	user_color[current_memory].color.green =
 			mixed_color[edit_fill].color.green;
 	user_color[current_memory].color.blue =
 			mixed_color[edit_fill].color.blue;
+	alloc_or_store_color(&user_color[current_memory]);
 	set_user_color(current_memory);
 }
 

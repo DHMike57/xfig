@@ -111,7 +111,7 @@ xtoxftcolor(XftColor *out, const XColor *restrict in)
 
 /* For TrueColor visuals: Given a fig_color, return the XftColor. */
 static void
-write_xftcolor_true(const fig_color *restrict in, const int c)
+write_xftcolor_true(const fig_color *restrict in, int c)
 {
 	XRenderColor	buf;
 
@@ -132,7 +132,7 @@ write_xftcolor_true(const fig_color *restrict in, const int c)
  * Therefore, call XallocColor() and use that result.
  */
 static Status
-write_xftcolor_nontrue(const fig_color *restrict in, const int c)
+write_xftcolor_nontrue(const fig_color *restrict in, int c)
 {
 	XColor	buf;
 	Status	status;
