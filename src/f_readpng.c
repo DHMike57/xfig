@@ -103,9 +103,9 @@ read_png(FILE *file, int filetype, F_pic *pic)
     }
     else {
 	/* blend the canvas background using the alpha channel */
-	background.red   = x_bg_color.red >> 8;
-	background.green = x_bg_color.green >> 8;
-	background.blue  = x_bg_color.blue >> 8;
+	background.red   = getred(CANVAS_BG)>>8;
+	background.green = getgreen(CANVAS_BG)>>8;
+	background.blue  = getblue(CANVAS_BG) >>8;
 	background.gray  = 0;
 	png_set_background(png_ptr, &background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 2.2);
     }

@@ -1203,7 +1203,7 @@ clear_preview(void)
     SetValues(preview_size);
 
     /* clear both port and land pixmap */
-    XSetForeground(tool_d, gccache[ERASE], x_bg_color.pixel);
+    XSetForeground(tool_d, gccache[ERASE], getpixel(CANVAS_BG));
     XFillRectangle(tool_d, preview_land_pixmap, gccache[ERASE], 0, 0,
 		   PREVIEW_CANVAS_W, PREVIEW_CANVAS_H);
     XFillRectangle(tool_d, preview_port_pixmap, gccache[ERASE], 0, 0,
@@ -1423,7 +1423,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	cur_objmask = 0;
 
 	/* clear the pixmap with the canvas background color */
-	XSetForeground(tool_d, gccache[ERASE], x_bg_color.pixel);
+	XSetForeground(tool_d, gccache[ERASE], getpixel(CANVAS_BG));
 	XFillRectangle(tool_d, canvas_win, gccache[ERASE], 0, 0, pixwidth, pixheight);
 
 	/* if he pressed "cancel preview" while reading file, skip displaying figure */

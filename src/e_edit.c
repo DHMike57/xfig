@@ -4921,17 +4921,13 @@ color_select(Widget w, Color color)
 	unsigned short	red, green, blue;
 
 	/* background in the color selected */
-	if (color < 0 || color >= NUM_STD_COLS + num_usr_cols) {
-		col = x_fg_color.pixel;
-		red = x_fg_color.red;
-		green = x_fg_color.green;
-		blue = x_fg_color.blue;
-	} else {
-		col = getpixel(color);
-		red = getred(color);
-		green = getgreen(color);
-		blue = getblue(color);
-	}
+	if (color < 0 || color >= NUM_STD_COLS + num_usr_cols)
+		color = DEFAULT;
+	col = getpixel(color);
+	red = getred(color);
+	green = getgreen(color);
+	blue = getblue(color);
+
 	NextArg(XtNbackground, col);
 	/* get RGB of the color to check intensity */
 	/* set the foreground in a contrasting color (white or black) */

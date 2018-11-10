@@ -532,7 +532,7 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 		if (op == PAINT)
 		    set_x_fg_color(gccache[op], color);
 		else
-		    XSetForeground(tool_d,gccache[op], xfg ^ x_bg_color.pixel);
+		    XSetForeground(tool_d,gccache[op], xfg ^ getpixel(CANVAS_BG));
 		gc_color[op] = xfg;
 		if (background != COLOR_NONE) {
 		    set_x_bg_color(gccache[op], background);
@@ -624,18 +624,18 @@ void init_gc(void)
     XColor	    tmp_color;
     XGCValues	    gcv;
 
-    gccache[PAINT] = makegc(PAINT, x_fg_color.pixel, x_bg_color.pixel);
-    gccache[ERASE] = makegc(ERASE, x_fg_color.pixel, x_bg_color.pixel);
-    gccache[INV_PAINT] = makegc(INV_PAINT, x_fg_color.pixel, x_bg_color.pixel);
+    gccache[PAINT] = makegc(PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
+    gccache[ERASE] = makegc(ERASE, getpixel(DEFAULT), getpixel(CANVAS_BG));
+    gccache[INV_PAINT] = makegc(INV_PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
     /* parse any grid color spec */
     XParseColor(tool_d, tool_cm, appres.grid_color, &tmp_color);
     if (XAllocColor(tool_d, tool_cm, &tmp_color)==0) {
 	fprintf(stderr,"Can't allocate color for grid \n");
-        grid_color = x_fg_color.pixel;
+        grid_color = getpixel(DEFAULT);
     } else {
         grid_color = tmp_color.pixel;
     }
-    grid_gc = makegc(PAINT, grid_color, x_bg_color.pixel);
+    grid_gc = makegc(PAINT, grid_color, getpixel(CANVAS_BG));
 
     for (i = 0; i < NUMOPS; i++) {
 	gc_color[i] = -1;
@@ -674,7 +674,7 @@ void init_fill_gc(void)
     gcv.fill_rule = EvenOddRule /* WindingRule */ ;
     for (i = 0; i < NUMFILLPATS; i++) {
 	/* all the bits are recolored in set_fill_gc() */
-	fill_gc[i] = makegc(PAINT, x_fg_color.pixel, getpixel(BLACK));
+	fill_gc[i] = makegc(PAINT, getpixel(DEFAULT), getpixel(BLACK));
 	mask = GCFillStyle | GCFillRule | GCArcMode;
 	if (fill_pm[i]) {
 	    gcv.stipple = fill_pm[i];
@@ -1072,7 +1072,7 @@ void init_fill_pm(void)
     /* use same colors for "NONE" indicator for black and color */
     fillstyle_choices[0].pixmap = XCreatePixmapFromBitmapData(tool_d,
 			tool_w, none_ic.bits, none_ic.width,
-			none_ic.height, x_fg_color.pixel, x_bg_color.pixel,
+			none_ic.height, getpixel(DEFAULT), getpixel(CANVAS_BG),
 			tool_dpth);
 
     /* Shade patterns go from full black to full saturation of the color */
@@ -1083,7 +1083,7 @@ void init_fill_pm(void)
 	/* The actual colors of fg/bg will be reset in recolor_fillstyles */
 	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
 		 tool_w, (char*)shade_images[i], SHADE_IM_SIZE, SHADE_IM_SIZE,
-		 x_fg_color.pixel,x_bg_color.pixel,tool_dpth);
+		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
     }
     /* Tint patterns go from full saturation of the color to full white */
     /* Note that there are no fillstyle_choices for tints for black */
@@ -1095,7 +1095,7 @@ void init_fill_pm(void)
 	/* The actual colors of fg/bg will be reset in recolor_fillstyles */
 	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
 		 tool_w, (char*)shade_images[j], SHADE_IM_SIZE, SHADE_IM_SIZE,
-		 x_fg_color.pixel,x_bg_color.pixel,tool_dpth);
+		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
     }
     /* Now do the remaining patterns (bricks, shingles, etc) */
     for (i = NUMSHADEPATS+NUMTINTPATS; i < NUMFILLPATS; i++) {
@@ -1114,7 +1114,7 @@ void init_fill_pm(void)
 	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
 		 tool_w, pattern_images[j].odata,
 		 pattern_images[j].owidth, pattern_images[j].oheight,
-		 x_fg_color.pixel,x_bg_color.pixel,tool_dpth);
+		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
     }
 }
 
@@ -1362,8 +1362,8 @@ void set_fill_gc(int fill_style, int op, int pencolor, int fillcolor, int xorg, 
 		fg = getpixel(BLACK);
 		bg = getpixel(WHITE);
 	    } else if (fillcolor == DEFAULT) {
-		fg = x_fg_color.pixel;
-		bg = x_bg_color.pixel;
+		fg = getpixel(DEFAULT);
+		bg = getpixel(CANVAS_BG);
 	    } else {
 		fg = getpixel(fillcolor);
 		bg = (fill_style < NUMSHADEPATS ?
@@ -1371,8 +1371,8 @@ void set_fill_gc(int fill_style, int op, int pencolor, int fillcolor, int xorg, 
 	    }
 	}
     } else {
-	fg = x_bg_color.pixel;   /* un-fill */
-	bg = x_bg_color.pixel;
+	fg = getpixel(CANVAS_BG);   /* un-fill */
+	bg = getpixel(CANVAS_BG);
     }
     XSetForeground(tool_d,fillgc,fg);
     XSetBackground(tool_d,fillgc,bg);
@@ -1456,7 +1456,7 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
 	gcv.foreground = getpixel(color);
 	mask |= GCForeground;
     } else if (op == INV_PAINT) {
-	gcv.foreground = getpixel(color) ^ x_bg_color.pixel;
+	gcv.foreground = getpixel(color) ^ getpixel(CANVAS_BG);
 	mask |= GCForeground;
     }
     gcv.join_style = join_styles[join_style];

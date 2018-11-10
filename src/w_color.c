@@ -452,11 +452,11 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		    /* mono display */
 		    } else {
 			if (i == WHITE) {
-			    NextArg(XtNforeground, x_fg_color.pixel);
-			    NextArg(XtNbackground, x_bg_color.pixel);
+			    NextArg(XtNforeground, getpixel(DEFAULT));
+			    NextArg(XtNbackground, getpixel(CANVAS_BG));
 			} else {
-			    NextArg(XtNforeground, x_bg_color.pixel);
-			    NextArg(XtNbackground, x_fg_color.pixel);
+			    NextArg(XtNforeground, getpixel(CANVAS_BG));
+			    NextArg(XtNbackground, getpixel(DEFAULT));
 			}
 		    }
 		    /* no need for label because the color is obvious */
@@ -467,8 +467,8 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		    }
 		    NextArg(XtNwidth, STD_COL_W);
 		} else {				/* it's the default color */
-		    NextArg(XtNforeground, x_bg_color.pixel);
-		    NextArg(XtNbackground, x_fg_color.pixel);
+		    NextArg(XtNforeground, getpixel(CANVAS_BG));
+		    NextArg(XtNbackground, getpixel(DEFAULT));
 		    NextArg(XtNlabel, colorNames[0].shrt);
 		    NextArg(XtNwidth, STD_COL_W*2+4);
 		}
@@ -862,10 +862,10 @@ void restore_mixed_colors(void)
 	if (!all_colors_available) {
 		if (mixedColor[0] != (Widget) 0) {
 			FirstArg(XtNbackground, cur_pencolor == WHITE ?
-					x_bg_color.pixel : x_fg_color.pixel);
+					getpixel(CANVAS_BG): getpixel(DEFAULT));
 			SetValues(mixedColor[0]);
 			FirstArg(XtNbackground, cur_fillcolor == WHITE ?
-					x_bg_color.pixel : x_fg_color.pixel);
+					getpixel(CANVAS_BG): getpixel(DEFAULT));
 			SetValues(mixedColor[1]);
 		}
 		return;
@@ -953,13 +953,13 @@ void set_mixed_name(int i, int col)
     if (col < NUM_STD_COLS) {
 	FirstArg(XtNlabel, colorNames[col+1].name);
 	if (col == WHITE)
-		fore = x_fg_color.pixel;
+		fore = getpixel(DEFAULT);
 	else
-		fore = x_bg_color.pixel;
+		fore = getpixel(CANVAS_BG);
     } else {
 	sprintf(buf,"User %d",col);
 	FirstArg(XtNlabel, buf);
-	fore = x_bg_color.pixel;
+	fore = getpixel(CANVAS_BG);
     }
     /* make contrasting foreground (text) color */
     NextArg(XtNforeground, fore);
@@ -1281,9 +1281,9 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 		}
 	    } else {
 		/* already exists, just set its color and map it */
-		FirstArg(XtNforeground, x_bg_color.pixel);
+		FirstArg(XtNforeground, getpixel(CANVAS_BG));
 		NextArg(XtNbackground, (all_colors_available?
-			user_color[indx].pixel: x_fg_color.pixel));
+			user_color[indx].pixel: getpixel(DEFAULT)));
 		SetValues(colorMemory[indx]);
 		XtManageChild(colorMemory[indx]);
 	    }
@@ -1310,9 +1310,9 @@ create_cell(int indx)
     colorMemory[indx] = XtVaCreateManagedWidget("colorMemory",
 	labelWidgetClass, userBox,
 	XtNlabel, labl,
-	XtNforeground, x_bg_color.pixel,
+	XtNforeground, getpixel(CANVAS_BG),
 	XtNbackground, (all_colors_available?
-		user_color[indx].pixel: x_fg_color.pixel),
+		user_color[indx].pixel: getpixel(DEFAULT)),
 	XtNwidth, USR_COL_W, XtNheight, USR_COL_H,
 	XtNborder, colors_used[indx]? getpixel(GREEN): getpixel(BLACK),
 	XtNborderWidth, 2,
@@ -1553,15 +1553,15 @@ set_std_color(int c)
 	if (!all_colors_available) {
 	    /* look up color rgb values from the name */
 	    if (c == DEFAULT) {
-		mixed_color[edit_fill].color.red = x_bg_color.red;
-		  mixed_color[edit_fill].color.green = x_bg_color.green;
-		  mixed_color[edit_fill].color.blue = x_bg_color.blue;
+		mixed_color[edit_fill].color.red = getred(CANVAS_BG);
+		  mixed_color[edit_fill].color.green = getgreen(CANVAS_BG);
+		  mixed_color[edit_fill].color.blue = getblue(CANVAS_BG);
 	    }
 	    /* now change the background of the widget */
 	    if (c == WHITE)
-		FirstArg(XtNbackground, x_bg_color.pixel);
+		FirstArg(XtNbackground, getpixel(CANVAS_BG));
 	    else
-		FirstArg(XtNbackground, x_fg_color.pixel);
+		FirstArg(XtNbackground, getpixel(DEFAULT));
 	    SetValues(mixedColor[edit_fill]);
 	}
 
@@ -1644,7 +1644,7 @@ pick_memory(int which)
 
 	/* now set the background of the widget to black if in monochrome */
 	if (!all_colors_available) {
-	    FirstArg(XtNbackground, x_fg_color.pixel);
+	    FirstArg(XtNbackground, getpixel(DEFAULT));
 	    SetValues(mixedColor[edit_fill]);
 	}
 }
@@ -1663,7 +1663,7 @@ lock_toggle(Widget w, XEvent *event, String *params, Cardinal *num_params)
 			XtSetSensitive(lockedScroll, False);
 	} else {
 	    if (!all_colors_available)
-		args[0].value = x_fg_color.pixel;
+		args[0].value = getpixel(DEFAULT);
 	    else {
 		    switch (button) {
 			case S_RED:
@@ -2099,10 +2099,10 @@ show_pencolor(void)
 	cur_pencolor >= NUM_STD_COLS && colorFree[cur_pencolor-NUM_STD_COLS])
 	    cur_pencolor = DEFAULT;
     if (cur_pencolor == DEFAULT)
-	color = x_fg_color.pixel;
+	color = getpixel(DEFAULT);
     else
 	color = all_colors_available ? getpixel(cur_pencolor) :
-			(cur_pencolor == WHITE? x_bg_color.pixel: x_fg_color.pixel);
+			(cur_pencolor == WHITE? getpixel(CANVAS_BG): getpixel(DEFAULT));
 
     recolor_fillstyles();	/* change the colors of the fill style indicators */
     /* force re-creation of popup fill style panel next time it is popped up
@@ -2171,10 +2171,10 @@ show_fillcolor(void)
 	cur_fillcolor >= NUM_STD_COLS && colorFree[cur_fillcolor-NUM_STD_COLS])
 	    cur_fillcolor = DEFAULT;
     if (cur_fillcolor == DEFAULT)
-	color = x_fg_color.pixel;
+	color = getpixel(DEFAULT);
     else
 	color = all_colors_available ? getpixel(cur_fillcolor) :
-			(cur_fillcolor == WHITE? x_bg_color.pixel: x_fg_color.pixel);
+			(cur_fillcolor == WHITE? getpixel(CANVAS_BG): getpixel(DEFAULT));
 
     recolor_fillstyles();	/* change the colors of the fill style indicators */
     /* force re-creation of popup fill style panel next time it is popped up

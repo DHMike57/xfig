@@ -57,7 +57,7 @@ extern XftFont	*xftrot;
 #define TRANSP_BACKGROUND (-3)	/* use background of figure as transp color */
 #define TRANSP_NONE	(-2)	/* no transp color */
 #define COLOR_NONE	(-2)	/* no background color (exporting) */
-/*	DEFAULT		(-1)	*/
+#define DEFAULT		(-1)
 
 #define BLACK		0
 #define BLUE		1
@@ -97,7 +97,6 @@ extern unsigned long	axis_lines_color;
 extern unsigned long	pageborder_color;
 extern XftColor		*user_color;
 extern XftColor		n_user_colors[MAX_USR_COLS];
-extern XColor		x_fg_color, x_bg_color;
 extern fig_color	colorNames[NUM_STD_COLS + 1];
 
 /* For GIF/XPM images */

@@ -333,10 +333,8 @@ do_export(Widget w)
 	    /* make background transparent */
 	    if (transp == TRANSP_BACKGROUND) {
 		use_transp_backg = True;
-		sprintf(transparent,"#%02x%02x%02x",
-				x_bg_color.red>>8,
-				x_bg_color.green>>8,
-				x_bg_color.blue>>8);
+		sprintf(transparent,"#%02x%02x%02x", getred(CANVAS_BG)>>8,
+				getgreen(CANVAS_BG)>>8, getblue(CANVAS_BG)>>8);
 	    /* make other color transp */
 	    } else {
 		sprintf(transparent,"#%02x%02x%02x", getred(transp)>>8,

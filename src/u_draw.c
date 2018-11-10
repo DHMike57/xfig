@@ -977,7 +977,7 @@ void create_pic_pixmap(F_line *box, int rotation, int width, int height, int fli
 
 	    if (box->pic->pic_cache->subtype == T_PIC_XBM) {
 		fg = getpixel(box->pen_color);	/* xbm, use object pen color */
-		bg = x_bg_color.pixel;
+		bg = getpixel(CANVAS_BG);
 	    } else if (box->pic->pic_cache->subtype == T_PIC_EPS) {
 		fg = getpixel(BLACK);		/* pbm from gs is inverted */
 		bg = getpixel(WHITE);

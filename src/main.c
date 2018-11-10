@@ -1865,6 +1865,7 @@ static void
 parse_canvas_colors(void)
 {
     Pixel	pix;
+    XColor	x_bg_color, x_fg_color;
 
     /* we had to wait until the canvas was created to get any color the
        user set through resources */

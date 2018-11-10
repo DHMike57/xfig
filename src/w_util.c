@@ -1725,10 +1725,24 @@ convert_gridstr(Widget widget, float mult)
  * Then we fade the letters to the background color and remove the icon.
  ****************************************************************************/
 
+static XColor
+getxcolor(int c)
+{
+	XColor result;
+
+	result.pixel = getpixel(c);
+	result.red = getred(c);
+	result.green = getgreen(c);
+	result.blue = getblue(c);
+
+	return result;
+}
+
 void splash_screen(void)
 {
 	GC		splash_gc;
 	XColor		col, colbg;
+	XColor		x_fg_color, x_bg_color;
 	Boolean		fade;
 	int		red_step, green_step, blue_step;
 	Pixmap		letters_pm;
@@ -1798,8 +1812,8 @@ void splash_screen(void)
 	    if (tool_vclass == GrayScale || tool_vclass == PseudoColor) {
 		/* allocate a color for the background of the text pixmap */
 		if (XAllocColorCells(tool_d, tool_cm, 0, &plane_mask, 0,
-					&colbg.pixel, 1)==0) {
-		    colbg = x_bg_color;
+					&colbg.pixel, 1) == 0) {
+		    colbg = getxcolor(CANVAS_BG);
 		} else {
 		    XStoreColor(tool_d, tool_cm, &colbg);
 		}
@@ -1819,17 +1833,17 @@ void splash_screen(void)
 	    }
 	} else {
 	    /* monochrome or no colors availble, draw text in fg, bg */
-	    col = x_fg_color;
-	    colbg = x_bg_color;
+	    col = getxcolor(DEFAULT);
+	    colbg = getxcolor(CANVAS_BG);
 	}
 	/* make our own gc */
 	splash_gc = makegc(PAINT, col.pixel, colbg.pixel);
 
 	XSetForeground(tool_d, splash_gc, col.pixel);
 	/* step size to go from the starting color to the background color */
-	red_step   = (x_bg_color.red-col.red)/COLSTEPS;
-	green_step = (x_bg_color.green-col.green)/COLSTEPS;
-	blue_step  = (x_bg_color.blue-col.blue)/COLSTEPS;
+	red_step   = (getred(CANVAS_BG) - col.red) / COLSTEPS;
+	green_step = (getgreen(CANVAS_BG) - col.green) / COLSTEPS;
+	blue_step  = (getblue(CANVAS_BG) - col.blue) / COLSTEPS;
 
 #ifdef USE_SPLASH
 	/* write the background on the canvas */
