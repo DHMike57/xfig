@@ -1324,53 +1324,45 @@ create_cell(int indx)
 }
 
 /*
-   allocate n colormap entries.  If not enough cells are available, switch
-   to a private colormap.  If we are already using a private colormap return
-   False.  The pixel numbers allocated are returned in the Pixel array pixels[]
-   The new colormap (if used) is set into the main (tool) window and the color
-   popup panel (if it exists)
+ * Allocate n colormap entries for writeable visuals (GrayScale or PseudoColor).
+ * If not enough cells are available, switch to a private colormap.  If we are
+ * already using a private colormap return False.  The pixel numbers allocated
+ * are returned in the Pixel array pixels[] The new colormap (if used) is set
+ * into the main (tool) window and the color popup panel (if it exists)
 */
 
 Boolean
 alloc_color_cells(Pixel *pixels, int n)
 {
-    int	i;
+	int	i;
 
-    /* allocate them one at a time in case we can't allocate all of them.
-       If that is the case then we switch colormaps and allocate the rest */
-    for (i=0; i<n; i++) {
-      switch( tool_vclass ){
-/*
- * Use XAllocColorCells "to allocate read/write color cells and color plane
- * combinations for GrayScale and PseudoColor models"
- */
-	case GrayScale:
-	case PseudoColor:
-	    if (!XAllocColorCells(tool_d, tool_cm, 0, &plane_masks, 0, &pixels[i], 1)) {
-	        /* try again with new colormap */
-		if (!switch_colormap() ||
-	            (!XAllocColorCells(tool_d, tool_cm, 0, &plane_masks, 0, &pixels[i], 1))) {
-		    put_msg("Cannot define user colors.");
-		    return False;
+	/*
+	 * Do not attempt to allocate color resources for static visuals
+	 * (but assume the colors can be achieved).
+	 */
+	if (tool_vclass != GrayScale && tool_vclass != PseudoColor)
+		return True;
+
+	/* allocate them one at a time in case we can't allocate all of them.
+	   If that is the case then we switch colormaps and allocate the rest */
+	for (i = 0; i < n; ++i) {
+		/*
+		 * Use XAllocColorCells "to allocate read/write color cells
+		 * and color plane combinations for GrayScale and PseudoColor
+		 * models"
+		 */
+		if (!XAllocColorCells(tool_d, tool_cm, 0, &plane_masks, 0,
+					&pixels[i], 1)) {
+			/* try again with new colormap */
+			if (!switch_colormap() || !XAllocColorCells(tool_d,
+						tool_cm, 0, &plane_masks, 0,
+						&pixels[i], 1)) {
+				put_msg("Cannot define user colors.");
+				return False;
+			}
 		}
-	    }
-	    break;
-/*
- * Do not attempt to allocate color resources for static visuals
- * (but assume the colors can be achieved).
- */
-	case StaticGray:
-	case StaticColor:
-	case DirectColor:
-	case TrueColor:
-	    break;
-
-        default:
-	    put_msg("Cannot define user colors in the Unknown Visual.");
-	    return False;
-      }
-    }
-    return True;
+	}
+	return True;
 }
 
 /* switch colormaps to private one and reallocate the colors we already used. */
@@ -1415,7 +1407,8 @@ void del_color_cell(int indx)
 
 	/* free up this colormap entry */
 	pixels[0] = user_color[indx].pixel;
-	if (all_colors_available)
+	/* For TrueColor, XftColorAllocValue() does not allocate a color */
+	if (all_colors_available && tool_vclass != TrueColor)
 	    XFreeColors(tool_d, tool_cm, pixels, 1, 0);
 app_flush(); /* DEBUG */
 
