@@ -4918,15 +4918,24 @@ color_select(Widget w, Color color)
 
     if (all_colors_available) { /* set color if possible */
 	Pixel		col;
+	unsigned short	red, green, blue;
 
 	/* background in the color selected */
-	col = (color < 0 || color >= NUM_STD_COLS+num_usr_cols) ?
-			x_fg_color.pixel : getpixel(color);
+	if (color < 0 || color >= NUM_STD_COLS + num_usr_cols) {
+		col = x_fg_color.pixel;
+		red = x_fg_color.red;
+		green = x_fg_color.green;
+		blue = x_fg_color.blue;
+	} else {
+		col = getpixel(color);
+		red = getred(color);
+		green = getgreen(color);
+		blue = getblue(color);
+	}
 	NextArg(XtNbackground, col);
 	/* get RGB of the color to check intensity */
 	/* set the foreground in a contrasting color (white or black) */
-	if ((0.3 * getred(col) + 0.59 * getgreen(col) + 0.11 * getblue(col)) <
-			0.55 * (255 << 8))
+	if ((0.3 * red + 0.59 * green + 0.11 * blue) < 0.55 * 0xffff)
 	    col = getpixel(WHITE);
 	else
 	    col = getpixel(BLACK);
