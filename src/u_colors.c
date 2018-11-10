@@ -173,9 +173,9 @@ check_colors(void)
 	int		i;
 	XColor		x_color;
 	fig_color	grays[LAST_GRAY - FIRST_GRAY + 1] = {
-				{"", "", 166, 166, 166},	/* gray65 */ 
-				{"", "", 204, 204, 204},	/* gray80 */ 
-				{"", "", 229, 229, 229}		/* gray90 */ 
+				{"", "", 166<<8, 166<<8, 166<<8},  /* gray65 */
+				{"", "", 204<<8, 204<<8, 204<<8},  /* gray80 */
+				{"", "", 229<<8, 229<<8, 229<<8}   /* gray90 */
 			};
 
 	/* initialize user color cells */
@@ -220,7 +220,7 @@ check_colors(void)
 		}
 		/* Gray colors */
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i)
-			write_xftcolor_true(&grays[i + FIRST_GRAY], i);
+			write_xftcolor_true(&grays[i - FIRST_GRAY], i);
 
 	} else { /* !TrueColor */
 
@@ -245,16 +245,15 @@ check_colors(void)
 
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i) {
 			if (!all_colors_available) {
-				xftcolor[i + FIRST_GRAY] = xftcolor[WHITE];
-			} else if (!write_xftcolor_nontrue(&grays[i+FIRST_GRAY],
+				xftcolor[i] = xftcolor[WHITE];
+			} else if (!write_xftcolor_nontrue(&grays[i-FIRST_GRAY],
 						i)) {
 				if (!switch_colormap() ||
 						!write_xftcolor_nontrue(
-							&grays[i+FIRST_GRAY], i)
+							&grays[i-FIRST_GRAY], i)
 						) {
 					all_colors_available = False;
-					xftcolor[i + FIRST_GRAY] =
-								xftcolor[WHITE];
+					xftcolor[i] = xftcolor[WHITE];
 				}
 			}
 		}
