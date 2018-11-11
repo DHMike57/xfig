@@ -1753,19 +1753,12 @@ update_from_triple(Widget w, XEvent *event, String *params, Cardinal *num_params
 		return;
 	}
 
-	/* TODO: free color for readable colormaps
-	XftColorFree(tool_d, tool_v, tool_cm, &mixed_color[edit_fill]); */
-	/* TODO: this below is re-used - write free_readonly_color(XftColor *c)?
-	   also, set is_readonly_visual? */
-	if (tool_vclass != TrueColor && (tool_vclass == StaticGray ||
-			tool_vclass == StaticColor ||
-			tool_vclass == DirectColor))
-		XFreeColors(tool_d, tool_cm, &(mixed_color[edit_fill].pixel),
-				1, 0);
-	mixed_color[edit_fill].color.red = red*256;
-	mixed_color[edit_fill].color.green = green*256;
-	mixed_color[edit_fill].color.blue = blue*256;
-	alloc_or_store_color(&mixed_color[edit_fill]);
+	/* update_from_triple() can only be called if current_memory >=0,
+	   therefore the pixel for the mixedColor widget background color
+	   can be set in StoreMix_and_Mem() */
+	mixed_color[edit_fill].color.red = red << 8;
+	mixed_color[edit_fill].color.green = green << 8;
+	mixed_color[edit_fill].color.blue = blue << 8;
 
 	/* and update hsv and rgb scrollbars etc from the new hex value */
 	update_scrl_triple(w,event,params,num_params);
@@ -1889,12 +1882,16 @@ move_scroll(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
 void StoreMix_and_Mem(void)
 {
-	set_mixed_color(edit_fill);
+	/* the pixel value of mixed_color[edit_fill] is still the old one,
+	   the rgb values were updated */
 	if (tool_vclass != TrueColor && (tool_vclass == StaticGray ||
 			tool_vclass == StaticColor ||
-			tool_vclass == DirectColor))
+			tool_vclass == DirectColor)) {
 		XFreeColors(tool_d, tool_cm,
 				&(user_color[current_memory].pixel), 1, 0);
+		XFreeColors(tool_d, tool_cm,
+				&(mixed_color[edit_fill].pixel), 1, 0);
+	}
 	user_color[current_memory].color.red =
 			mixed_color[edit_fill].color.red;
 	user_color[current_memory].color.green =
@@ -1902,6 +1899,8 @@ void StoreMix_and_Mem(void)
 	user_color[current_memory].color.blue =
 			mixed_color[edit_fill].color.blue;
 	alloc_or_store_color(&user_color[current_memory]);
+	alloc_or_store_color(&mixed_color[edit_fill]);
+	set_mixed_color(edit_fill);
 	set_user_color(current_memory);
 }
 
