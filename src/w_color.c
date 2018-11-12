@@ -144,7 +144,7 @@ static void set_mixed_color(int which);
 
 #define COLOR(color_el,rgb)	((color_el < 0) ?	\
 		mixed_color[color_el+2].color.rgb/256 :	\
-		get ## rgb(color_el)/256)
+		user_color[color_el].color.rgb/256)
 #define CHANGE_RED(element) \
 		pass_value = 1.0 - (float)(COLOR(element, red)/255.0); \
 		Thumbed(redScroll, (XtPointer)S_RED, (XtPointer)(&pass_value))
@@ -1614,14 +1614,17 @@ pick_memory(int which)
 
 	if (!colorFree[current_memory]) {
 		do_change = False;
+		/* change the scrollbar positions to the current color */
 		CHANGE_RED(current_memory);
 		CHANGE_GREEN(current_memory);
 		CHANGE_BLUE(current_memory);
 		do_change = True;
+		mixed_color[edit_fill] = user_color[current_memory];
 		set_mixed_color(edit_fill);
 		update_scrl_triple((Widget)NULL, (XEvent *)NULL,
 			(String *)NULL, (Cardinal *)NULL);
 	} else {
+file_msg("entered pick_memory(), colorFree[current_memory] == true.\n");
 		user_color[current_memory].color.red =
 				mixed_color[edit_fill].color.red;
 		user_color[current_memory].color.green =
