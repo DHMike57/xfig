@@ -1252,8 +1252,6 @@ add_color_cell(Boolean use_exist, int indx, int r, int g, int b)
 	/* in case we have read-only colormap, get the pixel value now */
 	if (all_colors_available)
 		alloc_or_store_color(&user_color[indx]);
-	/* and put it in main colors */
-	// TODO: remove colors[NUM_STD_COLS+indx] = user_colors[indx].pixel;
 
 	colorFree[indx] = False;
 	colorUsed[indx] = False;
@@ -1495,19 +1493,7 @@ void set_slider_sensitivity(void)
 static void
 set_color_ok(Widget w, char *dum, XButtonEvent *ev, Boolean disp)
 {
-	int	i,indx;
-
-	/* put the color pixel value in the table */
-	/* this is done here because if the visual is TrueColor, etc.
-	   the value of the pixel changes with the color itself */
-	/* for (i=0; i<=1; i++) {
-	    indx = mixed_color_indx[i];
-	    if (indx >= NUM_STD_COLS)
-		colors[indx] = user_colors[indx-NUM_STD_COLS].pixel;
-	} */
-
-	/* have either the fill or pen color been modified? */
-
+	/* has either the fill or pen color been modified? */
 	if (modified[0]) {
 	    cur_pencolor = mixed_color_indx[0];
 	    show_pencolor(); /* update the button in the indicator panel */

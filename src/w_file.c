@@ -1534,17 +1534,14 @@ void save_user_colors(void)
 
 	user_colors_saved = True;
 
-	/* TODO: *After* the change to XftColor works,
-	   put the below into one loop.		*/
 	/* first save the current colors because del_color_cell destroys them */
-	for (i = 0; i < num_usr_cols; ++i)
+	for (i = 0; i < num_usr_cols; ++i) {
 		saved_user_colors[i] = user_color[i];
-	/* and save Free entries */
-	for (i = 0; i < num_usr_cols; ++i)
+		/* and save Free entries */
 		saved_userFree[i] = colorFree[i];
-	/* now free any previously defined user colors */
-	for (i = 0; i < num_usr_cols; ++i)
+		/* now free any previously defined user colors */
 		del_color_cell(i);	/* remove widget and colormap entry */
+	}
 
 	saved_user_num = num_usr_cols;
 }
@@ -1561,14 +1558,12 @@ void save_nuser_colors(void)
 
 	nuser_colors_saved = True;
 
-	/* TODO: *After* the change to XftColor works,
-	   put the below into one loop.		*/
 	/* first save the current colors because del_color_cell destroys them */
-	for (i = 0; i < n_num_usr_cols; ++i)
+	for (i = 0; i < n_num_usr_cols; ++i) {
 		saved_nuser_colors[i] = n_user_colors[i];
-	/* and save Free entries */
-	for (i = 0; i < n_num_usr_cols; ++i)
+		/* and save Free entries */
 		saved_nuserFree[i] = n_colorFree[i];
+	}
 	saved_nuser_num = n_num_usr_cols;
 }
 
@@ -1594,14 +1589,12 @@ void restore_user_colors(void)
 
 	num_usr_cols = saved_user_num;
 
-	/* TODO: *After* the change to XftColor works,
-	   put the below into one loop.		*/
 	/* now restore the orig user colors */
-	for (i = 0; i < num_usr_cols; ++i)
+	for (i = 0; i < num_usr_cols; ++i) {
 		user_color[i] = saved_user_colors[i];
-	/* and Free entries */
-	for (i = 0; i < num_usr_cols; ++i)
+		/* and Free entries */
 		colorFree[i] = saved_userFree[i];
+	}
 
 	/* now try to allocate those colors */
 	if (num_usr_cols > 0) {
@@ -1614,7 +1607,6 @@ void restore_user_colors(void)
 				continue;
 			}
 			/* and add a widget and colormap entry */
-			// FIXME: add_color_cell -> changet to XftColor
 			if (add_color_cell(USE_EXISTING_COLOR, i,
 						user_color[i].color.red/256,
 						user_color[i].color.green/256,
@@ -1645,13 +1637,11 @@ void restore_nuser_colors(void)
 
 	n_num_usr_cols = saved_nuser_num;
 
-	/* TODO: *After* the change to XftColor works,
-	   put the below into one loop.		*/
 	/* now restore the orig user colors */
-	for (i = 0; i < n_num_usr_cols; ++i)
+	for (i = 0; i < n_num_usr_cols; ++i) {
 		n_user_colors[i] = saved_nuser_colors[i];
-	/* and Free entries */
-	for (i = 0; i < n_num_usr_cols; ++i)
+		/* and Free entries */
 		n_colorFree[i] = saved_nuserFree[i];
+	}
 }
 

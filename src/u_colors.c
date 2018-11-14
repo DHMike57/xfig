@@ -45,12 +45,7 @@ unsigned long	axis_lines_color;
 // TODO: see grid_color, x_fg_color, x_bg_color, and do not set them in
 // disparate places, but collect them together (into check_colors?).
 
-// TODO: fixe n_user_colors, save_colors, user_colors, undel...,
-// for use with XftColor
-/*XftColor	n_user_colors[MAX_USR_COLS];
-XftColor	save_colors[MAX_USR_COLS]; */
 XftColor	n_user_colors[MAX_USR_COLS];
-XColor	user_colors[MAX_USR_COLS];
 
 /* Number of colors we want to use for pictures. This will be determined
    when the first picture is used. We will take
@@ -96,7 +91,7 @@ fig_color colorNames[] = {
 
 /*
  * Set XftColor *out to the color values given in XColor *in.
- * Does not set the alpha value. TODO: rewrite as a macro?
+ * Does not set the alpha value.
  */
 void
 xtoxftcolor(XftColor *out, const XColor *restrict in)
