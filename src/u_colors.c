@@ -39,6 +39,7 @@ XftColor	*user_color = color_storage + SPECIAL_COLS + NUM_STD_COLS;
 // TODO w_color.c: get rgb values directly, not by XQueryColor
 unsigned long	pageborder_color;
 unsigned long	axis_lines_color;
+unsigned long	grid_color;
 /* TODO: x_fg_color and x_bg_color are queried and set in
  * main.c`parse_canvas_colors; Move parse_canvas_colors to u_colors.c and
  * see, whether XftColors could be used in most places. */
@@ -181,6 +182,8 @@ check_colors(void)
 	}
 
 	/* if monochrome resource is set, only allocate black and white */
+	/* appres.monochrome and tool_cells == 2 is unnecessary, since
+	   in that case init_settings() sets all_colors_available = false */
 	if (!all_colors_available || appres.monochrome || tool_cells == 2) {
 
 		/* set all colors to black, except white */
@@ -194,8 +197,8 @@ check_colors(void)
 		for (i = FIRST_GRAY; i <= LAST_GRAY; ++i)
 			xftcolor[i] = xftcolor[WHITE];
 
-		pageborder_color = xftcolor[BLACK].pixel;
-		axis_lines_color = xftcolor[BLACK].pixel;
+		pageborder_color = axis_lines_color = grid_color =
+								getpixel(BLACK);
 
 		return;
 	}
@@ -261,14 +264,23 @@ check_colors(void)
 	if (XAllocColor(tool_d, tool_cm, &x_color))
 		pageborder_color = x_color.pixel;
 	else
-		pageborder_color = xftcolor[BLACK].pixel;
+		pageborder_color = getpixel(BLACK);
 
 	/* axis lines color */
 	XParseColor(tool_d, tool_cm, appres.axislines, &x_color);
 	if (XAllocColor(tool_d, tool_cm, &x_color))
 		axis_lines_color = x_color.pixel;
 	else
-		axis_lines_color = xftcolor[BLACK].pixel;
+		axis_lines_color = getpixel(BLACK);
+
+	/* parse any grid color spec */
+	XParseColor(tool_d, tool_cm, appres.grid_color, &x_color);
+	if (XAllocColor(tool_d, tool_cm, &x_color)) {
+		grid_color = x_color.pixel;
+	} else {
+		fprintf(stderr, "Can't allocate color for grid \n");
+		grid_color = getpixel(BLACK);
+	}
 }
 
 unsigned long

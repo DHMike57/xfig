@@ -627,14 +627,6 @@ void init_gc(void)
     gccache[PAINT] = makegc(PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
     gccache[ERASE] = makegc(ERASE, getpixel(DEFAULT), getpixel(CANVAS_BG));
     gccache[INV_PAINT] = makegc(INV_PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
-    /* parse any grid color spec */
-    XParseColor(tool_d, tool_cm, appres.grid_color, &tmp_color);
-    if (XAllocColor(tool_d, tool_cm, &tmp_color)==0) {
-	fprintf(stderr,"Can't allocate color for grid \n");
-        grid_color = getpixel(DEFAULT);
-    } else {
-        grid_color = tmp_color.pixel;
-    }
     grid_gc = makegc(PAINT, grid_color, getpixel(CANVAS_BG));
 
     for (i = 0; i < NUMOPS; i++) {
