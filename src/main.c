@@ -26,6 +26,7 @@
 #include "e_edit.h"
 #include "f_read.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "u_error.h"
 #include "u_fonts.h"
 #include "u_redraw.h"

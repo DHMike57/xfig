@@ -77,7 +77,6 @@ extern	void	reset_grid_menus(Boolean inches);
 
 extern	Boolean	check_action_on(void);
 extern	void	check_for_resize(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams);
-extern	void	check_colors(void);
 
 extern	Widget	make_pulldown_menu(char **entries, Cardinal nent, int divide_line, char *divide_message, Widget parent, XtCallbackProc callback);
 extern	Widget	make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolean include_transp, Boolean include_backg);
