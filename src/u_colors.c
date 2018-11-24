@@ -19,34 +19,31 @@
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>			/* XColor, Status */
 
-#include "resources.h"		/* tool_d, tool_v,.., appres */
+#include "resources.h"			/* tool_d, tool_v,.., appres */
 #include "u_colors.h"
-#include "w_color.h"		/* switch_colormap() */
+#include "w_color.h"			/* switch_colormap() */
 
 #define FIRST_GRAY	DARK_GRAY
 #define LAST_GRAY	LT_GRAY
 
 Boolean		all_colors_available;
+
+/* variables used for color administration, e.g., when opening a new file */
 Boolean		colorUsed[MAX_USR_COLS];
 Boolean		colorFree[MAX_USR_COLS];
 Boolean		n_colorFree[MAX_USR_COLS];
 int		num_usr_cols = 0;
 int		n_num_usr_cols;
+XftColor	n_user_colors[MAX_USR_COLS];
+
 static XftColor	color_storage[SPECIAL_COLS + NUM_STD_COLS + MAX_USR_COLS];
 /* Convenience pointers into interesting positions of color_storage. */
 static XftColor	*xftcolor = color_storage + SPECIAL_COLS;
 XftColor	*user_color = color_storage + SPECIAL_COLS + NUM_STD_COLS;
-// TODO w_color.c: get rgb values directly, not by XQueryColor
 unsigned long	pageborder_color;
 unsigned long	axis_lines_color;
 unsigned long	grid_color;
-/* TODO: x_fg_color and x_bg_color are queried and set in
- * main.c`parse_canvas_colors; Move parse_canvas_colors to u_colors.c and
- * see, whether XftColors could be used in most places. */
-// TODO: see grid_color, x_fg_color, x_bg_color, and do not set them in
-// disparate places, but collect them together (into check_colors?).
 
-XftColor	n_user_colors[MAX_USR_COLS];
 
 /* Number of colors we want to use for pictures. This will be determined
    when the first picture is used. We will take
@@ -157,8 +154,8 @@ setcolor_fromXColor(int c, const XColor *restrict in)
 }
 
 /*
- * Allocate standard colors, three gray colors, the pageborder and
- * the axisline color. The latter two might be set from resources.
+ * Allocate standard colors, three gray colors, and set the pageborder,
+ * axislines and grid color pixel. The latter three might be set from resources.
  * Provide for three cases, (i) TrueColor, (ii) black and white and
  * (iii) legacy XColors, with fallback values if not all colors can
  * be allocated. 
