@@ -20,6 +20,7 @@
 
 #include <limits.h>		/* PATH_MAX, below */
 #include <X11/Intrinsic.h>	/* Boolean */
+#include <X11/Xft/Xft.h>
 
 #include "paintop.h"
 #ifndef PATH_MAX
@@ -293,6 +294,7 @@ extern float	ZOOM_FACTOR;
 extern float	PIC_FACTOR;
 
 extern Window	main_canvas;		/* main canvas window */
+extern XftDraw	*main_xftdraw;
 extern Window	canvas_win;		/* current canvas */
 extern Window	msg_win, sideruler_win, topruler_win;
 

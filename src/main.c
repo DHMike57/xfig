@@ -69,6 +69,8 @@
 #endif  /* I18N */
 
 #include <X11/IntrinsicP.h>
+#include <X11/Xft/Xft.h>
+
 /* XFT DEBUG START */
 /* #include <X11/Xft/Xft.h>
 XftDraw	*main_xftdraw;
@@ -81,7 +83,8 @@ XftFont *xftrot;
 
 /* EXPORTS */
 
-Boolean	    geomspec;
+Boolean		geomspec;
+XftDraw		*main_xftdraw;
 
 /* LOCALS */
 
@@ -94,7 +97,7 @@ static void	set_max_image_colors(void);
 static void	parse_canvas_colors(void);
 static void	set_xpm_icon(void);
 static void	resize_canvas(void);
-static void check_refresh(XtPointer client_data, XtIntervalId *id);
+static void	check_refresh(XtPointer client_data, XtIntervalId *id);
 
 /************** FIG options ******************/
 
@@ -1114,6 +1117,10 @@ main(int argc, char **argv)
     /* keep main_canvas for the case when we set a temporary cursor and
        the canvas_win is set the figure preview (when loading figures) */
     main_canvas = canvas_win = XtWindow(canvas_sw);
+
+    /* XftFonts need to be displayed on a XftDraw. */
+    main_xftdraw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
+
     /* XFT DEBUG START */
     /*
      * It seems, that a given font is linearly scaled to different sizes:
