@@ -124,6 +124,16 @@ typedef struct f_arrow {
 	float ht;
 } F_arrow;
 
+/*****************/
+/* Xft Font list */
+/*****************/
+
+#define	FONTLIST_SIZE	6
+typedef struct _F_font {
+	int		pixelsize;	/* actually, 10 times pixelsize */
+	XftFont		*font;
+	struct _F_font	*next;
+} F_font;
 
 /******************/
 /* Ellipse object */
@@ -277,12 +287,11 @@ typedef struct f_text {
 #define T_CENTER_JUSTIFIED	1
 #define T_RIGHT_JUSTIFIED	2
 	int font;
-	XFontStruct *fontstruct;
-	//XftFont *xftfont;	XFT DEBUG
+	XFontStruct	*fontstruct;
+	F_font	fonts[FONTLIST_SIZE];
 	float zoom;		/* to keep track of when it needs rescaling */
 	int size;		/* point size */
 	Color color;
-	//XftColor xftcolor;	XFT DEBUG
 	int depth;
 	float angle;		/* in radians */
 

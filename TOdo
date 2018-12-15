@@ -1,0 +1,6 @@
+
+******************************
+****  WHITESPACE CHANGES  ****
+******************************
+
+object.h: align struct fields

@@ -623,7 +623,6 @@ create_text(void)
     }
     t->tagged = 0;
     t->fontstruct = 0;
-/*    t->xftfont = NULL;	XFT DEBUG */
     t->comments = NULL;
     t->cstring = NULL;
     t->next = NULL;
