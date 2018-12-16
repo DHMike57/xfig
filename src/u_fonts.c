@@ -255,7 +255,8 @@ int latexfontnum(char *font)
 
 /* XFT DEBUG */
 XftFont *
-getfont(int psflag, int fnum, int size, double angle/* larger than 0! */)
+getfont(int psflag, int fnum, int size3, /* eight times the font size */
+		double angle /* must be larger than 0! */)
 {
 	/*
 	 * The base pattern is the maximum common pattern for a given font.
@@ -295,8 +296,8 @@ getfont(int psflag, int fnum, int size, double angle/* larger than 0! */)
 	want = XftPatternDuplicate(xftbasepattern[fnum]);
 
 	/* add the actual pixel size and matrix transformation */
-	pixelsize = size * DISPLAY_PIX_PER_INCH /
-		(appres.correct_font_size ? 72.0 : 80.0 );
+	pixelsize = size3 * DISPLAY_PIX_PER_INCH /
+		(8. * (appres.correct_font_size ? 72.0 : 80.0));
 	XftPatternAddDouble(want, XFT_PIXEL_SIZE, pixelsize);
 
 	/* Rotated text - negative angle not allowed! */
@@ -319,7 +320,7 @@ getfont(int psflag, int fnum, int size, double angle/* larger than 0! */)
 		XftNameUnparse(have, buf, BUFSIZ); /* DEBUG */
 		fprintf(stderr, "chosen font: %s\n", buf);
 	} else if (fnum != DEF_PS_FONT)
-		xftfont = getfont(1 /*psflag*/, DEF_PS_FONT, size, angle);
+		xftfont = getfont(1 /*psflag*/, DEF_PS_FONT, size3, angle);
 	else {
 		/* why should this find a result, if XftFontMatch() fails? */
 		fprintf(stderr, "trying XftFontOpenPattern!\n");
