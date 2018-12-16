@@ -19,7 +19,8 @@
 #include "resources.h"
 #include "u_fonts.h"
 #include "object.h"
-#include "w_msgpanel.h"
+#include "w_msgpanel.h"		/* file_msg() */
+#include "w_setup.h"		/* DISPLAY_PIX_PER_INCH */
 
 #define DEF_PS_FONT		0
 
@@ -111,7 +112,7 @@ struct _xfstruct x_backup_fontinfo[NUM_FONTS] = {
 /* PostScript font names matched with X11 font names in x_fontinfo */
 
 struct _fstruct ps_fontinfo[NUM_FONTS + 1] = {
-    {"Default", -1},
+    {"Default",				-1},
     {"Times-Roman",			0},
     {"Times-Italic",			1},
     {"Times-Bold",			2},
@@ -203,12 +204,6 @@ const char *const xft_name[NUM_FONTS] = {
 	"zapfdingbats"				/* ZapfDingbats */
 };
 
-/*
- * On first call, the xftbasepattern[] will be set to the result from
- * calling XftNameParse() on the corresponding xft_name above.
- */
-XftPattern *
-xftbasepattern[NUM_FONTS];
 
 /* LaTeX font names and the corresponding PostScript font index into ps_fontinfo */
 
@@ -240,7 +235,7 @@ int psfontnum(char *font)
 
     if (font == NULL)
 	return(DEF_PS_FONT);
-    for (i=0; i<NUM_FONTS; i++)
+    for (i = 0; i < NUM_FONTS; ++i)	/* Do not start with Zapf Dingbats */
 	if (strcasecmp(ps_fontinfo[i].name, font) == 0)
 		return (i-1);
     return(DEF_PS_FONT);
@@ -258,10 +253,17 @@ int latexfontnum(char *font)
     return(DEF_LATEX_FONT);
 }
 
-/* XFT DEBUG START */
+/* XFT DEBUG */
 XftFont *
-getxftfont(int psflag, int fnum, int size)
+getfont(int psflag, int fnum, int size, double angle/* larger than 0! */)
 {
+	/*
+	 * The base pattern is the maximum common pattern for a given font.
+	 * Extend this pattern by the requested size and font angle to
+	 * return a specific font face.
+	 */
+	static XftPattern	*xftbasepattern[NUM_FONTS] = {NULL};
+	double		pixelsize;
 	XftPattern	*want, *have;
 	XftResult	res;
 	XftFont		*xftfont;
@@ -280,18 +282,30 @@ getxftfont(int psflag, int fnum, int size)
 	if (xftbasepattern[fnum] == NULL) {
 		xftbasepattern[fnum] = XftNameParse(xft_name[fnum]);
 		XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ); /* DEBUG */
-		fprintf(stderr,"request %s, result:\n%s\n", xft_name[fnum], buf);
+		fprintf(stderr,"request: %s\nresult: %s\n", xft_name[fnum],buf);
 
-		/* erasing, rotation would not work with antialiased text */
-		fprintf(stderr,"result code (0, I presume): %d\n",
-		XftPatternAddBool(xftbasepattern[fnum], XFT_ANTIALIAS, False));
-		XftPatternAddBool(xftbasepattern[fnum], "hinting", False);
+		/* erasing would not work with antialiased text */
+		XftPatternAddBool(xftbasepattern[fnum], XFT_ANTIALIAS, False);
+		/* XftPatternAddBool returns 1, if succesful */
+		//XftPatternAddBool(xftbasepattern[fnum], "hinting", False);
 		XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ); /* DEBUG */
-		fprintf(stderr, "add aa, hinting: %s\n", buf);
+		fprintf(stderr, "add anti-aliasing: %s\n", buf);
 	}
+
 	want = XftPatternDuplicate(xftbasepattern[fnum]);
-	fprintf(stderr, "hallo here\n");
-	XftPatternAddDouble(want, XFT_SIZE, (double)size);
+
+	/* add the actual pixel size and matrix transformation */
+	pixelsize = size * DISPLAY_PIX_PER_INCH /
+		(appres.correct_font_size ? 72.0 : 80.0 );
+	XftPatternAddDouble(want, XFT_PIXEL_SIZE, pixelsize);
+
+	/* Rotated text - negative angle not allowed! */
+	if (angle > 0.01) {
+		const double	cosa = cos(angle);
+		const double	sina = sin(angle);
+		const XftMatrix	mat = {cosa, -sina, sina, cosa};
+		XftPatternAddMatrix(want, XFT_MATRIX, &mat);
+	}
 
 	/*
 	 * man xft(3) says, "XftFonts are internally allocated,
@@ -300,12 +314,12 @@ getxftfont(int psflag, int fnum, int size)
 	 */
 
 	have = XftFontMatch(tool_d, tool_sn, want, &res);
-	XftNameUnparse(have, buf, BUFSIZ); /* DEBUG */
-	fprintf(stderr, "chosen font: %s\n", buf);
-	if (res == XftResultMatch)
+	if (res == XftResultMatch) {
 		xftfont = XftFontOpenPattern(tool_d, have);
-	else if (fnum != DEF_PS_FONT)
-		xftfont = getxftfont(1, DEF_PS_FONT, size);
+		XftNameUnparse(have, buf, BUFSIZ); /* DEBUG */
+		fprintf(stderr, "chosen font: %s\n", buf);
+	} else if (fnum != DEF_PS_FONT)
+		xftfont = getfont(1 /*psflag*/, DEF_PS_FONT, size, angle);
 	else {
 		/* why should this find a result, if XftFontMatch() fails? */
 		fprintf(stderr, "trying XftFontOpenPattern!\n");
@@ -316,4 +330,3 @@ getxftfont(int psflag, int fnum, int size)
 	XftPatternDestroy(have);
 	return xftfont;
 }
-/* XFT DEBUG END */

@@ -1,3 +1,7 @@
+ o man-page -tablet: check variable USETAB, TABlIB
+
+ o Put (all-permissive) copyright on all /lib functions, both in
+   fig2dev and xfig
 
 ******************************
 ****  WHITESPACE CHANGES  ****

@@ -721,7 +721,8 @@ new_text(void)
     text->font = work_font;	/* put in current font number */
     text->fontstruct = work_fontstruct;
     // XFT DEBUG
-    // text->xftfont = getxftfont(work_psflag, work_font, work_fontsize);
+    text->fonts[0] = getfont(work_psflag, work_font, work_fontsize, 0.);
+    text->fonts[1] = getfont(work_psflag, work_font, work_fontsize, work_angle);
     text->zoom = zoomscale;
     text->size = work_fontsize;
     text->angle = work_angle;

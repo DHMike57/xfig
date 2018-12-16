@@ -128,12 +128,16 @@ typedef struct f_arrow {
 /* Xft Font list */
 /*****************/
 
-#define	FONTLIST_SIZE	6
+#define	FONTLIST_SIZE	2	/* otherwise, 6 */
+#if FONTLIST_SIZE > 2
 typedef struct _F_font {
 	int		pixelsize;	/* actually, 10 times pixelsize */
 	XftFont		*font;
 	struct _F_font	*next;
 } F_font;
+#else
+typedef XftFont	*F_font;
+#endif
 
 /******************/
 /* Ellipse object */
