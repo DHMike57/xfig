@@ -78,7 +78,6 @@
 XFontStruct	*bold_font;
 XFontStruct	*roman_font;
 XFontStruct	*button_font;
-XFontStruct	*canvas_font;
 
 /* LOCAL */
 

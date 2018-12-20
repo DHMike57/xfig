@@ -51,7 +51,8 @@
 #include <X11/Xatom.h>
 #include <wchar.h>
 
-// #include <X11/Xft/Xft.h> /* XFT DEBUG */
+#include <X11/Xlib.h>	/* XFT DEBUG */
+#include <X11/Xft/Xft.h> /* XFT DEBUG */
 //#include <X11/extensions/Xrender.h>
 
 #ifdef SEL_TEXT
@@ -60,7 +61,10 @@ Boolean	text_selection_active;
 #endif /* SEL_TEXT */
 
 /* EXPORTS */
-int	work_font;
+int		work_font;
+XFontStruct	*canvas_font;
+XftFont		*canvas_xftfont;
+
 
 /* LOCALS */
 
@@ -101,12 +105,14 @@ static int	orig_x, orig_y;		/* to position next line */
 static int	orig_ht;		/* to advance to next line */
 static float	work_float_fontsize;	/* keep current font size in floating for roundoff */
 static XFontStruct *canvas_zoomed_font;
+static XftFont	*canvas_zoomed_xftfont;
 
 static Boolean	is_newline;
 static int	work_fontsize, work_flags,
 		work_psflag, work_textjust, work_depth;
 static Color	work_textcolor;
 static XFontStruct *work_fontstruct;
+static XftFont	*work_xftfont;
 static float	work_angle;		/* in RADIANS */
 static double	sin_t, cos_t;		/* sin(work_angle) and cos(work_angle) */
 //static void	finish_n_start(int x, int y);
@@ -395,6 +401,12 @@ overlay_text_input(int x, int y)
 				  round(work_fontsize*display_zoomscale));
 	/* save the working font structure */
 	work_fontstruct = canvas_zoomed_font;
+	canvas_xftfont = getfont(work_psflag, work_font,
+			work_fontsize * SIZE_FLT, work_angle);
+	canvas_zoomed_xftfont = getfont(work_psflag, work_font,
+			(int)(work_fontsize * SIZE_FLT * display_zoomscale),
+			work_angle);
+	work_xftfont = canvas_zoomed_xftfont;
     }
 
     put_msg("Ready for text input (from keyboard)");
@@ -535,6 +547,12 @@ init_text_input(int x, int y)
 			   round(work_fontsize*display_zoomscale));
 	    /* save the working font structure */
 	    work_fontstruct = canvas_zoomed_font;
+	    canvas_xftfont = getfont(work_psflag, work_font,
+			    work_fontsize * SIZE_FLT, work_angle);
+	    canvas_zoomed_xftfont = getfont(work_psflag, work_font,
+			    (int)(work_fontsize * SIZE_FLT * display_zoomscale),
+			    work_angle);
+	    work_xftfont = canvas_zoomed_xftfont;
 	} /* (is_newline) */
 
     } else {
@@ -557,6 +575,7 @@ init_text_input(int x, int y)
 	if (prev_work_font != work_font)
 	    refresh_character_panel();
 	work_fontstruct = canvas_zoomed_font = cur_t->fontstruct;
+	work_xftfont = canvas_zoomed_xftfont = cur_t->fonts[1];
 	work_fontsize = cur_t->size;
 	work_psflag   = cur_t->flags & PSFONT_TEXT;
 	work_flags    = cur_t->flags;
@@ -572,6 +591,7 @@ init_text_input(int x, int y)
 	/* this is to get widths etc for the unzoomed chars */
 	canvas_font = lookfont(x_fontnum(work_psflag, work_font),
 			   work_fontsize);
+	canvas_xftfont = cur_t->fonts[0];
 
 	toggle_textmarker(cur_t);
 	draw_text(cur_t, ERASE);

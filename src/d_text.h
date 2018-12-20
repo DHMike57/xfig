@@ -15,6 +15,12 @@
  *
  */
 
+#include <X11/Xlib.h>	/* XFT DEBUG */
+#include <X11/Xft/Xft.h> /* XFT DEBUG */
+
+extern int		work_font;
+extern XftFont		*canvas_xftfont;
+extern XFontStruct	*canvas_font;
 extern void	char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym);
 extern void	draw_char_string(void);
 extern void	erase_char_string(void);
@@ -24,7 +30,6 @@ extern void	reload_text_fstructs(void);
 extern Boolean	text_selection_active;
 extern Boolean	ConvertSelection();
 extern void	LoseSelection(), TransferSelectionDone();
-extern int	work_font;
 
 #ifdef I18N
 extern XIC	xim_ic;
