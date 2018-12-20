@@ -255,7 +255,7 @@ int latexfontnum(char *font)
 
 /* XFT DEBUG */
 XftFont *
-getfont(int psflag, int fnum, int size3, /* eight times the font size */
+getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 		double angle /* must be larger than 0! */)
 {
 	/*
@@ -299,7 +299,7 @@ getfont(int psflag, int fnum, int size3, /* eight times the font size */
 
 	/* add the actual pixel size and matrix transformation */
 	pixelsize = size3 * DISPLAY_PIX_PER_INCH /
-		(8. * (appres.correct_font_size ? 72.0 : 80.0));
+		(SIZE_FLT * (appres.correct_font_size ? 72.0 : 80.0));
 	XftPatternAddDouble(want, XFT_PIXEL_SIZE, pixelsize);
 
 	/* Rotated text - negative angle not allowed! */

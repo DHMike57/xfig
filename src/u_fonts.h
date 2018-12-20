@@ -29,6 +29,7 @@
 #define NUM_LATEX_FONTS		6
 /* font number for the "nil" font (when user wants tiny text) */
 #define NILL_FONT NUM_FONTS
+#define SIZE_FLT		8	/* Float factor for font size */
 
 /* element of linked list for each font
    The head of list is for the different font NAMES,

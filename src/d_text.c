@@ -721,22 +721,15 @@ new_text(void)
     text->font = work_font;	/* put in current font number */
     text->fontstruct = work_fontstruct;
     // XFT DEBUG
-    text->fonts[0] = getfont(work_psflag, work_font, work_fontsize*8, 0.);
-    text->fonts[1] = getfont(work_psflag, work_font,
-		    (int) (work_fontsize * 8 * display_zoomscale), work_angle);
+    text->fonts[0] = getfont(work_psflag, work_font,
+		    work_fontsize*SIZE_FLT, 0.);
+    text->fonts[1] = getfont(work_psflag, work_font, (int)(work_fontsize
+			    * SIZE_FLT * display_zoomscale), work_angle);
     text->zoom = zoomscale;
     text->size = work_fontsize;
     text->angle = work_angle;
     text->flags = work_flags;
-    text->color = cur_pencolor;		/* sienna? */
-    /* XFT DEBUG START
-    i = XftColorAllocName(tool_d, tool_v, tool_cm, "goldenrod",
-		    &text->xftcolor);
-    fprintf(stderr, "Result %d, goldenrod pixel: %lu, rgb: %hx %hx %hx %hx \n",
-		    i, text->xftcolor.pixel, text->xftcolor.color.red,
-		    text->xftcolor.color.green, text->xftcolor.color.blue,
-		    text->xftcolor.color.alpha);
-	XFT DEBUG END	*/
+    text->color = cur_pencolor;
     text->depth = work_depth;
     text->pen_style = -1;
     size = textsize(canvas_font, leng_prefix, prefix);
