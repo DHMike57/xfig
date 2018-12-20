@@ -264,6 +264,8 @@ getfont(int psflag, int fnum, int size3, /* eight times the font size */
 	 * return a specific font face.
 	 */
 	static XftPattern	*xftbasepattern[NUM_FONTS] = {NULL};
+	/* TODO: write a destroybasepatterns() function, put the base patterns
+		 into file scope */
 	double		pixelsize;
 	XftPattern	*want, *have;
 	XftResult	res;
@@ -316,9 +318,29 @@ getfont(int psflag, int fnum, int size3, /* eight times the font size */
 
 	have = XftFontMatch(tool_d, tool_sn, want, &res);
 	if (res == XftResultMatch) {
-		xftfont = XftFontOpenPattern(tool_d, have);
 		XftNameUnparse(have, buf, BUFSIZ); /* DEBUG */
 		fprintf(stderr, "chosen font: %s\n", buf);
+		xftfont = XftFontOpenPattern(tool_d, have);
+		/* XFT DEBUG */
+		XGlyphInfo	extents;
+		XftTextExtents8(tool_d, xftfont, "Hallo", 5, &extents);
+		fprintf(stderr, "Hallo extents: width = %u, height = %u\n"
+				"  x = %d, y = %d, xOff = %d, yOff = %d.\n",
+				extents.width, extents.height, extents.x,
+				extents.y, extents.xOff, extents.yOff);
+		/*
+		   Helvetica pixelsize=13.333
+Hallo extents: width = 29, height = 10
+  x = -1, y = 10, xOff = 30, yOff = 0.
+		   Helvetica pixelsize=30
+Hallo extents: width = 66, height = 22
+  x = -2, y = 22, xOff = 70, yOff = 0.
+Hallo extents: width = 29, height = 10
+  x = -1, y = 10, xOff = 30, yOff = 0.
+  matrix=0,866025 -0,5 0,5 0,866025 (30°)
+Hallo extents: width = 67, height = 47
+  x = 9, y = 48, xOff = 61, yOff = -37.
+		*/
 	} else if (fnum != DEF_PS_FONT)
 		xftfont = getfont(1 /*psflag*/, DEF_PS_FONT, size3, angle);
 	else {
