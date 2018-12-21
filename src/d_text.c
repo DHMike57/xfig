@@ -1906,6 +1906,8 @@ reload_text_fstruct(F_text *t)
     t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
 			round(t->size*display_zoomscale));
     t->zoom = zoomscale;
+    t->fonts[1] = getfont(psfont_text(t), t->font, (int)(t->size
+			* SIZE_FLT * display_zoomscale), t->angle);
 }
 
 

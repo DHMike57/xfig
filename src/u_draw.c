@@ -1224,6 +1224,7 @@ void draw_text(F_text *text, int op)
     int		    x1,y1, x2,y2, x3,y3, x4,y4;
     double	    cost, sint;
 
+    /* FIXME, TODO: Check for changed font angle. */
     if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0)
 	reload_text_fstruct(text);
     text_bound(text, &xmin, &ymin, &xmax, &ymax,
@@ -1270,24 +1271,18 @@ void draw_text(F_text *text, int op)
 	    y2 = (y2+y3)/2;
 	    greek_text(text, x1, y1, x2, y2);
 	} else {
-	    /* Otherwise, draw the text normally */
-	    /* XFT DEBUG START */
-	    /*
-	    if (fabs(text->angle) < 0.0001) {
-		XftColor	*xftcolor;
+		Color c;
 		if (op == PAINT)
-			xftcolor = &text->xftcolor;
+			c = text->color;
 		else
-			xftcolor = &xftwhite;
-		pw_xfttext(main_xftdraw, x, y, text->depth, text->xftfont,
-				text->cstring, (int)strlen(text->cstring),
-				xftcolor, display_zoomscale);
-	    }
-	    else
-	    */
+			c = CANVAS_BG;
+		pw_xfttext(main_xftdraw, x, y, text->depth, text->fonts[1],
+				text->cstring, c);
 	    /* XFT DEBUG END */
+		/*
 	    pw_text(canvas_win, x, y, op, text->depth, text->fontstruct,
 		text->angle, text->cstring, text->color, COLOR_NONE);
+		*/
 	}
     }
 

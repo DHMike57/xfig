@@ -38,7 +38,7 @@ XftColor	n_user_colors[MAX_USR_COLS];
 
 static XftColor	color_storage[SPECIAL_COLS + NUM_STD_COLS + MAX_USR_COLS];
 /* Convenience pointers into interesting positions of color_storage. */
-static XftColor	*xftcolor = color_storage + SPECIAL_COLS;
+XftColor	*xftcolor = color_storage + SPECIAL_COLS;
 XftColor	*user_color = color_storage + SPECIAL_COLS + NUM_STD_COLS;
 unsigned long	pageborder_color;
 unsigned long	axis_lines_color;

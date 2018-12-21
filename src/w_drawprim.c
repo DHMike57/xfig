@@ -475,30 +475,18 @@ lookfont(int fnum, int size)
 }
 
 /* XFT DEBUG START */
-/*
 void
 pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *xftfont,
-		char *s, int len, XftColor *xftcolor, float zoom)
+		char *s, Color c)
 {
 	int	zy = ZOOMY(y);
 	int	zx = ZOOMX(x);
-	XGlyphInfo	extents;
+	/* XGlyphInfo	extents; */
 
 	fprintf(stderr, "paint %s\n", s);
-	XftDrawStringUtf8(xftdraw, xftcolor, xftfont, zx, zy, s, len);
-	XftTextExtentsUtf8(tool_d, xftsmall, (XftChar8 *)s, len, &extents);
-	fprintf(stderr, "width: %u, xOff: %d, height: %u, yOff: %d x: %d y: %d\n",
-		extents.width, extents.xOff, extents.height, extents.yOff,
-		extents.x, extents.y);
-	XftDrawStringUtf8(xftdraw, &xftwhite, xftsmall, zx, 2*zy, s, len);
-	XftDrawStringUtf8(xftdraw, xftcolor, xftbig, zx, 2*zy, s, len);
-	XftDrawStringUtf8(xftdraw, xftcolor, xftrot, zx, 3*zy, s, len);
-	XftTextExtentsUtf8(tool_d, xftrot, (XftChar8 *)s, len, &extents);
-	fprintf(stderr, "rotated: width: %u, xOff: %d, height: %u, yOff %d, x: %d y: %d\n",
-		extents.width, extents.xOff, extents.height, extents.yOff,
-		extents.x, extents.y);
+	XftDrawStringUtf8(xftdraw, &xftcolor[c], xftfont, zx, zy, s,
+			(int)strlen(s));
 }
-*/
 /* XFT DEBUG END */
 
 /* print "string" in window "w" using font specified in fstruct at angle

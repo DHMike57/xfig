@@ -96,6 +96,7 @@ extern unsigned long	axis_lines_color;
 extern unsigned long	pageborder_color;
 extern unsigned long	grid_color;
 extern XftColor		*user_color;
+extern XftColor		*xftcolor;
 extern XftColor		n_user_colors[MAX_USR_COLS];
 extern fig_color	colorNames[NUM_STD_COLS + 1];
 
