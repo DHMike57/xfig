@@ -476,15 +476,20 @@ lookfont(int fnum, int size)
 
 /* XFT DEBUG START */
 void
-pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *xftfont,
+pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
 		char *s, Color c)
 {
 	int	zy = ZOOMY(y);
 	int	zx = ZOOMX(x);
 	/* XGlyphInfo	extents; */
 
-	fprintf(stderr, "paint %s\n", s);
-	XftDrawStringUtf8(xftdraw, &xftcolor[c], xftfont, zx, zy, s,
+	if (*s == '\0')
+		return;
+	if (font == NULL) {
+		file_msg("Error in pw_xfttext, font == NULL.\n");
+		return;
+	}
+	XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy, s,
 			(int)strlen(s));
 }
 /* XFT DEBUG END */

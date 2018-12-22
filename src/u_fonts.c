@@ -270,7 +270,6 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	XftPattern	*want, *have;
 	XftResult	res;
 	XftFont		*xftfont;
-	char	buf[BUFSIZ];	/* DEBUG */
 
 	/* sanitize fnum */
 	if (fnum < 0 || psflag && fnum >= NUM_FONTS ||
@@ -284,15 +283,17 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	/* assign the base pattern */
 	if (xftbasepattern[fnum] == NULL) {
 		xftbasepattern[fnum] = XftNameParse(xft_name[fnum]);
-		XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ); /* DEBUG */
-		fprintf(stderr,"request: %s\nresult: %s\n", xft_name[fnum],buf);
-
-		/* erasing would not work with antialiased text */
+		/* Erasing by painting over with the canvas background color
+		   does not work with antialiased text */
 		XftPatternAddBool(xftbasepattern[fnum], XFT_ANTIALIAS, False);
 		/* XftPatternAddBool returns 1, if succesful */
-		//XftPatternAddBool(xftbasepattern[fnum], "hinting", False);
-		XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ); /* DEBUG */
-		fprintf(stderr, "add anti-aliasing: %s\n", buf);
+		/* XftPatternAddBool(xftbasepattern[fnum], "hinting", False); */
+		if (appres.DEBUG) {
+			char	buf[BUFSIZ];
+			XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ);
+			fprintf(stderr, "Font request: %s\nresult: %s\n",
+					xft_name[fnum], buf);
+		}
 	}
 
 	want = XftPatternDuplicate(xftbasepattern[fnum]);
@@ -318,16 +319,15 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 
 	have = XftFontMatch(tool_d, tool_sn, want, &res);
 	if (res == XftResultMatch) {
-		XftNameUnparse(have, buf, BUFSIZ); /* DEBUG */
-		fprintf(stderr, "chosen font: %s\n", buf);
 		xftfont = XftFontOpenPattern(tool_d, have);
-		/* XFT DEBUG */
+		/*
 		XGlyphInfo	extents;
 		XftTextExtents8(tool_d, xftfont, "Hallo", 5, &extents);
 		fprintf(stderr, "Hallo extents: width = %u, height = %u\n"
 				"  x = %d, y = %d, xOff = %d, yOff = %d.\n",
 				extents.width, extents.height, extents.x,
 				extents.y, extents.xOff, extents.yOff);
+		*/
 		/*
 		   Helvetica pixelsize=13.333
 Hallo extents: width = 29, height = 10
