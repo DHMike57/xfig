@@ -622,7 +622,9 @@ create_text(void)
 	return NULL;
     }
     t->tagged = 0;
-    t->fontstruct = 0;
+    t->fontstruct = NULL;
+    t->fonts[0] = NULL;
+    t->fonts[1] = NULL;
     t->comments = NULL;
     t->cstring = NULL;
     t->next = NULL;

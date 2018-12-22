@@ -27,8 +27,11 @@ typedef struct { int x,y; } zXPoint ;
 
 /* function prototypes */
 
-extern void pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
-	float angle, char *string, Color color, Color background);
+extern void pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
+		char *s, Color c);
+extern void pw_text(Window w, int x, int y, int op, int depth,
+		XFontStruct *fstruct, float angle, char *string, Color color,
+		Color background);
 extern void pw_vector(Window w, int x1, int y1, int x2, int y2, int op,
 	  int line_width, int line_style, float style_val, Color color);
 extern void pw_curve(Window w, int xstart, int ystart, int xend, int yend,
