@@ -74,8 +74,6 @@
 /* EXPORTS */
 
 Boolean		geomspec;
-XftDraw		*main_draw;		/* declared in resources.h */
-XftDraw		*canvas_draw;		/* declared in resources.h */
 
 /* LOCALS */
 

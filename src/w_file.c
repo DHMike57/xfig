@@ -16,6 +16,9 @@
 
 #include "fig.h"
 #include "figx.h"
+
+#include <X11/Xft/Xft.h>
+
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
@@ -96,6 +99,7 @@ static XftColor	saved_nuser_colors[MAX_USR_COLS];
 static Boolean	saved_nuserFree[MAX_USR_COLS];
 static int	saved_nuser_num;
 static Pixmap	preview_land_pixmap, preview_port_pixmap;
+static XftDraw	*preview_land_draw, *preview_port_draw;
 
 
 static void	file_preview_stop(Widget w, XButtonEvent *ev);
@@ -177,7 +181,7 @@ static XtActionsRec	file_actions[] =
 
 
 int renamefile (char *file);
-void create_file_panel (void);
+static void create_file_panel (void);
 
 void
 file_panel_dismiss(void)
@@ -1015,6 +1019,10 @@ void create_file_panel(void)
 			PREVIEW_CANVAS_W, PREVIEW_CANVAS_H, tool_dpth);
 	preview_port_pixmap = XCreatePixmap(tool_d, canvas_win,
 			PREVIEW_CANVAS_H, PREVIEW_CANVAS_W, tool_dpth);
+	preview_land_draw = XftDrawCreate(tool_d, preview_land_pixmap, tool_v,
+					tool_cm);
+	preview_port_draw = XftDrawCreate(tool_d, preview_port_pixmap, tool_v,
+					tool_cm);
 
 	/* make a form for the preview widget so we can center it */
 
@@ -1393,10 +1401,12 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	/* now switch the drawing canvas to our preview window and set width/height */
 	if (settings.landscape) {
 	    canvas_win = (Window) preview_land_pixmap;
+	    canvas_draw = preview_land_draw;
 	    pixwidth = PREVIEW_CANVAS_W;
 	    pixheight = PREVIEW_CANVAS_H;
 	} else {
 	    canvas_win = (Window) preview_port_pixmap;
+	    canvas_draw = preview_port_draw;
 	    pixwidth = PREVIEW_CANVAS_H;
 	    pixheight = PREVIEW_CANVAS_W;
 	}
@@ -1455,6 +1465,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 
     /* switch canvas back */
     canvas_win = main_canvas;
+    canvas_draw = main_draw;
 
     /* restore active layer array */
     restore_active_layers();

@@ -56,6 +56,8 @@ appresStruct	appres;
 Window		main_canvas;		/* main canvas window */
 Window		canvas_win;		/* current canvas */
 Window		msg_win, sideruler_win, topruler_win;
+XftDraw		*main_draw;
+XftDraw		*canvas_draw;
 
 Cursor		cur_cursor;
 Cursor		arrow_cursor, bull_cursor, buster_cursor, crosshair_cursor,

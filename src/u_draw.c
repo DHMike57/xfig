@@ -1276,7 +1276,7 @@ void draw_text(F_text *text, int op)
 			c = text->color;
 		else
 			c = CANVAS_BG;
-		pw_xfttext(main_draw, x, y, text->depth, text->fonts[1],
+		pw_xfttext(canvas_draw, x, y, text->depth, text->fonts[1],
 				text->cstring, c);
 	    /* XFT DEBUG END */
 		/*
