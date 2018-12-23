@@ -18,7 +18,10 @@
 
 #include "fig.h"
 #include "figx.h"
+
 #include <stdarg.h>
+#include <X11/Xft/Xft.h>
+
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
@@ -1648,6 +1651,7 @@ preview_libobj(int objnum, Pixmap pixmap, int pixsize, int margin)
 
     /* now switch the drawing canvas to our pixmap */
     canvas_win = (Window) pixmap;
+    XftDrawChange(canvas_draw, pixmap);
 
     /* make wait cursor */
     XDefineCursor(tool_d, XtWindow(library_form), wait_cursor);
@@ -1690,6 +1694,7 @@ preview_libobj(int objnum, Pixmap pixmap, int pixsize, int margin)
 
     /* switch canvas back */
     canvas_win = main_canvas;
+    XftDrawChange(canvas_draw, main_canvas);
 
     /* restore active layer array */
     restore_active_layers();
