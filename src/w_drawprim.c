@@ -474,7 +474,6 @@ lookfont(int fnum, int size)
 	return (nf->fstruct);
 }
 
-/* XFT DEBUG START */
 void
 pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
 		char *s, Color c)
@@ -489,10 +488,20 @@ pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
 		file_msg("Error in pw_xfttext, font == NULL.\n");
 		return;
 	}
+	/* if this depth is inactive, draw the text in gray */
+	/* if depth == MAX_DEPTH+1 then the caller wants the original color
+	   no matter what */
+	if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth)))
+		c = MED_GRAY;
+
+	/* Check for preview cancel here.  The text call may take some time if
+	   a large font has to be rotated. */
+	if (check_cancel())
+		return;
+
 	XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy,
 			(unsigned char *)s, (int)strlen(s));
 }
-/* XFT DEBUG END */
 
 /* print "string" in window "w" using font specified in fstruct at angle
 	"angle" (radians) at (x,y)
