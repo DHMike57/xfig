@@ -74,7 +74,6 @@ Boolean		colors_are_swapped = False;
 Widget		preview_size, preview_widget, preview_widget_form, preview_name;
 Widget		preview_stop, preview_label, dummy_label;
 Widget		comments_widget;
-Pixmap		preview_land_pixmap, preview_port_pixmap;
 Boolean		cancel_preview = False;
 Boolean		preview_in_progress = False;
 void		load_request(Widget w, XButtonEvent *ev); /* needed by main() */
@@ -96,6 +95,7 @@ static Boolean	nuser_colors_saved = False;
 static XftColor	saved_nuser_colors[MAX_USR_COLS];
 static Boolean	saved_nuserFree[MAX_USR_COLS];
 static int	saved_nuser_num;
+static Pixmap	preview_land_pixmap, preview_port_pixmap;
 
 
 static void	file_preview_stop(Widget w, XButtonEvent *ev);
@@ -1226,7 +1226,7 @@ file_preview_stop(Widget w, XButtonEvent *ev)
     process_pending();
 }
 
-void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_widget, Pixmap port_pixmap, Pixmap land_pixmap)
+void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_widget)
 {
     fig_settings    settings;
     int		save_objmask;
@@ -1392,11 +1392,11 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 
 	/* now switch the drawing canvas to our preview window and set width/height */
 	if (settings.landscape) {
-	    canvas_win = (Window) land_pixmap;
+	    canvas_win = (Window) preview_land_pixmap;
 	    pixwidth = PREVIEW_CANVAS_W;
 	    pixheight = PREVIEW_CANVAS_H;
 	} else {
-	    canvas_win = (Window) port_pixmap;
+	    canvas_win = (Window) preview_port_pixmap;
 	    pixwidth = PREVIEW_CANVAS_H;
 	    pixheight = PREVIEW_CANVAS_W;
 	}

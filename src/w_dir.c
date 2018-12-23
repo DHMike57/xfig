@@ -140,7 +140,7 @@ FileSelected(Widget w, XtPointer client_data, XtPointer call_data)
 	XawTextSetInsertionPoint(file_selfile, strlen(CurrentSelectionName));
 	/* and show a preview of the figure in the preview canvas */
 	preview_figure(CurrentSelectionName, file_popup, preview_widget,
-			preview_size, preview_port_pixmap, preview_land_pixmap);
+			preview_size);
     } else if (export_up) {
 	SetValues(exp_selfile);
 	XawTextSetInsertionPoint(exp_selfile, strlen(CurrentSelectionName));

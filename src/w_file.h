@@ -23,7 +23,6 @@ extern void	popup_saveas_panel(void);
 extern Boolean	query_save(char *msg);
 
 extern Widget	preview_size, preview_widget, preview_name;
-extern Pixmap	preview_land_pixmap, preview_port_pixmap;
 
 extern Widget	file_panel;
 extern Boolean	file_up;
@@ -38,6 +37,6 @@ extern Widget	file_popup;
 extern Boolean	check_cancel(void);
 extern Boolean	cancel_preview;
 extern Boolean	preview_in_progress;
-extern void preview_figure (char *filename, Widget parent, Widget canvas, Widget size_widget, Pixmap port_pixmap, Pixmap land_pixmap);
+extern void preview_figure (char *filename, Widget parent, Widget canvas, Widget size_widget);
 extern int renamefile (char *file);
 extern void file_panel_dismiss (void);
