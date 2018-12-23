@@ -31,17 +31,6 @@
 #include <X11/Intrinsic.h>		/* Boolean */
 #include <X11/Xft/Xft.h>
 
-/* XFT DEBUG START */
-/*
-//extern XftColor		 xftcolors[NUM_STD_COLS + 1];
-extern XftDraw		*main_xftdraw;
-extern XftColor		xftwhite;
-extern XftFont	*xftsmall;
-extern XftFont	*xftbig;
-extern XftFont	*xftrot;
-*/
-/* XFT DEBUG END */
-
 /* Color definition */
 #define	Color		int
 #define NUM_STD_COLS	32	/* Number of standard colors. */
