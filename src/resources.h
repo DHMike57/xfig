@@ -294,8 +294,9 @@ extern float	ZOOM_FACTOR;
 extern float	PIC_FACTOR;
 
 extern Window	main_canvas;		/* main canvas window */
-extern XftDraw	*main_xftdraw;
+extern XftDraw	*main_draw;
 extern Window	canvas_win;		/* current canvas */
+extern XftDraw	*canvas_draw;
 extern Window	msg_win, sideruler_win, topruler_win;
 
 extern Cursor	cur_cursor;

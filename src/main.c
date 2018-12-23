@@ -74,7 +74,8 @@
 /* EXPORTS */
 
 Boolean		geomspec;
-XftDraw		*main_xftdraw;
+XftDraw		*main_draw;		/* declared in resources.h */
+XftDraw		*canvas_draw;		/* declared in resources.h */
 
 /* LOCALS */
 
@@ -1109,7 +1110,8 @@ main(int argc, char **argv)
     main_canvas = canvas_win = XtWindow(canvas_sw);
 
     /* XftFonts need to be displayed on a XftDraw. */
-    main_xftdraw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
+    main_draw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
+    canvas_draw = main_draw;
 
     /*
      * It seems, that a given font is linearly scaled to different sizes:

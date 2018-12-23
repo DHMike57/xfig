@@ -489,8 +489,8 @@ pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
 		file_msg("Error in pw_xfttext, font == NULL.\n");
 		return;
 	}
-	XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy, s,
-			(int)strlen(s));
+	XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy,
+			(unsigned char *)s, (int)strlen(s));
 }
 /* XFT DEBUG END */
 

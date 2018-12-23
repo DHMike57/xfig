@@ -602,7 +602,7 @@ void goodbye(Boolean abortflag)
     XtDestroyWidget(tool);
 
     /* Call after free_GCs(); XftDrawDestroy() does not free unavailable GC. */
-    XftDrawDestroy(main_xftdraw);
+    XftDrawDestroy(main_draw);
 
     /* generate a fault to cause core dump */
     if (abortflag) {
