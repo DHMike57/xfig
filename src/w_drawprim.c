@@ -79,6 +79,7 @@ XFontStruct	*bold_font;
 XFontStruct	*roman_font;
 XFontStruct	*button_font;
 XftFont		*roman_xftfont;
+XftFont		*roman12_font;
 
 /* LOCAL */
 
@@ -114,7 +115,7 @@ void init_font(void)
     char	    template[300];
     char	    backup_template[300];
     char	  **fontlist, **fname;
-    XftPattern	   *pattern;
+    XftPattern	   *pattern, *pattern12;
     XftResult	    res;
     double	    dbl;
 
@@ -135,15 +136,20 @@ void init_font(void)
 	fprintf(stderr, "could not find roman font size!");
 	dbl = 10.;
     }
-fprintf(stderr, "Font size roman font: %.1f, %d\n", dbl, DISPLAY_PIX_PER_INCH);
+    pattern12 = XftPatternDuplicate(pattern);
+
     /* pixelsize */
     dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
     XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
+    dbl = 12. * DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
+    XftPatternAddDouble(pattern12, XFT_PIXEL_SIZE, dbl);
     /* I printed the pattern before and after the match, and it worked to use
        the same pointer as request and result pattern. */
     pattern = XftFontMatch(tool_d, tool_sn, pattern, &res);
+    pattern12 = XftFontMatch(tool_d, tool_sn, pattern12, &res);
 
     roman_xftfont = XftFontOpenPattern(tool_d, pattern);
+    roman12_font = XftFontOpenPattern(tool_d, pattern12);
 
 
     while ((roman_font = XLoadQueryFont(tool_d, appres.normalFont)) == 0) {
