@@ -78,6 +78,7 @@
 XFontStruct	*bold_font;
 XFontStruct	*roman_font;
 XFontStruct	*button_font;
+XftFont		*roman_xftfont;
 
 /* LOCAL */
 
@@ -113,6 +114,9 @@ void init_font(void)
     char	    template[300];
     char	    backup_template[300];
     char	  **fontlist, **fname;
+    XftPattern	   *pattern;
+    XftResult	    res;
+    double	    dbl;
 
     if (appres.boldFont == NULL || *appres.boldFont == '\0')
 	appres.boldFont = BOLD_FONT;
@@ -120,6 +124,27 @@ void init_font(void)
 	appres.normalFont = NORMAL_FONT;
     if (appres.buttonFont == NULL || *appres.buttonFont == '\0')
 	appres.buttonFont = BUTTON_FONT;
+
+    /* Get the roman font. Similar to getfont() in u_fonts.c. */
+
+    //pattern = XftNameParse(appres.normalFont);
+    pattern = XftNameParse("serif-10");
+    XftPatternAddBool(pattern, XFT_ANTIALIAS, False);
+    /* Re-compute the pixelsize, since XFT_DPI is ignored. */
+    if (XftResultMatch != XftPatternGetDouble(pattern, XFT_SIZE, 0, &dbl)) {
+	fprintf(stderr, "could not find roman font size!");
+	dbl = 10.;
+    }
+fprintf(stderr, "Font size roman font: %.1f, %d\n", dbl, DISPLAY_PIX_PER_INCH);
+    /* pixelsize */
+    dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
+    XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
+    /* I printed the pattern before and after the match, and it worked to use
+       the same pointer as request and result pattern. */
+    pattern = XftFontMatch(tool_d, tool_sn, pattern, &res);
+
+    roman_xftfont = XftFontOpenPattern(tool_d, pattern);
+
 
     while ((roman_font = XLoadQueryFont(tool_d, appres.normalFont)) == 0) {
 	if (strcmp(appres.normalFont,"fixed") == 0) {
@@ -143,12 +168,15 @@ void init_font(void)
     }
 
     if (appres.DEBUG) {
+	char	buf[BUFSIZ];
 	fprintf(stderr, "button_font: %s, fid: %lu\n", appres.buttonFont,
 		    button_font->fid);
 	fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
 		    roman_font->fid);
 	fprintf(stderr, "bold_font: %s, fid: %lu\n", appres.boldFont,
 		    bold_font->fid);
+	XftNameUnparse(pattern, buf, BUFSIZ);
+	fprintf(stderr, "roman_font: %s\n", buf);
     }
 
     /*
