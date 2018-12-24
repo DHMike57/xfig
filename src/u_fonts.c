@@ -13,9 +13,10 @@
  *
  */
 
+#include "fig.h"
+
 #include <X11/Xft/Xft.h>
 
-#include "fig.h"
 #include "resources.h"
 #include "u_fonts.h"
 #include "object.h"
@@ -253,7 +254,6 @@ int latexfontnum(char *font)
     return(DEF_LATEX_FONT);
 }
 
-/* XFT DEBUG */
 XftFont *
 getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 		double angle /* must be larger than 0! */)
@@ -321,6 +321,13 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	if (res == XftResultMatch) {
 		xftfont = XftFontOpenPattern(tool_d, have);
 		/*
+		 * Do not destroy "have". The xft-tutorial says,
+		 * "The returned XftFont contains a reference to the passed
+		 * pattern, this pattern will be destroyed when the XftFont is
+		 * passed to XftFontClose."
+		 */
+		XftPatternDestroy(want);
+		/*
 		XGlyphInfo	extents;
 		XftTextExtents8(tool_d, xftfont, "Hallo", 5, &extents);
 		fprintf(stderr, "Hallo extents: width = %u, height = %u\n"
@@ -347,9 +354,8 @@ Hallo extents: width = 67, height = 47
 		/* why should this find a result, if XftFontMatch() fails? */
 		fprintf(stderr, "trying XftFontOpenPattern!\n");
 		xftfont = XftFontOpenPattern(tool_d, want);
+		XftPatternDestroy(want);
 	}
 
-	XftPatternDestroy(want);
-	XftPatternDestroy(have);
 	return xftfont;
 }
