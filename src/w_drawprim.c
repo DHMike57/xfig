@@ -78,8 +78,7 @@
 XFontStruct	*bold_font;
 XFontStruct	*roman_font;
 XFontStruct	*button_font;
-XftFont		*roman_xftfont;
-XftFont		*roman12_font;
+XftFont		*mono_font;
 
 /* LOCAL */
 
@@ -126,30 +125,24 @@ void init_font(void)
     if (appres.buttonFont == NULL || *appres.buttonFont == '\0')
 	appres.buttonFont = BUTTON_FONT;
 
-    /* Get the roman font. Similar to getfont() in u_fonts.c. */
+    /* Get the mono font. Similar to getfont() in u_fonts.c. */
 
-    //pattern = XftNameParse(appres.normalFont);
-    pattern = XftNameParse("serif-10");
+    pattern = XftNameParse("mono-12");
     XftPatternAddBool(pattern, XFT_ANTIALIAS, False);
     /* Re-compute the pixelsize, since XFT_DPI is ignored. */
     if (XftResultMatch != XftPatternGetDouble(pattern, XFT_SIZE, 0, &dbl)) {
-	fprintf(stderr, "could not find roman font size!");
-	dbl = 10.;
+	fprintf(stderr, "could not find mono font size!");
+	dbl = 12.;
     }
-    pattern12 = XftPatternDuplicate(pattern);
-
     /* pixelsize */
     dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
     XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
-    dbl = 12. * DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
-    XftPatternAddDouble(pattern12, XFT_PIXEL_SIZE, dbl);
+
     /* I printed the pattern before and after the match, and it worked to use
        the same pointer as request and result pattern. */
     pattern = XftFontMatch(tool_d, tool_sn, pattern, &res);
-    pattern12 = XftFontMatch(tool_d, tool_sn, pattern12, &res);
 
-    roman_xftfont = XftFontOpenPattern(tool_d, pattern);
-    roman12_font = XftFontOpenPattern(tool_d, pattern12);
+    mono_font = XftFontOpenPattern(tool_d, pattern);
 
 
     while ((roman_font = XLoadQueryFont(tool_d, appres.normalFont)) == 0) {
@@ -182,7 +175,7 @@ void init_font(void)
 	fprintf(stderr, "bold_font: %s, fid: %lu\n", appres.boldFont,
 		    bold_font->fid);
 	XftNameUnparse(pattern, buf, BUFSIZ);
-	fprintf(stderr, "roman_font: %s\n", buf);
+	fprintf(stderr, "mono_font: %s\n", buf);
     }
 
     /*

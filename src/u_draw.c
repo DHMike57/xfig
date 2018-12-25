@@ -633,7 +633,8 @@ void draw_line(F_line *line, int op)
 	xmax = max3(p0->x, p1->x, p2->x);
 	ymax = max3(p0->y, p1->y, p2->y);
 	canvas_font = lookfont(0, 12);	/* get a size 12 font */
-	txt = textsize(canvas_font, strlen(string), string);
+	//canvas_xftfont = mono_font;
+	txt = textsize(roman_font, strlen(string), string);
 	/* if the box is large enough, put the filename in the four corners */
 	if (xmax - xmin > 2.5*txt.length) {
 	    int u,d,w,marg;
