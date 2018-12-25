@@ -44,7 +44,10 @@ Fig.spinner_rate:		150
 ! font for the buttons
 Fig.buttonFont:			6x13
 
-! font for the rulers and message window
+! font for the messages on top, below the menu buttons,
+! for the display of vertex numbers, line lengths and box dimensions if
+! "View->Show line lenghts" or "View->Show vertex numbers" is requested
+! font to show depths if -debug is specified
 Fig.normalFont:			6x13
 
 ! font for the file name and popup query widgets
