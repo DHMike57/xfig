@@ -632,8 +632,6 @@ void draw_line(F_line *line, int op)
 	ymin = min3(p0->y, p1->y, p2->y);
 	xmax = max3(p0->x, p1->x, p2->x);
 	ymax = max3(p0->y, p1->y, p2->y);
-	canvas_font = lookfont(0, 12);	/* get a size 12 font */
-	//canvas_xftfont = mono_font;
 	txt = textsize(roman_font, strlen(string), string);
 	/* if the box is large enough, put the filename in the four corners */
 	if (xmax - xmin > 2.5*txt.length) {
@@ -643,22 +641,23 @@ void draw_line(F_line *line, int op)
 	    w = txt.length;
 	    marg = 6 * ZOOM_FACTOR;	/* margin space around text */
 
-	    pw_text(canvas_win, xmin+marg, ymin+u+marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
-	    pw_text(canvas_win, xmax-txt.length-marg, ymin+u+marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
+	    pw_xfttext(canvas_draw, xmin + marg, ymin + u + marg, line->depth,
+			    mono_font, string, GREEN4);
+	    pw_xfttext(canvas_draw, xmax - w - marg, ymin + u + marg,
+			    line->depth, mono_font, string, GREEN4);
 	    /* do bottom two corners if tall enough */
 	    if (ymax - ymin > 3*(u+d)) {
-		pw_text(canvas_win, xmin+marg, ymax-d-marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
-		pw_text(canvas_win, xmax-txt.length-marg, ymax-d-marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
+		    pw_xfttext(canvas_draw, xmin + marg, ymax - d - marg,
+				    line->depth, mono_font, string, GREEN4);
+		    pw_xfttext(canvas_draw, xmax - w - marg, ymax - d - marg,
+				    line->depth, mono_font, string, GREEN4);
 	    }
 	} else {
 	    /* only room for one label - center it */
 	    x = (xmin + xmax) / 2 - txt.length/display_zoomscale / 2;
 	    y = (ymin + ymax) / 2;
-	    pw_text(canvas_win, x, y, op, line->depth, canvas_font, 0.0, string, DEFAULT, GREEN);
+	    pw_xfttext(canvas_draw, x, y, line->depth, mono_font, string,
+			    GREEN4);
 	}
     }
     /* get first point and coordinates */
