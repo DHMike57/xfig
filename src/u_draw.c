@@ -589,7 +589,7 @@ void draw_line(F_line *line, int op)
     int		    xmin, ymin, xmax, ymax;
     char	   *string;
     F_point	   *p0, *p1, *p2;
-    PR_SIZE	    txt;
+    XGlyphInfo	    extents;
 
     line_bound(line, &xmin, &ymin, &xmax, &ymax);
     if (!overlapping(ZOOMX(xmin), ZOOMY(ymin), ZOOMX(xmax), ZOOMY(ymax),
@@ -632,30 +632,50 @@ void draw_line(F_line *line, int op)
 	ymin = min3(p0->y, p1->y, p2->y);
 	xmax = max3(p0->x, p1->x, p2->x);
 	ymax = max3(p0->y, p1->y, p2->y);
-	txt = textsize(roman_font, strlen(string), string);
-	/* if the box is large enough, put the filename in the four corners */
-	if (xmax - xmin > 2.5*txt.length) {
-	    int u,d,w,marg;
-	    u = txt.ascent;
-	    d = txt.descent;
-	    w = txt.length;
-	    marg = 6 * ZOOM_FACTOR;	/* margin space around text */
 
-	    pw_xfttext(canvas_draw, xmin + marg, ymin + u + marg, line->depth,
-			    mono_font, string, GREEN4);
-	    pw_xfttext(canvas_draw, xmax - w - marg, ymin + u + marg,
+	/*
+	 *	From the Xft tutorial:
+	 * top = y - extents.y;
+	 * left = x - extents.x;
+	 * bottom = top + extents.height;
+	 * right = left + extents.width;
+	 * * and the location of the next glyph is given by
+	 * x = x + extents.xOff;
+	 * y = y + extents.yOff;
+	 */
+	XftTextExtentsUtf8(tool_d, mono_font, (unsigned char *)string,
+			(int)strlen(string), &extents);
+	/* if the box is large enough, put the filename in the four corners */
+	if (xmax - xmin > 2.5 * extents.xOff / zoomscale) {
+	    int	left = extents.x / zoomscale;	/* distance from left */
+	    int	top = extents.y / zoomscale;	/* distance from top */
+	    int	right = extents.xOff / zoomscale;  /* distance from right */
+	    int bottom =  (extents.height - extents.y) / zoomscale;
+	    int	marg = 6 * ZOOM_FACTOR;	/* margin space around text */
+
+	    pw_xfttext(canvas_draw,
+			    xmin + marg + left,
+			    ymin + marg + top,
+			    line->depth, mono_font, string, GREEN4);
+	    pw_xfttext(canvas_draw,
+			    xmax - marg - right,
+			    ymin + marg + top,
 			    line->depth, mono_font, string, GREEN4);
 	    /* do bottom two corners if tall enough */
-	    if (ymax - ymin > 3*(u+d)) {
-		    pw_xfttext(canvas_draw, xmin + marg, ymax - d - marg,
+	    if (ymax - ymin > 3. * extents.height / zoomscale) {
+		    pw_xfttext(canvas_draw,
+				    xmin + marg + left,
+				    ymax - marg - bottom,
 				    line->depth, mono_font, string, GREEN4);
-		    pw_xfttext(canvas_draw, xmax - w - marg, ymax - d - marg,
+		    pw_xfttext(canvas_draw,
+				    xmax - marg - right,
+				    ymax - marg - bottom,
 				    line->depth, mono_font, string, GREEN4);
 	    }
 	} else {
 	    /* only room for one label - center it */
-	    x = (xmin + xmax) / 2 - txt.length/display_zoomscale / 2;
-	    y = (ymin + ymax) / 2;
+	    x = (xmin + xmax) / 2 - extents.xOff / (2. * zoomscale);
+	    y = (ymin + ymax) / 2 - (0.5*extents.height - extents.y)/zoomscale;
 	    pw_xfttext(canvas_draw, x, y, line->depth, mono_font, string,
 			    GREEN4);
 	}
