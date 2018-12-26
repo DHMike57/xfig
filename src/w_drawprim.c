@@ -114,7 +114,7 @@ void init_font(void)
     char	    template[300];
     char	    backup_template[300];
     char	  **fontlist, **fname;
-    XftPattern	   *pattern, *pattern12;
+    XftPattern	   *pattern;
     XftResult	    res;
     double	    dbl;
 
@@ -127,14 +127,14 @@ void init_font(void)
 
     /* Get the mono font. Similar to getfont() in u_fonts.c. */
 
-    pattern = XftNameParse("mono-12");
+    pattern = XftNameParse(MONO_FONT);
     XftPatternAddBool(pattern, XFT_ANTIALIAS, False);
     /* Re-compute the pixelsize, since XFT_DPI is ignored. */
     if (XftResultMatch != XftPatternGetDouble(pattern, XFT_SIZE, 0, &dbl)) {
 	fprintf(stderr, "could not find mono font size!");
-	dbl = 12.;
+	dbl = 10.;
     }
-    /* pixelsize */
+    /* pixelsize; pixelsize overrides font size */
     dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
     XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
 

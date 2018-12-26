@@ -102,6 +102,7 @@ extern unsigned char	shade_images[NUMSHADEPATS][128];
 #define		NORMAL_FONT	"fixed"
 #define		BOLD_FONT	"8x13bold"
 #define		BUTTON_FONT	"6x13"
+#define		MONO_FONT	"mono-10"
 
 #define		max_char_height(font) \
 		((font)->max_bounds.ascent + (font)->max_bounds.descent)
