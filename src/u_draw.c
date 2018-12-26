@@ -582,14 +582,17 @@ void newpoint(float xp, float yp)
 
 /*********************** LINE ***************************/
 
+#define XFIG_NAME_MAX	40	/* soft limit on the filename length */
+
 void draw_line(F_line *line, int op)
 {
+    static XGlyphInfo	extents;
+    static char		oldstring[XFIG_NAME_MAX];
     F_point	   *point;
     int		    i, x, y;
     int		    xmin, ymin, xmax, ymax;
     char	   *string;
     F_point	   *p0, *p1, *p2;
-    XGlyphInfo	    extents;
 
     line_bound(line, &xmin, &ymin, &xmax, &ymax);
     if (!overlapping(ZOOMX(xmin), ZOOMY(ymin), ZOOMX(xmax), ZOOMY(ymax),
@@ -633,6 +636,14 @@ void draw_line(F_line *line, int op)
 	xmax = max3(p0->x, p1->x, p2->x);
 	ymax = max3(p0->y, p1->y, p2->y);
 
+	/* compute the text extents, but only if necessary */
+	if (strlen(string) >= XFIG_NAME_MAX || strcmp(string, oldstring)) {
+		if (strlen(string) < XFIG_NAME_MAX)
+			strcpy(oldstring, string);
+		XftTextExtentsUtf8(tool_d, mono_font, (unsigned char *)string,
+				(int)strlen(string), &extents);
+	}
+
 	/*
 	 *	From the Xft tutorial:
 	 * top = y - extents.y;
@@ -643,15 +654,13 @@ void draw_line(F_line *line, int op)
 	 * x = x + extents.xOff;
 	 * y = y + extents.yOff;
 	 */
-	XftTextExtentsUtf8(tool_d, mono_font, (unsigned char *)string,
-			(int)strlen(string), &extents);
 	/* if the box is large enough, put the filename in the four corners */
 	if (xmax - xmin > 2.5 * extents.xOff / zoomscale) {
-	    int	left = extents.x / zoomscale;	/* distance from left */
-	    int	top = extents.y / zoomscale;	/* distance from top */
-	    int	right = extents.xOff / zoomscale;  /* distance from right */
-	    int bottom =  (extents.height - extents.y) / zoomscale;
-	    int	marg = 6 * ZOOM_FACTOR;	/* margin space around text */
+	    int	left = extents.x / zoomscale;		/* distance from left */
+	    int	top = extents.y / zoomscale;		/* distance from top */
+	    int	right = extents.xOff / zoomscale;	/* distance from right*/
+	    int bottom = (extents.height - extents.y) / zoomscale;
+	    int	marg = 6 * ZOOM_FACTOR;		/* margin space around text */
 
 	    pw_xfttext(canvas_draw,
 			    xmin + marg + left,

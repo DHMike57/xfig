@@ -688,6 +688,7 @@ init_text_input(int x, int y)
     put_msg("Ready for text input (from keyboard)");
     /* save original char_ht for newline */
     orig_ht = char_ht = ZOOM_FACTOR * max_char_height(canvas_font);
+    /* use "{(fgjÜO" to check for char height */
     initialize_char_handler(canvas_win, finish_text_input,
 			    base_x, base_y);
 #ifdef SEL_TEXT
