@@ -19,6 +19,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <X11/extensions/Xrender.h>	/* XGlyphInfo */
 #include "u_colors.h"			/* Color */
 
 /* DEFAULT is used for many things - font, color etc */
@@ -292,7 +293,8 @@ typedef struct f_text {
 #define T_RIGHT_JUSTIFIED	2
 	int font;
 	XFontStruct	*fontstruct;
-	F_font	fonts[FONTLIST_SIZE];
+	F_font		fonts[FONTLIST_SIZE];
+	XGlyphInfo	extents;  /* extents of _current_ font, fonts[0] */
 	float zoom;		/* to keep track of when it needs rescaling */
 	int size;		/* point size */
 	Color color;
