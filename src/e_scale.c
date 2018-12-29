@@ -910,6 +910,8 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
     }
     /* recalculate text sizes */
     text->fontstruct = lookfont(x_fontnum(text->flags, text->font), text->size);
+    text->fonts[0] = getfont(psfont_text(text), text->font,
+		    text->size * SIZE_FLT, angle);
     text->zoom = 1.0;
     tsize = textsize(text->fontstruct, strlen(text->cstring), text->cstring);
     text->ascent  = tsize.ascent;
