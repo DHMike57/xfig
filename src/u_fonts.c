@@ -359,3 +359,9 @@ Hallo extents: width = 67, height = 47
 
 	return xftfont;
 }
+
+void
+textextents(XftFont *font, const XftChar8 *string, int len, XGlyphInfo *extents)
+{
+	XftTextExtentsUtf8(tool_d, font, string, len, extents);
+}

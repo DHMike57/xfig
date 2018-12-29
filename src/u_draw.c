@@ -1253,9 +1253,11 @@ void draw_text(F_text *text, int op)
     int		    x1,y1, x2,y2, x3,y3, x4,y4;
     double	    cost, sint;
 
-    /* FIXME, TODO: Check for changed font angle. */
-    if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0)
+    if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0) {
 	reload_text_fstruct(text);
+	textextents(text->fonts[1], (XftChar8 *)text->cstring,
+			(int)strlen(text->cstring), &text->extents);
+    }
     text_bound(text, &xmin, &ymin, &xmax, &ymax,
 	       &x1,&y1, &x2,&y2, &x3,&y3, &x4,&y4);
 

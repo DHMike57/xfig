@@ -690,6 +690,8 @@ void redisplay_text(F_text *t)
     int		    xmin, ymin, xmax, ymax;
     int		    dum;
 
+    textextents(t->fonts[1], (XftChar8 *)t->cstring, (int)strlen(t->cstring),
+		    &t->extents);
     text_bound(t, &xmin, &ymin, &xmax, &ymax,
 		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
     redisplay_zoomed_region(xmin, ymin, xmax, ymax);
@@ -701,6 +703,10 @@ void redisplay_texts(F_text *t1, F_text *t2)
     int		    xmin2, ymin2, xmax2, ymax2;
     int		    dum;
 
+    textextents(t1->fonts[1], (XftChar8 *)t1->cstring, (int)strlen(t1->cstring),
+		    &t1->extents);
+    textextents(t2->fonts[1], (XftChar8 *)t2->cstring, (int)strlen(t2->cstring),
+		    &t2->extents);
     text_bound(t1, &xmin1, &ymin1, &xmax1, &ymax1,
 		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
     text_bound(t2, &xmin2, &ymin2, &xmax2, &ymax2,

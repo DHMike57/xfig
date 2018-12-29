@@ -530,6 +530,71 @@ void text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax, int *rx1,
     double	    cost, sint;
     double	    dcost, dsint, lcost, lsint, hcost, hsint;
 
+    /* regardless of orientation, (x1,y1) is always top left */
+    x1 = t->base_x - ZOOM_FACTOR * t->extents.x;
+    y1 = t->base_y - ZOOM_FACTOR * t->extents.y;
+
+    x2 = x1 + ZOOM_FACTOR * t->extents.width;
+    y2 = y1 + ZOOM_FACTOR * t->extents.height;
+
+    *xmin = x1;
+    *xmax = x2;
+    *ymin = y1;
+    *ymax = y2;
+
+    /* for the time being, do not compute the coordinates of the rotated
+       rectangle */
+    *rx1 = x1;
+    *ry1 = y1;
+    *rx2 = x1;
+    *ry2 = y2;
+    *rx3 = x2;
+    *ry3 = y2;
+    *rx4 = x2;
+    *ry4 = y1;
+
+fprintf(stderr, "Hallo extents: width = %u, height = %u\n"
+		"  x = %d, y = %d, xOff = %d, yOff = %d.\n",
+		t->extents.width, t->extents.height, t->extents.x,
+		t->extents.y, t->extents.xOff, t->extents.yOff);
+fprintf(stderr,"min (%d, %d) - max (%d, %d)\n", *xmin, *ymin, *xmax, *ymax);
+#if 0
+    /* horizontal text, text->angle == 0 or text->angle == 180 */
+    if (t->extents.yOff == 0) {
+	    /* (x1,y1) top left, (x2,y2) bottom right if angle == 0 */
+	    x2 = x1 + t->extents.width;
+	    y2 = y1 + t->extents.height;
+	    if (x1 < x2) {
+		    *xmin = x1;
+		    *xmax = x2;
+		    *ymin = y1;
+		    *ymax = y2;
+	    } else {
+		    *xmin = x2;
+		    *xmax = x1;
+		    *ymin = y2;
+		    *ymax = y1;
+	    }
+
+    /* vertical text */
+    } else if (t->extents.xOff == 0) {
+	    /* (x1,y1) bottom left, (x2,y2) top right if angle == 270° */
+	    x2 = x1 + t->extents.width;
+	    y2 = y1 - t->extents.height;
+	    if (x1 < x2) {
+		    *xmin = x1;
+		    *xmax = x2;
+		    *ymin = y2;
+		    *ymax = y1;
+	    } else {
+		    *xmin = x2;
+		    *xmax = x1;
+		    *ymin = y1;
+		    *ymax = y2;
+	    }
+
+    }
+
     cost = cos((double)t->angle);
     sint = sin((double)t->angle);
     l = text_length(t);
@@ -571,6 +636,7 @@ void text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax, int *rx1,
     *rx2=x2; *ry2=y2;
     *rx3=x3; *ry3=y3;
     *rx4=x4; *ry4=y4;
+#endif
 }
 
 static void
