@@ -294,7 +294,6 @@ typedef struct f_text {
 	int font;
 	XFontStruct	*fontstruct;
 	F_font		fonts[FONTLIST_SIZE];
-	XGlyphInfo	extents;  /* extents of _current_ font, fonts[0] */
 	float zoom;		/* to keep track of when it needs rescaling */
 	int size;		/* point size */
 	Color color;
@@ -309,9 +308,12 @@ typedef struct f_text {
 	int ascent;		/* Fig units */
 	int length;		/* Fig units */
 	int descent;		/* from XTextExtents(), not in file */
-	int base_x;
-	int base_y;
+	int base_x;		/* x-position of the baseline text marker */
+	int base_y;		/* y-position of the baseline text marker */
 	int pen_style;
+	struct f_pos origin;	/* pass this to XftDrawString() */
+	struct f_pos top;	/* Position of the top text marker */
+	XGlyphInfo	extents;  /* extents in Fig units, fonts[0] */
 	char *cstring;
 	char *comments;
 	struct f_text *next;
