@@ -63,7 +63,7 @@ Boolean	text_selection_active;
 /* EXPORTS */
 int		work_font;
 XFontStruct	*canvas_font;
-XftFont		*canvas_xftfont;
+// XftFont		*canvas_xftfont;
 
 
 /* LOCALS */
@@ -401,8 +401,8 @@ overlay_text_input(int x, int y)
 				  round(work_fontsize*display_zoomscale));
 	/* save the working font structure */
 	work_fontstruct = canvas_zoomed_font;
-	canvas_xftfont = getfont(work_psflag, work_font,
-			work_fontsize * SIZE_FLT, work_angle);
+	// canvas_xftfont = getfont(work_psflag, work_font,
+	//		work_fontsize * SIZE_FLT, work_angle);
 	canvas_zoomed_xftfont = getfont(work_psflag, work_font,
 			(int)(work_fontsize * SIZE_FLT * display_zoomscale),
 			work_angle);
@@ -548,8 +548,8 @@ init_text_input(int x, int y)
 	    /* save the working font structure */
 	    work_fontstruct = canvas_zoomed_font;
 	    /* get the font at resolution in Fig_units, for text extents etc */
-	    canvas_xftfont = getfont(work_psflag, work_font,
-			    ZOOM_FACTOR * work_fontsize * SIZE_FLT, work_angle);
+	//   canvas_xftfont = getfont(work_psflag, work_font,
+	//		    ZOOM_FACTOR * work_fontsize * SIZE_FLT, work_angle);
 	    canvas_zoomed_xftfont = getfont(work_psflag, work_font,
 			    (int)(work_fontsize * SIZE_FLT * display_zoomscale),
 			    work_angle);
@@ -592,7 +592,7 @@ init_text_input(int x, int y)
 	/* this is to get widths etc for the unzoomed chars */
 	canvas_font = lookfont(x_fontnum(work_psflag, work_font),
 			   work_fontsize);
-	canvas_xftfont = cur_t->fonts[0];
+	// canvas_xftfont = cur_t->fonts[0];
 
 	toggle_textmarker(cur_t);
 	draw_text(cur_t, ERASE);

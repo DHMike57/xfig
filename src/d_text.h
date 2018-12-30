@@ -19,7 +19,7 @@
 #include <X11/Xft/Xft.h> /* XFT DEBUG */
 
 extern int		work_font;
-extern XftFont		*canvas_xftfont;
+//extern XftFont		*canvas_xftfont;
 extern XFontStruct	*canvas_font;
 extern void	char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym);
 extern void	draw_char_string(void);
