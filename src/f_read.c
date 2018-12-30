@@ -1392,9 +1392,11 @@ read_textobject(FILE *fp)
     }
 
     /* get the UNZOOMED font struct */
+    /* get the font in Fig resolution */
     if (!update_figs) {
 	t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
-	t->fonts[0] = getfont(psfont_text(t), t->font, t->size * SIZE_FLT, 0.);
+	t->fonts[0] = getfont(psfont_text(t), t->font,
+			ZOOM_FACTOR * t->size * SIZE_FLT, 0.);
     }
 
     fix_depth(&t->depth);
@@ -1504,11 +1506,8 @@ read_textobject(FILE *fp)
 	t->descent = round(tx_dim.descent);
 	/* now get the zoomed font struct */
 	t->zoom = zoomscale;
-	if (display_zoomscale == 1.0 && t->angle == 0.)
-		t->fonts[1] = t->fonts[0];
-	else
-		t->fonts[1] = getfont(psfont_text(t), t->font,
-					t->size * SIZE_FLT, t->angle);
+	t->fonts[1] = getfont(psfont_text(t), t->font, t->size * SIZE_FLT,
+			t->angle);
 	if (display_zoomscale != 1.0)
 	    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
 				round(t->size*display_zoomscale));

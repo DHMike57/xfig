@@ -547,8 +547,9 @@ init_text_input(int x, int y)
 			   round(work_fontsize*display_zoomscale));
 	    /* save the working font structure */
 	    work_fontstruct = canvas_zoomed_font;
+	    /* get the font at resolution in Fig_units, for text extents etc */
 	    canvas_xftfont = getfont(work_psflag, work_font,
-			    work_fontsize * SIZE_FLT, work_angle);
+			    ZOOM_FACTOR * work_fontsize * SIZE_FLT, work_angle);
 	    canvas_zoomed_xftfont = getfont(work_psflag, work_font,
 			    (int)(work_fontsize * SIZE_FLT * display_zoomscale),
 			    work_angle);
@@ -743,7 +744,7 @@ new_text(void)
     text->fontstruct = work_fontstruct;
     // XFT DEBUG
     text->fonts[0] = getfont(work_psflag, work_font,
-		    work_fontsize*SIZE_FLT, 0.);
+		    work_fontsize * SIZE_FLT, work_angle);
     text->fonts[1] = getfont(work_psflag, work_font, (int)(work_fontsize
 			    * SIZE_FLT * display_zoomscale), work_angle);
     text->zoom = zoomscale;
