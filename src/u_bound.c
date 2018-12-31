@@ -553,10 +553,12 @@ void text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax, int *rx1,
     *rx4 = x2;
     *ry4 = y1;
 
+/*
 fprintf(stderr, "Hallo extents: width = %u, height = %u\n"
 		"  x = %d, y = %d, xOff = %d, yOff = %d.\n",
 		t->extents.width, t->extents.height, t->extents.x,
 		t->extents.y, t->extents.xOff, t->extents.yOff);
+*/
 fprintf(stderr,"min (%d, %d) - max (%d, %d)\n", *xmin, *ymin, *xmax, *ymax);
 #if 0
     /* horizontal text, text->angle == 0 or text->angle == 180 */

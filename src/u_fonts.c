@@ -360,8 +360,146 @@ Hallo extents: width = 67, height = 47
 	return xftfont;
 }
 
+/*
 void
 textextents(XftFont *font, const XftChar8 *string, int len, XGlyphInfo *extents)
 {
 	XftTextExtentsUtf8(tool_d, font, string, len, extents);
+}
+*/
+
+void
+textextents(XftFont *font, const XftChar8 *string, int len, int base_x, int
+		base_y, struct f_pos bb[2], struct f_pos rotbb[4], struct f_pos
+		*origin);
+{
+	/* corners of the rotated rectangle, with respect to the orientation
+	   of the text */
+	struct f_pos	rottl, rotbl, rotbr, rottr;
+	/* bounding box, top left = (0,0) */
+	int		xOff, yOff;	/* abs of extents.xOff, extents.yOff */
+	XGlyphInfo	extents;
+
+	XftTextExtentsUtf8(tool_d, font, string, len, &extents);
+
+	xOff = abs(extents.xOff);
+	yOff = abs(extents.yOff);
+
+	/*
+	 * Internally, origin is first used as the vector from the baseline text
+	 * marker (base_x, base_y) to the position that is passed to
+	 * XftDrawString().
+	 */
+	/* shortcut for horizontal and vertical texts */
+	/* shortcut for height, width == 0 ? */
+	if (xOff == 0) {
+		if (extents.yOff > 0) {
+			rotbl = {0, 0};
+			rotbr = {0, extents.height};
+			rottr = {extents.width, extents.height};
+			rottl = {extents.width, 0};
+			*origin = {0, extents.y};
+		} else { /* extents.yOff < 0 */
+			rotbl = {extents.width, extents.height};
+			rotbr = {extents.width, 0};
+			rottr = {0, 0};
+			rottl = {0, extents.height};
+			*origin = {0, extents.y - extents.height};
+		}
+	} else if (yOff == 0) {
+		if (extents.xOff > 0) {
+			rottl = {0, 0};
+			rotbl = {0, extents.height};
+			rotbr = {extents.width, extents.height};
+			rottr = {extents.width, 0};
+			*origin = {extents.x, 0};
+		} else { /* extents.xOff < 0 */
+			rottl = {extents.width, extents.height};
+			rotbl = {extents.width, 0};
+			rotbr = {0, 0};
+			rottr = {0, extents.height};
+			*origin = {extents.x - extents.width};
+		}
+
+	/* for 45°, the algorithm below does not work */
+	} else if (xOff == yOff) {
+		if (extents.xOff > 0) {
+			if (extents.yOff > 0) {
+				rottl = {extents.width - xOff, 0};
+				rotbl = {0, rottl.x};
+				rotbr = {xOff, extents.height};
+				rottr = {extents.width, xOff};
+			} else { /* extents.yOff < 0 */
+				rottl = {0, xOff};
+				rotbl = {extents.height,extents.width - xOff};
+				rotbr = {extents.width,extents.height - xOff};
+				rottr = {xOff, 0};
+			}
+		} else { /* extents.xOff < 0 */
+			if (extents.yOff > 0) {
+				rottl = {extents.width,extents.height - xOff};
+				rotbl = {xOff, 0};
+				rotbr = {0, xOff};
+				rottr = {extents.height,extents.width - xOff};
+			} else { /* extents.yOff < 0 */
+				rottl = {xOff, extents.height};
+				rotbl = {extents.width, xOff};
+				rotbr = {extents.width - xOff, 0};
+				rottr = {0, extents.height - xOff}
+			}
+		}
+	} else {
+		double	f1, f2;
+		int	x, y;
+
+		f1 = (double)(extents.width * xOff - extents.height * yOff) /
+			(xOff*xOff - yOff*yOff);
+		/* f2 = (double)(extents.width * yOff - extents.height * xOff)
+			/ (yOff*yOff - xOff*xOff);	*/
+		/* round a positive number */
+		x = (int)(f1 * xOff + 0.5);
+		y = (int)(f1 * yOff + 0.5);
+
+		if (extents.xOff > 0) {
+			if (extents.yOff > 0) {
+				rottl = {extents.width - x, 0};
+				rotbl = {0, extents.height - y};
+				rotbr = {x, extents.height};
+				rottr = {extents.width, y};
+			} else { /* extents.yOff < 0 */
+				rottr = {x, 0};
+				rottl = {0, y};
+				rotbl = {extents.width - x, extents.height};
+				rotbr = {extents.width, extents.height - y};
+			}
+		} else { /* extents.xOff < 0 */
+			if (extents.yOff > 0) {
+				rotbl = {x, 0};
+				rotbr = {0, y};
+				rottr = {extents.width - x, extents.height};
+				rottl = {extents.width, extents.height - y};
+			} else { /* extents.yOff < 0 */
+				rottl = {x, extents.height};
+				rotbl = {extents.width, y};
+				rotbr = {extents.width - x, 0};
+				rottr = {0, extents.height - y};
+			}
+		}
+	}
+
+	/* Correct origin for centered and right-adjusted text */
+
+	/* Assign the results */
+
+	/* bb[0] is equal to the necessary shift */
+	*bb = {base_x + origin->x - extents.x, base_y + origin->y - extents.y};
+
+	bb[1] = {extents.width + *bb.x, extents.height + *bb.y};
+	rotbb[0] = {rottl.x + *bb.x, rottl.y + *bb.y};
+	rotbb[1] = {rotbl.x + *bb.x, rotbl.y + *bb.y};
+	rotbb[2] = {rotbr.x + *bb.x, rotbr.y + *bb.y};
+	rotbb[3] = {rottr.x + *bb.x, rottr.y + *bb.y};
+
+	/* Now assign the absolute position of the drawing origin. */
+	*origin = {base_x + origin->x, base_y + origin->y};
 }
