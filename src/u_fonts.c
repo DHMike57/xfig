@@ -368,14 +368,15 @@ textextents(XftFont *font, const XftChar8 *string, int len, XGlyphInfo *extents)
 }
 */
 
+#define assign_point(pos, x, y)	(pos).x = x; (pos).y = y
+
 void
-textextents(XftFont *font, const XftChar8 *string, int len, int base_x, int
-		base_y, struct f_pos bb[2], struct f_pos rotbb[4], struct f_pos
-		*origin);
+textextents(XftFont *font, const XftChar8 *string, int len, int base_x,
+		int base_y, F_pos *origin, F_pos bb[2], F_pos rotbb[4])
 {
 	/* corners of the rotated rectangle, with respect to the orientation
 	   of the text */
-	struct f_pos	rottl, rotbl, rotbr, rottr;
+	struct f_pos	tl, bl, br, tr;
 	/* bounding box, top left = (0,0) */
 	int		xOff, yOff;	/* abs of extents.xOff, extents.yOff */
 	XGlyphInfo	extents;
@@ -394,95 +395,121 @@ textextents(XftFont *font, const XftChar8 *string, int len, int base_x, int
 	/* shortcut for height, width == 0 ? */
 	if (xOff == 0) {
 		if (extents.yOff > 0) {
-			rotbl = {0, 0};
-			rotbr = {0, extents.height};
-			rottr = {extents.width, extents.height};
-			rottl = {extents.width, 0};
-			*origin = {0, extents.y};
+			bl.x = 0;		bl.y = 0;
+			br.x = 0;		br.y = extents.height;
+			tr.x = extents.width;	tr.y = extents.height;
+			tl.x = extents.width;	tl.y = 0;
+			origin->x = 0;		origin->y = extents.y;
 		} else { /* extents.yOff < 0 */
-			rotbl = {extents.width, extents.height};
-			rotbr = {extents.width, 0};
-			rottr = {0, 0};
-			rottl = {0, extents.height};
-			*origin = {0, extents.y - extents.height};
+			bl.x = extents.width;	bl.y = extents.height;
+			br.x = extents.width;	br.y = 0;
+			tr.x = 0;		tr.y = 0;
+			tl.x = 0;		tl.y = extents.height;
+			origin->x = 0;
+			origin->y = extents.y - extents.height;
 		}
 	} else if (yOff == 0) {
 		if (extents.xOff > 0) {
-			rottl = {0, 0};
-			rotbl = {0, extents.height};
-			rotbr = {extents.width, extents.height};
-			rottr = {extents.width, 0};
-			*origin = {extents.x, 0};
+			tl.x = 0;		tl.y = 0;
+			bl.x = 0;		bl.y = extents.height;
+			br.x = extents.width;	br.y = extents.height;
+			tr.x = extents.width;	tr.y = 0;
+			origin->x = extents.x;	origin->y = 0;
 		} else { /* extents.xOff < 0 */
-			rottl = {extents.width, extents.height};
-			rotbl = {extents.width, 0};
-			rotbr = {0, 0};
-			rottr = {0, extents.height};
-			*origin = {extents.x - extents.width};
+			tl.x = extents.width;	tl.y = extents.height;
+			bl.x = extents.width;	bl.y = 0;
+			br.x = 0;		br.y = 0;
+			tr.x = 0;		tr.y = extents.height;
+			origin->x = extents.x - extents.width;
+			origin->y = 0;
 		}
 
 	/* for 45°, the algorithm below does not work */
 	} else if (xOff == yOff) {
 		if (extents.xOff > 0) {
 			if (extents.yOff > 0) {
-				rottl = {extents.width - xOff, 0};
-				rotbl = {0, rottl.x};
-				rotbr = {xOff, extents.height};
-				rottr = {extents.width, xOff};
+				tl.x = extents.width - xOff;	tl.y = 0;
+				bl.x = 0;			bl.y = tl.x;
+				br.x = xOff;		br.y = extents.height;
+				tr.x = extents.width;	tr.y = xOff;
 			} else { /* extents.yOff < 0 */
-				rottl = {0, xOff};
-				rotbl = {extents.height,extents.width - xOff};
-				rotbr = {extents.width,extents.height - xOff};
-				rottr = {xOff, 0};
+				tl.x = 0;
+				tl.y = xOff;
+				bl.x = extents.height;
+				bl.y = extents.width - xOff;
+				br.x = extents.width;
+				br.y = extents.height - xOff;
+				tr.x = xOff;
+				tr.y = 0;
 			}
 		} else { /* extents.xOff < 0 */
 			if (extents.yOff > 0) {
-				rottl = {extents.width,extents.height - xOff};
-				rotbl = {xOff, 0};
-				rotbr = {0, xOff};
-				rottr = {extents.height,extents.width - xOff};
+				tl.x = extents.width;
+				tl.y = extents.height - xOff;
+				bl.x = xOff;
+				bl.y = 0;
+				br.x = 0;
+				br.y = xOff;
+				tr.x = extents.height;
+				tr.y = extents.width - xOff;
 			} else { /* extents.yOff < 0 */
-				rottl = {xOff, extents.height};
-				rotbl = {extents.width, xOff};
-				rotbr = {extents.width - xOff, 0};
-				rottr = {0, extents.height - xOff}
+				tl.x = xOff;
+				tl.y = extents.height;
+				bl.x = extents.width;
+				bl.y = xOff;
+				br.x = extents.width - xOff;
+				br.y = 0;
+				tr.x = 0;
+				tr.y = extents.height - xOff;
 			}
 		}
 	} else {
-		double	f1, f2;
+		double	f1 /*, f2 */;
 		int	x, y;
 
 		f1 = (double)(extents.width * xOff - extents.height * yOff) /
 			(xOff*xOff - yOff*yOff);
 		/* f2 = (double)(extents.width * yOff - extents.height * xOff)
 			/ (yOff*yOff - xOff*xOff);	*/
+
 		/* round a positive number */
 		x = (int)(f1 * xOff + 0.5);
 		y = (int)(f1 * yOff + 0.5);
 
 		if (extents.xOff > 0) {
 			if (extents.yOff > 0) {
-				rottl = {extents.width - x, 0};
-				rotbl = {0, extents.height - y};
-				rotbr = {x, extents.height};
-				rottr = {extents.width, y};
+				tl.x = extents.width - x;
+				tl.y = 0;
+				bl.x = 0;
+				bl.y = extents.height - y;
+				br.x = x;
+				br.y = extents.height;
+				tr.x = extents.width;
+				tr.y = y;
 			} else { /* extents.yOff < 0 */
-				rottr = {x, 0};
-				rottl = {0, y};
-				rotbl = {extents.width - x, extents.height};
-				rotbr = {extents.width, extents.height - y};
+				tr.x = x;
+				tr.y = 0;
+				tl.x = 0;
+				tl.y = y;
+				bl.x = extents.width - x;
+				bl.y = extents.height;
+				br.x = extents.width;
+				br.y = extents.height - y;
 			}
 		} else { /* extents.xOff < 0 */
 			if (extents.yOff > 0) {
-				rotbl = {x, 0};
-				rotbr = {0, y};
-				rottr = {extents.width - x, extents.height};
-				rottl = {extents.width, extents.height - y};
+				bl.x = x;		bl.y = 0;
+				br.x = 0;		br.y = y;
+				tr.x = extents.width - x;
+				tr.y = extents.height;
+				tl.x = extents.width;
+				tl.y = extents.height - y;
 			} else { /* extents.yOff < 0 */
-				rottl = {x, extents.height};
-				rotbl = {extents.width, y};
-				rotbr = {extents.width - x, 0};
-				rottr = {0, extents.height - y};
+				tl.x = x;		  tl.y = extents.height;
+				bl.x = extents.width;	  bl.y = y;
+				br.x = extents.width - x; br.y = 0;
+				tr.x = 0;
+				tr.y = extents.height - y;
 			}
 		}
 	}
@@ -492,14 +519,17 @@ textextents(XftFont *font, const XftChar8 *string, int len, int base_x, int
 	/* Assign the results */
 
 	/* bb[0] is equal to the necessary shift */
-	*bb = {base_x + origin->x - extents.x, base_y + origin->y - extents.y};
+	bb->x = base_x + origin->x - extents.x;
+	bb->y = base_y + origin->y - extents.y;
 
-	bb[1] = {extents.width + *bb.x, extents.height + *bb.y};
-	rotbb[0] = {rottl.x + *bb.x, rottl.y + *bb.y};
-	rotbb[1] = {rotbl.x + *bb.x, rotbl.y + *bb.y};
-	rotbb[2] = {rotbr.x + *bb.x, rotbr.y + *bb.y};
-	rotbb[3] = {rottr.x + *bb.x, rottr.y + *bb.y};
+	bb[1].x = extents.width + bb->x;  bb[1].y = extents.height + bb->y;
+
+	rotbb[0].x = tl.x + bb->x;	rotbb[0].y = tl.y + bb->y;
+	rotbb[1].x = bl.x + bb->x;	rotbb[1].y = bl.y + bb->y;
+	rotbb[2].x = br.x + bb->x;	rotbb[2].y = br.y + bb->y;
+	rotbb[3].x = tr.x + bb->x;	rotbb[3].y = tr.y + bb->y;
 
 	/* Now assign the absolute position of the drawing origin. */
-	*origin = {base_x + origin->x, base_y + origin->y};
+	origin->x = base_x + origin->x;
+	origin->y = base_y + origin->y;
 }

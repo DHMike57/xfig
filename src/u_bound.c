@@ -523,122 +523,24 @@ approx_spline_bound(F_spline *s, int *xmin, int *ymin, int *xmax, int *ymax)
    The actual corners of the rectangle are returned in (rx1,ry1)...(rx4,ry4)
  */
 
-void text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1, int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
+void
+text_bound(F_text *t,
+		int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1,
+		int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
 {
-    int		    h, l;
-    int		    x1,y1, x2,y2, x3,y3, x4,y4;
-    double	    cost, sint;
-    double	    dcost, dsint, lcost, lsint, hcost, hsint;
+	*xmin = t->bb[0].x;
+	*ymin = t->bb[0].y;
+	*xmax = t->bb[1].x;
+	*ymax = t->bb[1].y;
 
-    /* regardless of orientation, (x1,y1) is always top left */
-    x1 = t->base_x - ZOOM_FACTOR * t->extents.x;
-    y1 = t->base_y - ZOOM_FACTOR * t->extents.y;
-
-    x2 = x1 + ZOOM_FACTOR * t->extents.width;
-    y2 = y1 + ZOOM_FACTOR * t->extents.height;
-
-    *xmin = x1;
-    *xmax = x2;
-    *ymin = y1;
-    *ymax = y2;
-
-    /* for the time being, do not compute the coordinates of the rotated
-       rectangle */
-    *rx1 = x1;
-    *ry1 = y1;
-    *rx2 = x1;
-    *ry2 = y2;
-    *rx3 = x2;
-    *ry3 = y2;
-    *rx4 = x2;
-    *ry4 = y1;
-
-/*
-fprintf(stderr, "Hallo extents: width = %u, height = %u\n"
-		"  x = %d, y = %d, xOff = %d, yOff = %d.\n",
-		t->extents.width, t->extents.height, t->extents.x,
-		t->extents.y, t->extents.xOff, t->extents.yOff);
-*/
-fprintf(stderr,"min (%d, %d) - max (%d, %d)\n", *xmin, *ymin, *xmax, *ymax);
-#if 0
-    /* horizontal text, text->angle == 0 or text->angle == 180 */
-    if (t->extents.yOff == 0) {
-	    /* (x1,y1) top left, (x2,y2) bottom right if angle == 0 */
-	    x2 = x1 + t->extents.width;
-	    y2 = y1 + t->extents.height;
-	    if (x1 < x2) {
-		    *xmin = x1;
-		    *xmax = x2;
-		    *ymin = y1;
-		    *ymax = y2;
-	    } else {
-		    *xmin = x2;
-		    *xmax = x1;
-		    *ymin = y2;
-		    *ymax = y1;
-	    }
-
-    /* vertical text */
-    } else if (t->extents.xOff == 0) {
-	    /* (x1,y1) bottom left, (x2,y2) top right if angle == 270° */
-	    x2 = x1 + t->extents.width;
-	    y2 = y1 - t->extents.height;
-	    if (x1 < x2) {
-		    *xmin = x1;
-		    *xmax = x2;
-		    *ymin = y2;
-		    *ymax = y1;
-	    } else {
-		    *xmin = x2;
-		    *xmax = x1;
-		    *ymin = y1;
-		    *ymax = y2;
-	    }
-
-    }
-
-    cost = cos((double)t->angle);
-    sint = sin((double)t->angle);
-    l = text_length(t);
-    h = t->ascent+t->descent;
-    lcost = round(l*cost);
-    lsint = round(l*sint);
-    hcost = round(h*cost);
-    hsint = round(h*sint);
-    dcost = round(t->descent*cost);
-    dsint = round(t->descent*sint);
-    x1 = t->base_x+dsint;
-    y1 = t->base_y+dcost;
-    if (t->type == T_CENTER_JUSTIFIED) {
-	x1 = t->base_x+dsint - round((l/2)*cost);
-	y1 = t->base_y+dcost + round((l/2)*sint);
-	x2 = x1 + lcost;
-	y2 = y1 - lsint;
-    }
-    else if (t->type == T_RIGHT_JUSTIFIED) {
-	x1 = t->base_x+dsint - lcost;
-	y1 = t->base_y+dcost + lsint;
-	x2 = t->base_x+dsint;
-	y2 = t->base_y+dcost;
-    }
-    else {
-	x2 = x1 + lcost;
-	y2 = y1 - lsint;
-    }
-    x4 = x1 - hsint;
-    y4 = y1 - hcost;
-    x3 = x2 - hsint;
-    y3 = y2 - hcost;
-
-    *xmin = min2(x1,min2(x2,min2(x3,x4)));
-    *xmax = max2(x1,max2(x2,max2(x3,x4)));
-    *ymin = min2(y1,min2(y2,min2(y3,y4)));
-    *ymax = max2(y1,max2(y2,max2(y3,y4)));
-    *rx1=x1; *ry1=y1;
-    *rx2=x2; *ry2=y2;
-    *rx3=x3; *ry3=y3;
-    *rx4=x4; *ry4=y4;
-#endif
+	*rx1 = t->rotbb[0].x;
+	*ry1 = t->rotbb[0].y;
+	*rx2 = t->rotbb[1].x;
+	*ry2 = t->rotbb[1].y;
+	*rx3 = t->rotbb[2].x;
+	*ry3 = t->rotbb[2].y;
+	*rx4 = t->rotbb[3].x;
+	*ry4 = t->rotbb[3].y;
 }
 
 static void

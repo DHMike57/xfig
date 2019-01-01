@@ -742,11 +742,11 @@ new_text(void)
     text->type = work_textjust;
     text->font = work_font;	/* put in current font number */
     text->fontstruct = work_fontstruct;
-    // XFT DEBUG
+    /* get fonts[0] at Fig unit resolution (often, 1200) */
     text->fonts[0] = getfont(work_psflag, work_font,
-		    work_fontsize * SIZE_FLT, work_angle);
-    text->fonts[1] = getfont(work_psflag, work_font, (int)(work_fontsize
-			    * SIZE_FLT * display_zoomscale), work_angle);
+		    work_fontsize * SIZE_FLT * ZOOM_FACTOR, work_angle);
+    text->fonts[1] = getfont(work_psflag, work_font,
+		    work_fontsize * SIZE_FLT * display_zoomscale, work_angle);
     text->zoom = zoomscale;
     text->size = work_fontsize;
     text->angle = work_angle;
@@ -758,15 +758,9 @@ new_text(void)
     text->length = size.length;
     text->ascent = size.ascent;
     text->descent = size.descent;
-    /* XFT DEBUG START */
-    /*
-    xfttextextents(text->xftfont, prefix, leng_prefix, &size.length,
-		    &size.ascent, &size.descent);
-    fprintf(stderr, "Text sizes (X, xft): width %d %d, ascent %d %d, descent %d %d \n",
-		    text->length, size.length, text->ascent, size.ascent,
-		    text->descent, size.descent);
-    */
-    /* XFT DEBUG END */
+fprintf(stderr, "new_text() calls textextents() for string: %s\n", prefix);
+    textextents(text->fonts[0], (XftChar8 *) prefix, leng_prefix,
+		    base_x, base_y, &text->origin, text->bb, text->rotbb);
     text->base_x = base_x;
     text->base_y = base_y;
     strcpy(text->cstring, prefix);

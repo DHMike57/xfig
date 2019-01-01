@@ -1255,8 +1255,6 @@ void draw_text(F_text *text, int op)
 
     if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0) {
 	reload_text_fstruct(text);
-	textextents(text->fonts[1], (XftChar8 *)text->cstring,
-			(int)strlen(text->cstring), &text->extents);
     }
     text_bound(text, &xmin, &ymin, &xmax, &ymax,
 	       &x1,&y1, &x2,&y2, &x3,&y3, &x4,&y4);
@@ -1267,6 +1265,8 @@ void draw_text(F_text *text, int op)
 
     /* outline the text bounds in red if debug resource is set */
     if (appres.DEBUG) {
+	zXDrawRectangle(tool_d, canvas_win, gccache[op], xmin, ymin, xmax-xmin,
+			ymax-ymin);
 	pw_vector(canvas_win, x1, y1, x2, y2, op, 1, RUBBER_LINE, 0.0, RED);
 	pw_vector(canvas_win, x2, y2, x3, y3, op, 1, RUBBER_LINE, 0.0, RED);
 	pw_vector(canvas_win, x3, y3, x4, y4, op, 1, RUBBER_LINE, 0.0, RED);

@@ -311,9 +311,9 @@ typedef struct f_text {
 	int base_x;		/* x-position of the baseline text marker */
 	int base_y;		/* y-position of the baseline text marker */
 	int pen_style;
-	struct f_pos origin;	/* pass this to XftDrawString() */
-	struct f_pos top;	/* Position of the top text marker */
-	XGlyphInfo	extents;  /* extents in Fig units, fonts[0] */
+	struct f_pos origin;	/* Text drawing origin (Fig units) */
+	struct f_pos bb[2];	/* Bounding box */
+	struct f_pos rotbb[4];	/* Possibly rotated bounding rectangle*/
 	char *cstring;
 	char *comments;
 	struct f_text *next;

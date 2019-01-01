@@ -687,32 +687,13 @@ void redisplay_compounds(F_compound *c1, F_compound *c2)
 
 void redisplay_text(F_text *t)
 {
-    int		    xmin, ymin, xmax, ymax;
-    int		    dum;
-
-    textextents(t->fonts[1], (XftChar8 *)t->cstring, (int)strlen(t->cstring),
-		    &t->extents);
-    text_bound(t, &xmin, &ymin, &xmax, &ymax,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
-    redisplay_zoomed_region(xmin, ymin, xmax, ymax);
+    redisplay_zoomed_region(t->bb[0].x, t->bb[0].y, t->bb[1].x, t->bb[1].y);
 }
 
 void redisplay_texts(F_text *t1, F_text *t2)
 {
-    int		    xmin1, ymin1, xmax1, ymax1;
-    int		    xmin2, ymin2, xmax2, ymax2;
-    int		    dum;
-
-    textextents(t1->fonts[1], (XftChar8 *)t1->cstring, (int)strlen(t1->cstring),
-		    &t1->extents);
-    textextents(t2->fonts[1], (XftChar8 *)t2->cstring, (int)strlen(t2->cstring),
-		    &t2->extents);
-    text_bound(t1, &xmin1, &ymin1, &xmax1, &ymax1,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
-    text_bound(t2, &xmin2, &ymin2, &xmax2, &ymax2,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
-    redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-		      xmin2, ymin2, xmax2, ymax2);
+    redisplay_regions(t1->bb[0].x, t1->bb[0].y, t1->bb[1].x, t1->bb[1].y,
+			t2->bb[0].x, t2->bb[0].y, t2->bb[1].x, t2->bb[1].y);
 }
 
 void redisplay_regions(int xmin1, int ymin1, int xmax1, int ymax1, int xmin2, int ymin2, int xmax2, int ymax2)

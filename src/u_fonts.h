@@ -17,7 +17,7 @@
 #ifndef U_FONTS_H
 #define U_FONTS_H
 
-#include <X11/Xft/Xft.h>
+#include "object.h"		/* F_pos */
 
 #define DEF_FONTSIZE		12		/* default font size in pts */
 #define DEF_LATEX_FONT		0
@@ -57,11 +57,15 @@ struct _xfstruct {
 				 * sizes */
 };
 
-extern int		psfontnum(char *font);
-extern int		latexfontnum(char *font);
-extern int		x_fontnum(int psflag, int fnum);
-// XFT DEBUG
-extern XftFont		*getfont(int psflag, int fnum, int size3, double angle);
+/* forward declarations */
+struct XftFont;
+
+extern int	psfontnum(char *font);
+extern int	latexfontnum(char *font);
+extern int	x_fontnum(int psflag, int fnum);
+extern XftFont	*getfont(int psflag, int fnum, int size3, double angle);
+extern void	textextents(XftFont *font, const XftChar8 *string, int len,
+	int base_x, int base_y, F_pos *origin, F_pos bb[2], F_pos rotbb[4]);
 extern struct _xfstruct	x_fontinfo[], x_backup_fontinfo[];
 extern struct _fstruct	ps_fontinfo[];
 extern struct _fstruct	latex_fontinfo[];
