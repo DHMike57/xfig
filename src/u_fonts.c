@@ -519,8 +519,8 @@ textextents(XftFont *font, const XftChar8 *string, int len, int base_x,
 	/* Assign the results */
 
 	/* bb[0] is equal to the necessary shift */
-	bb->x = base_x + origin->x - extents.x;
-	bb->y = base_y + origin->y - extents.y;
+	bb->x = base_x - extents.x;
+	bb->y = base_y - extents.y;
 
 	bb[1].x = extents.width + bb->x;  bb[1].y = extents.height + bb->y;
 
@@ -528,8 +528,4 @@ textextents(XftFont *font, const XftChar8 *string, int len, int base_x,
 	rotbb[1].x = bl.x + bb->x;	rotbb[1].y = bl.y + bb->y;
 	rotbb[2].x = br.x + bb->x;	rotbb[2].y = br.y + bb->y;
 	rotbb[3].x = tr.x + bb->x;	rotbb[3].y = tr.y + bb->y;
-
-	/* Now assign the absolute position of the drawing origin. */
-	origin->x = base_x + origin->x;
-	origin->y = base_y + origin->y;
 }

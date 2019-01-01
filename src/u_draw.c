@@ -1265,12 +1265,18 @@ void draw_text(F_text *text, int op)
 
     /* outline the text bounds in red if debug resource is set */
     if (appres.DEBUG) {
-	zXDrawRectangle(tool_d, canvas_win, gccache[op], xmin, ymin, xmax-xmin,
-			ymax-ymin);
 	pw_vector(canvas_win, x1, y1, x2, y2, op, 1, RUBBER_LINE, 0.0, RED);
 	pw_vector(canvas_win, x2, y2, x3, y3, op, 1, RUBBER_LINE, 0.0, RED);
 	pw_vector(canvas_win, x3, y3, x4, y4, op, 1, RUBBER_LINE, 0.0, RED);
 	pw_vector(canvas_win, x4, y4, x1, y1, op, 1, RUBBER_LINE, 0.0, RED);
+	pw_vector(canvas_win, xmin, ymin, xmax, ymin, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
+	pw_vector(canvas_win, xmax, ymin, xmax, ymax, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
+	pw_vector(canvas_win, xmax, ymax, xmin, ymax, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
+	pw_vector(canvas_win, xmin, ymax, xmin, ymin, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
     }
 
     x = text->base_x;
