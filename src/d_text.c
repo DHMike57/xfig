@@ -709,22 +709,6 @@ init_text_input(int x, int y)
 #endif /* SEL_TEXT */
 }
 
-/* XFT DEBUG START */
-/*
-static void
-xfttextextents(XftFont *font, const char *s, int len,
-		int *width, int *ascent, int *descent)
-{
-	XGlyphInfo	extents;
-
-	XftTextExtentsUtf8(tool_d, font, (XftChar8 *)s, len, &extents);
-	*width = ZOOM_FACTOR * extents.xOff;
-	*ascent = ZOOM_FACTOR * extents.y;
-	*descent = ZOOM_FACTOR * (extents.height - extents.y);
-}
-*/
-/* XFT DEBUG END */
-
 static F_text *
 new_text(void)
 {
@@ -742,10 +726,10 @@ new_text(void)
     text->type = work_textjust;
     text->font = work_font;	/* put in current font number */
     text->fontstruct = work_fontstruct;
-    /* get fonts[0] at Fig unit resolution (often, 1200) */
+    /* get horizontal font at Fig unit resolution (often, 1200) */
+    //text->fonts[1] = getfont(work_psflag, work_font,
+	//	    work_fontsize * SIZE_FLT * ZOOM_FACTOR, work_angle);
     text->fonts[0] = getfont(work_psflag, work_font,
-		    work_fontsize * SIZE_FLT * ZOOM_FACTOR, work_angle);
-    text->fonts[1] = getfont(work_psflag, work_font,
 		    work_fontsize * SIZE_FLT * display_zoomscale, work_angle);
     text->zoom = zoomscale;
     text->size = work_fontsize;
@@ -759,8 +743,9 @@ new_text(void)
     text->ascent = size.ascent;
     text->descent = size.descent;
 fprintf(stderr, "new_text() calls textextents() for string: %s\n", prefix);
-    textextents(text->fonts[0], (XftChar8 *) prefix, leng_prefix,
-		    base_x, base_y, &text->origin, text->bb, text->rotbb);
+    textextents(work_psflag, work_font, work_fontsize, work_angle,
+		    (XftChar8 *)prefix, leng_prefix, text->bb, text->rotbb,
+		    &text->offset, &text->length, &text->height);
     text->base_x = base_x;
     text->base_y = base_y;
     strcpy(text->cstring, prefix);

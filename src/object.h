@@ -129,7 +129,7 @@ typedef struct f_arrow {
 /* Xft Font list */
 /*****************/
 
-#define	FONTLIST_SIZE	2	/* otherwise, 6 */
+#define	FONTLIST_SIZE	1	/* otherwise, 6 */
 #if FONTLIST_SIZE > 2
 typedef struct _F_font {
 	int		pixelsize;	/* actually, 10 times pixelsize */
@@ -308,10 +308,11 @@ typedef struct f_text {
 	int ascent;		/* Fig units */
 	int length;		/* Fig units */
 	int descent;		/* from XTextExtents(), not in file */
+	int height;
 	int base_x;		/* x-position of the baseline text marker */
 	int base_y;		/* y-position of the baseline text marker */
 	int pen_style;
-	struct f_pos origin;	/* Text drawing origin (Fig units) */
+	struct f_pos offset;	/* offset to glyph continuing cstring */
 	struct f_pos bb[2];	/* Bounding box */
 	struct f_pos rotbb[4];	/* Possibly rotated bounding rectangle*/
 	char *cstring;

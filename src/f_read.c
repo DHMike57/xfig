@@ -1505,12 +1505,12 @@ read_textobject(FILE *fp)
 	t->ascent = round(tx_dim.ascent);
 	t->descent = round(tx_dim.descent);
 
-	textextents(t->fonts[0], (XftChar8 *)t->cstring,
-			(int)strlen(t->cstring), t->base_x, t->base_y,
-			&t->origin, t->bb, t->rotbb);
+	textextents(psfont_text(t), t->font, t->size, t->angle,
+			(XftChar8 *)t->cstring, (int)strlen(t->cstring), t->bb,
+			t->rotbb, &t->offset, &t->length, &t->height);
 	/* now get the zoomed font struct */
 	t->zoom = zoomscale;
-	t->fonts[1] = getfont(psfont_text(t), t->font, t->size * SIZE_FLT,
+	t->fonts[0] = getfont(psfont_text(t), t->font, t->size * SIZE_FLT,
 			t->angle);
 	if (display_zoomscale != 1.0)
 	    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),

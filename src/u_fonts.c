@@ -327,27 +327,7 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 		 * passed to XftFontClose."
 		 */
 		XftPatternDestroy(want);
-		/*
-		XGlyphInfo	extents;
-		XftTextExtents8(tool_d, xftfont, "Hallo", 5, &extents);
-		fprintf(stderr, "Hallo extents: width = %u, height = %u\n"
-				"  x = %d, y = %d, xOff = %d, yOff = %d.\n",
-				extents.width, extents.height, extents.x,
-				extents.y, extents.xOff, extents.yOff);
-		*/
-		/*
-		   Helvetica pixelsize=13.333
-Hallo extents: width = 29, height = 10
-  x = -1, y = 10, xOff = 30, yOff = 0.
-		   Helvetica pixelsize=30
-Hallo extents: width = 66, height = 22
-  x = -2, y = 22, xOff = 70, yOff = 0.
-Hallo extents: width = 29, height = 10
-  x = -1, y = 10, xOff = 30, yOff = 0.
-  matrix=0,866025 -0,5 0,5 0,866025 (30°)
-Hallo extents: width = 67, height = 47
-  x = 9, y = 48, xOff = 61, yOff = -37.
-		*/
+
 	} else if (fnum != DEF_PS_FONT)
 		xftfont = getfont(1 /*psflag*/, DEF_PS_FONT, size3, angle);
 	else {
@@ -361,171 +341,135 @@ Hallo extents: width = 67, height = 47
 }
 
 /*
+ * Compute the positions of the top left and bottom right corners of the
+ * horizontal bounding box and the four corners of the rotated rectangle that
+ * bounds the text. These positions, bb[2] and rotbb[4], are given with respect
+ * to the drawing origin. Return the vector "offset" that points to the drawing
+ * origin where the next glyph to the right of the string would be placed.
+ * Return the length and height of the text.
+ * Initially, the small distance from the left edge of the bounding box to the
+ * origin of the drawing, (base_x, base_y), was computed. For instance, if a "N"
+ * is printed with New Century Schoolbook, the serif of N extends a little bit
+ * to the left of base_x. Conversely, the letter "u" in Helvetica is drawn a bit
+ * to the right of base_x. Hence, the left edge of the bounding box, for
+ * horizontal text, does not coincide with base_x. However, the postscript files
+ * or pdf-files produced with the pict2e or tikz output drivers of fig2dev also
+ * let the text begin in the same fashion. Therefore, the positioning of the
+ * text should not be corrected by passing a slightly corrected position (base_x
+ * + epsilon_x, base_y + epsilon_y) to XftDrawStringXX()
+ */
 void
-textextents(XftFont *font, const XftChar8 *string, int len, XGlyphInfo *extents)
-{
-	XftTextExtentsUtf8(tool_d, font, string, len, extents);
-}
-*/
-
-#define assign_point(pos, x, y)	(pos).x = x; (pos).y = y
-
-void
-textextents(XftFont *font, const XftChar8 *string, int len, int base_x,
-		int base_y, F_pos *origin, F_pos bb[2], F_pos rotbb[4])
+textextents(int psflag, int font, int fontsize, double angle,
+		const XftChar8 *string, int len,
+		/* F_pos *origin, */ F_pos bb[2], F_pos rotbb[4], F_pos *offset,
+		int *length, int *height)
 {
 	/* corners of the rotated rectangle, with respect to the orientation
 	   of the text */
-	struct f_pos	tl, bl, br, tr;
-	/* bounding box, top left = (0,0) */
-	int		xOff, yOff;	/* abs of extents.xOff, extents.yOff */
 	XGlyphInfo	extents;
+	XftFont		*rotfont;
 
-	XftTextExtentsUtf8(tool_d, font, string, len, &extents);
+	/* Get the font at native Fig resolution (often, 1200 ppi) */
+	rotfont = getfont(psflag, font, fontsize*SIZE_FLT*ZOOM_FACTOR, angle);
+	XftTextExtentsUtf8(tool_d, rotfont, string, len, &extents);
+	XftFontClose(tool_d, rotfont);
 
-	xOff = abs(extents.xOff);
-	yOff = abs(extents.yOff);
+	bb[0].x = 0 - extents.x;
+	bb[0].y = 0 - extents.y;
+	bb[1].x = extents.width - extents.x;
+	bb[1].y = extents.height - extents.y;
 
-	/*
-	 * Internally, origin is first used as the vector from the baseline text
-	 * marker (base_x, base_y) to the position that is passed to
-	 * XftDrawString().
-	 */
+	offset->x = extents.xOff;
+	offset->y = extents.yOff;
+
 	/* shortcut for horizontal and vertical texts */
-	/* shortcut for height, width == 0 ? */
-	if (xOff == 0) {
-		if (extents.yOff > 0) {
-			bl.x = 0;		bl.y = 0;
-			br.x = 0;		br.y = extents.height;
-			tr.x = extents.width;	tr.y = extents.height;
-			tl.x = extents.width;	tl.y = 0;
-			origin->x = 0;		origin->y = extents.y;
-		} else { /* extents.yOff < 0 */
-			bl.x = extents.width;	bl.y = extents.height;
-			br.x = extents.width;	br.y = 0;
-			tr.x = 0;		tr.y = 0;
-			tl.x = 0;		tl.y = extents.height;
-			origin->x = 0;
-			origin->y = extents.y - extents.height;
-		}
-	} else if (yOff == 0) {
-		if (extents.xOff > 0) {
-			tl.x = 0;		tl.y = 0;
-			bl.x = 0;		bl.y = extents.height;
-			br.x = extents.width;	br.y = extents.height;
-			tr.x = extents.width;	tr.y = 0;
-			origin->x = extents.x;	origin->y = 0;
-		} else { /* extents.xOff < 0 */
-			tl.x = extents.width;	tl.y = extents.height;
-			bl.x = extents.width;	bl.y = 0;
-			br.x = 0;		br.y = 0;
-			tr.x = 0;		tr.y = extents.height;
-			origin->x = extents.x - extents.width;
-			origin->y = 0;
+	/* vertical text */
+	if (extents.xOff == 0) {
+
+		/* possibly an empty string? */
+		if (extents.yOff == 0) {
+			*length = *width = 0;
+			offset->x = offset->y = 0;
+			bb[0].x = bb[1].x = 0;
+			bb[0].y = bb[1].y = 0;
+			rotbb[0].x = rotbb[1].x = rotbb[2].x = rotbb[3].x = 0;
+			rotbb[0].y = rotbb[1].y = rotbb[2].y = rotbb[3].y = 0;
+			return;
 		}
 
-	/* for 45°, the algorithm below does not work */
-	} else if (xOff == yOff) {
+		*length = extents.height;
+		*height = extents.width;
+		/*
+		 * Initially, the corners of the rotated rectangle were sorted.
+		 */
+		if (extents.yOff > 0) {
+			/* rotbb[0] is top left, rotbb[1] bottom left,... */
+			rotbb[0].x = bb[1].x;	rotbb[0].y = bb[0].y; /* tl */
+			rotbb[1].x = bb[0].x;	rotbb[1].y = bb[0].y; /* bl */
+			rotbb[2].x = bb[0].x;	rotbb[2].y = bb[1].y; /* br */
+			rotbb[3].x = bb[1].x;	rotbb[3].y = bb[1].y; /* tr */
+			//origin->x = 0;		origin->y = extents.y;
+		} else { /* extents.yOff < 0 */
+			rotbb[0].x = bb[0].x;	rotbb[0].y = bb[1].y; /* tl */
+			rotbb[1].x = bb[1].x;	rotbb[1].y = bb[1].y; /* bl */
+			rotbb[2].x = bb[1].x;	rotbb[2].y = bb[0].y; /* br */
+			rotbb[3].x = bb[0].x;	rotbb[3].y = bb[0].y; /* tr */
+			//origin->x = 0;
+			//origin->y = extents.y - extents.height;
+		}
+
+	/* horizontal text */
+	} else if (yOff == 0) {
+
+		*length = extents.width;
+		*height = extents.height;
 		if (extents.xOff > 0) {
-			if (extents.yOff > 0) {
-				tl.x = extents.width - xOff;	tl.y = 0;
-				bl.x = 0;			bl.y = tl.x;
-				br.x = xOff;		br.y = extents.height;
-				tr.x = extents.width;	tr.y = xOff;
-			} else { /* extents.yOff < 0 */
-				tl.x = 0;
-				tl.y = xOff;
-				bl.x = extents.height;
-				bl.y = extents.width - xOff;
-				br.x = extents.width;
-				br.y = extents.height - xOff;
-				tr.x = xOff;
-				tr.y = 0;
-			}
+			rotbb[0].x = bb[0].x;	rotbb[0].y = bb[0].y; /* tl */
+			rotbb[1].x = bb[0].x;	rotbb[1].y = bb[1].y; /* bl */
+			rotbb[2].x = bb[1].x;	rotbb[2].y = bb[1].y; /* br */
+			rotbb[3].x = bb[1].x;	rotbb[3].y = bb[0].y; /* tr */
+			//origin->x = extents.x;	origin->y = 0;
 		} else { /* extents.xOff < 0 */
-			if (extents.yOff > 0) {
-				tl.x = extents.width;
-				tl.y = extents.height - xOff;
-				bl.x = xOff;
-				bl.y = 0;
-				br.x = 0;
-				br.y = xOff;
-				tr.x = extents.height;
-				tr.y = extents.width - xOff;
-			} else { /* extents.yOff < 0 */
-				tl.x = xOff;
-				tl.y = extents.height;
-				bl.x = extents.width;
-				bl.y = xOff;
-				br.x = extents.width - xOff;
-				br.y = 0;
-				tr.x = 0;
-				tr.y = extents.height - xOff;
-			}
+			rotbb[0].x = bb[1].x;	rotbb[0].y = bb[1].y; /* tl */
+			rotbb[1].x = bb[1].x;	rotbb[1].y = bb[0].y; /* bl */
+			rotbb[2].x = bb[0].x;	rotbb[2].y = bb[0].y; /* br */
+			rotbb[3].x = bb[0].x;	rotbb[3].y = bb[1].y; /* tr */
+			//origin->x = extents.x - extents.width;
+			//origin->y = 0;
 		}
 	} else {
-		double	f1 /*, f2 */;
-		int	x, y;
 
-		f1 = (double)(extents.width * xOff - extents.height * yOff) /
-			(xOff*xOff - yOff*yOff);
-		/* f2 = (double)(extents.width * yOff - extents.height * xOff)
-			/ (yOff*yOff - xOff*xOff);	*/
+		/* a font at an angle */
+		XftFont 	*horfont;
+		double		cosa, sina;
+		struct f_pos	tl, bl, tr, br;
 
-		/* round a positive number */
-		x = (int)(f1 * xOff + 0.5);
-		y = (int)(f1 * yOff + 0.5);
+		horfont = getfont(psflag, font,
+					fontsize * SIZE_FLT * ZOOM_FACTOR, 0.0);
+		XftTextExtentsUtf8(tool_d, horfont, string, len, &extents);
+		/*
+		 * libxft keeps the 16 last closed fonts in cache.
+		 * Hence, no need to keep horfont around.
+		 */
+		XftFontClose(tool_d, horfont);
 
-		if (extents.xOff > 0) {
-			if (extents.yOff > 0) {
-				tl.x = extents.width - x;
-				tl.y = 0;
-				bl.x = 0;
-				bl.y = extents.height - y;
-				br.x = x;
-				br.y = extents.height;
-				tr.x = extents.width;
-				tr.y = y;
-			} else { /* extents.yOff < 0 */
-				tr.x = x;
-				tr.y = 0;
-				tl.x = 0;
-				tl.y = y;
-				bl.x = extents.width - x;
-				bl.y = extents.height;
-				br.x = extents.width;
-				br.y = extents.height - y;
-			}
-		} else { /* extents.xOff < 0 */
-			if (extents.yOff > 0) {
-				bl.x = x;		bl.y = 0;
-				br.x = 0;		br.y = y;
-				tr.x = extents.width - x;
-				tr.y = extents.height;
-				tl.x = extents.width;
-				tl.y = extents.height - y;
-			} else { /* extents.yOff < 0 */
-				tl.x = x;		  tl.y = extents.height;
-				bl.x = extents.width;	  bl.y = y;
-				br.x = extents.width - x; br.y = 0;
-				tr.x = 0;
-				tr.y = extents.height - y;
-			}
-		}
+		*length = extents.width;
+		*height = extents.height;
+		tl.x = 0 - extents.x;		tl.y = 0 - extents.y;
+		bl.x = 0 - extents.x;		bl.y = *height - extents.y;
+		br.x = *length - extents.x;	br.y = *height - extents.y;
+		tr.x = *length - extents.x;	tr.y = 0 - extents.y;
+		//origin->x = extents.x;	origin->y = 0;
+
+#define ROTPOS(rot, orig)	rot.x = orig.x * cosa + orig.y * sina; \
+				rot.y = -orig.x * sina + orig.y * cosa;
+		cosa = cos(angle);
+		sina = sin(angle);
+
+		ROTPOS(rotbb[0], tl);
+		ROTPOS(rotbb[1], bl);
+		ROTPOS(rotbb[2], br);
+		ROTPOS(rotbb[3], tr);
+#undef ROTPOS
 	}
-
-	/* Correct origin for centered and right-adjusted text */
-
-	/* Assign the results */
-
-	/* bb[0] is equal to the necessary shift */
-	bb->x = base_x - extents.x;
-	bb->y = base_y - extents.y;
-
-	bb[1].x = extents.width + bb->x;  bb[1].y = extents.height + bb->y;
-
-	rotbb[0].x = tl.x + bb->x;	rotbb[0].y = tl.y + bb->y;
-	rotbb[1].x = bl.x + bb->x;	rotbb[1].y = bl.y + bb->y;
-	rotbb[2].x = br.x + bb->x;	rotbb[2].y = br.y + bb->y;
-	rotbb[3].x = tr.x + bb->x;	rotbb[3].y = tr.y + bb->y;
 }
