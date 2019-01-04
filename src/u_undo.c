@@ -590,46 +590,40 @@ void undo_move(void)
       case O_POLYLINE:
 	line_bound(saved_objects.lines, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_line(saved_objects.lines, dx, dy);
-	line_bound(saved_objects.lines, &xmin2, &ymin2, &xmax2, &ymax2);
 	adjust_links(last_linkmode, last_links, dx, dy, 0, 0, 1.0, 1.0, False);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_ELLIPSE:
 	ellipse_bound(saved_objects.ellipses, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_ellipse(saved_objects.ellipses, dx, dy);
-	ellipse_bound(saved_objects.ellipses, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_TXT:
 	text_bound(saved_objects.texts, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_text(saved_objects.texts, dx, dy);
-	text_bound(saved_objects.texts, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_SPLINE:
 	spline_bound(saved_objects.splines, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_spline(saved_objects.splines, dx, dy);
-	spline_bound(saved_objects.splines, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_ARC:
 	arc_bound(saved_objects.arcs, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_arc(saved_objects.arcs, dx, dy);
-	arc_bound(saved_objects.arcs, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_COMPOUND:
 	compound_bound(saved_objects.compounds, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_compound(saved_objects.compounds, dx, dy);
-	compound_bound(saved_objects.compounds, &xmin2, &ymin2, &xmax2, &ymax2);
 	adjust_links(last_linkmode, last_links, dx, dy, 0, 0, 1.0, 1.0, False);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
     }
     swap_newp_lastp();
