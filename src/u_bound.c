@@ -520,7 +520,8 @@ approx_spline_bound(F_spline *s, int *xmin, int *ymin, int *xmax, int *ymax)
 
 /* This procedure calculates the bounding box for text.  It returns
    the min/max x and y coords of the enclosing HORIZONTAL rectangle.
-   The actual corners of the rectangle are returned in (rx1,ry1)...(rx4,ry4)
+   The actual corners of the rectangle are returned in (rx1,ry1)...(rx4,ry4),
+   where (rx1,ry1) is the bottom left, (rx2,ry2) the bottom right corner.
  */
 
 void
@@ -528,19 +529,19 @@ text_bound(F_text *t,
 		int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1,
 		int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
 {
-	*xmin = t->bb[0].x + t->base_x;
-	*ymin = t->bb[0].y + t->base_y;
-	*xmax = t->bb[1].x + t->base_x;
-	*ymax = t->bb[1].y + t->base_y;
+	*xmin = t->bb[0].x;
+	*ymin = t->bb[0].y;
+	*xmax = t->bb[1].x;
+	*ymax = t->bb[1].y;
 
-	*rx1 = t->rotbb[0].x + t->base_x;
-	*ry1 = t->rotbb[0].y + t->base_y;
-	*rx2 = t->rotbb[1].x + t->base_x;
-	*ry2 = t->rotbb[1].y + t->base_y;
-	*rx3 = t->rotbb[2].x + t->base_x;
-	*ry3 = t->rotbb[2].y + t->base_y;
-	*rx4 = t->rotbb[3].x + t->base_x;
-	*ry4 = t->rotbb[3].y + t->base_y;
+	*rx1 = t->rotbb[1].x;
+	*ry1 = t->rotbb[1].y;
+	*rx2 = t->rotbb[2].x;
+	*ry2 = t->rotbb[2].y;
+	*rx3 = t->rotbb[3].x;
+	*ry3 = t->rotbb[3].y;
+	*rx4 = t->rotbb[0].x;
+	*ry4 = t->rotbb[0].y;
 }
 
 static void

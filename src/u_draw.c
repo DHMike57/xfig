@@ -1279,27 +1279,22 @@ void draw_text(F_text *text, int op)
 			GREEN);
     }
 
-    x = text->base_x;
-    y = text->base_y;
-    cost = cos(text->angle);
-    sint = sin(text->angle);
-    if (text->type == T_CENTER_JUSTIFIED || text->type == T_RIGHT_JUSTIFIED) {
-	size = textsize(text->fontstruct, strlen(text->cstring),
-			    text->cstring);
-	size.length = size.length/display_zoomscale;
-	if (text->type == T_CENTER_JUSTIFIED) {
-	    x = round(x-cost*size.length/2);
-	    y = round(y+sint*size.length/2);
-	} else {	/* T_RIGHT_JUSTIFIED */
-	    x = round(x-cost*size.length);
-	    y = round(y+sint*size.length);
-	}
+    if (text->type == T_LEFT_JUSTIFIED) {
+	    x = text->base_x;
+	    y = text->base_y;
+    } else if (text->type == T_CENTER_JUSTIFIED) {
+	    x = text->base_x - text->offset.x/2;
+	    y = text->base_y - text->offset.y/2;
+    } else if (text->type == T_RIGHT_JUSTIFIED) {
+	    x = text->base_x - text->offset.x;
+	    y = text->base_y - text->offset.y;
     }
     if (hidden_text(text)) {
-	pw_text(canvas_win, x, y, op, text->depth, lookfont(0,12),
-		text->angle, hidden_text_string, DEFAULT, COLOR_NONE);
+	    pw_xfttext(canvas_draw, x, y, text->depth, text->fonts[0],
+			    hidden_text_string, text->color);
     } else {
-	/* if size is less than the displayable size, Greek it by drawing a DARK gray line,
+	/* if size is less than the displayable size,
+	   Greek it by drawing a DARK gray line,
 	   UNLESS the depth is inactive in which case draw it in MED_GRAY */
 	if (text->size*display_zoomscale < MIN_X_FONT_SIZE) {
 	    x1 = (x1+x4)/2;
@@ -1315,11 +1310,6 @@ void draw_text(F_text *text, int op)
 			c = CANVAS_BG;
 		pw_xfttext(canvas_draw, x, y, text->depth, text->fonts[0],
 				text->cstring, c);
-	    /* XFT DEBUG END */
-		/*
-	    pw_text(canvas_win, x, y, op, text->depth, text->fontstruct,
-		text->angle, text->cstring, text->color, COLOR_NONE);
-		*/
 	}
     }
 
