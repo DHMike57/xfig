@@ -67,6 +67,7 @@ extern XftFont	*getfont(int psflag, int fnum, int size3, double angle);
 extern void	textextents(int psflag, int font, int fontsize, double angle,
 		const XftChar8 *string, int strlen, F_pos bb[2], F_pos rotbb[4],
 		F_pos *offset, int *length, int *height);
+extern void	shift_bb(int x, int y, F_pos bb[2], F_pos rotbb[4]);
 extern struct _xfstruct	x_fontinfo[], x_backup_fontinfo[];
 extern struct _fstruct	ps_fontinfo[];
 extern struct _fstruct	latex_fontinfo[];

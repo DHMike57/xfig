@@ -742,12 +742,13 @@ new_text(void)
     text->length = size.length;
     text->ascent = size.ascent;
     text->descent = size.descent;
+    text->base_x = base_x;
+    text->base_y = base_y;
 fprintf(stderr, "new_text() calls textextents() for string: %s\n", prefix);
     textextents(work_psflag, work_font, work_fontsize, work_angle,
 		    (XftChar8 *)prefix, leng_prefix, text->bb, text->rotbb,
 		    &text->offset, &text->length, &text->height);
-    text->base_x = base_x;
-    text->base_y = base_y;
+    shift_bb(text->base_x, text->base_y, text->bb, text->rotbb);
     strcpy(text->cstring, prefix);
     text->next = NULL;
     return (text);

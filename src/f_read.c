@@ -1508,6 +1508,8 @@ read_textobject(FILE *fp)
 	textextents(psfont_text(t), t->font, t->size, t->angle,
 			(XftChar8 *)t->cstring, (int)strlen(t->cstring), t->bb,
 			t->rotbb, &t->offset, &t->length, &t->height);
+	shift_bb(t->base_x, t->base_y, t->bb, t->rotbb);
+
 	/* now get the zoomed font struct */
 	t->zoom = zoomscale;
 	t->fonts[0] = getfont(psfont_text(t), t->font, t->size * SIZE_FLT,

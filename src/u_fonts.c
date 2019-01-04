@@ -288,12 +288,6 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 		XftPatternAddBool(xftbasepattern[fnum], XFT_ANTIALIAS, False);
 		/* XftPatternAddBool returns 1, if succesful */
 		/* XftPatternAddBool(xftbasepattern[fnum], "hinting", False); */
-		if (appres.DEBUG) {
-			char	buf[BUFSIZ];
-			XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ);
-			fprintf(stderr, "Font request: %s\nresult: %s\n",
-					xft_name[fnum], buf);
-		}
 	}
 
 	want = XftPatternDuplicate(xftbasepattern[fnum]);
@@ -316,8 +310,14 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	 * reference-counted, and freed by Xft;"
 	 * No need to create a self-made cache.
 	 */
-
 	have = XftFontMatch(tool_d, tool_sn, want, &res);
+	if (appres.DEBUG) {
+		char	buf[BUFSIZ];
+		XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ);
+		fprintf(stderr, "Font request: %s\nresult: %s\n",
+				xft_name[fnum], buf);
+	}
+
 	if (res == XftResultMatch) {
 		xftfont = XftFontOpenPattern(tool_d, have);
 		/*
@@ -364,14 +364,14 @@ textextents(int psflag, int font, int fontsize, double angle,
 		/* F_pos *origin, */ F_pos bb[2], F_pos rotbb[4], F_pos *offset,
 		int *length, int *height)
 {
-	/* corners of the rotated rectangle, with respect to the orientation
-	   of the text */
 	XGlyphInfo	extents;
 	XftFont		*rotfont;
 
 	/* Get the font at native Fig resolution (often, 1200 ppi) */
 	rotfont = getfont(psflag, font, fontsize*SIZE_FLT*ZOOM_FACTOR, angle);
 	XftTextExtentsUtf8(tool_d, rotfont, string, len, &extents);
+	/* libxft keeps the last 16, closed fonts in cache.
+	   Hence, no need to keep rotfont open, in our own cache. */
 	XftFontClose(tool_d, rotfont);
 
 	bb[0].x = 0 - extents.x;
@@ -401,6 +401,7 @@ textextents(int psflag, int font, int fontsize, double angle,
 		*height = extents.width;
 		/*
 		 * Initially, the corners of the rotated rectangle were sorted.
+		 * This is unnecessary, but the code was kept.
 		 */
 		if (extents.yOff > 0) {
 			/* rotbb[0] is top left, rotbb[1] bottom left,... */
@@ -447,10 +448,7 @@ textextents(int psflag, int font, int fontsize, double angle,
 		horfont = getfont(psflag, font,
 					fontsize * SIZE_FLT * ZOOM_FACTOR, 0.0);
 		XftTextExtentsUtf8(tool_d, horfont, string, len, &extents);
-		/*
-		 * libxft keeps the 16 last closed fonts in cache.
-		 * Hence, no need to keep horfont around.
-		 */
+		/* See above, libxft keeps a cache of 16 closed fonts. */
 		XftFontClose(tool_d, horfont);
 
 		*length = extents.width;
@@ -472,4 +470,16 @@ textextents(int psflag, int font, int fontsize, double angle,
 		ROTPOS(rotbb[3], tr);
 #undef ROTPOS
 	}
+}
+void
+shift_bb(int x, int y, F_pos bb[2], F_pos rotbb[4])
+{
+#define SHIFTPOS(pos, x, y)	(pos).x += x;	(pos).y += y
+
+	SHIFTPOS(bb[0], x, y);
+	SHIFTPOS(bb[1], x, y);
+	SHIFTPOS(rotbb[0], x, y);
+	SHIFTPOS(rotbb[1], x, y);
+	SHIFTPOS(rotbb[2], x, y);
+	SHIFTPOS(rotbb[3], x, y);
 }
