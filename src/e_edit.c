@@ -781,8 +781,7 @@ void edit_item(void *p, int type, int x, int y)
 	make_window_line((F_line *) p);
 	break;
       case O_TXT:
-	text_bound((F_text *) p, &llx, &lly, &urx, &ury,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound((F_text *) p, &llx, &lly, &urx, &ury);
 	make_window_text((F_text *) p);
 	break;
       case O_ELLIPSE:

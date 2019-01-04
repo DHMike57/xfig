@@ -1256,7 +1256,7 @@ void draw_text(F_text *text, int op)
     if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0) {
 	reload_text_fstruct(text);
     }
-    text_bound(text, &xmin, &ymin, &xmax, &ymax,
+    text_rotbound(text, &xmin, &ymin, &xmax, &ymax,
 	       &x1,&y1, &x2,&y2, &x3,&y3, &x4,&y4);
 
     if (!overlapping(ZOOMX(xmin), ZOOMY(ymin), ZOOMX(xmax), ZOOMY(ymax),

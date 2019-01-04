@@ -445,8 +445,7 @@ sel_text(int xmin, int ymin, int xmax, int ymax)
     for (t = objects.texts; t != NULL; t = t->next) {
 	if (!active_layer(t->depth))
 	    continue;
-	text_bound(t, &txmin, &tymin, &txmax, &tymax,
-			&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound(t, &txmin, &tymin, &txmax, &tymax);
 	if (xmin > txmin || xmax < txmax ||
 	    ymin > tymin || ymax < tymax)
 		continue;

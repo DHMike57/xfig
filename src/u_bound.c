@@ -279,8 +279,7 @@ void active_compound_bound(F_compound *compound, int *xmin, int *ymin, int *xmax
 	int    dum;
 	if (active_only && !active_layer(t->depth))
 	    continue;
-	text_bound(t, &sx, &sy, &bx, &by,
-		  &dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound(t, &sx, &sy, &bx, &by);
 	if (first) {
 	    first = 0;
 	    llx = sx;
@@ -518,17 +517,34 @@ approx_spline_bound(F_spline *s, int *xmin, int *ymin, int *xmax, int *ymax)
       }
 }
 
-/* This procedure calculates the bounding box for text.  It returns
-   the min/max x and y coords of the enclosing HORIZONTAL rectangle.
-   The actual corners of the rectangle are returned in (rx1,ry1)...(rx4,ry4),
-   where (rx1,ry1) is the bottom left, (rx2,ry2) the bottom right corner.
- */
-
+/* Compute the bounding box for text */
 void
-text_bound(F_text *t,
+text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax)
+{
+	/* there is a copy below */
+	int	draw_x, draw_y;
+
+	text_origin(&draw_x, &draw_y, t->base_x, t->base_y, t->type, t->offset);
+
+	*xmin = t->bb[0].x + draw_x;
+	*ymin = t->bb[0].y + draw_y;
+	*xmax = t->bb[1].x + draw_x;
+	*ymax = t->bb[1].y + draw_y;
+}
+
+/*
+ * Compute the horizontal and the rotated bounding box for text.
+ * Return the min/max x and y coords of the enclosing HORIZONTAL rectangle.
+ * The actual corners of the rotated rectangle are returned in
+ * (rx1,ry1)...(rx4,ry4). (rx1,ry1) is the bottom left, (rx2,ry2) the bottom
+ * right corner with respect to the text.
+ */
+void
+text_rotbound(F_text *t,
 		int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1,
 		int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
 {
+	/* there is a copy above */
 	int	draw_x, draw_y;
 
 	text_origin(&draw_x, &draw_y, t->base_x, t->base_y, t->type, t->offset);

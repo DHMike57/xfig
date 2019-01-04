@@ -603,11 +603,9 @@ void undo_move(void)
 			  xmin2, ymin2, xmax2, ymax2);
 	break;
       case O_TXT:
-	text_bound(saved_objects.texts, &xmin1, &ymin1, &xmax1, &ymax1,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound(saved_objects.texts, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_text(saved_objects.texts, dx, dy);
-	text_bound(saved_objects.texts, &xmin2, &ymin2, &xmax2, &ymax2,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound(saved_objects.texts, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
 			  xmin2, ymin2, xmax2, ymax2);
 	break;
