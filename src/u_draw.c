@@ -1279,16 +1279,8 @@ void draw_text(F_text *text, int op)
 			GREEN);
     }
 
-    if (text->type == T_LEFT_JUSTIFIED) {
-	    x = text->base_x;
-	    y = text->base_y;
-    } else if (text->type == T_CENTER_JUSTIFIED) {
-	    x = text->base_x - text->offset.x/2;
-	    y = text->base_y - text->offset.y/2;
-    } else if (text->type == T_RIGHT_JUSTIFIED) {
-	    x = text->base_x - text->offset.x;
-	    y = text->base_y - text->offset.y;
-    }
+    text_origin(&x, &y, text->base_x, text->base_y, text->type, text->offset);
+
     if (hidden_text(text)) {
 	    pw_xfttext(canvas_draw, x, y, text->depth, text->fonts[0],
 			    hidden_text_string, text->color);

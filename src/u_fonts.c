@@ -341,12 +341,12 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 }
 
 /*
- * Compute the positions of the top left and bottom right corners of the
- * horizontal bounding box and the four corners of the rotated rectangle that
- * bounds the text. These positions, bb[2] and rotbb[4], are given with respect
- * to the drawing origin. Return the vector "offset" that points to the drawing
- * origin where the next glyph to the right of the string would be placed.
- * Return the length and height of the text.
+ * Compute the horizontal bounding box bb[2] and the four corners of the
+ * rectangle that bound the text rotbb[4] with respect to the drawing origin
+ * (base_x, base_y).
+ * In addition, return the vector "offset" from the drawing origin to the
+ * drawing origin of the glyph following this string.
+ * Also, return the length and the height of the text.
  * Initially, the small distance from the left edge of the bounding box to the
  * origin of the drawing, (base_x, base_y), was computed. For instance, if a "N"
  * is printed with New Century Schoolbook, the serif of N extends a little bit
@@ -471,15 +471,29 @@ textextents(int psflag, int font, int fontsize, double angle,
 #undef ROTPOS
 	}
 }
-void
-shift_bb(int x, int y, F_pos bb[2], F_pos rotbb[4])
-{
-#define SHIFTPOS(pos, x, y)	(pos).x += x;	(pos).y += y
 
-	SHIFTPOS(bb[0], x, y);
-	SHIFTPOS(bb[1], x, y);
-	SHIFTPOS(rotbb[0], x, y);
-	SHIFTPOS(rotbb[1], x, y);
-	SHIFTPOS(rotbb[2], x, y);
-	SHIFTPOS(rotbb[3], x, y);
+/*
+ * Return the drawing origin, given (base_x, base_y) and the alignment.
+ */
+void
+text_origin(int *draw_x, int *draw_y, int base_x, int base_y, int align,
+		F_pos offset)
+{
+	switch (align) {
+	case T_LEFT_JUSTIFIED:
+		*draw_x = base_x;
+		*draw_y = base_y;
+		break;
+	case T_CENTER_JUSTIFIED:
+		*draw_x = base_x - offset.x/2;
+		*draw_y = base_y - offset.y/2;
+		break;
+	case T_RIGHT_JUSTIFIED:
+		*draw_x = base_x - offset.x;
+		*draw_y = base_y - offset.y;
+		break;
+	default:
+		file_msg("Incorrect text alignment %d, error in function text_origin().");
+		break;
+	}
 }

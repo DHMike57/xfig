@@ -529,19 +529,23 @@ text_bound(F_text *t,
 		int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1,
 		int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
 {
-	*xmin = t->bb[0].x;
-	*ymin = t->bb[0].y;
-	*xmax = t->bb[1].x;
-	*ymax = t->bb[1].y;
+	int	draw_x, draw_y;
 
-	*rx1 = t->rotbb[1].x;
-	*ry1 = t->rotbb[1].y;
-	*rx2 = t->rotbb[2].x;
-	*ry2 = t->rotbb[2].y;
-	*rx3 = t->rotbb[3].x;
-	*ry3 = t->rotbb[3].y;
-	*rx4 = t->rotbb[0].x;
-	*ry4 = t->rotbb[0].y;
+	text_origin(&draw_x, &draw_y, t->base_x, t->base_y, t->type, t->offset);
+
+	*xmin = t->bb[0].x + draw_x;
+	*ymin = t->bb[0].y + draw_y;
+	*xmax = t->bb[1].x + draw_x;
+	*ymax = t->bb[1].y + draw_y;
+
+	*rx1 = t->rotbb[1].x + draw_x;
+	*ry1 = t->rotbb[1].y + draw_y;
+	*rx2 = t->rotbb[2].x + draw_x;
+	*ry2 = t->rotbb[2].y + draw_y;
+	*rx3 = t->rotbb[3].x + draw_x;
+	*ry3 = t->rotbb[3].y + draw_y;
+	*rx4 = t->rotbb[0].x + draw_x;
+	*ry4 = t->rotbb[0].y + draw_y;
 }
 
 static void
