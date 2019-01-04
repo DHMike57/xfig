@@ -528,19 +528,19 @@ text_bound(F_text *t,
 		int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1,
 		int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
 {
-	*xmin = t->bb[0].x;
-	*ymin = t->bb[0].y;
-	*xmax = t->bb[1].x;
-	*ymax = t->bb[1].y;
+	*xmin = t->bb[0].x + t->base_x;
+	*ymin = t->bb[0].y + t->base_y;
+	*xmax = t->bb[1].x + t->base_x;
+	*ymax = t->bb[1].y + t->base_y;
 
-	*rx1 = t->rotbb[0].x;
-	*ry1 = t->rotbb[0].y;
-	*rx2 = t->rotbb[1].x;
-	*ry2 = t->rotbb[1].y;
-	*rx3 = t->rotbb[2].x;
-	*ry3 = t->rotbb[2].y;
-	*rx4 = t->rotbb[3].x;
-	*ry4 = t->rotbb[3].y;
+	*rx1 = t->rotbb[0].x + t->base_x;
+	*ry1 = t->rotbb[0].y + t->base_y;
+	*rx2 = t->rotbb[1].x + t->base_x;
+	*ry2 = t->rotbb[1].y + t->base_y;
+	*rx3 = t->rotbb[2].x + t->base_x;
+	*ry3 = t->rotbb[2].y + t->base_y;
+	*rx4 = t->rotbb[3].x + t->base_x;
+	*ry4 = t->rotbb[3].y + t->base_y;
 }
 
 static void

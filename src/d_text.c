@@ -576,7 +576,7 @@ init_text_input(int x, int y)
 	if (prev_work_font != work_font)
 	    refresh_character_panel();
 	work_fontstruct = canvas_zoomed_font = cur_t->fontstruct;
-	work_xftfont = canvas_zoomed_xftfont = cur_t->fonts[1];
+	work_xftfont = canvas_zoomed_xftfont = cur_t->fonts[0];
 	work_fontsize = cur_t->size;
 	work_psflag   = cur_t->flags & PSFONT_TEXT;
 	work_flags    = cur_t->flags;
@@ -1887,7 +1887,7 @@ reload_text_fstruct(F_text *t)
     t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
 			round(t->size*display_zoomscale));
     t->zoom = zoomscale;
-    t->fonts[1] = getfont(psfont_text(t), t->font, (int)(t->size
+    t->fonts[0] = getfont(psfont_text(t), t->font, (int)(t->size
 			* SIZE_FLT * display_zoomscale), t->angle);
 }
 

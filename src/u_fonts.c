@@ -388,7 +388,7 @@ textextents(int psflag, int font, int fontsize, double angle,
 
 		/* possibly an empty string? */
 		if (extents.yOff == 0) {
-			*length = *width = 0;
+			*length = *height = 0;
 			offset->x = offset->y = 0;
 			bb[0].x = bb[1].x = 0;
 			bb[0].y = bb[1].y = 0;
@@ -419,7 +419,7 @@ textextents(int psflag, int font, int fontsize, double angle,
 		}
 
 	/* horizontal text */
-	} else if (yOff == 0) {
+	} else if (extents.yOff == 0) {
 
 		*length = extents.width;
 		*height = extents.height;
