@@ -22,6 +22,7 @@
 #include "paintop.h"
 #include "u_elastic.h"
 #include "u_geom.h"
+#include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_drawprim.h"
 #include "w_setup.h"
@@ -866,10 +867,22 @@ elastic_scalearc(F_arc *a)
 void
 moving_text(int x, int y)
 {
-    elastic_movetext();
-    adjust_pos(x, y, fix_x, fix_y, &cur_x, &cur_y);
-    length_msg(MSG_DIST);
-    elastic_movetext();
+	/* The positions used by elastic_movetext() as drawing origins. */
+	int	old_basex, old_basey;
+	int	new_basex, new_basey;
+
+	old_basex = cur_x + x1off;
+	old_basey = cur_y + y1off;
+	adjust_pos(x, y, fix_x, fix_y, &cur_x, &cur_y);
+	new_basex = cur_x + x1off;
+	new_basey = cur_y + y1off;
+
+	length_msg(MSG_DIST);
+	elastic_movetext();
+	redisplay_regions(new_t->bb[0].x + old_basex,new_t->bb[0].y + old_basey,
+			new_t->bb[1].x + old_basex, new_t->bb[1].y + old_basey,
+			new_t->bb[0].x + new_basex, new_t->bb[0].y + new_basey,
+			new_t->bb[1].x + new_basex, new_t->bb[1].y + new_basey);
 }
 
 /* use x1off, y1off so that the beginning of the text isn't
@@ -878,9 +891,8 @@ moving_text(int x, int y)
 void
 elastic_movetext(void)
 {
-    pw_text(canvas_win, cur_x + x1off, cur_y + y1off, INV_PAINT, MAX_DEPTH+1,
-	    new_t->fontstruct, new_t->angle,
-	    new_t->cstring, new_t->color, COLOR_NONE);
+	pw_xfttext(canvas_draw, cur_x + x1off, cur_y + y1off, MAX_DEPTH + 1,
+			new_t->fonts[0], new_t->cstring, new_t->color);
 }
 
 
