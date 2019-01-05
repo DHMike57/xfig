@@ -22,6 +22,7 @@
 #include "mode.h"
 #include "paintop.h"
 #include "u_bound.h"
+#include "u_fonts.h"
 #include "w_canvas.h"		/* round_coords() */
 #include "w_drawprim.h"
 #include "w_file.h"
