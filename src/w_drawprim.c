@@ -526,8 +526,8 @@ pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
 	if (check_cancel())
 		return;
 
-	XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy,
-			(unsigned char *)s, (int)strlen(s));
+	XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy, (XftChar8 *)s,
+			(int)strlen(s));
 }
 
 /* print "string" in window "w" using font specified in fstruct at angle
