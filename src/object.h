@@ -293,7 +293,6 @@ typedef struct f_text {
 #define T_RIGHT_JUSTIFIED	2
 	int font;
 	XFontStruct	*fontstruct;
-	F_font		fonts[FONTLIST_SIZE];
 	float zoom;		/* to keep track of when it needs rescaling */
 	int size;		/* point size */
 	Color color;
@@ -312,6 +311,7 @@ typedef struct f_text {
 	int base_x;		/* x-position of the baseline text marker */
 	int base_y;		/* y-position of the baseline text marker */
 	int pen_style;
+	F_font		fonts[FONTLIST_SIZE];
 	struct f_pos offset;	/* offset to glyph continuing cstring */
 	struct f_pos bb[2];	/* Bounding box */
 	struct f_pos rotbb[4];	/* Possibly rotated bounding rectangle*/
