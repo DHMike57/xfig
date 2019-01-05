@@ -1395,8 +1395,6 @@ read_textobject(FILE *fp)
     /* get the font in Fig resolution */
     if (!update_figs) {
 	t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
-	t->fonts[0] = getfont(psfont_text(t), t->font,
-			ZOOM_FACTOR * t->size * SIZE_FLT, t->angle);
     }
 
     fix_depth(&t->depth);
@@ -1500,18 +1498,17 @@ read_textobject(FILE *fp)
 
     if (!update_figs) {
 	/* now calculate the actual length and height of the string in fig units */
-	tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-	t->length = round(tx_dim.length);
-	t->ascent = round(tx_dim.ascent);
-	t->descent = round(tx_dim.descent);
+	//tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
+	//t->ascent = round(tx_dim.ascent);
+	//t->descent = round(tx_dim.descent);
 	textextents(psfont_text(t), t->font, t->size, t->angle,
 			(XftChar8 *)t->cstring, (int)strlen(t->cstring), t->bb,
 			t->rotbb, &t->offset, &t->length, &t->height);
 
 	/* now get the zoomed font struct */
 	t->zoom = zoomscale;
-	t->fonts[0] = getfont(psfont_text(t), t->font, t->size * SIZE_FLT,
-			t->angle);
+	t->fonts[0] = getfont(psfont_text(t), t->font,
+			(int)t->size * SIZE_FLT * display_zoomscale, t->angle);
 	if (display_zoomscale != 1.0)
 	    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
 				round(t->size*display_zoomscale));

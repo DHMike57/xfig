@@ -225,11 +225,14 @@ replace_text_in_compound(F_compound *com, char *pattern, char *dst)
           t->cstring = new_string(strlen(str));
         }
         strcpy(t->cstring, str);
-        size = textsize(lookfont(x_fontnum(psfont_text(t), t->font),
-				t->size), strlen(t->cstring), t->cstring);
-        t->ascent = size.ascent;
-        t->descent = size.descent;
-        t->length = size.length;
+        //size = textsize(lookfont(x_fontnum(psfont_text(t), t->font),
+	//			t->size), strlen(t->cstring), t->cstring);
+        //t->ascent = size.ascent;
+        //t->descent = size.descent;
+        //t->length = size.length;
+	textextents(psfont_text(t), t->font, t->size, t->angle, t->cstring,
+			strlen(t->cstring), t->bb, t->rotbb, &t->offset,
+			&t->length, &t->height);
         processed = True;
       }
     }

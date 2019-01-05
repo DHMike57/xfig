@@ -471,6 +471,8 @@ init_textdragging(F_text *t, int x, int y)
     y1off = y1-y; /*new_t->base_y - y;*/
     if (t->type == T_CENTER_JUSTIFIED || t->type == T_RIGHT_JUSTIFIED) {
 	txsize = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
+fprintf(stderr,"txsize.length = %d, t->length = %d, display_zoomscale = %.2f\n",
+	txsize.length, t->length, display_zoomscale);
 	if (t->type == T_CENTER_JUSTIFIED) {
 	    cw2 = txsize.length/2.0/display_zoomscale;
 	    x1off = round(x1off - cos((double)t->angle)*cw2);

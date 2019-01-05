@@ -492,7 +492,6 @@ void update_line(F_line *line)
 
 void update_text(F_text *text)
 {
-    PR_SIZE	    size;
     int		old_psfont_flag, new_psfont_flag;
 
     draw_text(text, ERASE);
@@ -515,11 +514,9 @@ void update_text(F_text *text)
     up_part(text->angle, cur_elltextangle*M_PI/180.0, I_ELLTEXTANGLE);
     up_part(text->color, cur_pencolor, I_PEN_COLOR);
     up_depth_part(text->depth, cur_depth);
-    size = textsize(lookfont(x_fontnum(psfont_text(text), text->font),
-			text->size), strlen(text->cstring), text->cstring);
-    text->ascent = size.ascent;
-    text->descent = size.descent;
-    text->length = size.length;
+    textextents(psfont_text(text), text->font, text->size, text->angle,
+		    text->cstring, strlen(text->cstring), text->bb, text->rotbb,
+		    &text->offset, &text->length, &text->height);
     reload_text_fstruct(text);	/* make sure fontstruct is current */
     /* updated object will be redisplayed by init_update_xxx() */
 }

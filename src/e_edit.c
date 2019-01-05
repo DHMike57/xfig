@@ -1446,11 +1446,11 @@ get_new_compound_values(void)
 	t->cstring = strdup(panel_get_value(compound_text_panels[i]));
 	/* calculate new size */
 	/* get the fontstruct for zoom = 1 to get the size of the string */
-	canvas_font = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
-	size = textsize(canvas_font, strlen(t->cstring), t->cstring);
-	t->length = size.length;
-	t->ascent = size.ascent;
-	t->descent = size.descent;
+	//canvas_font = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
+	//size = textsize(canvas_font, strlen(t->cstring), t->cstring);
+	//t->length = size.length;
+	//t->ascent = size.ascent;
+	//t->descent = size.descent;
     }
 
     translate_compound(new_c, dx, dy);
@@ -2402,7 +2402,7 @@ void make_window_text(F_text *t)
 static void
 get_new_text_values(void)
 {
-    PR_SIZE	    size;
+    //PR_SIZE	    size;
 
     check_depth();
     new_t->type = textjust;
@@ -2411,7 +2411,7 @@ get_new_text_values(void)
 	| (special_text_flag ? SPECIAL_TEXT : 0)
 	| (hidden_text_flag ? HIDDEN_TEXT : 0)
 	| (new_psflag ? PSFONT_TEXT : 0);
-    if (psfont_text(new_t))
+    if (new_psflag)
 	new_t->font = new_ps_font;
     else
 	new_t->font = new_latex_font;
@@ -2434,10 +2434,10 @@ get_new_text_values(void)
     new_t->comments = strdup(panel_get_value(comments_panel));
     /* get the fontstruct for zoom = 1 to get the size of the string */
     canvas_font = lookfont(x_fontnum(psfont_text(new_t), new_t->font), new_t->size);
-    size = textsize(canvas_font, strlen(new_t->cstring), new_t->cstring);
-    new_t->ascent = size.ascent;
-    new_t->descent = size.descent;
-    new_t->length = size.length;
+    //size = textsize(canvas_font, strlen(new_t->cstring), new_t->cstring);
+    textextents(new_psflag, new_t->font, new_t->size, new_t->angle,
+	    new_t->cstring, strlen(new_t->cstring), new_t->bb, new_t->rotbb,
+	    &new_t->offset, &new_t->length, &new_t->height);
     /* now set the fontstruct for this zoom scale */
     reload_text_fstruct(new_t);
 }
