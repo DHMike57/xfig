@@ -360,7 +360,7 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
  */
 void
 textextents(int psflag, int font, int fontsize, double angle,
-		const XftChar8 *string, int len,
+		const char *string, int len,
 		/* F_pos *origin, */ F_pos bb[2], F_pos rotbb[4], F_pos *offset,
 		int *length, int *height)
 {
@@ -369,7 +369,7 @@ textextents(int psflag, int font, int fontsize, double angle,
 
 	/* Get the font at native Fig resolution (often, 1200 ppi) */
 	rotfont = getfont(psflag, font, fontsize*SIZE_FLT*ZOOM_FACTOR, angle);
-	XftTextExtentsUtf8(tool_d, rotfont, string, len, &extents);
+	XftTextExtentsUtf8(tool_d, rotfont, (XftChar8 *)string, len, &extents);
 	/* libxft keeps the last 16, closed fonts in cache.
 	   Hence, no need to keep rotfont open, in our own cache. */
 	XftFontClose(tool_d, rotfont);
@@ -447,7 +447,8 @@ textextents(int psflag, int font, int fontsize, double angle,
 
 		horfont = getfont(psflag, font,
 					fontsize * SIZE_FLT * ZOOM_FACTOR, 0.0);
-		XftTextExtentsUtf8(tool_d, horfont, string, len, &extents);
+		XftTextExtentsUtf8(tool_d, horfont, (XftChar8 *)string, len,
+				&extents);
 		/* See above, libxft keeps a cache of 16 closed fonts. */
 		XftFontClose(tool_d, horfont);
 

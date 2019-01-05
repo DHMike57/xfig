@@ -746,7 +746,7 @@ new_text(void)
     text->base_y = base_y;
 fprintf(stderr, "new_text() calls textextents() for string: %s\n", prefix);
     textextents(work_psflag, work_font, work_fontsize, work_angle,
-		    (XftChar8 *)prefix, leng_prefix, text->bb, text->rotbb,
+		    prefix, leng_prefix, text->bb, text->rotbb,
 		    &text->offset, &text->length, &text->height);
     strcpy(text->cstring, prefix);
     text->next = NULL;

@@ -1501,9 +1501,9 @@ read_textobject(FILE *fp)
 	//tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
 	//t->ascent = round(tx_dim.ascent);
 	//t->descent = round(tx_dim.descent);
-	textextents(psfont_text(t), t->font, t->size, t->angle,
-			(XftChar8 *)t->cstring, (int)strlen(t->cstring), t->bb,
-			t->rotbb, &t->offset, &t->length, &t->height);
+	textextents(psfont_text(t), t->font, t->size, t->angle, t->cstring,
+			(int)strlen(t->cstring), t->bb, t->rotbb,
+			&t->offset, &t->length, &t->height);
 
 	/* now get the zoomed font struct */
 	t->zoom = zoomscale;

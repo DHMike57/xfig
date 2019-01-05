@@ -65,7 +65,7 @@ extern int	latexfontnum(char *font);
 extern int	x_fontnum(int psflag, int fnum);
 extern XftFont	*getfont(int psflag, int fnum, int size3, double angle);
 extern void	textextents(int psflag, int font, int fontsize, double angle,
-		const XftChar8 *string, int strlen, F_pos bb[2], F_pos rotbb[4],
+		const char *string, int strlen, F_pos bb[2], F_pos rotbb[4],
 		F_pos *offset, int *length, int *height);
 extern void	text_origin(int *draw_x, int *draw_y, int base_x, int base_y,
 				int align, F_pos offset);
