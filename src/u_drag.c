@@ -23,6 +23,7 @@
 #include "u_drag.h"
 #include "u_draw.h"
 #include "u_elastic.h"
+#include "u_fonts.h"		/* text_origin() */
 #include "u_list.h"
 #include "u_create.h"
 #include "u_undo.h"
@@ -455,7 +456,6 @@ static PR_SIZE	txsize;
 void
 init_textdragging(F_text *t, int x, int y)
 {
-    float	   cw,cw2;
     int		   x1, y1;
 
     new_t = t;
@@ -469,20 +469,11 @@ init_textdragging(F_text *t, int x, int y)
     fix_y += new_t->base_y - y1;
     x1off = x1-x; /*new_t->base_x - x;*/
     y1off = y1-y; /*new_t->base_y - y;*/
-    if (t->type == T_CENTER_JUSTIFIED || t->type == T_RIGHT_JUSTIFIED) {
-	txsize = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-fprintf(stderr,"txsize.length = %d, t->length = %d, display_zoomscale = %.2f\n",
-	txsize.length, t->length, display_zoomscale);
-	if (t->type == T_CENTER_JUSTIFIED) {
-	    cw2 = txsize.length/2.0/display_zoomscale;
-	    x1off = round(x1off - cos((double)t->angle)*cw2);
-	    y1off = round(y1off + sin((double)t->angle)*cw2);
-	} else { /* T_RIGHT_JUSTIFIED */
-	    cw = 1.0*txsize.length/display_zoomscale;
-	    x1off = round(x1off - cos((double)t->angle)*cw);
-	    y1off = round(y1off + sin((double)t->angle)*cw);
-	}
-    }
+
+	/* return the drawing origin, given the marker location;
+	   differs for centered or right-aligned text */
+	text_origin(&x1off, &y1off, x1off, y1off, t->type, t->offset);
+
     canvas_locmove_proc = moving_text;
     canvas_ref_proc = elastic_movetext;
     canvas_leftbut_proc = place_text;

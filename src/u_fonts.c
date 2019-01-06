@@ -473,8 +473,10 @@ textextents(int psflag, int font, int fontsize, double angle,
 	}
 }
 
+
 /*
- * Return the drawing origin, given (base_x, base_y) and the alignment.
+ * Return the drawing origin, given the marker position (base_x, base_y)
+ * and the alignment.
  */
 void
 text_origin(int *draw_x, int *draw_y, int base_x, int base_y, int align,
