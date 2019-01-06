@@ -539,7 +539,9 @@ static void
 cancel_text(void)
 {
     canvas_ref_proc = canvas_locmove_proc = null_proc;
-    elastic_movetext();
+    /* move the text back to the original position,
+       to clear the text at the last position it was dragged to */
+    moving_text(new_t->base_x + x1off, new_t->base_y + y1off);
     /* erase last lengths if appres.showlengths is true */
     erase_lengths();
     if (return_proc == copy_selected) {
