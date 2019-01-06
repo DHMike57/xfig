@@ -472,7 +472,7 @@ read_1_3_textobject(FILE *fp)
     int		    n;
     int		    dum;
     char	    buf[512];
-    PR_SIZE	    tx_dim;
+    //PR_SIZE	    tx_dim;
 
     if ((t = create_text()) == NULL)
 	return (NULL);
@@ -525,10 +525,14 @@ read_1_3_textobject(FILE *fp)
 	t->font = DEFAULT;
     }
     /* now calculate the actual length and height of the string in fig units */
-    tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-    t->length = round(tx_dim.length);
-    t->ascent = round(tx_dim.ascent);
-    t->descent = round(tx_dim.descent);
+    //tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
+    //t->length = round(tx_dim.length);
+    //t->ascent = round(tx_dim.ascent);
+    //t->descent = round(tx_dim.descent);
+    textextents(psfont_text(t), t->font, t->size, t->angle, t->cstring,
+		(int)strlen(t->cstring), t->bb, t->rotbb,
+		&t->offset, &t->length, &t->height);
+
 
     return (t);
 }

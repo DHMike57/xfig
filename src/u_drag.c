@@ -451,8 +451,6 @@ place_line_x(int x, int y)
 
 /************************  text section	 **************************/
 
-static PR_SIZE	txsize;
-
 void
 init_textdragging(F_text *t, int x, int y)
 {
