@@ -529,10 +529,8 @@ read_1_3_textobject(FILE *fp)
     //t->length = round(tx_dim.length);
     //t->ascent = round(tx_dim.ascent);
     //t->descent = round(tx_dim.descent);
-    textextents(psfont_text(t), t->font, t->size, t->angle, t->cstring,
-		(int)strlen(t->cstring), t->bb, t->rotbb,
-		&t->offset, &t->length, &t->height);
+    textextents(t);
 
 
-    return (t);
+    return t;
 }

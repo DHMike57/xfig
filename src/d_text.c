@@ -713,8 +713,7 @@ static F_text *
 new_text(void)
 {
     F_text	   *text;
-    PR_SIZE	    size;
-    int		i;	/* DEBUG */
+    PR_SIZE	size;
 
     if ((text = create_text()) == NULL)
 	return (NULL);
@@ -726,9 +725,6 @@ new_text(void)
     text->type = work_textjust;
     text->font = work_font;	/* put in current font number */
     text->fontstruct = work_fontstruct;
-    /* get horizontal font at Fig unit resolution (often, 1200) */
-    //text->fonts[1] = getfont(work_psflag, work_font,
-	//	    work_fontsize * SIZE_FLT * ZOOM_FACTOR, work_angle);
     text->fonts[0] = getfont(work_psflag, work_font,
 		    work_fontsize * SIZE_FLT * display_zoomscale, work_angle);
     text->zoom = zoomscale;
@@ -744,10 +740,7 @@ new_text(void)
     text->descent = size.descent;
     text->base_x = base_x;
     text->base_y = base_y;
-fprintf(stderr, "new_text() calls textextents() for string: %s\n", prefix);
-    textextents(work_psflag, work_font, work_fontsize, work_angle,
-		    prefix, leng_prefix, text->bb, text->rotbb,
-		    &text->offset, &text->length, &text->height);
+    textextents(text);
     strcpy(text->cstring, prefix);
     text->next = NULL;
     return (text);

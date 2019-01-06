@@ -823,7 +823,6 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
     int		    p1x, p1y, p2x, p2y, centerx, centery;
     int		    x1, x2, y1, y2, save;
     int		    theight, tlen2, tht2;
-    PR_SIZE	    tsize;
     char	    str[80], comment[100];
     F_point	   *pnt;
     Boolean	    fixed_text;
@@ -911,20 +910,10 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
 	 text->cstring = strdup(str);
     }
     /* recalculate text sizes */
-    //text->fontstruct = lookfont(x_fontnum(text->flags, text->font), text->size);
     text->zoom = 1.0;
-    textextents(psfont_text(text), text->font, text->size, text->angle,
-		    text->cstring, strlen(text->cstring), text->bb, text->rotbb,
-		    &text->offset, &text->length, &text->height);
-    //tsize = textsize(text->fontstruct, strlen(text->cstring), text->cstring);
-    //text->ascent  = tsize.ascent;
-    //text->descent = tsize.descent;
-    //text->length  = tsize.length;
-    //theight = tsize.ascent + tsize.descent;
+    textextents(text);
     text->angle = angle;
-    /* the descent is not known any longer */
-    //text->base_y = centery + cos(angle)*round(text->height/2.0 - tsize.descent);
-					/* descent is approx. 0.2*height */
+    /* the descent is not known any longer; it is approx. 0.2*height */
     text->base_x = centerx + round(-dy / length * text->height * (0.5 - 0.2));
     text->base_y = centery + round(dx / length * text->height * 0.3);
 
@@ -1137,9 +1126,7 @@ scale_text(F_text *t, float sx, float sy, int refx, int refy)
 	else if (MAX_FONT_SIZE < newsize)
 	    sx = (float) MAX_FONT_SIZE / t->size;
 	t->size = round(t->size * sx);
-	textextents(psfont_text(t), t->font, t->size, t->angle, t->cstring,
-		    strlen(t->cstring), t->bb, t->rotbb, &t->offset,
-		    &t->length, &t->height);
+	textextents(t);
 	/* rescale font */
 	reload_text_fstruct(t);
     }

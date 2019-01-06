@@ -359,28 +359,28 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
  * + epsilon_x, base_y + epsilon_y) to XftDrawStringXX()
  */
 void
-textextents(int psflag, int font, int fontsize, double angle,
-		const char *string, int len,
-		/* F_pos *origin, */ F_pos bb[2], F_pos rotbb[4], F_pos *offset,
-		int *length, int *height)
+textextents(F_text *t)
 {
 	XGlyphInfo	extents;
 	XftFont		*rotfont;
+	int		len = (int)strlen(t->cstring);
 
 	/* Get the font at native Fig resolution (often, 1200 ppi) */
-	rotfont = getfont(psflag, font, fontsize*SIZE_FLT*ZOOM_FACTOR, angle);
-	XftTextExtentsUtf8(tool_d, rotfont, (XftChar8 *)string, len, &extents);
+	rotfont = getfont(psfont_text(t), t->font,
+			t->size * SIZE_FLT * ZOOM_FACTOR, (double)t->angle);
+	XftTextExtentsUtf8(tool_d, rotfont, (XftChar8 *)t->cstring, len,
+			&extents);
 	/* libxft keeps the last 16, closed fonts in cache.
 	   Hence, no need to keep rotfont open, in our own cache. */
 	XftFontClose(tool_d, rotfont);
 
-	bb[0].x = 0 - extents.x;
-	bb[0].y = 0 - extents.y;
-	bb[1].x = extents.width - extents.x;
-	bb[1].y = extents.height - extents.y;
+	t->bb[0].x = 0 - extents.x;
+	t->bb[0].y = 0 - extents.y;
+	t->bb[1].x = extents.width - extents.x;
+	t->bb[1].y = extents.height - extents.y;
 
-	offset->x = extents.xOff;
-	offset->y = extents.yOff;
+	t->offset.x = extents.xOff;
+	t->offset.y = extents.yOff;
 
 	/* shortcut for horizontal and vertical texts */
 	/* vertical text */
@@ -388,33 +388,35 @@ textextents(int psflag, int font, int fontsize, double angle,
 
 		/* possibly an empty string? */
 		if (extents.yOff == 0) {
-			*length = *height = 0;
-			offset->x = offset->y = 0;
-			bb[0].x = bb[1].x = 0;
-			bb[0].y = bb[1].y = 0;
-			rotbb[0].x = rotbb[1].x = rotbb[2].x = rotbb[3].x = 0;
-			rotbb[0].y = rotbb[1].y = rotbb[2].y = rotbb[3].y = 0;
+			t->length = t->height = 0;
+			t->offset.x = t->offset.y = 0;
+			t->bb[0].x = t->bb[0].y = 0;
+			t->bb[1].x = t->bb[1].y = 0;
+			t->rotbb[0].x = t->rotbb[0].y = 0;
+			t->rotbb[1].x = t->rotbb[1].y = 0;
+			t->rotbb[2].x = t->rotbb[2].y = 0;
+			t->rotbb[3].x = t->rotbb[3].y = 0;
 			return;
 		}
 
-		*length = extents.height;
-		*height = extents.width;
+		t->length = extents.height;
+		t->height = extents.width;
 		/*
 		 * Initially, the corners of the rotated rectangle were sorted.
 		 * This is unnecessary, but the code was kept.
 		 */
 		if (extents.yOff > 0) {
 			/* rotbb[0] is top left, rotbb[1] bottom left,... */
-			rotbb[0].x = bb[1].x;	rotbb[0].y = bb[0].y; /* tl */
-			rotbb[1].x = bb[0].x;	rotbb[1].y = bb[0].y; /* bl */
-			rotbb[2].x = bb[0].x;	rotbb[2].y = bb[1].y; /* br */
-			rotbb[3].x = bb[1].x;	rotbb[3].y = bb[1].y; /* tr */
+			t->rotbb[0].x = t->bb[1].x;  t->rotbb[0].y = t->bb[0].y;
+			t->rotbb[1].x = t->bb[0].x;  t->rotbb[1].y = t->bb[0].y;
+			t->rotbb[2].x = t->bb[0].x;  t->rotbb[2].y = t->bb[1].y;
+			t->rotbb[3].x = t->bb[1].x;  t->rotbb[3].y = t->bb[1].y;
 			//origin->x = 0;		origin->y = extents.y;
 		} else { /* extents.yOff < 0 */
-			rotbb[0].x = bb[0].x;	rotbb[0].y = bb[1].y; /* tl */
-			rotbb[1].x = bb[1].x;	rotbb[1].y = bb[1].y; /* bl */
-			rotbb[2].x = bb[1].x;	rotbb[2].y = bb[0].y; /* br */
-			rotbb[3].x = bb[0].x;	rotbb[3].y = bb[0].y; /* tr */
+			t->rotbb[0].x = t->bb[0].x;  t->rotbb[0].y = t->bb[1].y;
+			t->rotbb[1].x = t->bb[1].x;  t->rotbb[1].y = t->bb[1].y;
+			t->rotbb[2].x = t->bb[1].x;  t->rotbb[2].y = t->bb[0].y;
+			t->rotbb[3].x = t->bb[0].x;  t->rotbb[3].y = t->bb[0].y;
 			//origin->x = 0;
 			//origin->y = extents.y - extents.height;
 		}
@@ -422,19 +424,19 @@ textextents(int psflag, int font, int fontsize, double angle,
 	/* horizontal text */
 	} else if (extents.yOff == 0) {
 
-		*length = extents.width;
-		*height = extents.height;
+		t->length = extents.width;
+		t->height = extents.height;
 		if (extents.xOff > 0) {
-			rotbb[0].x = bb[0].x;	rotbb[0].y = bb[0].y; /* tl */
-			rotbb[1].x = bb[0].x;	rotbb[1].y = bb[1].y; /* bl */
-			rotbb[2].x = bb[1].x;	rotbb[2].y = bb[1].y; /* br */
-			rotbb[3].x = bb[1].x;	rotbb[3].y = bb[0].y; /* tr */
+			t->rotbb[0].x = t->bb[0].x;  t->rotbb[0].y = t->bb[0].y;
+			t->rotbb[1].x = t->bb[0].x;  t->rotbb[1].y = t->bb[1].y;
+			t->rotbb[2].x = t->bb[1].x;  t->rotbb[2].y = t->bb[1].y;
+			t->rotbb[3].x = t->bb[1].x;  t->rotbb[3].y = t->bb[0].y;
 			//origin->x = extents.x;	origin->y = 0;
 		} else { /* extents.xOff < 0 */
-			rotbb[0].x = bb[1].x;	rotbb[0].y = bb[1].y; /* tl */
-			rotbb[1].x = bb[1].x;	rotbb[1].y = bb[0].y; /* bl */
-			rotbb[2].x = bb[0].x;	rotbb[2].y = bb[0].y; /* br */
-			rotbb[3].x = bb[0].x;	rotbb[3].y = bb[1].y; /* tr */
+			t->rotbb[0].x = t->bb[1].x;  t->rotbb[0].y = t->bb[1].y;
+			t->rotbb[1].x = t->bb[1].x;  t->rotbb[1].y = t->bb[0].y;
+			t->rotbb[2].x = t->bb[0].x;  t->rotbb[2].y = t->bb[0].y;
+			t->rotbb[3].x = t->bb[0].x;  t->rotbb[3].y = t->bb[1].y;
 			//origin->x = extents.x - extents.width;
 			//origin->y = 0;
 		}
@@ -445,30 +447,30 @@ textextents(int psflag, int font, int fontsize, double angle,
 		double		cosa, sina;
 		struct f_pos	tl, bl, tr, br;
 
-		horfont = getfont(psflag, font,
-					fontsize * SIZE_FLT * ZOOM_FACTOR, 0.0);
-		XftTextExtentsUtf8(tool_d, horfont, (XftChar8 *)string, len,
+		horfont = getfont(psfont_text(t), t->font,
+					t->size * SIZE_FLT * ZOOM_FACTOR, 0.0);
+		XftTextExtentsUtf8(tool_d, horfont, (XftChar8 *)t->cstring, len,
 				&extents);
 		/* See above, libxft keeps a cache of 16 closed fonts. */
 		XftFontClose(tool_d, horfont);
 
-		*length = extents.width;
-		*height = extents.height;
+		t->length = extents.width;
+		t->height = extents.height;
 		tl.x = 0 - extents.x;		tl.y = 0 - extents.y;
-		bl.x = 0 - extents.x;		bl.y = *height - extents.y;
-		br.x = *length - extents.x;	br.y = *height - extents.y;
-		tr.x = *length - extents.x;	tr.y = 0 - extents.y;
+		bl.x = 0 - extents.x;		bl.y = t->height - extents.y;
+		br.x = t->length - extents.x;	br.y = t->height - extents.y;
+		tr.x = t->length - extents.x;	tr.y = 0 - extents.y;
 		//origin->x = extents.x;	origin->y = 0;
 
 #define ROTPOS(rot, orig)	rot.x = orig.x * cosa + orig.y * sina; \
 				rot.y = -orig.x * sina + orig.y * cosa;
-		cosa = cos(angle);
-		sina = sin(angle);
+		cosa = cos(t->angle);
+		sina = sin(t->angle);
 
-		ROTPOS(rotbb[0], tl);
-		ROTPOS(rotbb[1], bl);
-		ROTPOS(rotbb[2], br);
-		ROTPOS(rotbb[3], tr);
+		ROTPOS(t->rotbb[0], tl);
+		ROTPOS(t->rotbb[1], bl);
+		ROTPOS(t->rotbb[2], br);
+		ROTPOS(t->rotbb[3], tr);
 #undef ROTPOS
 	}
 }

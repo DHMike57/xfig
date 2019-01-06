@@ -514,9 +514,7 @@ void update_text(F_text *text)
     up_part(text->angle, cur_elltextangle*M_PI/180.0, I_ELLTEXTANGLE);
     up_part(text->color, cur_pencolor, I_PEN_COLOR);
     up_depth_part(text->depth, cur_depth);
-    textextents(psfont_text(text), text->font, text->size, text->angle,
-		    text->cstring, strlen(text->cstring), text->bb, text->rotbb,
-		    &text->offset, &text->length, &text->height);
+    textextents(text);
     reload_text_fstruct(text);	/* make sure fontstruct is current */
     /* updated object will be redisplayed by init_update_xxx() */
 }

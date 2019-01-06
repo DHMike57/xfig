@@ -2402,7 +2402,6 @@ void make_window_text(F_text *t)
 static void
 get_new_text_values(void)
 {
-    //PR_SIZE	    size;
 
     check_depth();
     new_t->type = textjust;
@@ -2434,10 +2433,7 @@ get_new_text_values(void)
     new_t->comments = strdup(panel_get_value(comments_panel));
     /* get the fontstruct for zoom = 1 to get the size of the string */
     canvas_font = lookfont(x_fontnum(psfont_text(new_t), new_t->font), new_t->size);
-    //size = textsize(canvas_font, strlen(new_t->cstring), new_t->cstring);
-    textextents(new_psflag, new_t->font, new_t->size, new_t->angle,
-	    new_t->cstring, strlen(new_t->cstring), new_t->bb, new_t->rotbb,
-	    &new_t->offset, &new_t->length, &new_t->height);
+    textextents(new_t);
     /* now set the fontstruct for this zoom scale */
     reload_text_fstruct(new_t);
 }
