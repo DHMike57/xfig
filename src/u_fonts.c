@@ -383,8 +383,8 @@ textextents(F_text *t)
 	t->offset.y = extents.yOff;
 
 	/* shortcut for horizontal and vertical texts */
-	/* vertical text */
 	if (extents.xOff == 0) {
+		/* vertical text */
 
 		/* possibly an empty string? */
 		if (extents.yOff == 0) {
@@ -421,11 +421,15 @@ textextents(F_text *t)
 			//origin->y = extents.y - extents.height;
 		}
 
-	/* horizontal text */
+		t->top.x = t->rotbb[0].x;
+		t->top.y = 0;
+
 	} else if (extents.yOff == 0) {
+		/* horizontal text */
 
 		t->length = extents.width;
 		t->height = extents.height;
+
 		if (extents.xOff > 0) {
 			t->rotbb[0].x = t->bb[0].x;  t->rotbb[0].y = t->bb[0].y;
 			t->rotbb[1].x = t->bb[0].x;  t->rotbb[1].y = t->bb[1].y;
@@ -440,8 +444,12 @@ textextents(F_text *t)
 			//origin->x = extents.x - extents.width;
 			//origin->y = 0;
 		}
-	} else {
 
+		t->top.x = 0;
+		t->top.y = t->rotbb[0].y;
+
+
+	} else {
 		/* a font at an angle */
 		XftFont 	*horfont;
 		double		cosa, sina;
@@ -463,7 +471,7 @@ textextents(F_text *t)
 		//origin->x = extents.x;	origin->y = 0;
 
 #define ROTPOS(rot, orig)	rot.x = orig.x * cosa + orig.y * sina; \
-				rot.y = -orig.x * sina + orig.y * cosa;
+				rot.y = -orig.x * sina + orig.y * cosa
 		cosa = cos(t->angle);
 		sina = sin(t->angle);
 
@@ -471,6 +479,11 @@ textextents(F_text *t)
 		ROTPOS(t->rotbb[1], bl);
 		ROTPOS(t->rotbb[2], br);
 		ROTPOS(t->rotbb[3], tr);
+
+		/* position of the top text marker */
+		tl.x = 0;	/* tl.y is correct */
+		ROTPOS(t->top, tl);
+
 #undef ROTPOS
 	}
 }

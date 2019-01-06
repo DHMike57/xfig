@@ -1247,11 +1247,9 @@ static char    *hidden_text_string = "<<>>";
 
 void draw_text(F_text *text, int op)
 {
-    PR_SIZE	    size;
     int		    x,y;
     int		    xmin, ymin, xmax, ymax;
     int		    x1,y1, x2,y2, x3,y3, x4,y4;
-    double	    cost, sint;
 
     if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0) {
 	reload_text_fstruct(text);

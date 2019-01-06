@@ -277,7 +277,6 @@ void active_compound_bound(F_compound *compound, int *xmin, int *ymin, int *xmax
     }
 
     for (t = compound->texts; t != NULL; t = t->next) {
-	int    dum;
 	if (active_only && !active_layer(t->depth))
 	    continue;
 	text_bound(t, &sx, &sy, &bx, &by);
