@@ -749,7 +749,7 @@ popdown_comments(void)
 void edit_item(void *p, int type, int x, int y)
 {
     XtWidgetGeometry xtgeom,comp;
-    int		    llx, lly, urx, ury, dum;
+    int		    llx, lly, urx, ury;
     Dimension	    w, h;
     Position	    rootlx, rootly, rootux, rootuy;
 
@@ -1417,7 +1417,7 @@ get_new_compound_values(void)
     float	 scalex, scaley;
     F_text	*t;
     int		 i;
-    PR_SIZE	 size;
+    //PR_SIZE	 size;
 
     nw_x = panel_get_dim_value(x1_panel);
     nw_y = panel_get_dim_value(y1_panel);
