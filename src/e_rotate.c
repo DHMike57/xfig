@@ -25,6 +25,7 @@
 #include "u_geom.h"
 #include "u_search.h"
 #include "u_create.h"
+#include "u_fonts.h"
 #include "u_list.h"
 #include "w_canvas.h"
 #include "w_mousefun.h"
@@ -236,13 +237,11 @@ init_rotatetext(F_text *t, int px, int py)
 	add_text(text);
     } else {
 	toggle_textmarker(t);
-	draw_text(t, ERASE);
 	change_text(t, text);
     }
     /* redisplay objects under this object before it was rotated */
-    redisplay_text(t);
+    redisplay_texts(t, text);
     /* and this text and any other objects on top */
-    redisplay_text(text);
     reset_cursor();
 }
 
@@ -400,6 +399,7 @@ void rotate_text(F_text *t, int x, int y)
 	t->angle += M_2PI;
     else if (t->angle >= M_2PI - 0.001)
 	t->angle -= M_2PI;
+    textextents(t);
     reload_text_fstruct(t);
 }
 
