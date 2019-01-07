@@ -283,9 +283,6 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	/* assign the base pattern */
 	if (xftbasepattern[fnum] == NULL) {
 		xftbasepattern[fnum] = XftNameParse(xft_name[fnum]);
-		/* Erasing by painting over with the canvas background color
-		   does not work with antialiased text */
-		XftPatternAddBool(xftbasepattern[fnum], XFT_ANTIALIAS, False);
 		/* XftPatternAddBool returns 1, if succesful */
 		/* XftPatternAddBool(xftbasepattern[fnum], "hinting", False); */
 	}
