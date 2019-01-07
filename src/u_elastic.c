@@ -867,10 +867,16 @@ elastic_scalearc(F_arc *a)
 void
 moving_text(int x, int y)
 {
-	/* The positions used by elastic_movetext() as drawing origins. */
 	int	old_basex, old_basey;
 	int	new_basex, new_basey;
 
+	/*
+	 * The position used by elastic_movetext() as drawing origin is
+	 * (cur_x + x1off, cur_y + y1off).
+	 * The globals x1off, y1off correct for text alignment and were computed
+	 * by text_origin() in init_textdragging(). These can be re-used and the
+	 * bounding box need not be re-computed by invoking text_origin() here.
+	 */
 	old_basex = cur_x + x1off;
 	old_basey = cur_y + y1off;
 	adjust_pos(x, y, fix_x, fix_y, &cur_x, &cur_y);
