@@ -488,6 +488,26 @@ textextents(F_text *t)
 	}
 }
 
+/*
+ * Return ascent and descent, testing with a few chars that should provide a
+ * good approximation to the maximum ascent and descent.
+ * This works mainly for western languages, not sure about eastern languages.
+ */
+void
+textmaxheight(int psflag, int font, int size, int *ascent, int *descent)
+{
+	XGlyphInfo	extents;
+	XftFont		*horfont;
+	XftChar8	max_height_str[] = "{(fgjOÜ";
+
+	horfont = getfont(psflag, font, size * SIZE_FLT * ZOOM_FACTOR, 0.0);
+	XftTextExtentsUtf8(tool_d, horfont, max_height_str,
+			(int)sizeof(max_height_str), &extents);
+	XftFontClose(tool_d, horfont);
+	*ascent = extents.y;
+	*descent = extents.height - extents.y;
+}
+
 
 /*
  * Return the drawing origin, given the marker position (base_x, base_y)
