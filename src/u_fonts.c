@@ -295,6 +295,9 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	XftPatternAddDouble(want, XFT_PIXEL_SIZE, pixelsize);
 
 	/* Rotated text - negative angle not allowed! */
+if (angle < 0.) {
+fputs("Negative angle passed to getfont().\n", stderr); exit(1);
+}
 	if (angle > 0.01) {
 		const double	cosa = cos(angle);
 		const double	sina = sin(angle);

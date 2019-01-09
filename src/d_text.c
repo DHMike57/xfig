@@ -419,7 +419,6 @@ overlay_text_input(int x, int y)
 static void
 create_textobject(void)
 {
-    PR_SIZE	    size;
 
     reset_action_on();
     erase_char_string();
@@ -459,10 +458,7 @@ create_textobject(void)
 	    if ((new_t->cstring = new_string(leng_prefix)) != NULL)
 		strcpy(new_t->cstring, prefix);
 	}
-	size = textsize(canvas_font, leng_prefix, prefix);
-	new_t->ascent  = size.ascent;
-	new_t->descent = size.descent;
-	new_t->length  = size.length;
+	textextents(new_t);
 	cur_t = new_t;
     }
     /* draw it and any objects that are on top */
@@ -937,7 +933,6 @@ draw_char_string(void)
 {
 #ifdef I18N
     if (appres.international && is_i18n_font(canvas_font)) {
-	double cwidth;
 	int direc, asc, des;
 	XCharStruct overall;
 
@@ -1959,7 +1954,6 @@ xim_initialize(Widget w)
   const XIMStyle style_old_over_the_spot = XIMPreeditPosition | XIMStatusNothing;
   const XIMStyle style_off_the_spot = XIMPreeditArea | XIMStatusArea;
   const XIMStyle style_root = XIMPreeditNothing | XIMStatusNothing;
-  static long int im_event_mask = 0;
   XIMStyles	*styles;
   XIMStyle	 preferred_style;
   int		 i;
