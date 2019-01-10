@@ -101,6 +101,8 @@ static int	char_ht;
 static int	base_x, base_y;
 static int	supersub;		/* < 0 = currently subscripted, > 0 = superscripted */
 static int	heights[MAX_SUPSUB];	/* keep prev char heights when super/subscripting */
+
+static int	ascent, descent;
 static int	orig_x, orig_y;		/* to position next line */
 static int	orig_ht;		/* to advance to next line */
 static float	work_float_fontsize;	/* keep current font size in floating for roundoff */
@@ -410,7 +412,6 @@ overlay_text_input(int x, int y)
     }
 
     put_msg("Ready for text input (from keyboard)");
-    char_ht = ZOOM_FACTOR * max_char_height(canvas_font);
     initialize_char_handler(canvas_win, finish_text_input,
 			  base_x, base_y);
     draw_char_string();
@@ -546,6 +547,7 @@ init_text_input(int x, int y)
 	    /* get the font at resolution in Fig_units, for text extents etc */
 	//   canvas_xftfont = getfont(work_psflag, work_font,
 	//		    ZOOM_FACTOR * work_fontsize * SIZE_FLT, work_angle);
+	    /* get the font for actually drawing on the canvas */
 	    canvas_zoomed_xftfont = getfont(work_psflag, work_font,
 			    (int)(work_fontsize * SIZE_FLT * display_zoomscale),
 			    work_angle);
@@ -683,9 +685,12 @@ init_text_input(int x, int y)
     supersub = 0;
 
     put_msg("Ready for text input (from keyboard)");
+    /* get text height and ascent, descent for cursor height and line spacing */
+    textmaxheight(work_psflag, work_font, work_fontsize, &ascent, &descent);
+
     /* save original char_ht for newline */
-    orig_ht = char_ht = ZOOM_FACTOR * max_char_height(canvas_font);
-    /* use "{(fgjÜO" to check for char height */
+    //orig_ht = char_ht = ZOOM_FACTOR * max_char_height(canvas_font);
+    orig_ht = char_ht = ascent + descent;
     initialize_char_handler(canvas_win, finish_text_input,
 			    base_x, base_y);
 #ifdef SEL_TEXT
@@ -825,9 +830,8 @@ static void	(*cr_proc) ();
 static void
 draw_cursor(int x, int y)
 {
-    pw_vector(pw, x, y,
-		round(x-ch_height*sin_t),
-		round(y-ch_height*cos_t),
+    pw_vector(pw, x + round(descent*sin_t), y + round(descent*cos_t),
+		x - round(ascent*sin_t), y - round(ascent*cos_t),
 		INV_PAINT, 1, RUBBER_LINE, 0.0, DEFAULT);
 }
 
