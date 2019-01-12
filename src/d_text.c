@@ -741,8 +741,8 @@ new_text(void)
     text->descent = size.descent;
     text->base_x = base_x;
     text->base_y = base_y;
-    textextents(text);
     strcpy(text->cstring, prefix);
+    textextents(text);
     text->next = NULL;
     return (text);
 }
