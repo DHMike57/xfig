@@ -1958,6 +1958,7 @@ xim_initialize(Widget w)
   const XIMStyle style_old_over_the_spot = XIMPreeditPosition | XIMStatusNothing;
   const XIMStyle style_off_the_spot = XIMPreeditArea | XIMStatusArea;
   const XIMStyle style_root = XIMPreeditNothing | XIMStatusNothing;
+  const XIMStyle style_none = XIMPreeditNone | XIMStatusNone;
   XIMStyles	*styles;
   XIMStyle	 preferred_style;
   int		 i;
@@ -1997,6 +1998,8 @@ xim_initialize(Widget w)
       xim_style = preferred_style;
     } else if (styles->supported_styles[i] == style_root) {
       if (xim_style == 0) xim_style = style_root;
+    } else if (styles->supported_styles[i] == style_none) {
+      if (xim_style == 0) xim_style = style_none;
     }
   }
   if (xim_style != preferred_style && *modifier_list != '\0' &&
@@ -2008,7 +2011,7 @@ xim_initialize(Widget w)
       fprintf(stderr, "xfig: it don't support ROOT input style, too...\n");
       return False;
     } else {
-      fprintf(stderr, "xfig: using ROOT input style instead.\n");
+      fprintf(stderr, "xfig: using ROOT or NONE input style instead.\n");
     }
   }
   if (appres.DEBUG) {
@@ -2016,10 +2019,14 @@ xim_initialize(Widget w)
     if (xim_style == style_over_the_spot) s = "OverTheSpot";
     else if (xim_style == style_off_the_spot) s = "OffTheSpot";
     else if (xim_style == style_root) s = "Root";
+    else if (xim_style == style_none) s = "None";
     else s = "unknown";
     fprintf(stderr, "xfig: selected input style: %s\n", s);
   }
 
+	if (xim_style == style_none) {
+		xim_ic = XCreateIC(xim_im, XNInputStyle, xim_style, NULL, NULL);
+	} else {
   spot.x = 20;  /* dummy */
   spot.y = 20;
   preedit_att = XVaCreateNestedList(0, XNFontSet, appres.fixed_fontset,
@@ -2035,6 +2042,7 @@ xim_initialize(Widget w)
 		     NULL, NULL);
   XFree(preedit_att);
   XFree(status_att);
+	}
   if (xim_ic == NULL) {
     fprintf(stderr, "xfig: can't create input-context\n");
     return False;
