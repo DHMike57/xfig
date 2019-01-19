@@ -598,6 +598,12 @@ void goodbye(Boolean abortflag)
     free_GCs();
     /* free all the loaded X-Fonts*/
     free_Fonts();
+	/*
+	 * Do not free Xft fonts, because
+	 * https://lists.cinelerra-cv.org/pipermail/cinelerra/2014q2/001223.html
+	 *	If I understand libXft sources correctly, Xft cares
+	 *	itself about font closing durig XCloseDisplay.
+	 */
 
     XtDestroyWidget(tool);
 
