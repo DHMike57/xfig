@@ -1531,6 +1531,22 @@ notablet:
     */
     if (xim_ic != NULL) {
       while (1) {
+static F_text *p_cur_t, *p_new_t, *p_old_t;
+if (cur_t != p_cur_t) {
+  fprintf(stderr, "cur_t->cstring = %s\n",
+	cur_t && cur_t->cstring ? cur_t->cstring : "00");
+  p_cur_t = cur_t;
+}
+if (new_t != p_new_t) {
+  fprintf(stderr, "new_t->cstring = %s\n",
+	new_t && new_t->cstring ? new_t->cstring : "00");
+  p_new_t = new_t;
+}
+if (old_t != p_old_t) {
+  fprintf(stderr, "old_t->cstring = %s\n",
+	old_t && old_t->cstring ? old_t->cstring : "00");
+  p_old_t = old_t;
+}
 	XtAppNextEvent(tool_app, &event);
 	if (splash_onscreen) {
 	    /* if user presses key or mouse button, clear splash */
@@ -1565,6 +1581,22 @@ notablet:
     /*******************************************************/
 
     while (1) {
+static F_text *p_cur_t, *p_new_t, *p_old_t;
+if (cur_t != p_cur_t) {
+  fprintf(stderr, "cur_t->cstring = %s\n",
+	cur_t && cur_t->cstring ? cur_t->cstring : "00");
+  p_cur_t = cur_t;
+}
+if (new_t != p_new_t) {
+  fprintf(stderr, "new_t->cstring = %s\n",
+	new_t && new_t->cstring ? new_t->cstring : "00");
+  p_new_t = new_t;
+}
+if (old_t != p_old_t) {
+  fprintf(stderr, "old_t->cstring = %s\n",
+	old_t && old_t->cstring ? old_t->cstring : "00");
+  p_old_t = old_t;
+}
 	XtAppNextEvent(tool_app, &event);
 	if (splash_onscreen) {
 	    /* if user presses key or mouse button, clear splash */
