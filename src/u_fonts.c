@@ -254,6 +254,12 @@ int latexfontnum(char *font)
     return(DEF_LATEX_FONT);
 }
 
+void
+closefont(XftFont *font)
+{
+	XftFontClose(tool_d, font);
+}
+
 XftFont *
 getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 		double angle /* must be larger than 0! */)
@@ -487,6 +493,20 @@ textextents(F_text *t)
 #undef ROTPOS
 	}
 }
+
+
+/*
+ * Return the pixel length of the text.
+ */
+int
+textlength(XftFont *horfont, XftChar8 *string, int len)
+{
+	XGlyphInfo	extents;
+
+	XftTextExtentsUtf8(tool_d, horfont, string, len, &extents);
+	return (int)extents.xOff;
+}
+
 
 /*
  * Return ascent and descent, testing with a few chars that should provide a

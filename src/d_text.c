@@ -1880,7 +1880,7 @@ reload_text_fstruct(F_text *t)
 			round(t->size*display_zoomscale));
     t->zoom = zoomscale;
     if (t->fonts[0])
-	XftFontClose(tool_d, t->fonts[0]);
+	closefont(t->fonts[0]);
     t->fonts[0] = getfont(psfont_text(t), t->font, (int)(t->size
 			* SIZE_FLT * display_zoomscale), t->angle);
 }

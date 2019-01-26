@@ -63,8 +63,10 @@ struct XftFont;
 extern int	psfontnum(char *font);
 extern int	latexfontnum(char *font);
 extern int	x_fontnum(int psflag, int fnum);
+extern void	closefont(XftFont *font);
 extern XftFont	*getfont(int psflag, int fnum, int size3, double angle);
 extern void	textextents(F_text *t);
+extern int	textlength(XftFont *horfont, XftChar8 *string, int len);
 extern void	textmaxheight(int psflag, int font, int size, int *ascent,
 				int *descent);
 extern void	text_origin(int *draw_x, int *draw_y, int base_x, int base_y,
