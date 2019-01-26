@@ -123,7 +123,7 @@ static void	begin_utf8char(unsigned char *str, int *pos);
 static void	end_utf8char(unsigned char *str, int *pos);
 static void	finish_n_start(int x, int y);
 static void	init_text_input(int x, int y), cancel_text_input(void);
-static F_text  *new_text(void);
+static F_text  *new_text(int len, char *string);
 
 static void	new_text_line(void);
 static void     overlay_text_input(int x, int y);
@@ -436,7 +436,7 @@ create_textobject(void)
 	leng_prefix=strlen(prefix);
 	if (leng_prefix == 0)
 	    return;		/* nothing afterall */
-	cur_t = new_text();
+	cur_t = new_text(leng_prefix, prefix);
 	add_text(cur_t);
     } else {			/* existing text modified */
 	strcat(prefix, suffix);
@@ -479,6 +479,8 @@ init_text_input(int x, int y)
     PR_SIZE	    tsize;
     float	    lensin, lencos;
     int		    prev_work_font;
+    int		cursor_len;
+    int		start_suffix;
 
     cur_x = x;
     cur_y = y;
@@ -560,6 +562,9 @@ init_text_input(int x, int y)
 	    work_xftfont = canvas_zoomed_xftfont;
 	} /* (is_newline) */
 
+	new_t = new_text(40, "Provide some space for future text");
+	textextents(new_t);
+
     } else {
 
 	/*****************/
@@ -572,6 +577,10 @@ init_text_input(int x, int y)
 	    text_drawing_selected();
 	    return;
 	}
+
+	new_t = copy_text(cur_t);
+	delete_text(cur_t);	/* unlink cur_t from the objects list */
+
 	/* update the working text parameters */
 	work_textcolor = cur_t->color;
 	prev_work_font = work_font;
@@ -598,8 +607,8 @@ init_text_input(int x, int y)
 			   work_fontsize);
 	// canvas_xftfont = cur_t->fonts[0];
 
-	toggle_textmarker(cur_t);
-	draw_text(cur_t, ERASE);
+	toggle_textmarker(new_t);
+	//draw_text(cur_t, ERASE);
 	base_x = cur_t->base_x;
 	base_y = cur_t->base_y;
 	length = cur_t->length;
@@ -615,15 +624,19 @@ init_text_input(int x, int y)
 	orig_y = base_y;
 
 	/* adjust the drawing origin, depending on the text alignment */
-	text_origin(&base_x, &base_y, base_x, base_y, cur_t->type,
-			cur_t->offset);
+	text_origin(&base_x, &base_y, base_x, base_y, new_t->type,
+			new_t->offset);
 
-	if (split_at_cursor(cur_t, cur_x, cur_y, &leng_prefix, &leng_suffix))
+	if (split_at_cursor(new_t, cur_x, cur_y, &cursor_len, &start_suffix)) {
 		return;
-	else	/* DEBUG */
-		fprintf(stderr, "%.*s - %s, length = %d, cursor_len = %d\n",
-				leng_suffix, cur_t->cstring,
-				cur_t->cstring+leng_suffix, length,leng_prefix);
+	} else {
+		cur_x = base_x + round(cursor_len * cos_t);
+		cur_y = base_y - round(cursor_len * sin_t);
+/* DEBUG */ fprintf(stderr, "%.*s - %s, length = %d, cursor_len = %d\n",
+				leng_suffix, new_t->cstring,
+				new_t->cstring + start_suffix,
+				cursor_len, start_suffix);
+	}
 	leng_suffix = strlen(cur_t->cstring);
 	/* leng_prefix is index of char in the text before the cursor */
 	/* it is also used for text selection as the starting point */
@@ -671,8 +684,8 @@ init_text_input(int x, int y)
 	tsize = textsize(canvas_font, leng_prefix, prefix);
 
 	/* set current to character position of mouse click (end of prefix) */
-	cur_x = round(base_x + tsize.length * cos_t);
-	cur_y = round(base_y - tsize.length * sin_t);
+	//cur_x = round(base_x + tsize.length * cos_t);
+	//cur_y = round(base_y - tsize.length * sin_t);
 
 #ifdef SEL_TEXT
 	/* set text selection flag in case user moves pointer along text with button down */
@@ -704,7 +717,9 @@ init_text_input(int x, int y)
 	text_selection_showing = False;
     }
 #endif /* SEL_TEXT */
-    draw_char_string();
+    //draw_char_string();
+    redisplay_text(new_t);
+    draw_text(new_t, PAINT);
 #ifdef SEL_TEXT
     /* draw the selected word in inverse */
     if (pointer_click == 2) {
@@ -715,7 +730,7 @@ init_text_input(int x, int y)
 }
 
 static F_text *
-new_text(void)
+new_text(int len, char *string)
 {
     F_text	   *text;
     PR_SIZE	size;
@@ -723,8 +738,8 @@ new_text(void)
     if ((text = create_text()) == NULL)
 	return (NULL);
 
-    if ((text->cstring = new_string(leng_prefix)) == NULL) {
-	free((char *) text);
+    if ((text->cstring = new_string(len)) == NULL) {
+	free(text);
 	return (NULL);
     }
     text->type = work_textjust;
@@ -739,13 +754,13 @@ new_text(void)
     text->color = cur_pencolor;
     text->depth = work_depth;
     text->pen_style = -1;
-    size = textsize(canvas_font, leng_prefix, prefix);
+    size = textsize(canvas_font, len, string);
     text->length = size.length;
     text->ascent = size.ascent;
     text->descent = size.descent;
     text->base_x = base_x;
     text->base_y = base_y;
-    strcpy(text->cstring, prefix);
+    strcpy(text->cstring, string);
     textextents(text);
     text->next = NULL;
     return (text);
@@ -975,7 +990,6 @@ initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by)
     rcur_x = cur_x;
     rcur_y = cur_y;
 
-    ch_height = ZOOM_FACTOR * canvas_font->max_bounds.ascent;
     turn_on_blinking_cursor(draw_cursor, draw_cursor,
 			    cur_x, cur_y, (long) BLINK_INTERVAL);
 #ifdef I18N
