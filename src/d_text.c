@@ -46,6 +46,7 @@
 
 #include <sys/wait.h>  /* waitpid() */
 #include <limits.h>
+#include <math.h>
 
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
@@ -116,8 +117,11 @@ static Color	work_textcolor;
 static XFontStruct *work_fontstruct;
 static XftFont	*work_xftfont;
 static float	work_angle;		/* in RADIANS */
-static double	sin_t, cos_t;		/* sin(work_angle) and cos(work_angle) */
-//static void	finish_n_start(int x, int y);
+static double	sin_t, cos_t;		/* sin(work_angle), cos(work_angle) */
+
+static void	begin_utf8char(unsigned char *str, int *pos);
+static void	end_utf8char(unsigned char *str, int *pos);
+static void	finish_n_start(int x, int y);
 static void	init_text_input(int x, int y), cancel_text_input(void);
 static F_text  *new_text(void);
 
@@ -811,6 +815,130 @@ prefix_length(char *string, int where_p)
 	return (len_c);
     return (where_c);
 }
+
+/*
+ * Return the cursor position (pixels into the string)
+ * and the index of the character under the cursor.
+ */
+int
+split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
+{
+	/*
+	 * text_search() currently returns the length of the cursor
+	 * position into the text. (FIXME)
+	 * In future, that shall simply return the selected text.
+	 */
+	int	dum;
+	int	pos;	/* number of chars, then index of start_suffix */
+	size_t	cstring_len;
+	int	right, left;
+	double	offset_len;
+	XftFont *horfont;
+
+	cstring_len = strlen(t->cstring);
+
+	/* get the number of codepoints in t->cstring */
+	if (!FcUtf8Len((FcChar8 *)t->cstring, (int)cstring_len, &pos, &dum)) {
+		/* TODO: Use FcUtf8ToUcs4() to get the first invalid char. */
+		file_msg("Invalid utf8 string: %s", t->cstring);
+		return -2;
+	}
+
+	/* Compute the distance of the cursor from the text origin */
+	offset_len = sqrt((double)t->offset.x * t->offset.x +
+				(double)t->offset.y * t->offset.y);
+	*cursor_len = ((x - t->base_x) * t->offset.x +
+				(y - t->base_y) * t->offset.y) / offset_len;
+
+	/* estimate the index of the character under the cursor */
+	if (*cursor_len <= 0)
+		pos = 0;
+	else if (*cursor_len < (int)offset_len)
+		pos *= *cursor_len / (int)offset_len;
+
+	horfont = getfont(psfont_text(t), t->font,
+				t->size * SIZE_FLT * ZOOM_FACTOR, 0.);
+
+	/* move to the first byte of a valid utf8 sequence */
+	if (pos > 0)
+		begin_utf8char((XftChar8 *)t->cstring, &pos);
+
+	/* walk left from the current position */
+	if (pos > 0) {
+		left = textlength(horfont, (XftChar8 *)t->cstring, pos);
+		right = left;
+		while (left > *cursor_len) {
+			right = left;
+			--pos;
+			begin_utf8char((XftChar8 *)t->cstring, &pos);
+			left = pos < 0 ? 0 :
+				textlength(horfont, (XftChar8*)t->cstring, pos);
+			*start_suffix = pos;
+		}
+	} else {	/* pos == 0 */
+		left = 0;
+		right = textlength(horfont, (XftChar8 *)t->cstring, pos + 1);
+		*start_suffix = 0;
+	}
+
+	/* walk towards the right */
+	while (right < *cursor_len) {
+		*start_suffix = pos;
+		left = right;
+		end_utf8char((XftChar8 *)t->cstring, &pos);
+		right = textlength(horfont, (XftChar8 *)t->cstring, pos + 1);
+	}
+
+	closefont(horfont); /* where to use horfont? */
+
+	if (*cursor_len - left > right - *cursor_len)
+		*cursor_len = right;
+	else
+		*cursor_len = left;
+
+	return 0;
+}
+
+
+void
+begin_utf8char(unsigned char *str, int *pos)
+{
+	/* Skip over combining diacritical marks; These are in the range U+0300
+	   to U+036F, which corresponds to UTF-8 0xcc 0x80 to 0xcd 0xaf. */
+	if (*pos > 2 && (str[*pos-1] == 0xcc && str[*pos] > 0x7f ||
+				str[*pos-1] == 0xcd && str[*pos] < 0xb0))
+		*pos -= 2;
+	while (*pos > 0 && str[*pos] > 0x7f && str[*pos] < 0xc2)
+		--*pos;
+}
+
+void
+end_utf8char(unsigned char *str, int *pos)
+{
+	/* an ascii char, or end of string */
+	if (str[*pos] < 0x80)
+		return;
+
+	/* the first byte tells the length of the utf8 byte sequence */
+	if (str[*pos] > 0xfc)
+		*pos += 5;
+	else if (str[*pos] > 0xf8)
+		*pos += 4;
+	else if (str[*pos] > 0xf0)
+		*pos += 3;
+	else if (str[*pos] > 0xe0)
+		*pos += 2;
+	else if (str[*pos] > 0xc0)
+		*pos += 1;
+
+	/* Include combining diacritical marks; These are in the range U+0300
+	   to U+036F, which corresponds to UTF-8 0xcc 0x80 to 0xcd 0xaf. */
+	if (str[*pos+1] && str[*pos+2] &&
+			(str[*pos+1] == 0xcc && str[*pos+2] > 0x7f ||
+			 str[*pos+1] == 0xcd && str[*pos+2] < 0xb0))
+		*pos += 2;
+}
+
 
 /*******************************************************************
 
