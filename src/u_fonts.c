@@ -371,6 +371,19 @@ textextents(F_text *t)
 	XftFont		*rotfont;
 	int		len = (int)strlen(t->cstring);
 
+	/* shortcut, nothing to do for an empty string */
+	if (len == 0) {
+		t->length = t->height = 0;
+		t->offset.x = t->offset.y = 0;
+		t->bb[0].x = t->bb[0].y = 0;
+		t->bb[1].x = t->bb[1].y = 0;
+		t->rotbb[0].x = t->rotbb[0].y = 0;
+		t->rotbb[1].x = t->rotbb[1].y = 0;
+		t->rotbb[2].x = t->rotbb[2].y = 0;
+		t->rotbb[3].x = t->rotbb[3].y = 0;
+		return;
+	}
+
 	/* Get the font at native Fig resolution (often, 1200 ppi) */
 	rotfont = getfont(psfont_text(t), t->font,
 			t->size * SIZE_FLT * ZOOM_FACTOR, (double)t->angle);
