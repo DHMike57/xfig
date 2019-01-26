@@ -128,6 +128,8 @@ static F_text  *new_text(void);
 static void	new_text_line(void);
 static void     overlay_text_input(int x, int y);
 static void	create_textobject(void);
+static int	split_at_cursor(F_text *t, int x, int y, int *cursor_len,
+				int *start_suffix);
 static void	draw_cursor(int x, int y);
 static void	move_cur(int dir, unsigned char c, float div);
 static void	move_text(int dir, unsigned char c, float div);
@@ -511,8 +513,8 @@ init_text_input(int x, int y)
 	prefix[leng_prefix] = '\0';
 
 	/* set origin where mouse was clicked */
-	base_x = orig_x = cur_x = x;
-	base_y = orig_y = cur_y = y;
+	base_x = orig_x = x;
+	base_y = orig_y = y;
 #ifdef I18N
 	save_base_x = base_x;
 	save_base_y = base_y;
@@ -566,7 +568,7 @@ init_text_input(int x, int y)
 
 	if (hidden_text(cur_t)) {
 	    put_msg("Can't edit hidden text");
-	    reset_action_on();
+	    //reset_action_on();	called in text_drawing_selected
 	    text_drawing_selected();
 	    return;
 	}
@@ -612,18 +614,16 @@ init_text_input(int x, int y)
 	orig_x = base_x;
 	orig_y = base_y;
 
-	switch (cur_t->type) {
-	  case T_CENTER_JUSTIFIED:
-	    base_x = round(base_x - lencos/2.0);
-	    base_y = round(base_y + lensin/2.0);
-	    break;
+	/* adjust the drawing origin, depending on the text alignment */
+	text_origin(&base_x, &base_y, base_x, base_y, cur_t->type,
+			cur_t->offset);
 
-	  case T_RIGHT_JUSTIFIED:
-	    base_x = round(base_x - lencos);
-	    base_y = round(base_y + lensin);
-	    break;
-	} /* switch */
-
+	if (split_at_cursor(cur_t, cur_x, cur_y, &leng_prefix, &leng_suffix))
+		return;
+	else	/* DEBUG */
+		fprintf(stderr, "%.*s - %s, length = %d, cursor_len = %d\n",
+				leng_suffix, cur_t->cstring,
+				cur_t->cstring+leng_suffix, length,leng_prefix);
 	leng_suffix = strlen(cur_t->cstring);
 	/* leng_prefix is index of char in the text before the cursor */
 	/* it is also used for text selection as the starting point */
@@ -820,7 +820,7 @@ prefix_length(char *string, int where_p)
  * Return the cursor position (pixels into the string)
  * and the index of the character under the cursor.
  */
-int
+static int
 split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 {
 	/*
@@ -832,6 +832,7 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 	int	pos;	/* number of chars, then index of start_suffix */
 	size_t	cstring_len;
 	int	right, left;
+	int	draw_x, draw_y;
 	double	offset_len;
 	XftFont *horfont;
 
@@ -840,21 +841,22 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 	/* get the number of codepoints in t->cstring */
 	if (!FcUtf8Len((FcChar8 *)t->cstring, (int)cstring_len, &pos, &dum)) {
 		/* TODO: Use FcUtf8ToUcs4() to get the first invalid char. */
-		file_msg("Invalid utf8 string: %s", t->cstring);
+		put_msg("Invalid utf8 string: %s", t->cstring);
 		return -2;
 	}
 
 	/* Compute the distance of the cursor from the text origin */
+	text_origin(&draw_x, &draw_y, t->base_x, t->base_y, t->type, t->offset);
 	offset_len = sqrt((double)t->offset.x * t->offset.x +
 				(double)t->offset.y * t->offset.y);
-	*cursor_len = ((x - t->base_x) * t->offset.x +
-				(y - t->base_y) * t->offset.y) / offset_len;
+	*cursor_len = ((x - draw_x) * t->offset.x + (y - draw_y) * t->offset.y)
+				/ offset_len;
 
 	/* estimate the index of the character under the cursor */
 	if (*cursor_len <= 0)
 		pos = 0;
 	else if (*cursor_len < (int)offset_len)
-		pos *= *cursor_len / (int)offset_len;
+		pos = (pos * *cursor_len) / (int)offset_len;
 
 	horfont = getfont(psfont_text(t), t->font,
 				t->size * SIZE_FLT * ZOOM_FACTOR, 0.);
