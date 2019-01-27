@@ -516,6 +516,9 @@ textlength(XftFont *horfont, XftChar8 *string, int len)
 {
 	XGlyphInfo	extents;
 
+	if (len == 0)
+		return 0;
+
 	XftTextExtentsUtf8(tool_d, horfont, string, len, &extents);
 	return (int)extents.xOff;
 }
