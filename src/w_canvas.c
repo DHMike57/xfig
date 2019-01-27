@@ -535,6 +535,7 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 #ifdef NO_COMPKEYDB
 		    int oldstat = compose_key;
 		    if (XLookupString(kpe, &compose_buf[0], 1, NULL, &compstat) > 0) {
+fprintf(stderr, "NO_COMPKEYDB: %c%c ", compose_buf[0], compose_buf[1]);
 			if (oldstat)
 			    setCompLED(0);
 			(*canvas_kbd_proc) (kpe, compose_buf[0], (KeySym) 0);
@@ -567,6 +568,7 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 				 fprintf(stderr, "xfig: buffer overflow (XmbLookupString)\n");
 			       }
 			       lbuf[len] = '\0';
+fprintf(stderr, "  COMPKEYDB: %s\n", lbuf);
 			       if (0 < len) {
 				 if (2 <= len && canvas_kbd_proc == (void (*)())char_handler) {
 				   i18n_char_handler((unsigned char *)lbuf);
