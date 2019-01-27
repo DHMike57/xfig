@@ -431,10 +431,10 @@ void redisplay_curobj(void)
 	    /* if the user is editing an existing string, erase the original
 	       because redisplay_objects just re-drew it */
 	    /* FIXME - probably clear_text() with XftDrawRect(CANVAS_BG) */
-	    if (cur_t)
-		draw_text(cur_t, INV_PAINT);
+	    //if (cur_t)		/* DEBUG */
+		//draw_text(cur_t, INV_PAINT);
 	    /* now refresh the temporary edit string */
-	    draw_char_string();
+	    //draw_char_string();
 	    break;
       }
     } else {

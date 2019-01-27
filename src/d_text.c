@@ -24,6 +24,7 @@
 #include "d_text.h"
 #include "u_create.h"
 #include "u_fonts.h"
+#include "u_free.h"
 #include "u_list.h"
 #include "u_search.h"
 #include "u_undo.h"
@@ -95,9 +96,10 @@ XFontStruct	*canvas_font;
 
 #define		BUF_SIZE	400
 
-char		prefix[BUF_SIZE],	/* part of string left of mouse click */
+static char	prefix[BUF_SIZE],	/* part of string left of mouse click */
 		suffix[BUF_SIZE];	/* part to right of click */
-int		leng_prefix, leng_suffix;
+static int	leng_prefix, leng_suffix;
+static int	start_suffix;
 static int	char_ht;
 static int	base_x, base_y;
 static int	supersub;		/* < 0 = currently subscripted, > 0 = superscripted */
@@ -231,7 +233,9 @@ text_drawing_selected(void)
 static void
 finish_n_start(int x, int y)
 {
-    create_textobject();
+    //create_textobject();
+    reset_action_on();
+    terminate_char_handler();
     /* reset text size after any super/subscripting */
     work_fontsize = cur_fontsize;
     work_float_fontsize = (float) work_fontsize;
@@ -247,7 +251,9 @@ finish_text_input(int x, int y, int shift)
 	paste_primary_selection();
 	return;
     }
-    create_textobject();
+    reset_action_on();
+    terminate_char_handler();
+    //create_textobject();
     text_drawing_selected();
     /* reset text size after any super/subscripting */
     work_fontsize = cur_fontsize;
@@ -265,13 +271,15 @@ cancel_text_input(void)
     work_float_fontsize = (float) work_fontsize;
     /* reset super/subscript */
     supersub = 0;
-    erase_char_string();
     terminate_char_handler();
     reset_action_on();
-    if (cur_t != NULL) {
-	/* draw it and any objects that are on top */
-	redisplay_text(cur_t);
-    }
+    undo();
+/*	if (cur_t == NULL)
+	    undo_add();
+    else
+	    undo_change();
+*/
+
     text_drawing_selected();
     draw_mousefun_canvas();
 }
@@ -355,6 +363,7 @@ new_text_up(void)
 static void
 overlay_text_input(int x, int y)
 {
+fputs("---overlay_text_input()---\n", stderr);
     cur_x = x;
     cur_y = y;
 
@@ -480,7 +489,6 @@ init_text_input(int x, int y)
     float	    lensin, lencos;
     int		    prev_work_font;
     int		cursor_len;
-    int		start_suffix;
 
     cur_x = x;
     cur_y = y;
@@ -562,8 +570,10 @@ init_text_input(int x, int y)
 	    work_xftfont = canvas_zoomed_xftfont;
 	} /* (is_newline) */
 
-	new_t = new_text(40, "Provide some space for future text");
+	new_t = new_text(1, "");
+	start_suffix = 0;
 	textextents(new_t);
+	add_text(new_t);
 
     } else {
 
@@ -579,7 +589,7 @@ init_text_input(int x, int y)
 	}
 
 	new_t = copy_text(cur_t);
-	delete_text(cur_t);	/* unlink cur_t from the objects list */
+	change_text(cur_t, new_t);	/* unlink cur_t from the objects list */
 
 	/* update the working text parameters */
 	work_textcolor = cur_t->color;
@@ -633,7 +643,7 @@ init_text_input(int x, int y)
 		cur_x = base_x + round(cursor_len * cos_t);
 		cur_y = base_y - round(cursor_len * sin_t);
 /* DEBUG */ fprintf(stderr, "%.*s - %s, length = %d, cursor_len = %d\n",
-				leng_suffix, new_t->cstring,
+				start_suffix, new_t->cstring,
 				new_t->cstring + start_suffix,
 				cursor_len, start_suffix);
 	}
@@ -706,7 +716,6 @@ init_text_input(int x, int y)
     textmaxheight(work_psflag, work_font, work_fontsize, &ascent, &descent);
 
     /* save original char_ht for newline */
-    //orig_ht = char_ht = ZOOM_FACTOR * max_char_height(canvas_font);
     orig_ht = char_ht = ascent + descent;
     initialize_char_handler(canvas_win, finish_text_input,
 			    base_x, base_y);
@@ -717,9 +726,8 @@ init_text_input(int x, int y)
 	text_selection_showing = False;
     }
 #endif /* SEL_TEXT */
-    //draw_char_string();
-    redisplay_text(new_t);
-    draw_text(new_t, PAINT);
+    //redisplay_text(new_t);
+    //draw_text(new_t, PAINT);
 #ifdef SEL_TEXT
     /* draw the selected word in inverse */
     if (pointer_click == 2) {
@@ -853,7 +861,7 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 
 	cstring_len = strlen(t->cstring);
 
-	/* get the number of codepoints in t->cstring */
+	/* get the number of codepoints (pos) in t->cstring */
 	if (!FcUtf8Len((FcChar8 *)t->cstring, (int)cstring_len, &pos, &dum)) {
 		/* TODO: Use FcUtf8ToUcs4() to get the first invalid char. */
 		put_msg("Invalid utf8 string: %s", t->cstring);
@@ -868,10 +876,9 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 				/ offset_len;
 
 	/* estimate the index of the character under the cursor */
-	if (*cursor_len <= 0)
+	pos = ((pos * *cursor_len) / (int)offset_len) - 1;
+	if (pos < 0)
 		pos = 0;
-	else if (*cursor_len < (int)offset_len)
-		pos = (pos * *cursor_len) / (int)offset_len;
 
 	horfont = getfont(psfont_text(t), t->font,
 				t->size * SIZE_FLT * ZOOM_FACTOR, 0.);
@@ -903,20 +910,32 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 		*start_suffix = pos;
 		left = right;
 		end_utf8char((XftChar8 *)t->cstring, &pos);
-		right = textlength(horfont, (XftChar8 *)t->cstring, pos + 1);
+		right = textlength(horfont, (XftChar8 *)t->cstring, ++pos);
 	}
 
 	closefont(horfont); /* where to use horfont? */
 
-	if (*cursor_len - left > right - *cursor_len)
+fprintf(stderr,		/* DEBUG */
+"split_at_cursor: total length %.1f, cursor %d, left %d, right %d: ",
+offset_len, *cursor_len, left, right);
+
+	if (*cursor_len - left > right - *cursor_len) {
 		*cursor_len = right;
-	else
+		end_utf8char((XftChar8 *)t->cstring, &pos);
+		*start_suffix = pos + 1;
+	} else {
 		*cursor_len = left;
+	}
+
+/* DEBUG */
+fprintf(stderr, "pos %d, cursor: %d\n", *start_suffix, *cursor_len);
+fprintf(stderr, "%.*s-%s\n", *start_suffix,t->cstring,t->cstring+*start_suffix);
 
 	return 0;
 }
 
 
+/* Move *pos to the index of the first byte of an utf8 char. */
 void
 begin_utf8char(unsigned char *str, int *pos)
 {
@@ -929,6 +948,7 @@ begin_utf8char(unsigned char *str, int *pos)
 		--*pos;
 }
 
+/* Move *pos to the index of the last byte of an utf8 char. */
 void
 end_utf8char(unsigned char *str, int *pos)
 {
@@ -1136,6 +1156,7 @@ char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym)
 {
     register int    i;
     unsigned char   ch;
+fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
 
     if (cr_proc == NULL)
 	return;
@@ -1534,48 +1555,35 @@ char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym)
     /* normal text character */
     /*************************/
     } else {
-	/* move pointer */
-#ifdef I18N
-	if (appres.international && is_i18n_font(canvas_font))
-	  erase_char_string();
-	else
-#endif  /* I18N */
-	switch (work_textjust) {
-	    case T_LEFT_JUSTIFIED:
-		erase_suffix();		/* erase any string after cursor */
-		draw_char(c);		/* draw new char */
-		move_cur(1, c, 1.0);
-		break;
-	    case T_CENTER_JUSTIFIED:
-		erase_char_string();
-		move_cur(1, c, 2.0);
-		move_text(-1, c, 2.0);
-		break;
-	    case T_RIGHT_JUSTIFIED:
-		erase_prefix();
-		move_text(-1, c, 1.0);
-		break;
-	    }
-	prefix[leng_prefix++] = c;
-	prefix[leng_prefix] = '\0';
-	move_blinking_cursor(cur_x, cur_y);
-	/* redraw stuff */
-#ifdef I18N
-	if (appres.international && is_i18n_font(canvas_font))
-	  draw_char_string();
-	else
-#endif  /* I18N */
-	switch (work_textjust) {
-	    case T_LEFT_JUSTIFIED:
-		draw_suffix();
-		break;
-	    case T_CENTER_JUSTIFIED:
-		draw_char_string();
-		break;
-	    case T_RIGHT_JUSTIFIED:
-		draw_prefix();
-		break;
-	}
+	    size_t	len = strlen(new_t->cstring);
+	    int		i;
+	    F_text	t;
+
+	    new_t->cstring = realloc(new_t->cstring, len + (size_t)2);
+
+	    new_t->cstring[len + 1] = '\0';
+	    for (i = len - 1; i >= start_suffix; --i)
+		    new_t->cstring[i + 1] = new_t->cstring[i];
+	    new_t->cstring[start_suffix++] = c;
+	    textextents(new_t);
+fprintf(stderr, "redisplay_text in char_handler(): %s(len %ld, start %d)\n",
+		new_t->cstring, len, start_suffix);
+	    redisplay_text(new_t);
+
+	    /* determine the cursor position */
+	    /* first, assign the current text drawing origin to  cur_x, cur_y */
+	    text_origin(&cur_x, &cur_y, new_t->base_x, new_t->base_y,
+			    new_t->type, new_t->offset);
+	    t = *new_t;		/* TODO: only copy a few items to t! */
+	    t.cstring = malloc((size_t)(start_suffix + 1));
+	    memcpy(t.cstring, new_t->cstring, start_suffix);
+	    t.cstring[start_suffix + 1] = '\0';
+	    textextents(&t);	/* TODO: only need the offset here! */
+	    cur_x += t.offset.x;
+	    cur_y += t.offset.y;
+	    /* free_text would also free comments, fonts, and follow t->next */
+	    free(t.cstring);
+	    move_blinking_cursor(cur_x, cur_y);
     }
 }
 
@@ -2269,6 +2277,7 @@ i18n_suffix_head(char *s1)
 void
 i18n_char_handler(unsigned char *str)
 {
+fprintf(stderr, "  i18n_char_handler: %s\n", str);		/* DEBUG */
   int i;
   erase_char_string();	/* erase chars after the cursor */
   for (i = 0; str[i] != '\0'; i++)
