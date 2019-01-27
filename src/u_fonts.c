@@ -298,7 +298,9 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	/* add the actual pixel size and matrix transformation */
 	pixelsize = size3 * DISPLAY_PIX_PER_INCH /
 		(SIZE_FLT * (appres.correct_font_size ? 72.0 : 80.0));
-	XftPatternAddDouble(want, XFT_PIXEL_SIZE, pixelsize);
+	if (!XftPatternAddDouble(want, XFT_PIXEL_SIZE, pixelsize))
+		fprintf(stderr, "Error in getfont(): file %s, line %d.\n",
+				__FILE__, __LINE__);
 
 	/* Rotated text - negative angle not allowed! */
 if (angle < 0.) {
@@ -308,7 +310,10 @@ fputs("Negative angle passed to getfont().\n", stderr); exit(1);
 		const double	cosa = cos(angle);
 		const double	sina = sin(angle);
 		const XftMatrix	mat = {cosa, -sina, sina, cosa};
-		XftPatternAddMatrix(want, XFT_MATRIX, &mat);
+		if (!XftPatternAddMatrix(want, XFT_MATRIX, &mat))
+			fprintf(stderr,
+				      "Error in getfont(): file %s, line %d.\n",
+					__FILE__, __LINE__);
 	}
 
 	/*
@@ -317,9 +322,10 @@ fputs("Negative angle passed to getfont().\n", stderr); exit(1);
 	 * No need to create a self-made cache.
 	 */
 	have = XftFontMatch(tool_d, tool_sn, want, &res);
+
 	if (appres.DEBUG) {
-		char	buf[BUFSIZ];
-		XftNameUnparse(xftbasepattern[fnum], buf, BUFSIZ);
+		char	buf[233];
+		XftNameUnparse(have, buf, 233);
 		fprintf(stderr, "Font request: %s\nresult: %s\n",
 				xft_name[fnum], buf);
 	}
