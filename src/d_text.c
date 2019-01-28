@@ -921,15 +921,15 @@ offset_len, *cursor_len, left, right);
 
 	if (*cursor_len - left > right - *cursor_len) {
 		*cursor_len = right;
-		end_utf8char((XftChar8 *)t->cstring, &pos);
-		*start_suffix = pos + 1;
+		end_utf8char((XftChar8 *)t->cstring, start_suffix);
+		++*start_suffix;
 	} else {
 		*cursor_len = left;
 	}
 
 /* DEBUG */
 fprintf(stderr, "pos %d, cursor: %d\n", *start_suffix, *cursor_len);
-fprintf(stderr, "%.*s-%s\n", *start_suffix,t->cstring,t->cstring+*start_suffix);
+fprintf(stderr, "%.*s-%s.\n", *start_suffix,t->cstring,t->cstring+*start_suffix);
 
 	return 0;
 }
@@ -1577,7 +1577,7 @@ fprintf(stderr, "redisplay_text in char_handler(): %s(len %ld, start %d)\n",
 	    t = *new_t;		/* TODO: only copy a few items to t! */
 	    t.cstring = malloc((size_t)(start_suffix + 1));
 	    memcpy(t.cstring, new_t->cstring, start_suffix);
-	    t.cstring[start_suffix + 1] = '\0';
+	    t.cstring[start_suffix] = '\0';
 	    textextents(&t);	/* TODO: only need the offset here! */
 	    cur_x += t.offset.x;
 	    cur_y += t.offset.y;
