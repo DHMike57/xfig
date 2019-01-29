@@ -236,6 +236,17 @@ finish_n_start(int x, int y)
     //create_textobject();
     reset_action_on();
     terminate_char_handler();
+	/*
+	 * Committing an empty string is treated as equivalent to deleting an
+	 * existing text, or not adding (undo) a newly added text.
+	 */
+	if (cur_t->cstring[0] == '\0') {
+		/* delete the previously added text, or restore the old text */
+		undo();
+		if (old_t)
+			/* now really delete the old text, for the records */
+			delete_text(old_t);
+	}
     /* reset text size after any super/subscripting */
     work_fontsize = cur_fontsize;
     work_float_fontsize = (float) work_fontsize;
@@ -254,6 +265,11 @@ finish_text_input(int x, int y, int shift)
     reset_action_on();
     terminate_char_handler();
     //create_textobject();
+	if (cur_t->cstring[0] == '\0') { /* See above, in finish_n_start() */
+		undo();
+		if (old_t)
+			delete_text(old_t);
+	}
     text_drawing_selected();
     /* reset text size after any super/subscripting */
     work_fontsize = cur_fontsize;
@@ -512,7 +528,7 @@ init_text_input(int x, int y)
      * through
      */
 
-    if ((cur_t = text_search(cur_x, cur_y, &posn)) == NULL) {
+    if ((old_t = text_search(cur_x, cur_y, &posn)) == NULL) {
 
 	/******************/
 	/* new text input */
@@ -570,10 +586,10 @@ init_text_input(int x, int y)
 	    work_xftfont = canvas_zoomed_xftfont;
 	} /* (is_newline) */
 
-	new_t = new_text(1, "");
+	cur_t = new_text(1, "");
 	start_suffix = 0;
-	textextents(new_t);
-	add_text(new_t);
+	textextents(cur_t);
+	add_text(cur_t);
 
     } else {
 
@@ -581,15 +597,15 @@ init_text_input(int x, int y)
 	/* existing text */
 	/*****************/
 
-	if (hidden_text(cur_t)) {
+	if (hidden_text(old_t)) {
 	    put_msg("Can't edit hidden text");
 	    //reset_action_on();	called in text_drawing_selected
 	    text_drawing_selected();
 	    return;
 	}
 
-	new_t = copy_text(cur_t);
-	change_text(cur_t, new_t);	/* unlink cur_t from the objects list */
+	cur_t = copy_text(old_t);
+	change_text(old_t, cur_t);	/* unlink old_t from the objects list */
 
 	/* update the working text parameters */
 	work_textcolor = cur_t->color;
@@ -617,7 +633,7 @@ init_text_input(int x, int y)
 			   work_fontsize);
 	// canvas_xftfont = cur_t->fonts[0];
 
-	toggle_textmarker(new_t);
+	toggle_textmarker(cur_t);
 	//draw_text(cur_t, ERASE);
 	base_x = cur_t->base_x;
 	base_y = cur_t->base_y;
@@ -634,17 +650,17 @@ init_text_input(int x, int y)
 	orig_y = base_y;
 
 	/* adjust the drawing origin, depending on the text alignment */
-	text_origin(&base_x, &base_y, base_x, base_y, new_t->type,
-			new_t->offset);
+	text_origin(&base_x, &base_y, base_x, base_y, cur_t->type,
+			cur_t->offset);
 
-	if (split_at_cursor(new_t, cur_x, cur_y, &cursor_len, &start_suffix)) {
+	if (split_at_cursor(cur_t, cur_x, cur_y, &cursor_len, &start_suffix)) {
 		return;
 	} else {
 		cur_x = base_x + round(cursor_len * cos_t);
 		cur_y = base_y - round(cursor_len * sin_t);
 /* DEBUG */ fprintf(stderr, "%.*s - %s, length = %d, cursor_len = %d\n",
-				start_suffix, new_t->cstring,
-				new_t->cstring + start_suffix,
+				start_suffix, cur_t->cstring,
+				cur_t->cstring + start_suffix,
 				cursor_len, start_suffix);
 	}
 	leng_suffix = strlen(cur_t->cstring);
@@ -1555,28 +1571,28 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
     /* normal text character */
     /*************************/
     } else {
-	    size_t	len = strlen(new_t->cstring);
+	    size_t	len = strlen(cur_t->cstring);
 	    int		i;
 	    F_text	t;
 
-	    new_t->cstring = realloc(new_t->cstring, len + (size_t)2);
+	    cur_t->cstring = realloc(cur_t->cstring, len + (size_t)2);
 
-	    new_t->cstring[len + 1] = '\0';
+	    cur_t->cstring[len + 1] = '\0';
 	    for (i = len - 1; i >= start_suffix; --i)
-		    new_t->cstring[i + 1] = new_t->cstring[i];
-	    new_t->cstring[start_suffix++] = c;
-	    textextents(new_t);
+		    cur_t->cstring[i + 1] = cur_t->cstring[i];
+	    cur_t->cstring[start_suffix++] = c;
+	    textextents(cur_t);
 fprintf(stderr, "redisplay_text in char_handler(): %s(len %ld, start %d)\n",
-		new_t->cstring, len, start_suffix);
-	    redisplay_text(new_t);
+		cur_t->cstring, len, start_suffix);
+	    redisplay_text(cur_t);
 
 	    /* determine the cursor position */
 	    /* first, assign the current text drawing origin to  cur_x, cur_y */
-	    text_origin(&cur_x, &cur_y, new_t->base_x, new_t->base_y,
-			    new_t->type, new_t->offset);
-	    t = *new_t;		/* TODO: only copy a few items to t! */
+	    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+			    cur_t->type, cur_t->offset);
+	    t = *cur_t;		/* TODO: only copy a few items to t! */
 	    t.cstring = malloc((size_t)(start_suffix + 1));
-	    memcpy(t.cstring, new_t->cstring, start_suffix);
+	    memcpy(t.cstring, cur_t->cstring, start_suffix);
 	    t.cstring[start_suffix] = '\0';
 	    textextents(&t);	/* TODO: only need the offset here! */
 	    cur_x += t.offset.x;
