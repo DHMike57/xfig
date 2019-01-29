@@ -1190,11 +1190,7 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
 #endif /* SEL_TEXT */
 
     if (c == ESC) {
-	create_textobject();
-	canvas_kbd_proc = null_proc;
-	canvas_middlebut_proc = null_proc;
-	canvas_leftbut_proc = null_proc;
-	canvas_rightbut_proc = null_proc;
+	cancel_text_input();
     } else if (c == CR || c == NL) {
 	new_text_line();
     } else if (c == CTRL_UNDERSCORE) {
