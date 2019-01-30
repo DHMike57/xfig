@@ -139,7 +139,7 @@ static void	reload_compoundfont(F_compound *compounds);
 static int	prefix_length(char *string, int where_p);
 static void	initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by);
 static void	terminate_char_handler(void);
-static void	turn_on_blinking_cursor(void (*draw_cursor) (/* ??? */), void (*erase_cursor) (/* ??? */), int x, int y, long unsigned int msec);
+static void	turn_on_blinking_cursor(int x, int y);
 static void	turn_off_blinking_cursor(void);
 static void	move_blinking_cursor(int x, int y);
 
@@ -1016,6 +1016,8 @@ draw_cursor(int x, int y)
 		INV_PAINT, 1, RUBBER_LINE, 0.0, DEFAULT);
 }
 
+static void (*erase_cursor)(int x, int y) = draw_cursor;
+
 static void
 initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by)
 {
@@ -1026,8 +1028,7 @@ initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by)
     rcur_x = cur_x;
     rcur_y = cur_y;
 
-    turn_on_blinking_cursor(draw_cursor, draw_cursor,
-			    cur_x, cur_y, (long) BLINK_INTERVAL);
+    turn_on_blinking_cursor(cur_x, cur_y);
 #ifdef I18N
     if (xim_ic != NULL && (appres.latin_keyboard || is_i18n_font(canvas_font))) {
       put_msg("Ready for text input (from keyboard with input-method)");
@@ -1556,8 +1557,7 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
 		    break;
 	    }
 	    /* turn on blinking cursor again */
-	    turn_on_blinking_cursor(draw_cursor, draw_cursor,
-			    cur_x, cur_y, (long) BLINK_INTERVAL);
+	    turn_on_blinking_cursor(cur_x, cur_y);
 	    /* clear the selection */
 	    lensel = 0;
 	    text_selection[0] = '\0';
@@ -1866,8 +1866,7 @@ draw_selection (int x, int y, char *string)
     pw_text(pw, x, y, PAINT, MAX_DEPTH+1, canvas_zoomed_font,
 		work_angle, string, CANVAS_BG, work_textcolor);
     /* turn on blinking cursor again */
-    turn_on_blinking_cursor(draw_cursor, draw_cursor,
-		    cur_x, cur_y, (long) BLINK_INTERVAL);
+    turn_on_blinking_cursor(cur_x, cur_y);
 }
 
 /* draw string from x, y in normal (unselected) color */
@@ -1880,8 +1879,7 @@ undraw_selection (int x, int y, char *string)
     pw_text(pw, x, y, PAINT, MAX_DEPTH+1, canvas_zoomed_font,
 		work_angle, string, work_textcolor, CANVAS_BG);
     /* turn on blinking cursor again */
-    turn_on_blinking_cursor(draw_cursor, draw_cursor,
-		    cur_x, cur_y, (long) BLINK_INTERVAL);
+    turn_on_blinking_cursor(cur_x, cur_y);
 }
 
 /* convert selection to string */
@@ -1934,30 +1932,23 @@ TransferSelectionDone (Widget w, Atom *selection, Atom *target)
 
 static int	cursor_on, cursor_is_moving;
 static int	cursor_x, cursor_y;
-static void	(*erase) ();
-static void	(*draw) ();
 static XtTimerCallbackProc blink(XtPointer client_data, XtIntervalId *id);
-static unsigned long blink_timer;
 static int	stop_blinking = False;
 static int	cur_is_blinking = False;
 
 static void
-turn_on_blinking_cursor(void (*draw_cursor) (/* ??? */),
-			void (*erase_cursor) (/* ??? */),
-			int x, int y, long unsigned int msec)
+turn_on_blinking_cursor(int x, int y)
 {
-    draw = draw_cursor;
-    erase = erase_cursor;
+	unsigned long	blink_timer = BLINK_INTERVAL;
     cursor_is_moving = 0;
     cursor_x = x;
     cursor_y = y;
-    blink_timer = msec;
-    draw(x, y);
+    draw_cursor(x, y);
     cursor_on = 1;
     if (!cur_is_blinking) {	/* if we are already blinking, don't request
 				 * another */
-	(void) XtAppAddTimeOut(tool_app, blink_timer, (XtTimerCallbackProc) blink,
-				  (XtPointer) NULL);
+	(void) XtAppAddTimeOut(tool_app, blink_timer,
+			(XtTimerCallbackProc)blink, (XtPointer)blink_timer);
 	cur_is_blinking = True;
     }
     stop_blinking = False;
@@ -1967,25 +1958,30 @@ static void
 turn_off_blinking_cursor(void)
 {
     if (cursor_on)
-	erase(cursor_x, cursor_y);
+	erase_cursor(cursor_x, cursor_y);
     stop_blinking = True;
 }
 
 static	XtTimerCallbackProc
 blink(XtPointer client_data, XtIntervalId *id)
 {
+	union {
+		XtPointer	ptr;
+		unsigned long	value;
+	} client = {client_data};
+
     if (!stop_blinking) {
 	if (cursor_is_moving)
 	    return (0);
 	if (cursor_on) {
-	    erase(cursor_x, cursor_y);
+	    erase_cursor(cursor_x, cursor_y);
 	    cursor_on = 0;
 	} else {
-	    draw(cursor_x, cursor_y);
+	    draw_cursor(cursor_x, cursor_y);
 	    cursor_on = 1;
 	}
-	(void) XtAppAddTimeOut(tool_app, blink_timer, (XtTimerCallbackProc) blink,
-				  (XtPointer) NULL);
+	(void) XtAppAddTimeOut(tool_app, client.value,
+			(XtTimerCallbackProc) blink, (XtPointer)client.ptr);
     } else {
 	stop_blinking = False;	/* signal that we've stopped */
 	cur_is_blinking = False;
@@ -1998,10 +1994,10 @@ move_blinking_cursor(int x, int y)
 {
     cursor_is_moving = 1;
     if (cursor_on)
-	erase(cursor_x, cursor_y);
+	erase_cursor(cursor_x, cursor_y);
     cursor_x = x;
     cursor_y = y;
-    draw(cursor_x, cursor_y);
+    draw_cursor(cursor_x, cursor_y);
     cursor_on = 1;
     cursor_is_moving = 0;
 #ifdef I18N
