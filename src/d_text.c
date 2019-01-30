@@ -1170,7 +1170,7 @@ draw_char_string(void)
 void
 char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym)
 {
-    register int    i;
+    int    i;
     unsigned char   ch;
 fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
 
@@ -1205,58 +1205,65 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
     /* Control-B and the Left arrow key both do this */
     /******************************************************/
     } else if (keysym == XK_Left || c == CTRL_B) {
-#ifdef I18N
-	if (leng_prefix > 0 && appres.international && is_i18n_font(canvas_font)) {
-	    erase_char_string();
-	    move_pref_to_suf();
-	    draw_char_string();
-	} else
-#endif /* I18N */
-	if (leng_prefix > 0) {
-	    move_pref_to_suf();
-	    move_cur(-1, suffix[0], 1.0);
-	}
+	    if (start_suffix == 0)
+		    /* already at the beginning of the string */
+		    return;
+	    --start_suffix;
+	    begin_utf8char(cur_t->cstring, &start_suffix);
+	    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+			    cur_t->type, cur_t->offset);
+	    if (start_suffix > 0) {
+		    F_text	t;
+
+		    t = *cur_t;
+		    t.cstring = strndup(cur_t->cstring, start_suffix);
+		    textextents(&t);
+		    free(t.cstring);
+		    cur_x += t.offset.x;
+		    cur_y += t.offset.y;
+	    }
+	    move_blinking_cursor(cur_x, cur_y);
 
     /*******************************************************/
     /* move cursor right - move char from suffix to prefix */
     /* Control-F and Right arrow key both do this */
     /*******************************************************/
     } else if (keysym == XK_Right || c == CTRL_F) {
-#ifdef I18N
-	if (leng_suffix > 0 && appres.international && is_i18n_font(canvas_font)) {
-	    erase_char_string();
-	    move_suf_to_pref();
-	    draw_char_string();
-	} else
-#endif /* I18N */
-	if (leng_suffix > 0) {
-	    move_suf_to_pref();
-	    move_cur(1, prefix[leng_prefix-1], 1.0);
-	}
+	    if (cur_t->cstring[start_suffix] == '\0')
+		    /* already at the end of the string */
+		    return;
+	    end_utf8char(cur_t->cstring, &start_suffix);
+	    ++start_suffix;
+	    if (cur_t->cstring[start_suffix] == '\0') {
+		    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				    cur_t->type, cur_t->offset);
+		    cur_x += cur_t->offset.x;
+		    cur_y += cur_t->offset.y;
+	    } else {
+		    F_text	t;
+
+		    t = *cur_t;
+		    t.cstring = strndup(cur_t->cstring, start_suffix);
+		    textextents(&t);
+		    free(t.cstring);
+		    cur_x += t.offset.x;
+		    cur_y += t.offset.y;
+	    }
+	    move_blinking_cursor(cur_x, cur_y);
 
     /***************************************************************/
     /* move cursor to beginning of text - put everything in suffix */
     /* Control-A and Home key both do this */
     /***************************************************************/
     } else if (keysym == XK_Home || c == CTRL_A) {
-	if (leng_prefix > 0) {
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      erase_char_string();
+	    if (start_suffix == 0)
+		    return;
 	    else
-#endif  /* I18N */
-	    for (i=leng_prefix-1; i>=0; i--)
-		move_cur(-1, prefix[i], 1.0);
-	    strcat(prefix,suffix);
-	    strcpy(suffix,prefix);
-	    prefix[0]='\0';
-	    leng_prefix=0;
-	    leng_suffix=strlen(suffix);
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      draw_char_string();
-#endif  /* I18N */
-	}
+		    start_suffix = 0;
+
+	    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+			    cur_t->type, cur_t->offset);
+	    move_blinking_cursor(cur_x, cur_y);
 
     /*********************************************************/
     /* move cursor to end of text - put everything in prefix */
@@ -1568,7 +1575,6 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
     /*************************/
     } else {
 	    size_t	len = strlen(cur_t->cstring);
-	    int		i;
 	    F_text	t;
 
 	    cur_t->cstring = realloc(cur_t->cstring, len + (size_t)2);
@@ -1591,10 +1597,10 @@ fprintf(stderr, "redisplay_text in char_handler(): %s(len %ld, start %d)\n",
 	    memcpy(t.cstring, cur_t->cstring, start_suffix);
 	    t.cstring[start_suffix] = '\0';
 	    textextents(&t);	/* TODO: only need the offset here! */
+	    free(t.cstring);
 	    cur_x += t.offset.x;
 	    cur_y += t.offset.y;
 	    /* free_text would also free comments, fonts, and follow t->next */
-	    free(t.cstring);
 	    move_blinking_cursor(cur_x, cur_y);
     }
 }
