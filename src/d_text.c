@@ -663,10 +663,10 @@ init_text_input(int x, int y)
 				cur_t->cstring + start_suffix,
 				cursor_len, start_suffix);
 	}
-	leng_suffix = strlen(cur_t->cstring);
+	leng_suffix = strlen(cur_t->cstring) - start_suffix;
 	/* leng_prefix is index of char in the text before the cursor */
 	/* it is also used for text selection as the starting point */
-	leng_prefix = prefix_length(cur_t->cstring, posn);
+	leng_prefix = start_suffix;
 
 #ifdef SEL_TEXT
 	/**********************************************/
@@ -1173,7 +1173,7 @@ char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym)
 {
     int    i;
     unsigned char   ch;
-fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
+fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 
     if (cr_proc == NULL)
 	return;

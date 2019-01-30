@@ -569,15 +569,8 @@ fprintf(stderr, "NO_COMPKEYDB: %c%c ", compose_buf[0], compose_buf[1]);
 			       }
 			       lbuf[len] = '\0';
 fprintf(stderr, "  COMPKEYDB: %s\n", lbuf);
-			       if (0 < len) {
-				 if (2 <= len && canvas_kbd_proc == (void (*)())char_handler) {
-				   i18n_char_handler((unsigned char *)lbuf);
-				 } else {
-				   for (i = 0; i < len; i++) {
-				     (*canvas_kbd_proc) (kpe, lbuf[i], (KeySym) 0);
-				   }
-				 }
-			       }
+				for (i = 0; i < len; ++i)
+				     (*canvas_kbd_proc)(kpe, lbuf[i], (KeySym)0);
 			    } else
 #endif  /* I18N */
 			    if (XLookupString(kpe, buf, sizeof(buf), NULL, NULL) > 0)
