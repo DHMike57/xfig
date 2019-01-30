@@ -901,7 +901,7 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 
 	/* move to the first byte of a valid utf8 sequence */
 	if (pos > 0)
-		begin_utf8char((XftChar8 *)t->cstring, &pos);
+		begin_utf8char((unsigned char *)t->cstring, &pos);
 
 	/* walk left from the current position */
 	if (pos > 0) {
@@ -910,7 +910,7 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 		while (left > *cursor_len) {
 			right = left;
 			--pos;
-			begin_utf8char((XftChar8 *)t->cstring, &pos);
+			begin_utf8char((unsigned char *)t->cstring, &pos);
 			left = pos < 0 ? 0 :
 				textlength(horfont, (XftChar8*)t->cstring, pos);
 			*start_suffix = pos;
@@ -925,7 +925,7 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 	while (right < *cursor_len) {
 		*start_suffix = pos;
 		left = right;
-		end_utf8char((XftChar8 *)t->cstring, &pos);
+		end_utf8char((unsigned char *)t->cstring, &pos);
 		right = textlength(horfont, (XftChar8 *)t->cstring, ++pos);
 	}
 
@@ -937,7 +937,7 @@ offset_len, *cursor_len, left, right);
 
 	if (*cursor_len - left > right - *cursor_len) {
 		*cursor_len = right;
-		end_utf8char((XftChar8 *)t->cstring, start_suffix);
+		end_utf8char((unsigned char *)t->cstring, start_suffix);
 		++*start_suffix;
 	} else {
 		*cursor_len = left;
@@ -1205,65 +1205,65 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
     /* Control-B and the Left arrow key both do this */
     /******************************************************/
     } else if (keysym == XK_Left || c == CTRL_B) {
-	    if (start_suffix == 0)
-		    /* already at the beginning of the string */
-		    return;
-	    --start_suffix;
-	    begin_utf8char(cur_t->cstring, &start_suffix);
-	    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
-			    cur_t->type, cur_t->offset);
-	    if (start_suffix > 0) {
-		    F_text	t;
+		/* already at the beginning of the string, return */
+		if (start_suffix == 0)
+			return;
+		--start_suffix;
+		begin_utf8char((unsigned char *)cur_t->cstring, &start_suffix);
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		if (start_suffix > 0) {
+			F_text	t;
 
-		    t = *cur_t;
-		    t.cstring = strndup(cur_t->cstring, start_suffix);
-		    textextents(&t);
-		    free(t.cstring);
-		    cur_x += t.offset.x;
-		    cur_y += t.offset.y;
-	    }
-	    move_blinking_cursor(cur_x, cur_y);
+			t = *cur_t;
+			t.cstring = strndup(cur_t->cstring, start_suffix);
+			textextents(&t);
+			free(t.cstring);
+			cur_x += t.offset.x;
+			cur_y += t.offset.y;
+		}
+		move_blinking_cursor(cur_x, cur_y);
 
     /*******************************************************/
     /* move cursor right - move char from suffix to prefix */
     /* Control-F and Right arrow key both do this */
     /*******************************************************/
     } else if (keysym == XK_Right || c == CTRL_F) {
-	    if (cur_t->cstring[start_suffix] == '\0')
-		    /* already at the end of the string */
-		    return;
-	    end_utf8char(cur_t->cstring, &start_suffix);
-	    ++start_suffix;
-	    if (cur_t->cstring[start_suffix] == '\0') {
-		    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
-				    cur_t->type, cur_t->offset);
-		    cur_x += cur_t->offset.x;
-		    cur_y += cur_t->offset.y;
-	    } else {
-		    F_text	t;
+		/* already at the end of the string, return */
+		if (cur_t->cstring[start_suffix] == '\0')
+			return;
+		end_utf8char((unsigned char *)cur_t->cstring, &start_suffix);
+		++start_suffix;
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		if (cur_t->cstring[start_suffix] == '\0') {
+			cur_x += cur_t->offset.x;
+			cur_y += cur_t->offset.y;
+		} else {
+			F_text	t;
 
-		    t = *cur_t;
-		    t.cstring = strndup(cur_t->cstring, start_suffix);
-		    textextents(&t);
-		    free(t.cstring);
-		    cur_x += t.offset.x;
-		    cur_y += t.offset.y;
-	    }
-	    move_blinking_cursor(cur_x, cur_y);
+			t = *cur_t;
+			t.cstring = strndup(cur_t->cstring, start_suffix);
+			textextents(&t);
+			free(t.cstring);
+			cur_x += t.offset.x;
+			cur_y += t.offset.y;
+		}
+		move_blinking_cursor(cur_x, cur_y);
 
     /***************************************************************/
     /* move cursor to beginning of text - put everything in suffix */
     /* Control-A and Home key both do this */
     /***************************************************************/
     } else if (keysym == XK_Home || c == CTRL_A) {
-	    if (start_suffix == 0)
-		    return;
-	    else
-		    start_suffix = 0;
+		if (start_suffix == 0)
+			return;
+		else
+			start_suffix = 0;
 
-	    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
-			    cur_t->type, cur_t->offset);
-	    move_blinking_cursor(cur_x, cur_y);
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		move_blinking_cursor(cur_x, cur_y);
 
     /*********************************************************/
     /* move cursor to end of text - put everything in prefix */
@@ -1585,7 +1585,7 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
 	    cur_t->cstring[start_suffix++] = c;
 	    textextents(cur_t);
 fprintf(stderr, "redisplay_text in char_handler(): %s(len %ld, start %d)\n",
-		cur_t->cstring, len, start_suffix);
+cur_t->cstring, len, start_suffix);
 	    redisplay_text(cur_t);
 
 	    /* determine the cursor position */
