@@ -1577,6 +1577,7 @@ fprintf(stderr, "entered char_handler(): %c\n", c);		/* DEBUG */
 	    size_t	len = strlen(cur_t->cstring);
 	    F_text	t;
 
+	    turn_off_blinking_cursor();
 	    cur_t->cstring = realloc(cur_t->cstring, len + (size_t)2);
 
 	    cur_t->cstring[len + 1] = '\0';
@@ -1601,7 +1602,7 @@ cur_t->cstring, len, start_suffix);
 	    cur_x += t.offset.x;
 	    cur_y += t.offset.y;
 	    /* free_text would also free comments, fonts, and follow t->next */
-	    move_blinking_cursor(cur_x, cur_y);
+	    turn_on_blinking_cursor(cur_x, cur_y);
     }
 }
 
