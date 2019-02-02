@@ -1271,126 +1271,108 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /* Control-E and End key both do this */
     /*********************************************************/
     } else if (keysym == XK_End || c == CTRL_E) {
-	if (leng_suffix > 0) {
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      erase_char_string();
-	    else
-#endif  /* I18N */
-	    for (i=0; i<leng_suffix; i++)
-		move_cur(1, suffix[i], 1.0);
-	    strcat(prefix,suffix);
-	    suffix[0]='\0';
-	    leng_suffix=0;
-	    leng_prefix=strlen(prefix);
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      draw_char_string();
-#endif  /* I18N */
-	}
+		size_t	len = strlen(cur_t->cstring);
+
+		if (start_suffix == (int)len)
+			return;
+		else
+			start_suffix = (int)len;
+
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		cur_x += cur_t->offset.x;
+		cur_y += cur_t->offset.y;
+		move_blinking_cursor(cur_x, cur_y);
 
     /******************************************/
     /* backspace - delete char left of cursor */
     /******************************************/
     } else if (c == CTRL_H) {
-	ch = prefix[leng_prefix-1];
-#ifdef I18N
-	if (leng_prefix > 0
-	      && appres.international && is_i18n_font(canvas_font)) {
-	    int len;
-	    erase_char_string();
-	    len = i18n_prefix_tail(NULL);
-	    leng_prefix-=len;
-	    erase_char(ch);
-	    prefix[leng_prefix]='\0';
-	    draw_char_string();
-	} else
-#endif /* I18N */
-	if (leng_prefix > 0) {
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    erase_suffix();
-		    move_cur(-1, ch, 1.0);
-		    erase_char(ch);
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    erase_char_string();
-		    move_cur(-1, ch, 2.0);
-		    move_text(1, ch, 2.0);
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    erase_prefix();
-		    move_text(1, ch, 1.0);
-		    break;
-		}
-	    /* remove the character from the prefix */
-	    prefix[--leng_prefix] = '\0';
+		size_t	len;
+		int	o;
+		F_text	t;
 
-	    /* now redraw stuff */
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    draw_suffix();
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    draw_char_string();
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    draw_prefix();
-		    break;
-	    }
-	}
+		if (start_suffix == 0)
+			return;
+
+		len = strlen(cur_t->cstring);
+
+		/* compute the amount to move the suffix to the left */
+		o = start_suffix - 1;
+		begin_utf8char((unsigned char *)cur_t->cstring, &o);
+		o = start_suffix - o;
+
+		for (i = start_suffix; i <= len; ++i)
+			cur_t->cstring[i - o] = cur_t->cstring[i];
+		start_suffix -= o;
+
+		/*
+		 * The cursor is drawn by inverse painting.
+		 * This could interfere with re-drawing the text.
+		 * Therefore, temporarily turn off the cursor.
+		 */
+		turn_off_blinking_cursor();
+
+		/* save the area of the original text */
+		/* text_bound() only needs these values here */
+		t.bb[0] = cur_t->bb[0];
+		t.bb[1] = cur_t->bb[1];
+		t.offset = cur_t->offset;
+		t.type = cur_t->type;
+		t.base_x = cur_t->base_x;
+		t.base_y = cur_t->base_y;
+
+		textextents(cur_t);
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		if (start_suffix > 0) {
+			t = *cur_t;
+			t.cstring = strndup(cur_t->cstring, start_suffix);
+			textextents(&t);
+			free(t.cstring);
+			cur_x += t.offset.x;
+			cur_y += t.offset.y;
+		}
+
+		/* redraw the area of the original, longer text */
+		redisplay_text(&t);
+		turn_on_blinking_cursor(cur_x, cur_y);
 
     /*****************************************/
     /* delete char to right of cursor        */
     /* Control-D and Delete key both do this */
     /*****************************************/
     } else if (c == DEL || c == CTRL_D) {
-#ifdef I18N
-	if (leng_suffix > 0
-	      && appres.international && is_i18n_font(canvas_font)) {
-	    int len;
-	    erase_char_string();
-	    len = i18n_suffix_head(NULL);
-	    for (i=0; i<=leng_suffix-len; i++)	/* copies null too */
-		suffix[i]=suffix[i+len];
-	    leng_suffix-=len;
-	    draw_char_string();
-	} else
-#endif /* I18N */
-	if (leng_suffix > 0) {
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    erase_suffix();
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    erase_char_string();
-		    move_cur(1, suffix[0], 2.0);
-		    move_text(1, suffix[0], 2.0);
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    erase_prefix();
-		    erase_char(suffix[0]);
-		    move_cur(1, suffix[0], 1.0);
-		    move_text(1, suffix[0], 1.0);
-		    break;
+		size_t	len = strlen(cur_t->cstring);
+		int	o;
+
+		if (start_suffix == (int)len)
+			return;
+
+		/* compute the amount to move the suffix to the right */
+		o = start_suffix;
+		end_utf8char((unsigned char *)cur_t->cstring, &o);
+		o = o + 1 - start_suffix;
+
+		for (i = start_suffix; i <= len - o; ++i)
+			cur_t->cstring[i] = cur_t->cstring[i + o];
+
+		turn_off_blinking_cursor();
+		textextents(cur_t);
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		if (start_suffix < len - o) {
+			F_text	t;
+
+			t = *cur_t;
+			t.cstring = strndup(cur_t->cstring, start_suffix);
+			textextents(&t);
+			free(t.cstring);
+			cur_x += t.offset.x;
+			cur_y += t.offset.y;
 		}
-	    /* shift suffix left one char */
-	    for (i=0; i<=leng_suffix; i++)	/* copies null too */
-		suffix[i]=suffix[i+1];
-	    leng_suffix--;
-	    /* now redraw stuff */
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    draw_suffix();
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    draw_char_string();
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    draw_prefix();
-		    break;
-	    }
-	}
+		redisplay_text(cur_t),
+		turn_on_blinking_cursor(cur_x, cur_y);
 
     /*******************************/
     /* delete to beginning of line */
