@@ -22,6 +22,7 @@
 #include "paintop.h"
 #include "f_util.h"
 #include "d_text.h"
+#include "u_bound.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_free.h"
@@ -1290,7 +1291,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     } else if (c == CTRL_H) {
 		size_t	len;
 		int	o;
-		F_text	t;
+		int	xmin, xmax, ymin, ymax;
 
 		if (start_suffix == 0)
 			return;
@@ -1302,6 +1303,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 		begin_utf8char((unsigned char *)cur_t->cstring, &o);
 		o = start_suffix - o;
 
+		/* memmove */
 		for (i = start_suffix; i <= len; ++i)
 			cur_t->cstring[i - o] = cur_t->cstring[i];
 		start_suffix -= o;
@@ -1313,19 +1315,21 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 		 */
 		turn_off_blinking_cursor();
 
-		/* save the area of the original text */
-		/* text_bound() only needs these values here */
-		t.bb[0] = cur_t->bb[0];
-		t.bb[1] = cur_t->bb[1];
-		t.offset = cur_t->offset;
-		t.type = cur_t->type;
-		t.base_x = cur_t->base_x;
-		t.base_y = cur_t->base_y;
+		/* erase the area of the original text */
+		text_bound(cur_t, &xmin, &ymin, &xmax, &ymax);
+		erase_box(xmin, ymin, xmax, ymax);
 
 		textextents(cur_t);
 		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
 				cur_t->type, cur_t->offset);
-		if (start_suffix > 0) {
+
+		/* get the new cursor position */
+		if (start_suffix == len - o) {
+			cur_x += cur_t->offset.x;
+			cur_y += cur_t->offset.y;
+		} else if (start_suffix > 0) {
+			F_text	t;
+
 			t = *cur_t;
 			t.cstring = strndup(cur_t->cstring, start_suffix);
 			textextents(&t);
@@ -1334,8 +1338,8 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 			cur_y += t.offset.y;
 		}
 
-		/* redraw the area of the original, longer text */
-		redisplay_text(&t);
+		/* redraw the area that was erased above */
+		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
 		turn_on_blinking_cursor(cur_x, cur_y);
 
     /*****************************************/
@@ -1345,6 +1349,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     } else if (c == DEL || c == CTRL_D) {
 		size_t	len = strlen(cur_t->cstring);
 		int	o;
+		int	xmin, xmax, ymin, ymax;
 
 		if (start_suffix == (int)len)
 			return;
@@ -1358,10 +1363,18 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 			cur_t->cstring[i] = cur_t->cstring[i + o];
 
 		turn_off_blinking_cursor();
+
+		/* erase the area of the original text */
+		text_bound(cur_t, &xmin, &ymin, &xmax, &ymax);
+		erase_box(xmin, ymin, xmax, ymax);
+
 		textextents(cur_t);
 		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
 				cur_t->type, cur_t->offset);
-		if (start_suffix < len - o) {
+		if (start_suffix == len - o) {
+			cur_x += cur_t->offset.x;
+			cur_y += cur_t->offset.y;
+		} else if (start_suffix > 0) /* && start_suffix < len - o */ {
 			F_text	t;
 
 			t = *cur_t;
@@ -1371,116 +1384,74 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 			cur_x += t.offset.x;
 			cur_y += t.offset.y;
 		}
-		redisplay_text(cur_t),
+
+		/* redraw the area that was erased above */
+		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
 		turn_on_blinking_cursor(cur_x, cur_y);
 
     /*******************************/
     /* delete to beginning of line */
     /*******************************/
     } else if (c == CTRL_X) {
-	if (leng_prefix > 0) {
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      erase_char_string();
-	    else
-#endif  /* I18N */
-	    switch (work_textjust) {
-	        case T_LEFT_JUSTIFIED:
-		    erase_char_string();
-		    rcur_x = rbase_x;
-		    cur_x = cbase_x = round(rcur_x);
-		    rcur_y = rbase_y;
-		    cur_y = cbase_y = round(rcur_y);
-		    break;
-	        case T_CENTER_JUSTIFIED:
-		    erase_char_string();
-		    while (leng_prefix--) {	/* subtract char width/2 per char */
-			rcur_x -= ZOOM_FACTOR * cos_t*char_advance(canvas_font,
-					(unsigned char) prefix[leng_prefix]) / 2.0;
-			rcur_y += ZOOM_FACTOR * sin_t*char_advance(canvas_font,
-					(unsigned char) prefix[leng_prefix]) / 2.0;
-		    }
-		    rbase_x = rcur_x;
-		    cur_x = cbase_x = round(rbase_x);
-		    rbase_y = rcur_y;
-		    cur_y = cbase_y = round(rbase_y);
-		    break;
-	        case T_RIGHT_JUSTIFIED:
-		    erase_prefix();
-		    rbase_x = rcur_x;
-		    cbase_x = cur_x = round(rbase_x);
-		    rbase_y = rcur_y;
-		    cbase_y = cur_y = round(rbase_y);
-		    break;
-	    }
-	    leng_prefix = 0;
-	    *prefix = '\0';
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    draw_char_string();
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    draw_char_string();
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    break;
-	    }
-	    move_blinking_cursor(cur_x, cur_y);
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      draw_char_string();
-#endif  /* I18N */
-	}
+		size_t	len;
+		int	xmin, xmax, ymin, ymax;
+
+		if (start_suffix == 0)
+			return;
+
+		len = strlen(cur_t->cstring);
+
+		/* move to the left by start_suffix */
+		for (i = start_suffix; i <= len; ++i)
+			cur_t->cstring[i - start_suffix] = cur_t->cstring[i];
+		start_suffix = 0;
+
+		turn_off_blinking_cursor();
+
+		/* erase the area of the original text */
+		text_bound(cur_t, &xmin, &ymin, &xmax, &ymax);
+		erase_box(xmin, ymin, xmax, ymax);
+
+		textextents(cur_t);
+		/* get the new cursor position */
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+
+		/* redraw the area that was erased above */
+		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
+		turn_on_blinking_cursor(cur_x, cur_y);
 
     /*************************/
     /* delete to end of line */
     /*************************/
     } else if (c == CTRL_K) {
-	if (leng_suffix > 0) {
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      erase_char_string();
-	    else
-#endif  /* I18N */
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    erase_suffix();
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    erase_char_string();
-		    while (leng_suffix--) {
-			move_cur(1, suffix[leng_suffix], 2.0);
-			move_text(1, suffix[leng_suffix], 2.0);
-		    }
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    erase_char_string();
-		    /* move cursor to end of (orig) string then move string over */
-		    while (leng_suffix--) {
-			move_cur(1, suffix[leng_suffix], 1.0);
-			move_text(1, suffix[leng_suffix], 1.0    );
-		    }
-		    break;
-		}
-	    leng_suffix = 0;
-	    *suffix = '\0';
-	    /* redraw stuff */
-#ifdef I18N
-	    if (appres.international && is_i18n_font(canvas_font))
-	      draw_char_string();
-	    else
-#endif  /* I18N */
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    draw_char_string();
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    draw_char_string();
-		    break;
-	    }
-	}
+		size_t	len = strlen(cur_t->cstring);
+		int	xmin, xmax, ymin, ymax;
+
+		if (start_suffix == (int)len)
+			return;
+
+		cur_t->cstring[start_suffix] = '\0';
+
+		turn_off_blinking_cursor();
+
+		/* erase the area of the original text */
+		text_bound(cur_t, &xmin, &ymin, &xmax, &ymax);
+		erase_box(xmin, ymin, xmax, ymax);
+
+		textextents(cur_t);
+
+		/* get the new cursor position */
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		cur_x += cur_t->offset.x;
+		cur_y += cur_t->offset.y;
+
+		/* redraw the area that was erased above */
+		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
+		turn_on_blinking_cursor(cur_x, cur_y);
+
+
 #ifdef SEL_TEXT
     /************************/
     /* delete selected text */
