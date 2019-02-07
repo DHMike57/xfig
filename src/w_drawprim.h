@@ -46,6 +46,7 @@ extern void pw_lines(Window w, zXPoint *points, int npoints, int op, int depth,
 	 int line_width, int line_style, float style_val,
 	 int join_style, int cap_style, int fill_style,
 	 Color pen_color, Color fill_color);
+extern void erase_box(int xmin, int ymin, int xmax, int ymax);
 extern void init_font(void);
 extern void init_fill_gc (void);
 extern void init_fill_pm (void);

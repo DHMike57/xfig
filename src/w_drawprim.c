@@ -1337,6 +1337,13 @@ pw_lines(Window w, zXPoint *points, int npoints, int op, int depth,
     }
 }
 
+void
+erase_box(int xmin, int ymin, int xmax, int ymax)
+{
+	zXFillRectangle(tool_d, canvas_win, gccache[ERASE], xmin, ymin,
+			xmax - xmin, ymax - ymin);
+}
+
 void set_clip_window(int xmin, int ymin, int xmax, int ymax)
 {
     clip_xmin = clip[0].x = xmin;
