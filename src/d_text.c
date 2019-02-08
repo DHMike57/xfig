@@ -1170,11 +1170,12 @@ draw_char_string(void)
 }
 
 void
-char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym)
+char_handler(unsigned char *c, int clen, KeySym keysym)
 {
     int    i;
     unsigned char   ch;
-fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
+fprintf(stderr, "entered char_handler(): %.*s (%x %x)\n",
+clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
 
     if (cr_proc == NULL)
 	return;
@@ -1191,14 +1192,14 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     }
 #endif /* SEL_TEXT */
 
-    if (c == ESC) {
+    if (c[0] == ESC) {
 	cancel_text_input();
-    } else if (c == CR || c == NL) {
+    } else if (c[0] == CR || c[0] == NL) {
 	new_text_line();
-    } else if (c == CTRL_UNDERSCORE) {
+    } else if (c[0] == CTRL_UNDERSCORE) {
 	/* subscript */
 	new_text_down();
-    } else if (c == CTRL_HAT) {
+    } else if (c[0] == CTRL_HAT) {
 	/* superscript */
 	new_text_up();
 
@@ -1206,7 +1207,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /* move cursor left - move char from prefix to suffix */
     /* Control-B and the Left arrow key both do this */
     /******************************************************/
-    } else if (keysym == XK_Left || c == CTRL_B) {
+    } else if (keysym == XK_Left || c[0] == CTRL_B) {
 		/* already at the beginning of the string, return */
 		if (start_suffix == 0)
 			return;
@@ -1230,7 +1231,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /* move cursor right - move char from suffix to prefix */
     /* Control-F and Right arrow key both do this */
     /*******************************************************/
-    } else if (keysym == XK_Right || c == CTRL_F) {
+    } else if (keysym == XK_Right || c[0] == CTRL_F) {
 		/* already at the end of the string, return */
 		if (cur_t->cstring[start_suffix] == '\0')
 			return;
@@ -1257,7 +1258,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /* move cursor to beginning of text - put everything in suffix */
     /* Control-A and Home key both do this */
     /***************************************************************/
-    } else if (keysym == XK_Home || c == CTRL_A) {
+    } else if (keysym == XK_Home || c[0] == CTRL_A) {
 		if (start_suffix == 0)
 			return;
 		else
@@ -1271,7 +1272,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /* move cursor to end of text - put everything in prefix */
     /* Control-E and End key both do this */
     /*********************************************************/
-    } else if (keysym == XK_End || c == CTRL_E) {
+    } else if (keysym == XK_End || c[0] == CTRL_E) {
 		size_t	len = strlen(cur_t->cstring);
 
 		if (start_suffix == (int)len)
@@ -1288,7 +1289,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /******************************************/
     /* backspace - delete char left of cursor */
     /******************************************/
-    } else if (c == CTRL_H) {
+    } else if (c[0] == CTRL_H) {
 		size_t	len;
 		int	o;
 		int	xmin, xmax, ymin, ymax;
@@ -1346,7 +1347,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /* delete char to right of cursor        */
     /* Control-D and Delete key both do this */
     /*****************************************/
-    } else if (c == DEL || c == CTRL_D) {
+    } else if (c[0] == DEL || c[0] == CTRL_D) {
 		size_t	len = strlen(cur_t->cstring);
 		int	o;
 		int	xmin, xmax, ymin, ymax;
@@ -1392,7 +1393,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /*******************************/
     /* delete to beginning of line */
     /*******************************/
-    } else if (c == CTRL_X) {
+    } else if (c[0] == CTRL_X) {
 		size_t	len;
 		int	xmin, xmax, ymin, ymax;
 
@@ -1424,7 +1425,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /*************************/
     /* delete to end of line */
     /*************************/
-    } else if (c == CTRL_K) {
+    } else if (c[0] == CTRL_K) {
 		size_t	len = strlen(cur_t->cstring);
 		int	xmin, xmax, ymin, ymax;
 
@@ -1456,7 +1457,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
     /************************/
     /* delete selected text */
     /************************/
-    } else if (c == CTRL_W) {
+    } else if (c[0] == CTRL_W) {
 	/* only if active */
 	if (lensel) {
 	    /* simply delete lensel characters from the end of the prefix */
@@ -1518,7 +1519,7 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 	    text_selection_showing = False;
 	}
 #endif /* SEL_TEXT */
-    } else if (c < SP) {
+    } else if (c[0] < SP) {
 	put_msg("Invalid character ignored");
     } else if (leng_prefix + leng_suffix == BUF_SIZE) {
 	put_msg("Text buffer is full, character is ignored");
@@ -1531,12 +1532,13 @@ fprintf(stderr, "entered char_handler(): %c (%x)\n", c, c);	/* DEBUG */
 	    F_text	t;
 
 	    turn_off_blinking_cursor();
-	    cur_t->cstring = realloc(cur_t->cstring, len + (size_t)2);
+	    cur_t->cstring = realloc(cur_t->cstring, len + (size_t)(clen + 1));
 
-	    cur_t->cstring[len + 1] = '\0';
+	    cur_t->cstring[len + clen] = '\0';
 	    for (i = len - 1; i >= start_suffix; --i)
-		    cur_t->cstring[i + 1] = cur_t->cstring[i];
-	    cur_t->cstring[start_suffix++] = c;
+		    cur_t->cstring[i + clen] = cur_t->cstring[i];
+	    memcpy(cur_t->cstring + start_suffix, c, clen);
+	    start_suffix += clen;
 	    textextents(cur_t);
 fprintf(stderr, "redisplay_text in char_handler(): %s(len %ld, start %d)\n",
 cur_t->cstring, len, start_suffix);

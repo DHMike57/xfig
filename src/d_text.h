@@ -21,7 +21,7 @@
 extern int		work_font;
 //extern XftFont		*canvas_xftfont;
 extern XFontStruct	*canvas_font;
-extern void	char_handler(XKeyEvent *kpe, unsigned char c, KeySym keysym);
+extern void	char_handler(unsigned char *c, int clen, KeySym keysym);
 extern void	draw_char_string(void);
 extern void	erase_char_string(void);
 extern void	finish_text_input(int x, int y, int shift);

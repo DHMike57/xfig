@@ -529,7 +529,7 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 		if (key == XK_Left || key == XK_Right || key == XK_Home || key == XK_End) {
 		    if (compose_key)
 			setCompLED(0);
-		    (*canvas_kbd_proc) (kpe, (unsigned char) 0, key);
+		    (*canvas_kbd_proc) ((unsigned char *) "", 0, key);
 		    compose_key = 0;	/* in case Meta was followed with cursor movement */
 		} else {
 #ifdef NO_COMPKEYDB
@@ -538,7 +538,7 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 fprintf(stderr, "NO_COMPKEYDB: %c%c ", compose_buf[0], compose_buf[1]);
 			if (oldstat)
 			    setCompLED(0);
-			(*canvas_kbd_proc) (kpe, compose_buf[0], (KeySym) 0);
+			(*canvas_kbd_proc) (compose_buf[0], 1, (KeySym) 0);
 			compose_key = 0;
 		    }
 #else /* NO_COMPKEYDB */
@@ -567,14 +567,13 @@ fprintf(stderr, "NO_COMPKEYDB: %c%c ", compose_buf[0], compose_buf[1]);
 			       if (status == XBufferOverflow) {
 				 fprintf(stderr, "xfig: buffer overflow (XmbLookupString)\n");
 			       }
-			       lbuf[len] = '\0';
+			       //lbuf[len] = '\0';
 fprintf(stderr, "  COMPKEYDB: %s\n", lbuf);
-				for (i = 0; i < len; ++i)
-				     (*canvas_kbd_proc)(kpe, lbuf[i], (KeySym)0);
+				     (*canvas_kbd_proc)(lbuf, len, (KeySym)0);
 			    } else
 #endif  /* I18N */
 			    if (XLookupString(kpe, buf, sizeof(buf), NULL, NULL) > 0)
-				(*canvas_kbd_proc) (kpe, buf[0], (KeySym) 0);
+				(*canvas_kbd_proc) (buf, 1, (KeySym) 0);
 			    break;
 			/* first char of multi-key sequence has been typed here */
 			case 1:
@@ -585,10 +584,9 @@ fprintf(stderr, "  COMPKEYDB: %s\n", lbuf);
 			case 2:
 			    if (XLookupString(kpe, &compose_buf[1], 1, NULL, NULL) > 0) {
 				if ((c = getComposeKey(compose_buf)) != '\0') {
-				    (*canvas_kbd_proc) (kpe, c, (KeySym) 0);
+				    (*canvas_kbd_proc) (&c, 1,  (KeySym) 0);
 				} else {
-				    (*canvas_kbd_proc) (kpe, compose_buf[0], (KeySym) 0);
-				    (*canvas_kbd_proc) (kpe, compose_buf[1], (KeySym) 0);
+				    (*canvas_kbd_proc) (compose_buf, 2, (KeySym) 0);
 				}
 				setCompLED(0);	/* turn off the compose LED */
 				compose_key = 0;	/* back to state 0 */
@@ -718,7 +716,7 @@ get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection, Atom *typ
 		  if (canvas_kbd_proc == (void (*)())char_handler && ' ' <= *c && *(c + 1)) {
 		    prefix_append_char(*c);
 		  } else {
-		    canvas_kbd_proc((XKeyEvent *) 0, *c, (KeySym) 0);
+		    canvas_kbd_proc(c, 1, (KeySym) 0);
 		  }
 		}
 	      }
@@ -729,11 +727,7 @@ get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection, Atom *typ
 	}
 #endif  /* I18N */
 
-	c = (char *) buf;
-	for (i=0; i<*length; i++) {
-           canvas_kbd_proc((XKeyEvent *) 0, *c, (KeySym) 0);
-           c++;
-	}
+        canvas_kbd_proc((unsigned char *)buf, (int)*length, (KeySym) 0);
 	XtFree(buf);
 }
 

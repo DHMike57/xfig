@@ -1635,7 +1635,7 @@ paste_char(Widget w, XtPointer client_data, XtPointer call_data)
     /* only allow during text input */
     if (canvas_kbd_proc != (void (*)())char_handler)
 	return;
-    char_handler((XKeyEvent *) 0, chr, (KeySym) 0);
+    char_handler(&chr, 1, (KeySym) 0);
 }
 
 /* add or remove a checkmark to a menu entry to show that it
