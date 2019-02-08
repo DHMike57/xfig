@@ -529,7 +529,7 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 		if (key == XK_Left || key == XK_Right || key == XK_Home || key == XK_End) {
 		    if (compose_key)
 			setCompLED(0);
-		    (*canvas_kbd_proc) ((unsigned char *) "", 0, key);
+		    (*canvas_kbd_proc)(NULL, 0, key);
 		    compose_key = 0;	/* in case Meta was followed with cursor movement */
 		} else {
 #ifdef NO_COMPKEYDB
@@ -538,7 +538,7 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 fprintf(stderr, "NO_COMPKEYDB: %c%c ", compose_buf[0], compose_buf[1]);
 			if (oldstat)
 			    setCompLED(0);
-			(*canvas_kbd_proc) (compose_buf[0], 1, (KeySym) 0);
+			(*canvas_kbd_proc)(compose_buf, 1, (KeySym) 0);
 			compose_key = 0;
 		    }
 #else /* NO_COMPKEYDB */
@@ -556,12 +556,12 @@ fprintf(stderr, "NO_COMPKEYDB: %c%c ", compose_buf[0], compose_buf[1]);
 				 lbuf_size = 100;
 				 lbuf = new_string(lbuf_size);
 			       }
-			       len = XmbLookupString(xim_ic, kpe, lbuf, lbuf_size,
+			       len = Xutf8LookupString(xim_ic, kpe, lbuf, lbuf_size,
 						     &key_sym, &status);
 			       if (status == XBufferOverflow) {
 				 lbuf_size = len;
 				 lbuf = realloc(lbuf, lbuf_size + 1);
-				 len = XmbLookupString(xim_ic, kpe, lbuf, lbuf_size,
+				 len = Xutf8LookupString(xim_ic, kpe, lbuf, lbuf_size,
 						       &key_sym, &status);
 			       }
 			       if (status == XBufferOverflow) {
@@ -577,11 +577,13 @@ fprintf(stderr, "  COMPKEYDB: %s\n", lbuf);
 			    break;
 			/* first char of multi-key sequence has been typed here */
 			case 1:
+fprintf(stderr, " case 1, compose key ...");
 			    if (XLookupString(kpe, &compose_buf[0], 1, NULL, NULL) > 0)
 				compose_key = 2;	/* got first char, on to state 2 */
 			    break;
 			/* last char of multi-key sequence has been typed here */
 			case 2:
+fprintf(stderr, " case 2\n");
 			    if (XLookupString(kpe, &compose_buf[1], 1, NULL, NULL) > 0) {
 				if ((c = getComposeKey(compose_buf)) != '\0') {
 				    (*canvas_kbd_proc) (&c, 1,  (KeySym) 0);
@@ -727,7 +729,7 @@ get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection, Atom *typ
 	}
 #endif  /* I18N */
 
-        canvas_kbd_proc((unsigned char *)buf, (int)*length, (KeySym) 0);
+        canvas_kbd_proc((unsigned char *)buf, (int)(*length), (KeySym) 0);
 	XtFree(buf);
 }
 
