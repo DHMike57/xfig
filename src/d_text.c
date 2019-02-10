@@ -1192,14 +1192,14 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     }
 #endif /* SEL_TEXT */
 
-    if (c[0] == ESC) {
+    if (clen == 1 && c[0] == ESC) {
 	cancel_text_input();
-    } else if (c[0] == CR || c[0] == NL) {
+    } else if (clen == 1 && (c[0] == CR || c[0] == NL)) {
 	new_text_line();
-    } else if (c[0] == CTRL_UNDERSCORE) {
+    } else if (clen == 1 && c[0] == CTRL_UNDERSCORE) {
 	/* subscript */
 	new_text_down();
-    } else if (c[0] == CTRL_HAT) {
+    } else if (clen == 1 && c[0] == CTRL_HAT) {
 	/* superscript */
 	new_text_up();
 
@@ -1207,7 +1207,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /* move cursor left - move char from prefix to suffix */
     /* Control-B and the Left arrow key both do this */
     /******************************************************/
-    } else if (keysym == XK_Left || c[0] == CTRL_B) {
+    } else if (keysym == XK_Left || clen == 1 && c[0] == CTRL_B) {
 		/* already at the beginning of the string, return */
 		if (start_suffix == 0)
 			return;
@@ -1231,7 +1231,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /* move cursor right - move char from suffix to prefix */
     /* Control-F and Right arrow key both do this */
     /*******************************************************/
-    } else if (keysym == XK_Right || c[0] == CTRL_F) {
+    } else if (keysym == XK_Right || clen == 1 && c[0] == CTRL_F) {
 		/* already at the end of the string, return */
 		if (cur_t->cstring[start_suffix] == '\0')
 			return;
@@ -1258,7 +1258,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /* move cursor to beginning of text - put everything in suffix */
     /* Control-A and Home key both do this */
     /***************************************************************/
-    } else if (keysym == XK_Home || c[0] == CTRL_A) {
+    } else if (keysym == XK_Home || clen == 1 && c[0] == CTRL_A) {
 		if (start_suffix == 0)
 			return;
 		else
@@ -1272,7 +1272,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /* move cursor to end of text - put everything in prefix */
     /* Control-E and End key both do this */
     /*********************************************************/
-    } else if (keysym == XK_End || c[0] == CTRL_E) {
+    } else if (keysym == XK_End || clen == 1 && c[0] == CTRL_E) {
 		size_t	len = strlen(cur_t->cstring);
 
 		if (start_suffix == (int)len)
@@ -1289,7 +1289,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /******************************************/
     /* backspace - delete char left of cursor */
     /******************************************/
-    } else if (c[0] == CTRL_H) {
+    } else if (clen == 1 && c[0] == CTRL_H) {
 		size_t	len;
 		int	o;
 		int	xmin, xmax, ymin, ymax;
@@ -1347,7 +1347,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /* delete char to right of cursor        */
     /* Control-D and Delete key both do this */
     /*****************************************/
-    } else if (c[0] == DEL || c[0] == CTRL_D) {
+    } else if (clen == 1 && (c[0] == DEL || c[0] == CTRL_D)) {
 		size_t	len = strlen(cur_t->cstring);
 		int	o;
 		int	xmin, xmax, ymin, ymax;
@@ -1393,7 +1393,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /*******************************/
     /* delete to beginning of line */
     /*******************************/
-    } else if (c[0] == CTRL_X) {
+    } else if (clen == 1 && c[0] == CTRL_X) {
 		size_t	len;
 		int	xmin, xmax, ymin, ymax;
 
@@ -1425,7 +1425,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /*************************/
     /* delete to end of line */
     /*************************/
-    } else if (c[0] == CTRL_K) {
+    } else if (clen == 1 && c[0] == CTRL_K) {
 		size_t	len = strlen(cur_t->cstring);
 		int	xmin, xmax, ymin, ymax;
 
@@ -1457,7 +1457,7 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     /************************/
     /* delete selected text */
     /************************/
-    } else if (c[0] == CTRL_W) {
+    } else if (clen == 1 && c[0] == CTRL_W) {
 	/* only if active */
 	if (lensel) {
 	    /* simply delete lensel characters from the end of the prefix */
@@ -1519,10 +1519,8 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
 	    text_selection_showing = False;
 	}
 #endif /* SEL_TEXT */
-    } else if (c[0] < SP) {
+    } else if (clen == 1 && c[0] < SP) {
 	put_msg("Invalid character ignored");
-    } else if (leng_prefix + leng_suffix == BUF_SIZE) {
-	put_msg("Text buffer is full, character is ignored");
 
     /*************************/
     /* normal text character */
@@ -2105,7 +2103,7 @@ xim_initialize(Widget w)
   if (preferred_style == style_notuseful) return False;
 
   if (appres.DEBUG) fprintf(stderr, "initialize_input_method()...\n");
-  if ((modifier_list = XSetLocaleModifiers("")) == NULL || *modifier_list == '\0') {
+  if ((modifier_list = XSetLocaleModifiers("@im=none")) == NULL || *modifier_list == '\0') {
 	/* printf("Warning: XSetLocaleModifiers() failed.\n"); */
   }
 
