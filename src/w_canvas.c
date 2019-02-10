@@ -228,23 +228,12 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 {
     KeySym	    key;
     static int	    sx = -10000, sy = -10000;
-    char	    buf[1];
     XButtonPressedEvent *be = (XButtonPressedEvent *) event;
     XKeyPressedEvent *kpe = (XKeyPressedEvent *) event;
     Window	    rw, cw;
     int		    rx, ry, cx, cy;
     unsigned int    mask;
     int    x, y;
-
-
-    static char	    compose_buf[2];
-#ifdef NO_COMPKEYDB
-    static XComposeStatus compstat;
-#define compose_key compstat.chars_matched
-#else
-    static char	    compose_key = 0;
-#endif /* NO_COMPKEYDB */
-    unsigned char   c;
 
     /* key on event type */
     switch (event->type) {
@@ -487,7 +476,7 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 	}
 
 	if (event->type == KeyPress) {
-	  if (key == XK_Up ||
+	  if (key == XK_Up ||		/* pan the canvas */
 	    key == XK_Down ||
 	    ((key == XK_Left ||    /* don't process the following if in text input mode */
 	      key == XK_Right ||
@@ -509,95 +498,58 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 			pan_origin();
 			break;
 		} /* switch (key) */
-	  } else if
-#ifdef NO_COMPKEYDB
-	     (key == XK_Multi_key && action_on && cur_mode == F_TEXT &&
-		!XLookupString(kpe, buf, sizeof(buf), NULL, &compstat) &&
-		compose_key) {
-#else
-	     ((key == XK_Multi_key || /* process the following *only* if in text input mode */
-	      key == XK_Meta_L ||
-	      key == XK_Meta_R ||
-	      key == XK_Alt_L ||
-	      key == XK_Alt_R ) && action_on && cur_mode == F_TEXT) {
-			compose_key = 1;
-#endif /* NO_COMPKEYDB */
-			setCompLED(1);
-			break;
-	  } else {
-	    if (canvas_kbd_proc != null_proc ) {
-		if (key == XK_Left || key == XK_Right || key == XK_Home || key == XK_End) {
-		    if (compose_key)
-			setCompLED(0);
-		    (*canvas_kbd_proc)(NULL, 0, key);
-		    compose_key = 0;	/* in case Meta was followed with cursor movement */
-		} else {
-#ifdef NO_COMPKEYDB
-		    int oldstat = compose_key;
-		    if (XLookupString(kpe, &compose_buf[0], 1, NULL, &compstat) > 0) {
-fprintf(stderr, "NO_COMPKEYDB: %c%c ", compose_buf[0], compose_buf[1]);
-			if (oldstat)
-			    setCompLED(0);
-			(*canvas_kbd_proc)(compose_buf, 1, (KeySym) 0);
-			compose_key = 0;
-		    }
-#else /* NO_COMPKEYDB */
-		    switch (compose_key) {
-			case 0:
-#ifdef I18N
-			    if (xim_ic != NULL) {
-			      static int lbuf_size = 0;
-			      static char *lbuf = NULL;
-			      KeySym key_sym;
-			      Status status;
-			      int i, len;
+	  } else {		/* pan the canvas */
+		if (canvas_kbd_proc != null_proc ) {
+			int		len;
+			static int	buf_size = 8;
+			static char	storage[8];
+			static char	*buf = storage;
+			KeySym		key_sym;
 
-			       if (lbuf == NULL) {
-				 lbuf_size = 100;
-				 lbuf = new_string(lbuf_size);
-			       }
-			       len = Xutf8LookupString(xim_ic, kpe, lbuf, lbuf_size,
-						     &key_sym, &status);
-			       if (status == XBufferOverflow) {
-				 lbuf_size = len;
-				 lbuf = realloc(lbuf, lbuf_size + 1);
-				 len = Xutf8LookupString(xim_ic, kpe, lbuf, lbuf_size,
-						       &key_sym, &status);
-			       }
-			       if (status == XBufferOverflow) {
-				 fprintf(stderr, "xfig: buffer overflow (XmbLookupString)\n");
-			       }
-			       //lbuf[len] = '\0';
-fprintf(stderr, "  COMPKEYDB: %s\n", lbuf);
-				     (*canvas_kbd_proc)(lbuf, len, (KeySym)0);
-			    } else
-#endif  /* I18N */
-			    if (XLookupString(kpe, buf, sizeof(buf), NULL, NULL) > 0)
-				(*canvas_kbd_proc) (buf, 1, (KeySym) 0);
-			    break;
-			/* first char of multi-key sequence has been typed here */
-			case 1:
-fprintf(stderr, " case 1, compose key ...");
-			    if (XLookupString(kpe, &compose_buf[0], 1, NULL, NULL) > 0)
-				compose_key = 2;	/* got first char, on to state 2 */
-			    break;
-			/* last char of multi-key sequence has been typed here */
-			case 2:
-fprintf(stderr, " case 2\n");
-			    if (XLookupString(kpe, &compose_buf[1], 1, NULL, NULL) > 0) {
-				if ((c = getComposeKey(compose_buf)) != '\0') {
-				    (*canvas_kbd_proc) (&c, 1,  (KeySym) 0);
-				} else {
-				    (*canvas_kbd_proc) (compose_buf, 2, (KeySym) 0);
+			if (key == XK_Left || key == XK_Right ||
+					key == XK_Home || key == XK_End) {
+				canvas_kbd_proc(buf, 0, key);
+
+			} else if (xim_ic != NULL) {
+				Status		status;
+
+				len = Xutf8LookupString(xim_ic, kpe, buf,
+						buf_size, &key_sym, &status);
+				if (status == XBufferOverflow) {
+					buf_size = len;
+					buf = realloc(buf, (size_t)(len + 1));
+					len = Xutf8LookupString(xim_ic, kpe,
+							buf, buf_size, &key_sym,
+							&status);
 				}
-				setCompLED(0);	/* turn off the compose LED */
-				compose_key = 0;	/* back to state 0 */
-			    }
-			    break;
-		    } /* switch */
-#endif /* NO_COMPKEYDB */
-		}
-	    } else {
+				switch (status) {
+				case XLookupChars:
+fprintf(stderr,"XLookupChars: %.*s, %d:(%d %d)\n",
+	len, buf, len, buf[0], buf[1]);
+					canvas_kbd_proc(buf, len, (KeySym)0);
+					break;
+				case XLookupKeySym:
+fprintf(stderr, "XLookupKeySym\n");
+				case XLookupBoth:
+fprintf(stderr,"XLookupBoth: %.*s, %d:(%d %d)\n",
+	len, buf, len, buf[0], buf[1]);
+					canvas_kbd_proc(buf, len, key_sym);
+					break;
+				case XBufferOverflow:
+					file_msg("xfig: buffer overflow, file %s, line %d.",
+							__FILE__, __LINE__);
+				case XLookupNone:
+				default:
+					break;
+				}
+
+			} else {	/* xim_ic == NULL */
+				len = XLookupString(kpe, buf, buf_size,
+						key_sym, NULL);
+				if (len > 0)
+					canvas_kbd_proc(buf, len, (KeySym)0);
+			}
+	    } else {		/* canvas_kbd_proc != null_proc */
 		/* Be cheeky... we aren't going to do anything, so pass the
 		 * key on to the mode_panel window by rescheduling the event
 		 * The message window might treat it as a hotkey!
@@ -606,7 +558,7 @@ fprintf(stderr, " case 2\n");
 		kpe->subwindow = 0;
 		XPutBackEvent(kpe->display,(XEvent *)kpe);
 	    }
-	  }
+	  }		/* end pan the canvas */
 	  break;
 	} /* event-type == KeyPress */
     } /* switch(event->type) */
