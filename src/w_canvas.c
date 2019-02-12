@@ -619,6 +619,7 @@ static void
 canvas_paste(Widget w, XKeyEvent *paste_event)
 {
 	Time event_time;
+	Atom	atom_utf8_string;
 
 	if (canvas_kbd_proc != (void (*)())char_handler)
 		return;
@@ -628,60 +629,43 @@ canvas_paste(Widget w, XKeyEvent *paste_event)
 	else
 		event_time = CurrentTime;
 
-#ifdef I18N
-	if (appres.international) {
-	  Atom atom_compound_text = XInternAtom(XtDisplay(w), "COMPOUND_TEXT", False);
-	  if (atom_compound_text) {
-	    XtGetSelectionValue(w, XA_PRIMARY, atom_compound_text,
+	atom_utf8_string = XInternAtom(XtDisplay(w), "UTF8_STRING", False);
+	if (atom_utf8_string)
+		XtGetSelectionValue(w, XA_PRIMARY, atom_utf8_string,
 				get_canvas_clipboard, NULL, event_time);
-	    return;
-	  }
-	}
-#endif  /* I18N */
-
-	XtGetSelectionValue(w, XA_PRIMARY,
-		XA_STRING, get_canvas_clipboard, NULL, event_time);
+	else
+		XtGetSelectionValue(w, XA_PRIMARY, XA_STRING,
+				get_canvas_clipboard, NULL, event_time);
 }
 
 static void
-get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection, Atom *type, XtPointer buf, long unsigned int *length, int *format)
+get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
+		Atom *type, XtPointer buf, unsigned long *length, int *format)
 {
-	char *c;
-	int i;
-#ifdef I18N
-	if (appres.international) {
-	  Atom atom_compound_text = XInternAtom(XtDisplay(w), "COMPOUND_TEXT", False);
-	  char **tmp;
-	  XTextProperty prop;
-	  int num_values;
-	  int ret_status;
+	char		**tmp;
+	int		i, num_values, ret_status;
+	XTextProperty	prop;
+	Atom		atom_utf8_string;
 
-	  if (*type == atom_compound_text) {
-	    prop.value = buf;
-	    prop.encoding = *type;
-	    prop.format = *format;
-	    prop.nitems = *length;
-	    num_values = 0;
-	    ret_status = XmbTextPropertyToTextList(XtDisplay(w), &prop,
-				(char***) &tmp, &num_values);
-	    if (ret_status == Success || 0 < num_values) {
-	      for (i = 0; i < num_values; i++) {
-		for (c = tmp[i]; *c; c++) {
-		  if (canvas_kbd_proc == (void (*)())char_handler && ' ' <= *c && *(c + 1)) {
-		    prefix_append_char(*c);
-		  } else {
-		    canvas_kbd_proc(c, 1, (KeySym) 0);
-		  }
+	atom_utf8_string = XInternAtom(XtDisplay(w), "UTF8_STRING", False);
+
+	if (*type == atom_utf8_string) {
+		prop.value = buf;
+		prop.encoding = *type;
+		prop.format = *format;
+		prop.nitems = *length;
+		num_values = 0;
+		ret_status = Xutf8TextPropertyToTextList(XtDisplay(w), &prop,
+				&tmp, &num_values);
+		if (ret_status == Success || 0 < num_values) {
+			for (i = 0; i < num_values; ++i) {
+				canvas_kbd_proc((unsigned char *)tmp[i],
+						(int)strlen(tmp[i]), (KeySym)0);
+			}
 		}
-	      }
-	      XtFree(buf);
-	      return;
-	    }
-	  }
+	} else {
+		canvas_kbd_proc((unsigned char *)buf, (int)(*length),(KeySym)0);
 	}
-#endif  /* I18N */
-
-        canvas_kbd_proc((unsigned char *)buf, (int)(*length), (KeySym) 0);
 	XtFree(buf);
 }
 
