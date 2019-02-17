@@ -1031,7 +1031,7 @@ initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by)
 
     turn_on_blinking_cursor(cur_x, cur_y);
 #ifdef I18N
-    if (xim_ic != NULL && (appres.latin_keyboard || is_i18n_font(canvas_font))) {
+    if (xim_ic != NULL) {
       put_msg("Ready for text input (from keyboard with input-method)");
       XSetICFocus(xim_ic);
       xim_active = True;

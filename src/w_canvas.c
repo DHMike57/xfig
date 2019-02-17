@@ -544,8 +544,9 @@ fprintf(stderr,"XLookupBoth: %.*s, %d:(%x %x)\n",
 				}
 
 			} else {	/* xim_ic == NULL */
+				static XComposeStatus	compose;
 				len = XLookupString(kpe, buf, buf_size,
-						key_sym, NULL);
+						key_sym, &compose);
 fprintf(stderr, "No xim: %d: %.*s\n", len, len, buf);
 				if (len > 0)
 					canvas_kbd_proc(buf, len, (KeySym)0);
