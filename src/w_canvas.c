@@ -529,9 +529,9 @@ fprintf(stderr,"XLookupChars: %.*s, %d:(%d %d)\n",
 					canvas_kbd_proc(buf, len, (KeySym)0);
 					break;
 				case XLookupKeySym:
-fprintf(stderr, "XLookupKeySym\n");
+fprintf(stderr, "XLookupKeySym %x ", key_sym);
 				case XLookupBoth:
-fprintf(stderr,"XLookupBoth: %.*s, %d:(%d %d)\n",
+fprintf(stderr,"XLookupBoth: %.*s, %d:(%x %x)\n",
 	len, buf, len, buf[0], buf[1]);
 					canvas_kbd_proc(buf, len, key_sym);
 					break;
@@ -546,6 +546,7 @@ fprintf(stderr,"XLookupBoth: %.*s, %d:(%d %d)\n",
 			} else {	/* xim_ic == NULL */
 				len = XLookupString(kpe, buf, buf_size,
 						key_sym, NULL);
+fprintf(stderr, "No xim: %d: %.*s\n", len, len, buf);
 				if (len > 0)
 					canvas_kbd_proc(buf, len, (KeySym)0);
 			}

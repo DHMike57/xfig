@@ -2104,8 +2104,9 @@ xim_initialize(Widget w)
 
   if (appres.DEBUG) fprintf(stderr, "initialize_input_method()...\n");
   if ((modifier_list = XSetLocaleModifiers("@im=none")) == NULL || *modifier_list == '\0') {
-	/* printf("Warning: XSetLocaleModifiers() failed.\n"); */
-  }
+	printf("Warning: XSetLocaleModifiers() failed.\n");
+  } else
+fprintf(stderr,"XSetLocaleModifiers should have succeeded.\n");
 
   xim_im = XOpenIM(XtDisplay(w), NULL, NULL, NULL);
   if (xim_im == NULL) {
