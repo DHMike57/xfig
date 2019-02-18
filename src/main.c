@@ -1559,7 +1559,7 @@ if (old_t != p_old_t) {
 	  if (event.type == KeyPress
 	      && XtWindow(canvas_sw) == ((XKeyPressedEvent *)&event)->window) {
 	    KeySym key = XLookupKeysym((XKeyPressedEvent *)&event, 0);
-fprintf(stderr, "key: %x\n", key);
+fprintf(stderr, "key: %lx\n", key);
 	    if (XK_F1 <= key && key <= XK_F35) {
 	      XtDispatchEvent(&event);
 	    } else {

@@ -22,21 +22,14 @@ extern int		work_font;
 //extern XftFont		*canvas_xftfont;
 extern XFontStruct	*canvas_font;
 extern void	char_handler(unsigned char *c, int clen, KeySym keysym);
-extern void	draw_char_string(void);
-extern void	erase_char_string(void);
 extern void	finish_text_input(int x, int y, int shift);
 extern void	reload_text_fstruct(F_text *t);
 extern void	reload_text_fstructs(void);
-extern Boolean	text_selection_active;
-extern Boolean	ConvertSelection();
-extern void	LoseSelection(), TransferSelectionDone();
 
 #ifdef I18N
 extern XIC	xim_ic;
 extern Boolean	xim_active;
 extern Boolean	xim_initialize(Widget w);
-extern void	i18n_char_handler(unsigned char *str);
-extern void	prefix_append_char(unsigned char ch);
 extern void	xim_set_ic_geometry(XIC ic, int width, int height);
 #ifdef I18N_USE_PREEDIT
 extern void	kill_preedit();
