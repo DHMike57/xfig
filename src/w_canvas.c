@@ -78,9 +78,6 @@ int		cur_x, cur_y;
 int		fix_x, fix_y;
 int		last_x, last_y;		/* last position of mouse */
 int		shift;			/* global state of shift key */
-#ifdef SEL_TEXT
-int		pointer_click = 0;	/* for counting multiple clicks */
-#endif /* SEL_TEXT */
 
 String		local_translations = "";
 
@@ -102,12 +99,6 @@ static CompKey *allCompKey = NULL;
 static unsigned char getComposeKey(char *buf);
 static void	readComposeKey(void);
 #endif /* NO_COMPKEYDB */
-
-#ifdef SEL_TEXT
-/* for multiple click timer */
-static XtIntervalId  click_id = (XtIntervalId) 0;
-static void          reset_click_counter();
-#endif /* SEL_TEXT */
 
 int		ignore_exp_cnt = 1;	/* we get 2 expose events at startup */
 
@@ -298,33 +289,10 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
       /*****************/
       case ButtonRelease:
 
-#ifdef SEL_TEXT
-	/* user was selecting text, and has released pointer button */
-	if (action_on && cur_mode == F_TEXT) {
-	    /* clear text selection flag since user released pointer button */
-	    text_selection_active = False;
-	    /* own the selection */
-	    XtOwnSelection(tool, XA_PRIMARY, event->time, ConvertSelection,
-			LoseSelection, TransferSelectionDone);
-	}
-#endif /* SEL_TEXT */
 	break;
 
       /***************/
       case ButtonPress:
-
-#ifdef SEL_TEXT
-	/* increment click counter in case we're looking for double/triple click on text */
-	pointer_click++;
-	if (pointer_click > 2)
-	    pointer_click = 1;
-	/* add timer to reset the counter after n milliseconds */
-	/* after first removing any previous timer */
-	if (click_id)
-	    XtRemoveTimeOut(click_id);
-	click_id = XtAppAddTimeOut(tool_app, 300,
-			(XtTimerCallbackProc) reset_click_counter, (XtPointer) NULL);
-#endif /* SEL_TEXT */
 
 	/* translate from zoomed coords to object coords */
 	x = BACKX(event->x);
@@ -565,22 +533,6 @@ fprintf(stderr, "No xim: %d: %.*s\n", len, len, buf);
 	} /* event-type == KeyPress */
     } /* switch(event->type) */
 }
-
-#ifdef SEL_TEXT
-/* come here if user doesn't press the pointer button within the click-time */
-
-static void
-reset_click_counter(widget, closure, event, continue_to_dispatch)
-    Widget          widget;
-    XtPointer	    closure;
-    XEvent*	    event;
-    Boolean*	    continue_to_dispatch;
-{
-    if (click_id)
-	XtRemoveTimeOut(click_id);
-    pointer_click = 0;
-}
-#endif /* SEL_TEXT */
 
 /* clear the canvas - this can't be called to clear a pixmap, only a window */
 

@@ -58,11 +58,6 @@
 #include <X11/Xft/Xft.h> /* XFT DEBUG */
 //#include <X11/extensions/Xrender.h>
 
-#ifdef SEL_TEXT
-#include <X11/Xmu/Atoms.h>
-Boolean	text_selection_active;
-#endif /* SEL_TEXT */
-
 /* EXPORTS */
 int		work_font;
 XFontStruct	*canvas_font;
@@ -134,30 +129,12 @@ static void	create_textobject(void);
 static int	split_at_cursor(F_text *t, int x, int y, int *cursor_len,
 				int *start_suffix);
 static void	draw_cursor(int x, int y);
-static void	move_cur(int dir, unsigned char c, float div);
-static void	move_text(int dir, unsigned char c, float div);
 static void	reload_compoundfont(F_compound *compounds);
-static int	prefix_length(char *string, int where_p);
 static void	initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by);
 static void	terminate_char_handler(void);
 static void	turn_on_blinking_cursor(int x, int y);
 static void	turn_off_blinking_cursor(void);
 static void	move_blinking_cursor(int x, int y);
-
-#ifdef SEL_TEXT
-/* for text selection */
-static void	track_text_select();
-static Boolean	text_selection_showing = False;
-static int	startp, endp;
-static int	prev_indx, lensel = 0;
-static int	start_text_select = -1;
-static int	start_sel_x, start_sel_y;
-static Boolean	click_on_text = False;
-static char	text_selection[500] = {'\0'};
-static Boolean	selection_dir = 0;
-static void	draw_selection (int x, int y, char *string);
-static void	undraw_selection (int x, int y, char *string);
-#endif /* SEL_TEXT */
 
 #ifdef I18N
 #include <sys/wait.h>
@@ -198,9 +175,6 @@ static Boolean	is_preedit_running();
 /*							*/
 /********************************************************/
 
-
-static void move_pref_to_suf(void);
-static void move_suf_to_pref(void);
 
 void
 text_drawing_selected(void)
@@ -636,40 +610,6 @@ init_text_input(int x, int y)
 	/* it is also used for text selection as the starting point */
 	leng_prefix = start_suffix;
 
-#ifdef SEL_TEXT
-	/**********************************************/
-	/* user has double-clicked, select whole word */
-	/**********************************************/
-	if (pointer_click == 2) {
-	    /* if any text is selected from before, undraw the selection */
-	    if (lensel && text_selection_showing)
-		undraw_selection(start_sel_x, start_sel_y, text_selection);
-	    startp = leng_prefix-1;
-	    /* back up to the beginning of the word or string */
-	    while (startp && cur_t->cstring[startp-1] != ' ')
-		startp--;
-	    endp = leng_prefix;
-	    /* now go forward to the end of the word or string */
-	    while (endp < leng_suffix && cur_t->cstring[endp] != ' ')
-		endp++;
-	    lensel = endp-startp;
-	    /* copy into the selection */
-	    strncpy(text_selection, &cur_t->cstring[startp], lensel);
-	    text_selection[lensel] = '\0';
-	    /* save starting point of selection */
-	    start_text_select = prev_indx = startp;
-	    /* prefix includes selected text */
-	    leng_prefix = endp;
-	    /* save starting x,y of select */
-	    tsize = textsize(canvas_font, leng_prefix-lensel, prefix);
-	    start_sel_x = round(base_x + tsize.length * cos_t);
-	    start_sel_y = round(base_y - tsize.length * sin_t);
-	    selection_dir =  1;		/* selecting to the right */
-	} else {
-	    /* save starting point of text selection */
-	    start_text_select = prev_indx = leng_prefix;
-	}
-#endif /* SEL_TEXT */
 
 	leng_suffix -= leng_prefix;
 	strncpy(prefix, cur_t->cstring, leng_prefix);
@@ -681,14 +621,6 @@ init_text_input(int x, int y)
 	//cur_x = round(base_x + tsize.length * cos_t);
 	//cur_y = round(base_y - tsize.length * sin_t);
 
-#ifdef SEL_TEXT
-	/* set text selection flag in case user moves pointer along text with button down */
-	text_selection_active = True;
-	/* set flag saying the user just clicked */
-	click_on_text = True;
-	/* and set canvas move procedure to keep track of text being selected */
-	canvas_locmove_proc = track_text_select;
-#endif /* SEL_TEXT */
     }
     /* save floating font size */
     work_float_fontsize = work_fontsize;
@@ -703,22 +635,8 @@ init_text_input(int x, int y)
     orig_ht = char_ht = ascent + descent;
     initialize_char_handler(canvas_win, finish_text_input,
 			    base_x, base_y);
-#ifdef SEL_TEXT
-    /* if any text is selected from before, undraw the selection */
-    if (lensel && text_selection_showing) {
-	undraw_selection(start_sel_x, start_sel_y, text_selection);
-	text_selection_showing = False;
-    }
-#endif /* SEL_TEXT */
     //redisplay_text(new_t);
     //draw_text(new_t, PAINT);
-#ifdef SEL_TEXT
-    /* draw the selected word in inverse */
-    if (pointer_click == 2) {
-	draw_selection(start_sel_x, start_sel_y, text_selection);
-	text_selection_showing = True;
-    }
-#endif /* SEL_TEXT */
 }
 
 static F_text *
@@ -758,70 +676,6 @@ new_text(int len, char *string)
     return (text);
 }
 
-/* return the index of the character in the string before the cursor (where_p) */
-
-static int
-prefix_length(char *string, int where_p)
-{
-    /* c stands for character unit and p for pixel unit */
-    int		    l, len_c, len_p;
-    int		    char_wid, where_c;
-    PR_SIZE	    size;
-
-    len_c = strlen(string);
-    size = textsize(canvas_font, len_c, string);
-    len_p = size.length;
-    if (where_p >= len_p)
-	return (len_c);		/* entire string is the prefix */
-
-#ifdef I18N
-    if (appres.international && is_i18n_font(canvas_font)) {
-      where_c = 0;
-      while (where_c < len_c) {
-	size = textsize(canvas_font, where_c, string);
-	if (where_p <= size.length) return where_c;
-	if (appres.euc_encoding) {
-	  if (string[where_c] == EUC_SS3) where_c = where_c + 3;
-	  else if (is_euc_multibyte(string[where_c])) where_c = where_c + 2;
-	}
-	else if (appres.locale_encoding) {
-	  l=mbrlen(string+where_c, MB_LEN_MAX, NULL);
-	  if (l>0) where_c+=l;
-	  else where_c++;
-	}
-	else where_c++;
-      }
-      return len_c;
-    }
-#endif  /* I18N */
-    char_wid = ZOOM_FACTOR * char_width(canvas_font);
-    where_c = where_p / char_wid;	/* estimated char position */
-    size = textsize(canvas_font, where_c, string);
-    l = size.length;		/* actual length (pixels) of string of
-				 * where_c chars */
-    if (l < where_p) {
-	do {			/* add the width of next char to l */
-	    l += (char_wid = ZOOM_FACTOR * char_advance(canvas_font,
-				(unsigned char) string[where_c++]));
-	} while (l < where_p);
-	if (l - (char_wid >> 1) >= where_p)
-	    where_c--;
-    } else if (l > where_p) {
-	do {			/* subtract the width of last char from l */
-	    l -= (char_wid = ZOOM_FACTOR * char_advance(canvas_font,
-				(unsigned char) string[--where_c]));
-	} while (l > where_p);
-	if (l + (char_wid >> 1) <= where_p)
-	    where_c++;
-    }
-    if (where_c < 0) {
-	fprintf(stderr, "xfig file %s line %d: Error in prefix_length - adjusted\n", __FILE__, __LINE__);
-	where_c = 0;
-    }
-    if ( where_c > len_c )
-	return (len_c);
-    return (where_c);
-}
 
 /*
  * Return the cursor position (pixels into the string)
@@ -1147,18 +1001,6 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
     if (cr_proc == NULL)
 	return;
 
-#ifdef SEL_TEXT
-    /* clear text selection flag since user typed a character */
-    /* but only if not one of the selection editing chars */
-    if (c != CTRL_W) {
-	if (text_selection_active)
-	    undraw_selection(start_sel_x, start_sel_y, text_selection);
-	text_selection_active = False;
-	/* and canvas loc move proc */
-	canvas_locmove_proc = null_proc;
-    }
-#endif /* SEL_TEXT */
-
     if (clen == 1 && c[0] == ESC) {
 	cancel_text_input();
     } else if (clen == 1 && (c[0] == CR || c[0] == NL)) {
@@ -1419,73 +1261,6 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
 		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
 		turn_on_blinking_cursor(cur_x, cur_y);
 
-
-#ifdef SEL_TEXT
-    /************************/
-    /* delete selected text */
-    /************************/
-    } else if (clen == 1 && c[0] == CTRL_W) {
-	/* only if active */
-	if (lensel) {
-	    /* simply delete lensel characters from the end of the prefix */
-	    prefix[leng_prefix-lensel] = '\0';
-	    leng_prefix = strlen(prefix);
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    erase_suffix();
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    erase_prefix();
-		    erase_suffix();
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    erase_prefix();
-		    break;
-	    }
-	    /* move cursor and/or text (prefix) base */
-	    for (i=0; i<lensel; i++) {
-		switch (work_textjust) {
-		  case T_LEFT_JUSTIFIED:
-		    move_cur(-1, text_selection[i], 1.0);
-		    break;
-		  case T_CENTER_JUSTIFIED:
-		    move_cur(-1, text_selection[i], 2.0);
-		    move_text(1, text_selection[i], 2.0);
-		    break;
-		  case T_RIGHT_JUSTIFIED:
-		    move_text(1, text_selection[i], 1.0);
-		    break;
-		}
-	    }
-	    /* turn off blinking cursor temporarily */
-	    turn_off_blinking_cursor();
-	    /* erase the selection characters */
-	    pw_text(pw, start_sel_x, start_sel_y, PAINT, MAX_DEPTH+1, canvas_zoomed_font,
-		work_angle, text_selection, CANVAS_BG, CANVAS_BG);
-	    switch (work_textjust) {
-		case T_LEFT_JUSTIFIED:
-		    /* redraw suffix */
-		    draw_suffix();
-		    break;
-		case T_CENTER_JUSTIFIED:
-		    /* redraw both prefix and suffix */
-		    draw_prefix();
-		    draw_suffix();
-		    break;
-		case T_RIGHT_JUSTIFIED:
-		    /* redraw prefix */
-		    draw_prefix();
-		    break;
-	    }
-	    /* turn on blinking cursor again */
-	    turn_on_blinking_cursor(cur_x, cur_y);
-	    /* clear the selection */
-	    lensel = 0;
-	    text_selection[0] = '\0';
-	    text_selection_active = False;
-	    text_selection_showing = False;
-	}
-#endif /* SEL_TEXT */
     } else if (clen == 1 && c[0] < SP) {
 	put_msg("Invalid character ignored");
 
@@ -1526,324 +1301,6 @@ cur_t->cstring, len, start_suffix);
     }
 }
 
-/* move the cursor left (-1) or right (1) by the width of char c divided by div */
-
-static void
-move_cur(int dir, unsigned char c, float div)
-{
-    double	    cwidth;
-    double	    cwsin, cwcos;
-
-    cwidth = (float) (ZOOM_FACTOR * char_advance(canvas_font, c));
-    cwsin = cwidth/div*sin_t;
-    cwcos = cwidth/div*cos_t;
-
-    rcur_x += dir*cwcos;
-    rcur_y -= dir*cwsin;
-    cur_x = round(rcur_x);
-    cur_y = round(rcur_y);
-    move_blinking_cursor(cur_x, cur_y);
-}
-
-/* move the base of the text left (-1) or right (1) by the width of
-   char c divided by div */
-
-static void
-move_text(int dir, unsigned char c, float div)
-{
-    double	    cwidth;
-    double	    cwsin, cwcos;
-
-    cwidth = (float) (ZOOM_FACTOR * char_advance(canvas_font, c));
-    cwsin = cwidth/div*sin_t;
-    cwcos = cwidth/div*cos_t;
-
-    rbase_x += dir*cwcos;
-    rbase_y -= dir*cwsin;
-    cbase_x = round(rbase_x);
-    cbase_y = round(rbase_y);
-}
-
-#ifdef SEL_TEXT
-
-/********************************************************/
-/*							*/
-/*		Text selection procedures		*/
-/*							*/
-/********************************************************/
-
-/* keep track of text being selected by button down pointer movement */
-
-static void
-track_text_select (int x, int y)
-{
-    int		    indx, posn;
-    int		    i, dir;
-    char	    substr[200];
-
-    /* if user released button, turn off canvas locmove proc */
-    if (!text_selection_active) {
-	canvas_locmove_proc = null_proc;
-	return;
-    }
-
-    /* if the pointer is not in the string (plus a little to the right) anymore, return */
-    if (!in_text_bound(cur_t, x, y, &posn, True))
-	return;
-
-    indx = prefix_length(cur_t->cstring, posn);
-    /* if on same character, return */
-    if (indx == prev_indx)
-	return;
-
-    /* if the user just clicked and has now moved the pointer */
-    if (click_on_text) {
-	/* save starting point of selection for refresing if user clicks elsewhere */
-	start_sel_x = cur_x;
-	start_sel_y = cur_y;
-	/* clear the selection */
-	text_selection[0] = '\0';
-	lensel = 0;
-	if (indx < prev_indx)
-	    selection_dir = -1;		/* selecting to the left */
-	else
-	    selection_dir =  1;		/* selecting to the right */
-	click_on_text = False;
-    }
-
-    if (indx > start_text_select) {
-	/* selecting right */
-	if (selection_dir == -1) {
-	    /* but we were selecting left, switch */
-	    selection_dir = 1;
-	    for (i=0; i<lensel; i++)
-		move_cur(1, text_selection[i], 1.0);
-	    /* and draw the characters normal */
-	    undraw_selection(cur_x, cur_y, text_selection);
-	    text_selection[0] = '\0';
-	    lensel = 0;
-	    /* restart prev_index */
-	    prev_indx = start_text_select;
-	}
-	if (indx > prev_indx) {
-	    /* we selected right, and are still moving right */
-	    for (i=0; i < (indx-prev_indx); i++) {
-		substr[i] = cur_t->cstring[i+prev_indx];
-		/* move char to prefix */
-		move_suf_to_pref();
-		/* update currently selected text */
-		text_selection[lensel++] = substr[i];
-	    }
-	    substr[i] = '\0';
-	    text_selection[lensel] = '\0';
-	    text_selection[indx-start_text_select] = '\0';
-	    /* draw the characters inverted */
-	    draw_selection(cur_x, cur_y, substr);
-	    /* and move the cursor to the current position */
-	    for (i=0; i<strlen(substr); i++)
-		move_cur(1, substr[i], 1.0);
-	} else {
-	    /* we started selecting right, but are unselecting left */
-	    for (i=0; i < (prev_indx-indx); i++) {
-		substr[i] = cur_t->cstring[i+indx];
-		/* put char back in suffix */
-		move_pref_to_suf();
-		/* update currently selected text */
-		lensel--;
-	    }
-	    substr[i] = '\0';
-	    text_selection[lensel] = '\0';
-	    /* move the cursor to the current position */
-	    for (i=0; i<strlen(substr); i++)
-		move_cur(-1, substr[i], 1.0);
-	    /* and draw the characters normal */
-	    undraw_selection(cur_x, cur_y, substr);
-	}
-
-    } else {
-	/* selecting left */
-	if (selection_dir == 1) {
-	    /* but we were selecting right, switch */
-	    selection_dir = -1;
-	    for (i=0; i<lensel; i++)
-		move_cur(-1, text_selection[i], 1.0);
-	    /* and draw the characters normal */
-	    undraw_selection(cur_x, cur_y, text_selection);
-	    text_selection[0] = '\0';
-	    lensel = 0;
-	    /* restart prev_index */
-	    prev_indx = start_text_select;
-	}
-	if (indx < prev_indx) {
-	    /* we selected left, and are still moving left */
-	    for (i=0; i < (prev_indx-indx); i++) {
-		substr[i] = cur_t->cstring[i+indx];
-		/* move char to suffix */
-		move_pref_to_suf();
-	    }
-	    substr[i] = '\0';
-	    /* update currently selected text */
-	    lensel += prev_indx-indx;
-	    strncpy(text_selection, &cur_t->cstring[indx], lensel);
-	    text_selection[lensel] = '\0';
-	    /* move the cursor to the current position */
-	    for (i=0; i<strlen(substr); i++)
-		move_cur(-1, substr[i], 1.0);
-	    /* and draw the characters inverted */
-	    draw_selection(cur_x, cur_y, substr);
-	} else {
-	    /* we started selecting left, but are unselecting right */
-	    for (i=0; i < (indx-prev_indx); i++) {
-		substr[i] = cur_t->cstring[i+prev_indx];
-		/* put char back in prefix */
-		move_suf_to_pref();
-	    }
-	    substr[i] = '\0';
-	    /* update currently selected text */
-	    lensel -= indx-prev_indx;
-	    strncpy(text_selection, &cur_t->cstring[indx], lensel);
-	    text_selection[lensel] = '\0';
-	    /* draw the characters normal */
-	    undraw_selection(cur_x, cur_y, substr);
-	    /* and move the cursor to the current position */
-	    for (i=0; i<strlen(substr); i++)
-		move_cur(1, substr[i], 1.0);
-	}
-    }
-    text_selection_showing = True;
-    prev_indx = indx;
-}
-#endif /* SEL_TEXT */
-
-/* move last char of prefix to first of suffix */
-
-static void
-move_pref_to_suf(void)
-{
-    int		    i;
-
-#ifdef I18N
-    int		    len;
-    if (leng_prefix > 0 && appres.international && is_i18n_font(canvas_font)) {
-	len = i18n_prefix_tail(NULL);
-	for (i=leng_suffix+len; i>0; i--)	/* copies null too */
-	    suffix[i]=suffix[i-len];
-	for (i=0; i<len; i++)
-	    suffix[i]=prefix[leng_prefix-len+i];
-	prefix[leng_prefix-len]='\0';
-	leng_prefix-=len;
-	leng_suffix+=len;
-    } else
-#endif /* I18N */
-    if (leng_prefix > 0) {
-	for (i=leng_suffix+1; i>0; i--)	/* copies null too */
-	    suffix[i]=suffix[i-1];
-	suffix[0]=prefix[leng_prefix-1];
-	prefix[leng_prefix-1]='\0';
-	leng_prefix--;
-	leng_suffix++;
-    }
-}
-
-/* move first char of suffix to last of prefix */
-
-static void
-move_suf_to_pref(void)
-{
-    int		    i;
-
-#ifdef I18N
-    int		    len;
-    if (leng_suffix > 0 && appres.international && is_i18n_font(canvas_font)) {
-	len = i18n_suffix_head(NULL);
-	for (i=0; i<len; i++)
-	   prefix[leng_prefix+i]=suffix[i];
-	prefix[leng_prefix+len]='\0';
-	for (i=0; i<=leng_suffix-len; i++)	/* copies null too */
-	    suffix[i]=suffix[i+len];
-	leng_suffix-=len;
-	leng_prefix+=len;
-    } else
-#endif /* I18N */
-    if (leng_suffix > 0) {
-	prefix[leng_prefix] = suffix[0];
-	prefix[leng_prefix+1]='\0';
-	for (i=0; i<=leng_suffix; i++)	/* copies null too */
-	    suffix[i]=suffix[i+1];
-	leng_suffix--;
-	leng_prefix++;
-    }
-}
-
-#ifdef SEL_TEXT
-
-/* draw string from x, y in inverse (selected) color */
-
-static void
-draw_selection (int x, int y, char *string)
-{
-    /* turn off blinking cursor temporarily */
-    turn_off_blinking_cursor();
-    pw_text(pw, x, y, PAINT, MAX_DEPTH+1, canvas_zoomed_font,
-		work_angle, string, CANVAS_BG, work_textcolor);
-    /* turn on blinking cursor again */
-    turn_on_blinking_cursor(cur_x, cur_y);
-}
-
-/* draw string from x, y in normal (unselected) color */
-
-static void
-undraw_selection (int x, int y, char *string)
-{
-    /* turn off blinking cursor temporarily */
-    turn_off_blinking_cursor();
-    pw_text(pw, x, y, PAINT, MAX_DEPTH+1, canvas_zoomed_font,
-		work_angle, string, work_textcolor, CANVAS_BG);
-    /* turn on blinking cursor again */
-    turn_on_blinking_cursor(cur_x, cur_y);
-}
-
-/* convert selection to string */
-/* this the callback w_canvas.c: canvas_selected() when user pastes the selection */
-
-Boolean
-ConvertSelection (Widget w, Atom *selection, Atom *target, Atom *type,
-		  XtPointer *value, unsigned long *length, int *format)
-{
-    /* if nothing, return */
-    if (lensel == 0)
-	return False;
-
-    if (*target == XA_STRING ||
-	*target == XA_TEXT(tool_d) ||
-	*target == XA_COMPOUND_TEXT(tool_d)) {
-	if (*target == XA_COMPOUND_TEXT(tool_d))
-	    *type = *target;
-	else
-	    *type = XA_STRING;
-	*value = text_selection;
-	*length = lensel;
-	*format = 8;
-	return True;
-    }
-}
-
-void
-LoseSelection (Widget w, Atom *selection)
-{
-    lensel = 0;
-    text_selection[0] = '\0';
-    /* unhighlight text */
-    if (cur_t)
-	redisplay_text(cur_t);
-}
-
-void
-TransferSelectionDone (Widget w, Atom *selection, Atom *target)
-{
-    /* nothing to do */
-}
-#endif /* SEL_TEXT */
 
 /****************************************************************/
 /*								*/
