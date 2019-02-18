@@ -167,14 +167,14 @@ void init_font(void)
     }
 
     if (appres.DEBUG) {
-	char	buf[BUFSIZ];
+	char	buf[230];
 	fprintf(stderr, "button_font: %s, fid: %lu\n", appres.buttonFont,
 		    button_font->fid);
 	fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
 		    roman_font->fid);
 	fprintf(stderr, "bold_font: %s, fid: %lu\n", appres.boldFont,
 		    bold_font->fid);
-	XftNameUnparse(pattern, buf, BUFSIZ);
+	XftNameUnparse(pattern, buf, 230);
 	fprintf(stderr, "mono_font: %s\n", buf);
     }
 
