@@ -292,7 +292,6 @@ typedef struct f_text {
 #define T_CENTER_JUSTIFIED	1
 #define T_RIGHT_JUSTIFIED	2
 	int font;
-	XFontStruct	*fontstruct;
 	float zoom;		/* to keep track of when it needs rescaling */
 	int size;		/* point size */
 	Color color;

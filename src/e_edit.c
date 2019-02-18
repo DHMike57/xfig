@@ -1444,13 +1444,6 @@ get_new_compound_values(void)
 	if (t->cstring)
 	    free(t->cstring);
 	t->cstring = strdup(panel_get_value(compound_text_panels[i]));
-	/* calculate new size */
-	/* get the fontstruct for zoom = 1 to get the size of the string */
-	//canvas_font = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
-	//size = textsize(canvas_font, strlen(t->cstring), t->cstring);
-	//t->length = size.length;
-	//t->ascent = size.ascent;
-	//t->descent = size.descent;
     }
 
     translate_compound(new_c, dx, dy);
@@ -2393,7 +2386,7 @@ void make_window_text(F_text *t)
 		latexfont_menu_bitmaps[new_t->font], "Font", &font_panel);
 #ifdef I18N
     str_panel(new_t->cstring, "Text", &text_panel, 220, True,
-	      appres.latin_keyboard || is_i18n_font(new_t->fontstruct));
+	      appres.latin_keyboard);
 #else
     str_panel(new_t->cstring, "Text", &text_panel, 220, True, False);
 #endif /* I18N */
@@ -2431,10 +2424,8 @@ get_new_text_values(void)
     new_t->cstring = strdup(panel_get_value(text_panel));
     /* get any comments */
     new_t->comments = strdup(panel_get_value(comments_panel));
-    /* get the fontstruct for zoom = 1 to get the size of the string */
-    canvas_font = lookfont(x_fontnum(psfont_text(new_t), new_t->font), new_t->size);
     textextents(new_t);
-    /* now set the fontstruct for this zoom scale */
+    /* now set the font for this zoom scale */
     reload_text_fstruct(new_t);
 }
 

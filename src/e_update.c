@@ -520,7 +520,7 @@ void update_text(F_text *text)
     up_part(text->color, cur_pencolor, I_PEN_COLOR);
     up_depth_part(text->depth, cur_depth);
     textextents(text);
-    reload_text_fstruct(text);	/* make sure fontstruct is current */
+    reload_text_fstruct(text);	/* make sure font is current */
     /* updated object will be redisplayed by init_update_xxx() */
 }
 

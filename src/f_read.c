@@ -1391,12 +1391,6 @@ read_textobject(FILE *fp)
 	t->font = DEFAULT;
     }
 
-    /* get the UNZOOMED font struct */
-    /* get the font in Fig resolution */
-    if (!update_figs) {
-	t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
-    }
-
     fix_depth(&t->depth);
     check_color(&t->color);
     more = False;
@@ -1497,19 +1491,13 @@ read_textobject(FILE *fp)
     (void) strcpy(t->cstring, &s[1]);
 
     if (!update_figs) {
-	/* now calculate the actual length and height of the string in fig units */
-	//tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-	//t->ascent = round(tx_dim.ascent);
-	//t->descent = round(tx_dim.descent);
+	/* calculate the actual length and height of the string in fig units */
 	textextents(t);
 
-	/* now get the zoomed font struct */
+	/* get the zoomed font */
 	t->zoom = zoomscale;
 	t->fonts[0] = getfont(psfont_text(t), t->font,
 			(int)t->size * SIZE_FLT * display_zoomscale, t->angle);
-	if (display_zoomscale != 1.0)
-	    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
-				round(t->size*display_zoomscale));
     }
 
     t->comments = attach_comments();		/* attach any comments */

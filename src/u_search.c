@@ -897,16 +897,16 @@ in_text_bound(F_text *t, int x, int y, int *posn, Boolean extra)
     yr = yo - (yo-y)*cost - (x-xo)*sint;
     /* now see if that point is in the text bounds of the unrotated text */
     l = text_length(t);
-    /* add 5 char widths to length if extra wanted */
+    /* add some length if extra wanted */
     if (extra)
-	l += 5*char_width(t->fontstruct);
+	l += 2 * t->height;
     h = t->ascent+t->descent;
     x1 = t->base_x;
     /* use x0 for left bound comparison but use x1 for char position in string of x,y */
     x0 = x1;
-    /* subtract 4 char widths before start of string */
+    /* subtract a bit before start of string */
     if (extra)
-	x0 -= 4*char_width(t->fontstruct);
+	x0 -= 2 * t->height;
     y1 = t->base_y+t->descent;
     if (t->type == T_CENTER_JUSTIFIED) {
 	x2 = x1 + l/2;

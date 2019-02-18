@@ -105,14 +105,12 @@ static int	ascent, descent;
 static int	orig_x, orig_y;		/* to position next line */
 static int	orig_ht;		/* to advance to next line */
 static float	work_float_fontsize;	/* keep current font size in floating for roundoff */
-static XFontStruct *canvas_zoomed_font;
 static XftFont	*canvas_zoomed_xftfont;
 
 static Boolean	is_newline;
 static int	work_fontsize, work_flags,
 		work_psflag, work_textjust, work_depth;
 static Color	work_textcolor;
-static XFontStruct *work_fontstruct;
 static XftFont	*work_xftfont;
 static float	work_angle;		/* in RADIANS */
 static double	sin_t, cos_t;		/* sin(work_angle), cos(work_angle) */
@@ -369,9 +367,6 @@ fputs("---overlay_text_input()---\n", stderr);
    * through
    */
 
-    leng_prefix = leng_suffix = 0;
-    *suffix = 0;
-    prefix[leng_prefix] = '\0';
     base_x = cur_x;
     base_y = cur_y;
 #ifdef I18N
@@ -394,17 +389,6 @@ fputs("---overlay_text_input()---\n", stderr);
 	sin_t = sin((double)work_angle);
 	cos_t = cos((double)work_angle);
 
-	/* load the X font and get its id for this font and size UNZOOMED */
-	/* this is to get widths etc for the unzoomed chars */
-	canvas_font = lookfont(x_fontnum(work_psflag, work_font),
-			   work_fontsize);
-	/* get the ZOOMED font for actually drawing on the canvas */
-	canvas_zoomed_font = lookfont(x_fontnum(work_psflag, work_font),
-				  round(work_fontsize*display_zoomscale));
-	/* save the working font structure */
-	work_fontstruct = canvas_zoomed_font;
-	// canvas_xftfont = getfont(work_psflag, work_font,
-	//		work_fontsize * SIZE_FLT, work_angle);
 	canvas_zoomed_xftfont = getfont(work_psflag, work_font,
 			(int)(work_fontsize * SIZE_FLT * display_zoomscale),
 			work_angle);
@@ -463,10 +447,6 @@ init_text_input(int x, int y)
 	/* new text input */
 	/******************/
 
-	leng_prefix = leng_suffix = 0;
-	*suffix = 0;
-	prefix[leng_prefix] = '\0';
-
 	/* set origin where mouse was clicked */
 	base_x = orig_x = x;
 	base_y = orig_y = y;
@@ -496,18 +476,6 @@ init_text_input(int x, int y)
 	    sin_t = sin((double)work_angle);
 	    cos_t = cos((double)work_angle);
 
-	    /* load the X font and get its id for this font and size UNZOOMED */
-	    /* this is to get widths etc for the unzoomed chars */
-	    canvas_font = lookfont(x_fontnum(work_psflag, work_font),
-			   work_fontsize);
-	    /* get the ZOOMED font for actually drawing on the canvas */
-	    canvas_zoomed_font = lookfont(x_fontnum(work_psflag, work_font),
-			   round(work_fontsize*display_zoomscale));
-	    /* save the working font structure */
-	    work_fontstruct = canvas_zoomed_font;
-	    /* get the font at resolution in Fig_units, for text extents etc */
-	//   canvas_xftfont = getfont(work_psflag, work_font,
-	//		    ZOOM_FACTOR * work_fontsize * SIZE_FLT, work_angle);
 	    /* get the font for actually drawing on the canvas */
 	    canvas_zoomed_xftfont = getfont(work_psflag, work_font,
 			    (int)(work_fontsize * SIZE_FLT * display_zoomscale),
@@ -527,7 +495,6 @@ init_text_input(int x, int y)
 
 	if (hidden_text(old_t)) {
 	    put_msg("Can't edit hidden text");
-	    //reset_action_on();	called in text_drawing_selected
 	    text_drawing_selected();
 	    return;
 	}
@@ -542,7 +509,6 @@ init_text_input(int x, int y)
 	/* font changed, refresh character map panel if it is up */
 	if (prev_work_font != work_font)
 	    refresh_character_panel();
-	work_fontstruct = canvas_zoomed_font = cur_t->fontstruct;
 	work_xftfont = canvas_zoomed_xftfont = cur_t->fonts[0];
 	work_fontsize = cur_t->size;
 	work_psflag   = cur_t->flags & PSFONT_TEXT;
@@ -555,14 +521,7 @@ init_text_input(int x, int y)
 	sin_t = sin((double)work_angle);
 	cos_t = cos((double)work_angle);
 
-	/* load the X font and get its id for this font, size and angle UNZOOMED */
-	/* this is to get widths etc for the unzoomed chars */
-	canvas_font = lookfont(x_fontnum(work_psflag, work_font),
-			   work_fontsize);
-	// canvas_xftfont = cur_t->fonts[0];
-
 	toggle_textmarker(cur_t);
-	//draw_text(cur_t, ERASE);
 	base_x = cur_t->base_x;
 	base_y = cur_t->base_y;
 	length = cur_t->length;
@@ -592,22 +551,6 @@ init_text_input(int x, int y)
 				cur_t->cstring + start_suffix,
 				cursor_len, start_suffix);
 	}
-	leng_suffix = strlen(cur_t->cstring) - start_suffix;
-	/* leng_prefix is index of char in the text before the cursor */
-	/* it is also used for text selection as the starting point */
-	leng_prefix = start_suffix;
-
-
-	leng_suffix -= leng_prefix;
-	strncpy(prefix, cur_t->cstring, leng_prefix);
-	prefix[leng_prefix]='\0';
-	strcpy(suffix, &cur_t->cstring[leng_prefix]);
-	tsize = textsize(canvas_font, leng_prefix, prefix);
-
-	/* set current to character position of mouse click (end of prefix) */
-	//cur_x = round(base_x + tsize.length * cos_t);
-	//cur_y = round(base_y - tsize.length * sin_t);
-
     }
     /* save floating font size */
     work_float_fontsize = work_fontsize;
@@ -622,8 +565,6 @@ init_text_input(int x, int y)
     orig_ht = char_ht = ascent + descent;
     initialize_char_handler(canvas_win, finish_text_input,
 			    base_x, base_y);
-    //redisplay_text(new_t);
-    //draw_text(new_t, PAINT);
 }
 
 static F_text *
@@ -641,7 +582,6 @@ new_text(int len, char *string)
     }
     text->type = work_textjust;
     text->font = work_font;	/* put in current font number */
-    text->fontstruct = work_fontstruct;
     text->fonts[0] = getfont(work_psflag, work_font,
 		    work_fontsize * SIZE_FLT * display_zoomscale, work_angle);
     text->zoom = zoomscale;
@@ -651,6 +591,7 @@ new_text(int len, char *string)
     text->color = cur_pencolor;
     text->depth = work_depth;
     text->pen_style = -1;
+    /* TODO, FIXME: these below must be re-defined! */
     size = textsize(canvas_font, len, string);
     text->length = size.length;
     text->ascent = size.ascent;
@@ -1253,8 +1194,7 @@ move_blinking_cursor(int x, int y)
 }
 
 /*
- * Reload the font structure for all texts, the saved texts and the
-   current work_fontstruct.
+ * Reload the font structure for all texts and saved texts.
  */
 
 void
@@ -1289,8 +1229,6 @@ reload_compoundfont(F_compound *compounds)
 void
 reload_text_fstruct(F_text *t)
 {
-    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
-			round(t->size*display_zoomscale));
     t->zoom = zoomscale;
     if (t->fonts[0])
 	closefont(t->fonts[0]);

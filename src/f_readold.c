@@ -514,23 +514,18 @@ read_1_3_textobject(FILE *fp)
 	return (NULL);
     }
 
-    /* get the font struct */
+    /* get the font */
     t->zoom = zoomscale;
-    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
-			round(t->size*display_zoomscale));
-
     if (t->font >= MAXFONT(t)) {
 	file_msg("Invalid text font (%d) at line %d, setting to DEFAULT.",
 		t->font, line_no);
 	t->font = DEFAULT;
     }
-    /* now calculate the actual length and height of the string in fig units */
-    //tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-    //t->length = round(tx_dim.length);
-    //t->ascent = round(tx_dim.ascent);
-    //t->descent = round(tx_dim.descent);
-    textextents(t);
+    t->fonts[0] = getfont(psfont_text(t), t->font,
+			(int)t->size * SIZE_FLT * display_zoomscale, t->angle);
 
+    /* now calculate the actual length and height of the string in fig units */
+    textextents(t);
 
     return t;
 }

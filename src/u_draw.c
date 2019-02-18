@@ -1251,9 +1251,8 @@ void draw_text(F_text *text, int op)
     int		    xmin, ymin, xmax, ymax;
     int		    x1,y1, x2,y2, x3,y3, x4,y4;
 
-    if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0) {
+    if (text->zoom != zoomscale)
 	reload_text_fstruct(text);
-    }
     text_rotbound(text, &xmin, &ymin, &xmax, &ymax,
 	       &x1,&y1, &x2,&y2, &x3,&y3, &x4,&y4);
 
