@@ -231,16 +231,15 @@ text_drawing_selected(void)
     is_newline = False;
 }
 
+/*
+ * A textobject (cur_t) was already created in init_text_input() or
+ * overlay_text_input(). Nothing to do if a string was input, but if the
+ * string is empty, either because no text was input or the current text
+ * deleted, then undo the last change.
+ */
 static void
-finish_n_start(int x, int y)
+commit_current_text(void)
 {
-    //create_textobject();
-    reset_action_on();
-    terminate_char_handler();
-	/*
-	 * Committing an empty string is treated as equivalent to deleting an
-	 * existing text, or not adding (undo) a newly added text.
-	 */
 	if (cur_t->cstring[0] == '\0') {
 		/* delete the previously added text, or restore the old text */
 		undo();
@@ -248,6 +247,14 @@ finish_n_start(int x, int y)
 			/* now really delete the old text, for the records */
 			delete_text(old_t);
 	}
+}
+
+static void
+finish_n_start(int x, int y)
+{
+    reset_action_on();
+    terminate_char_handler();
+	commit_current_text();
     /* reset text size after any super/subscripting */
     work_fontsize = cur_fontsize;
     work_float_fontsize = (float) work_fontsize;
@@ -265,12 +272,7 @@ finish_text_input(int x, int y, int shift)
     }
     reset_action_on();
     terminate_char_handler();
-    //create_textobject();
-	if (cur_t->cstring[0] == '\0') { /* See above, in finish_n_start() */
-		undo();
-		if (old_t)
-			delete_text(old_t);
-	}
+	commit_current_text();
     text_drawing_selected();
     /* reset text size after any super/subscripting */
     work_fontsize = cur_fontsize;
@@ -291,11 +293,6 @@ cancel_text_input(void)
     terminate_char_handler();
     reset_action_on();
     undo();
-/*	if (cur_t == NULL)
-	    undo_add();
-    else
-	    undo_change();
-*/
 
     text_drawing_selected();
     draw_mousefun_canvas();
@@ -304,8 +301,9 @@ cancel_text_input(void)
 static void
 new_text_line(void)
 {
-    /* finish current text */
-    create_textobject();
+	commit_current_text();
+	turn_off_blinking_cursor();
+
     /* restore x,y to point where user clicked first text or start
        of text if clicked on existing text */
     cur_x = orig_x;
@@ -316,9 +314,16 @@ new_text_line(void)
     /* advance to next line */
     cur_x = round(cur_x + char_ht*cur_textstep*sin_t);
     cur_y = round(cur_y + char_ht*cur_textstep*cos_t);
+	orig_x = cur_x;
+	orig_y = cur_y;
+
+	/* reset text size after any super/subscripting */
+	work_fontsize = cur_fontsize;
+	work_float_fontsize = (float) work_fontsize;
+	supersub = 0;
 
     is_newline = True;
-    init_text_input(cur_x, cur_y);
+	overlay_text_input(cur_x, cur_y);
 }
 
 static void
@@ -328,7 +333,8 @@ new_text_down(void)
     if (supersub <= -MAX_SUPSUB)
 	return;
 
-    create_textobject();
+	commit_current_text();
+	turn_off_blinking_cursor();
     /* save current char height */
     heights[abs(supersub)] = char_ht;
     if (supersub-- > 0) {
@@ -354,7 +360,9 @@ new_text_up(void)
     if (supersub >= MAX_SUPSUB)
 	return;
 
-    create_textobject();
+	commit_current_text();
+	turn_off_blinking_cursor();
+
     /* save current char height */
     heights[abs(supersub)] = char_ht;
     if (supersub++ < 0) {
@@ -400,7 +408,6 @@ fputs("---overlay_text_input()---\n", stderr);
    * through
    */
 
-    cur_t=NULL;
     leng_prefix = leng_suffix = 0;
     *suffix = 0;
     prefix[leng_prefix] = '\0';
@@ -443,59 +450,19 @@ fputs("---overlay_text_input()---\n", stderr);
 	work_xftfont = canvas_zoomed_xftfont;
     }
 
+	/* get text ascent and descent for cursor height and line spacing */
+	textmaxheight(work_psflag, work_font, work_fontsize, &ascent, &descent);
+	char_ht = ascent + descent;
+
+	/* add new text */
+	cur_t = new_text(1, "");
+	start_suffix = 0;
+	textextents(cur_t);
+	add_text(cur_t);
+
     put_msg("Ready for text input (from keyboard)");
     initialize_char_handler(canvas_win, finish_text_input,
 			  base_x, base_y);
-    draw_char_string();
-}
-
-static void
-create_textobject(void)
-{
-
-    reset_action_on();
-    erase_char_string();
-    terminate_char_handler();
-
-    if (cur_t == NULL) {	/* a brand new text */
-	strcat(prefix, suffix);	/* re-attach any suffix */
-	leng_prefix=strlen(prefix);
-	if (leng_prefix == 0)
-	    return;		/* nothing afterall */
-	cur_t = new_text(leng_prefix, prefix);
-	add_text(cur_t);
-    } else {			/* existing text modified */
-	strcat(prefix, suffix);
-	leng_prefix += leng_suffix;
-	if (leng_prefix == 0) {
-	    delete_text(cur_t);
-	    return;
-	}
-	if (!strcmp(cur_t->cstring, prefix)) {
-	    /* we didn't change anything */
-	    /* draw it and any objects that are on top */
-	    redisplay_text(cur_t);
-#ifdef SEL_TEXT
-	    /* if any text is selected, redraw those characters inverted */
-	    if (lensel)
-		draw_selection(start_sel_x, start_sel_y, text_selection);
-	    return;
-#endif /* SEL_TEXT */
-	}
-	new_t = copy_text(cur_t);
-	change_text(cur_t, new_t);
-	if (strlen(new_t->cstring) >= leng_prefix) {
-	    strcpy(new_t->cstring, prefix);
-	} else {		/* free old and allocate new */
-	    free(new_t->cstring);
-	    if ((new_t->cstring = new_string(leng_prefix)) != NULL)
-		strcpy(new_t->cstring, prefix);
-	}
-	textextents(new_t);
-	cur_t = new_t;
-    }
-    /* draw it and any objects that are on top */
-    redisplay_text(cur_t);
 }
 
 static void
@@ -589,7 +556,6 @@ init_text_input(int x, int y)
 
 	cur_t = new_text(1, "");
 	start_suffix = 0;
-	textextents(cur_t);
 	add_text(cur_t);
 
     } else {
@@ -655,6 +621,7 @@ init_text_input(int x, int y)
 			cur_t->offset);
 
 	if (split_at_cursor(cur_t, cur_x, cur_y, &cursor_len, &start_suffix)) {
+		/* invalid text */
 		return;
 	} else {
 		cur_x = base_x + round(cursor_len * cos_t);
