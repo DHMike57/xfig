@@ -289,6 +289,9 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	/* assign the base pattern */
 	if (xftbasepattern[fnum] == NULL) {
 		xftbasepattern[fnum] = XftNameParse(xft_name[fnum]);
+		/* Without scalable, a Wolfram pixel font was found for
+		   "helvetica". */
+		XftPatternAddBool(xftbasepattern[fnum], XFT_SCALABLE, True);
 		/* XftPatternAddBool returns 1, if succesful */
 		/* XftPatternAddBool(xftbasepattern[fnum], "hinting", False); */
 	}
