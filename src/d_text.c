@@ -402,7 +402,6 @@ fputs("---overlay_text_input()---\n", stderr);
 	/* add new text */
 	cur_t = new_text(1, "");
 	start_suffix = 0;
-	textextents(cur_t);
 	add_text(cur_t);
 
     put_msg("Ready for text input (from keyboard)");
@@ -591,11 +590,6 @@ new_text(int len, char *string)
     text->color = cur_pencolor;
     text->depth = work_depth;
     text->pen_style = -1;
-    /* TODO, FIXME: these below must be re-defined! */
-    size = textsize(canvas_font, len, string);
-    text->length = size.length;
-    text->ascent = size.ascent;
-    text->descent = size.descent;
     text->base_x = base_x;
     text->base_y = base_y;
     strcpy(text->cstring, string);
