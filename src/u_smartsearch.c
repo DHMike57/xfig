@@ -391,7 +391,7 @@ smart_next_text_found(int x, int y, int tolerance, int *px, int *py, int shift)
     for (; t != NULL; t = prev_text(objects.texts, t))
 	if (validtext_in_mask(t)) {
 	    n++;
-	    if (in_text_bound(t, x, y, &dum, False)) {
+	    if (in_text_bound(t, x, y, &dum)) {
 		*px = x;
 		*py = y;
                 tlength = text_length(t);

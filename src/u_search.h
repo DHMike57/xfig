@@ -18,7 +18,7 @@
 #ifndef U_SEARCH_H
 #define U_SEARCH_H
 
-Boolean		in_text_bound(F_text *t, int x, int y, int *posn, Boolean extra);
+Boolean		in_text_bound(F_text *t, int x, int y, int *posn);
 
 void		init_searchproc_left(void (*handlerproc) (/* ??? */));
 void		init_searchproc_middle(void (*handlerproc) (/* ??? */));
