@@ -545,10 +545,6 @@ init_text_input(int x, int y)
 	} else {
 		cur_x = base_x + round(cursor_len * cos_t);
 		cur_y = base_y - round(cursor_len * sin_t);
-/* DEBUG */ fprintf(stderr, "%.*s - %s, length = %d, cursor_len = %d\n",
-				start_suffix, cur_t->cstring,
-				cur_t->cstring + start_suffix,
-				cursor_len, start_suffix);
 	}
     }
     /* save floating font size */
@@ -675,10 +671,6 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 
 	closefont(horfont); /* where to use horfont? */
 
-fprintf(stderr,		/* DEBUG */
-"split_at_cursor: total length %.1f, cursor %d, left %d, right %d: ",
-offset_len, *cursor_len, left, right);
-
 	if (*cursor_len - left > right - *cursor_len) {
 		*cursor_len = right;
 		end_utf8char((unsigned char *)t->cstring, start_suffix);
@@ -686,10 +678,6 @@ offset_len, *cursor_len, left, right);
 	} else {
 		*cursor_len = left;
 	}
-
-/* DEBUG */
-fprintf(stderr, "pos %d, cursor: %d\n", *start_suffix, *cursor_len);
-fprintf(stderr, "%.*s-%s.\n", *start_suffix,t->cstring,t->cstring+*start_suffix);
 
 	return 0;
 }
@@ -799,8 +787,6 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 {
     int    i;
     unsigned char   ch;
-fprintf(stderr, "entered char_handler(): %.*s (%x %x)\n",
-clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
 
     if (cr_proc == NULL)
 	return;
@@ -1084,8 +1070,6 @@ clen, c, c[0], clen > 1 ? c[1] : 0);		/* DEBUG */
 	    memcpy(cur_t->cstring + start_suffix, c, clen);
 	    start_suffix += clen;
 	    textextents(cur_t);
-fprintf(stderr, "redisplay_text in char_handler(): %s(len %ld, start %d)\n",
-cur_t->cstring, len, start_suffix);
 	    redisplay_text(cur_t);
 
 	    /* determine the cursor position */

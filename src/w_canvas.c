@@ -96,7 +96,7 @@ struct _CompKey {
 
 #ifndef NO_COMPKEYDB
 static CompKey *allCompKey = NULL;
-static unsigned char getComposeKey(char *buf);
+/* static unsigned char getComposeKey(char *buf); */
 static void	readComposeKey(void);
 #endif /* NO_COMPKEYDB */
 
@@ -492,15 +492,10 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 				}
 				switch (status) {
 				case XLookupChars:
-fprintf(stderr,"XLookupChars: %.*s, %d:(%d %d)\n",
-	len, buf, len, buf[0], buf[1]);
 					canvas_kbd_proc(buf, len, (KeySym)0);
 					break;
 				case XLookupKeySym:
-fprintf(stderr, "XLookupKeySym %lx ", key_sym);
 				case XLookupBoth:
-fprintf(stderr,"XLookupBoth: %.*s, %d:(%x %x)\n",
-	len, buf, len, buf[0], buf[1]);
 					canvas_kbd_proc(buf, len, key_sym);
 					break;
 				case XBufferOverflow:
@@ -515,7 +510,6 @@ fprintf(stderr,"XLookupBoth: %.*s, %d:(%x %x)\n",
 				static XComposeStatus	compose;
 				len = XLookupString(kpe, buf, buf_size,
 						&key_sym, &compose);
-fprintf(stderr, "No xim: %d: %.*s\n", len, len, buf);
 				if (len > 0)
 					canvas_kbd_proc(buf, len, (KeySym)0);
 			}
@@ -624,6 +618,7 @@ get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
 }
 
 #ifndef NO_COMPKEYDB
+/*
 static unsigned char
 getComposeKey(char *buf)
 {
@@ -638,6 +633,7 @@ getComposeKey(char *buf)
     }
     return ('\0');
 }
+*/
 
 static void
 readComposeKey(void)

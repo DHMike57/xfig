@@ -1531,22 +1531,6 @@ notablet:
     */
     if (xim_ic != NULL) {
       while (1) {
-static F_text *p_cur_t, *p_new_t, *p_old_t;
-if (cur_t != p_cur_t) {
-  fprintf(stderr, "Icur_t->cstring = %s\n",
-	cur_t && cur_t->cstring ? cur_t->cstring : "00");
-  p_cur_t = cur_t;
-}
-if (new_t != p_new_t) {
-  fprintf(stderr, "Inew_t->cstring = %s\n",
-	new_t && new_t->cstring ? new_t->cstring : "00");
-  p_new_t = new_t;
-}
-if (old_t != p_old_t) {
-  fprintf(stderr, "Iold_t->cstring = %s\n",
-	old_t && old_t->cstring ? old_t->cstring : "00");
-  p_old_t = old_t;
-}
 	XtAppNextEvent(tool_app, &event);
 	if (splash_onscreen) {
 	    /* if user presses key or mouse button, clear splash */
@@ -1559,7 +1543,6 @@ if (old_t != p_old_t) {
 	  if (event.type == KeyPress
 	      && XtWindow(canvas_sw) == ((XKeyPressedEvent *)&event)->window) {
 	    KeySym key = XLookupKeysym((XKeyPressedEvent *)&event, 0);
-fprintf(stderr, "key: %lx\n", key);
 	    if (XK_F1 <= key && key <= XK_F35) {
 	      XtDispatchEvent(&event);
 	    } else {
@@ -1569,9 +1552,6 @@ fprintf(stderr, "key: %lx\n", key);
 	    XtDispatchEvent(&event);
 	  }
 	}
-else {
-fprintf(stderr, "Event filtered\n");
-}
       }
     }
 #endif  /* I18N */
@@ -1585,22 +1565,6 @@ fprintf(stderr, "Event filtered\n");
     /*******************************************************/
 
     while (1) {
-static F_text *p_cur_t, *p_new_t, *p_old_t;
-if (cur_t != p_cur_t) {
-  fprintf(stderr, "cur_t->cstring = %s\n",
-	cur_t && cur_t->cstring ? cur_t->cstring : "00");
-  p_cur_t = cur_t;
-}
-if (new_t != p_new_t) {
-  fprintf(stderr, "new_t->cstring = %s\n",
-	new_t && new_t->cstring ? new_t->cstring : "00");
-  p_new_t = new_t;
-}
-if (old_t != p_old_t) {
-  fprintf(stderr, "old_t->cstring = %s\n",
-	old_t && old_t->cstring ? old_t->cstring : "00");
-  p_old_t = old_t;
-}
 	XtAppNextEvent(tool_app, &event);
 	if (splash_onscreen) {
 	    /* if user presses key or mouse button, clear splash */

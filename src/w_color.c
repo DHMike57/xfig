@@ -1408,7 +1408,6 @@ void del_color_cell(int indx)
 	/* For TrueColor, XftColorAllocValue() does not allocate a color */
 	if (all_colors_available && tool_vclass != TrueColor)
 	    XFreeColors(tool_d, tool_cm, pixels, 1, 0);
-app_flush(); /* DEBUG */
 
 	/* now set free flag for that cell */
 	colorFree[indx] = True;
