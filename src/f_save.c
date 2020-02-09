@@ -529,7 +529,7 @@ void write_text(FILE *fp, F_text *t)
     fprintf(fp, "%d %d %d %d %d %d %d %.4f %d %d %d %d %d ",
 			O_TXT, t->type, t->color, t->depth, t->pen_style,
 			t->font, t->size, t->angle,
-			t->flags, t->ascent+t->descent, t->length,
+			t->flags, t->height, t->length,
 			t->base_x, t->base_y);
     len = strlen(t->cstring);
     for (l=0; l<len; l++) {
