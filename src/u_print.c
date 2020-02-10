@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2018 by Thomas Loimer
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -300,10 +300,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		    cur_exp_lang == LANG_PDFTEX || cur_exp_lang == LANG_PSPDF ||
 		    cur_exp_lang == LANG_PSPDFTEX ) {
 
-		n += sprintf(prcmd + n, " -n %s", name);
-
-		if (appres.correct_font_size)
-			n += sprintf(prcmd + n, " -F");
+		n += sprintf(prcmd + n, " -F -n %s", name);
 
 		if (backgrnd[0])	/* must escape the #rrggbb color spec */
 			n += sprintf(prcmd + n, " -g \\%s", backgrnd);
@@ -440,10 +437,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			if (border > 0)
 				n += sprintf(prcmd + n, " -b %d", border);
 
-			n += sprintf(prcmd + n, " -n %s", name);
-
-			if (appres.correct_font_size)
-				n += sprintf(prcmd + n, " -F");
+			n += sprintf(prcmd + n, " -F -n %s", name);
 
 			if (backgrnd[0])
 				n += sprintf(prcmd + n, " -g \\%s", backgrnd);
@@ -519,8 +513,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		if (appres.smooth_factor)
 			n += sprintf(prcmd + n, " -S %d", appres.smooth_factor);
 
-		if (appres.correct_font_size)
-			n += sprintf(prcmd + n, " -F");
+		n += sprintf(prcmd + n, " -F");
 
 		if (backgrnd[0])	/* must escape the #rrggbb color spec */
 			n += sprintf(prcmd + n, " -g \\%s", backgrnd);
