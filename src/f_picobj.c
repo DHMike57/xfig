@@ -102,19 +102,29 @@ static struct _haeders {
 
 
 /*
- * Given "name", search and return the name of an appropriate file on disk in
- * "name_on_disk". This may be "name", or "name" with a compression suffix
- * appended, e.g., "name.gz". If the file must be uncompressed, return the
- * compression command in a static string pointed to by "uncompress", otherwise
- * let "uncompress" point to the empty string. The caller must provide a buffer
- * name_on_disk[] where: sizeof name_on_disk >= strlen(name) + FILEONDISK_ADD.
+ * Given name, search and return the name of the corresponding file on disk in
+ * found. This may be "name", or "name" with a compression suffix appended,
+ * e.g., "name.gz". If the file must be uncompressed, return the compression
+ * command in a static string pointed to by "uncompress", otherwise let
+ * "uncompress" point to the empty string. If the size of the character buffer
+ * provided in found is too small to accomodate the string, return a pointer to
+ * a malloc()'ed string.
  * Return 0 on success, or FileInvalid if the file is not found.
+ * Usage:
+ *	char	found_buf[len];
+ *	char	*found = found_buf;
+ *	file_on_disk(name, &found, sizeof found_buf, &uncompress);
+ *	...
+ *	if (found != found_buf)
+ *		free(found);
  */
 static int
-file_on_disk(char *name, char *name_on_disk, const char **uncompress)
+file_on_disk(char *name, char *restrict *found, size_t len,
+		const char *restrict *uncompress)
 {
-	int i;
-	char *suffix;
+	int		i;
+	size_t		name_len;
+	char		*suffix;
 	struct stat	status;
 	static const char *filetypes[][2] = {
 		/* sorted by popularity? */
@@ -130,22 +140,34 @@ file_on_disk(char *name, char *name_on_disk, const char **uncompress)
 	const int	filetypes_len =
 				(int)(sizeof filetypes / sizeof(filetypes[1]));
 
-	strcpy(name_on_disk, name);
+	name_len = strlen(name);
+	if (name_len >= len &&
+			(*found = malloc(name_len + FILEONDISK_ADD)) == NULL) {
+		file_msg("Out of memory.");
+		return FileInvalid;
+	}
+
+	strcpy(*found, name);
 
 	if (stat(name, &status)) {
 		/* File not found. Now try, whether a file with one of
 		   the known suffices appended exists. */
-		suffix = name_on_disk + strlen(name_on_disk);
+		if (len < name_len + FILEONDISK_ADD && (*found =
+				malloc(name_len + FILEONDISK_ADD)) == NULL) {
+			file_msg("Out of memory.");
+			return FileInvalid;
+		}
+		suffix = *found + name_len;
 		for (i = 0; i < filetypes_len; ++i) {
 			strcpy(suffix, filetypes[i][0]);
-			if (!stat(name_on_disk, &status)) {
+			if (!stat(*found, &status)) {
 				*uncompress = filetypes[i][1];
 				break;
 			}
 		}
 		if (i == filetypes_len) {
 			/* no, not found */
-			*name_on_disk = '\0';
+			*found[0] = '\0';
 			return FileInvalid;
 		}
 	} else {
@@ -176,29 +198,22 @@ static int
 get_picture_status(F_pic *pic, struct _pics *pics, char *file, bool force,
 		bool *reread, bool *existing)
 {
-	char		name_on_disk_buf[256];
-	char		*name_on_disk = name_on_disk_buf;
+	char		found_buf[256];
+	char		*found = found_buf;
 	const char	*uncompress;
 	time_t		mtime;
 
 	/* get the name of the file on disk */
-	if (strlen(pics->file) + FILEONDISK_ADD > sizeof name_on_disk_buf) {
-		name_on_disk = malloc(strlen(pics->file) + FILEONDISK_ADD);
-		if (name_on_disk == NULL) {
-			file_msg("Out of memory.");
-			return -1;
-		}
-	}
-	if (file_on_disk(pics->file, name_on_disk, &uncompress)) {
-		if (name_on_disk != name_on_disk_buf)
-			free(name_on_disk);
+	if (file_on_disk(pics->file, &found, sizeof found_buf, &uncompress)) {
+		if (found != found_buf)
+			free(found);
 		return FileInvalid;
 	}
 
 	/* check the timestamp */
-	mtime = file_timestamp(name_on_disk);
-	if (name_on_disk != name_on_disk_buf)
-		free(name_on_disk);
+	mtime = file_timestamp(found);
+	if (found != found_buf)
+		free(found);
 	if (mtime < 0) {
 		/* oops, doesn't exist? */
 		file_msg("Error %s on %s", strerror(errno), file);
@@ -404,21 +419,16 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 FILE *
 open_file(char *name, int *filetype)
 {
-	char		name_on_disk_buf[256];
-	char		*name_on_disk = name_on_disk_buf;
+	char		found_buf[256];
+	char		*found = found_buf;
 	const char	*uncompress;
 	size_t		len;
 
-	len = strlen(name) + FILEONDISK_ADD;
-	if (len > sizeof name_on_disk_buf) {
-		if ((name_on_disk = malloc(len)) == NULL) {
-			file_msg("Out of memory.");
-			return NULL;
-		}
-	}
-
-	if (file_on_disk(name, name_on_disk, &uncompress))
+	if (file_on_disk(name, &found, sizeof found_buf, &uncompress)) {
+		if (found != found_buf)
+			free(found);
 		return NULL;
+	}
 
 	if (*uncompress) {
 		/* a compressed file */
@@ -426,14 +436,14 @@ open_file(char *name, int *filetype)
 		char		*command = command_buf;
 		FILE		*fp;
 
-		len = strlen(name_on_disk) + strlen(uncompress) + 2;
+		len = strlen(found) + strlen(uncompress) + 2;
 		if (len > sizeof command_buf) {
 			if ((command = malloc(len)) == NULL) {
 				file_msg("Out of memory.");
 				return NULL;
 			}
 		}
-		sprintf(command, "%s %s", uncompress, name_on_disk);
+		sprintf(command, "%s %s", uncompress, found);
 		*filetype = pipe_stream;
 		fp =  popen(command, "r");
 		if (command != command_buf)
@@ -442,7 +452,7 @@ open_file(char *name, int *filetype)
 	} else {
 		/* uncompressed file */
 		*filetype = regular_file;
-		return fopen(name_on_disk, "rb");
+		return fopen(found, "rb");
 	}
 }
 
@@ -508,21 +518,13 @@ rewind_file(FILE *fp, char *name, int *filetype)
 int
 uncompressed_file(char *plainname, char *name)
 {
-	char		name_on_disk_buf[256];
-	char		*name_on_disk = name_on_disk_buf;
+	char		found_buf[256];
+	char		*found = found_buf;
 	const char	*uncompress;
 	int		ret = -1;
 	size_t		len;
 
-	len = strlen(name) + FILEONDISK_ADD;
-	if (len > sizeof name_on_disk_buf) {
-		if ((name_on_disk = malloc(len)) == NULL) {
-			file_msg("Out of memory.");
-			return ret;
-		}
-	}
-
-	if (file_on_disk(name, name_on_disk, &uncompress))
+	if (file_on_disk(name, &found, sizeof found_buf, &uncompress))
 		goto end;
 
 	if (*uncompress) {
@@ -546,7 +548,7 @@ uncompressed_file(char *plainname, char *name)
 			goto end;
 		}
 
-		len = strlen(name_on_disk) + strlen(uncompress) + 12;
+		len = strlen(found) + strlen(uncompress) + 12;
 		if (len > sizeof command_buf) {
 			if ((command = malloc(len)) == NULL) {
 				file_msg("Out of memory.");
@@ -562,13 +564,13 @@ uncompressed_file(char *plainname, char *name)
 		 *   dup(fd);	* takes the lowest integer found, now 1 *
 		 *   close(fd);
 		 */
-		sprintf(command, "%s %s 1>&%d", uncompress, name_on_disk, fd);
+		sprintf(command, "%s %s 1>&%d", uncompress, found, fd);
 
 		if (system(command) == 0)
 			ret = 0;
 		else
 			file_msg("Could not uncompress %s, command: %s",
-					name_on_disk, command);
+					found, command);
 		close(fd);
 		if (command != command_buf)
 			free(command);
@@ -579,8 +581,8 @@ uncompressed_file(char *plainname, char *name)
 	}
 
 end:
-	if (name_on_disk != name_on_disk_buf)
-		free(name_on_disk);
+	if (found != found_buf)
+		free(found);
 	return ret;
 }
 
