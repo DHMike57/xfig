@@ -119,13 +119,14 @@ static struct _haeders {
  *		free(found);
  */
 static int
-file_on_disk(char *name, char *restrict *found, size_t len,
+file_on_disk(char *restrict name, char *restrict *found, size_t len,
 		const char *restrict *uncompress)
 {
 	int		i;
 	size_t		name_len;
 	char		*suffix;
 	struct stat	status;
+	static const char empty[] = "";
 	static const char *filetypes[][2] = {
 		/* sorted by popularity? */
 #define FILEONDISK_ADD	5	/* must be max(strlen(filetypes[0][])) + 1 */
@@ -149,6 +150,14 @@ file_on_disk(char *name, char *restrict *found, size_t len,
 
 	strcpy(*found, name);
 
+	/*
+	 * Possibilities, e.g.,
+	 *	name		name on disk		uncompress
+	 *	img.ppm		img.ppm			""
+	 *	img.ppm		img.ppm.gz		gunzip -c
+	 *	img.ppm.gz	img.ppm.gz		gunzip -c
+	 *	img.ppm.gz	img.ppm			""
+	 */
 	if (stat(name, &status)) {
 		/* File not found. Now try, whether a file with one of
 		   the known suffices appended exists. */
@@ -165,8 +174,28 @@ file_on_disk(char *name, char *restrict *found, size_t len,
 				break;
 			}
 		}
+
 		if (i == filetypes_len) {
-			/* no, not found */
+			/* Not found. Check, whether the file has one of the
+			   known compression suffices, but the uncompressed file
+			   exists on disk. */
+			char	*end = strrchr(name, '.');
+			for (i = 0; i < filetypes_len; ++i) {
+				if (!strcmp(end, filetypes[i][0])) {
+					*found + (end - name) = '\0';
+					if (!stat(*found, &status)) {
+						*uncompress = empty;
+						break;
+					} else {
+						*found[0] = '\0';
+						return FileInvalid;
+					}
+				}
+			}
+		}
+
+		if (i == filetypes_len) {
+			/* not found */
 			*found[0] = '\0';
 			return FileInvalid;
 		}
@@ -182,7 +211,7 @@ file_on_disk(char *name, char *restrict *found, size_t len,
 			}
 		}
 		if (i == filetypes_len)
-			*uncompress = "";
+			*uncompress = empty;
 	}
 
 	return 0;
