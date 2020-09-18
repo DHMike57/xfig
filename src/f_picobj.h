@@ -21,6 +21,20 @@
 
 #include "object.h"		/* F_pic */
 
+struct xfig_stream {
+	FILE	*fp;		/* NULL, if not open */
+	char	*name;		/* e.g., image.ppm */
+	char	*name_on_disk;	/* e.g., image.ppm.gz */
+	char	*content;	/* points to a regular file containing the
+				   uncompressed content of name */
+	const char *uncompress;	/* e.g., "gunzip -c", "", or NULL
+				   NULL if compression status is undecided */
+	char	name_buf[128];
+	char	name_on_disk_buf[128];
+	char	content_buf[128];
+	/* regular file, if *uncompress == '\0' */
+};
+
 #define UNCOMPRESS_ADD	12	/* see the definition of uncompressed_file() */
 extern int	uncompressed_file(char *plainname, char *name);
 extern FILE	*open_file(char *name, int *filetype);
@@ -30,3 +44,10 @@ extern void	read_picobj(F_pic *pic, char *file, int color, Boolean force,
 				Boolean *existing);
 extern void	image_size(int *size_x, int *size_y, int pixels_x, int pixels_y,
 				char unit, float res_x, float res_y);
+
+extern FILE	*open_stream(char *restrict name,
+				struct xfig_stream *restrict xf_stream);
+extern int	close_stream(struct xfig_stream *restrict xf_stream);
+extern FILE	*rewind_stream(struct xfig_stream *restrict xf_stream);
+extern int	*uncompressed_content(struct xfig_stream *restrict xf_stream);
+extern void	free_stream(struct xfig_stream *restrict xf_stream);

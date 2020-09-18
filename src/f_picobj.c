@@ -101,6 +101,29 @@ static struct _haeders {
 };
 
 
+static void
+init_xfig_stream(struct xfig_stream *restrict xf_stream)
+{
+	xf_stream->fp = NULL;
+	xf_stream->name = xf_stream->name_buf;
+	xf_stream->name_on_disk = xf_stream->name_on_disk_buf;
+	xf_stream->uncompress = NULL;
+	xf_stream->content = xf_stream->content_buf;
+	//xf_stream->name_buf[0] = '\0';
+}
+
+void
+free_stream(struct xfig_stream *restrict xf_stream)
+{
+	if (xf_stream->content != xf_stream->name_on_disk &&
+			xf_stream->content != xf_stream->content_buf)
+		free(xf_stream->content);
+	if (xf_stream->name != xf_stream->name_buf)
+		free(xf_stream->name);
+	if (xf_stream->name_on_disk != xf_stream->name_on_disk_buf)
+		free(xf_stream->name_on_disk);
+}
+
 /*
  * Given name, search and return the name of the corresponding file on disk in
  * found. This may be "name", or "name" with a compression suffix appended,
@@ -175,20 +198,20 @@ file_on_disk(char *restrict name, char *restrict *found, size_t len,
 			}
 		}
 
-		if (i == filetypes_len) {
-			/* Not found. Check, whether the file has one of the
-			   known compression suffices, but the uncompressed file
-			   exists on disk. */
-			char	*end = strrchr(name, '.');
+		/* Not found. Check, whether the file has one of the known
+		   compression suffices, but the uncompressed file
+		   exists on disk. */
+		*suffix = '\0';
+		if (i == filetypes_len && (suffix = strrchr(name, '.'))) {
 			for (i = 0; i < filetypes_len; ++i) {
-				if (!strcmp(end, filetypes[i][0])) {
-					*found + (end - name) = '\0';
+				if (!strcmp(suffix, filetypes[i][0])) {
+					*(*found + (suffix - name)) = '\0';
 					if (!stat(*found, &status)) {
 						*uncompress = empty;
 						break;
 					} else {
 						*found[0] = '\0';
-						return FileInvalid;
+						i = filetypes_len;
 					}
 				}
 			}
@@ -202,14 +225,17 @@ file_on_disk(char *restrict name, char *restrict *found, size_t len,
 	} else {
 		/* File exists. Check, whether the name has one of the known
 		   compression suffices. */
-		char	*end = name + strlen(name);
-		for (i = 0; i < filetypes_len; ++i) {
-			suffix = end - strlen(filetypes[i][0]);
-			if (!strcmp(suffix, filetypes[i][0])) {
-				*uncompress = filetypes[i][1];
-				break;
+		if ((suffix = strrchr(name, '.'))) {
+			for (i = 0; i < filetypes_len; ++i) {
+				if (!strcmp(suffix, filetypes[i][0])) {
+					*uncompress = filetypes[i][1];
+					break;
+				}
 			}
+		} else {
+			i = filetypes_len;
 		}
+
 		if (i == filetypes_len)
 			*uncompress = empty;
 	}
@@ -486,8 +512,60 @@ open_file(char *name, int *filetype)
 }
 
 /*
- * Close a file stream opened by open_file().
+ * Return a file stream, either to a pipe or to a regular file.
+ * If xf_stream->uncompress[0] == '\0', it is a regular file, otherwise a pipe.
  */
+FILE *
+open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
+{
+	size_t	len;
+	FILE	*fp;
+
+	if (xf_stream->name != name) {
+		/* strcpy (xf_stream->name, name) */
+		len = strlen(name);
+		if (len >= sizeof xf_stream->name_buf) {
+			if ((xf_stream->name = malloc(len + 1)) == NULL) {
+				file_msg("Out of memory.");
+				return NULL;
+			}
+		}
+		memcpy(xf_stream->name, name, len + 1);
+	}
+
+	if (file_on_disk(name, &xf_stream->name_on_disk,
+				sizeof xf_stream->name_on_disk_buf,
+				&xf_stream->uncompress)) {
+
+		free_stream(xf_stream);
+		return NULL;
+	}
+
+	if (*xf_stream->uncompress) {
+		/* a compressed file */
+		char	command_buf[256];
+		char	*command = command_buf;
+
+		len = strlen(xf_stream->name_on_disk) +
+					strlen(xf_stream->uncompress) + 2;
+		if (len > sizeof command_buf) {
+			if ((command = malloc(len)) == NULL) {
+				file_msg("Out of memory.");
+				return NULL;
+			}
+		}
+		sprintf(command, "%s %s",
+				xf_stream->uncompress, xf_stream->name_on_disk);
+		fp = popen(command, "r");
+		if (command != command_buf)
+			free(command);
+		return fp;
+	} else {
+		/* uncompressed file */
+		return fopen(xf_stream->name_on_disk, "rb");
+	}
+}
+
 int
 close_file(FILE *fp, int filetype)
 {
@@ -516,6 +594,30 @@ close_file(FILE *fp, int filetype)
 	return 0;
 }
 
+/*
+ * Close a file stream opened by open_file(). Do not free xf_stream.
+ */
+int
+close_stream(struct xfig_stream *restrict xf_stream)
+{
+	if (xf_stream->fp == NULL)
+		return -1;
+
+	if (xf_stream->uncompress[0] == '\0') {
+		/* a regular file */
+		return fclose(xf_stream->fp);
+	} else {
+		/* a pipe */
+		char	trash[BUFSIZ];
+		/* for a pipe, must read everything or
+		   we'll get a broken pipe message */
+		while (fread(trash, (size_t)1, (size_t)BUFSIZ, xf_stream->fp) ==
+				(size_t)BUFSIZ)
+			;
+		return pclose(xf_stream->fp);
+	}
+}
+
 FILE *
 rewind_file(FILE *fp, char *name, int *filetype)
 {
@@ -533,6 +635,24 @@ rewind_file(FILE *fp, char *name, int *filetype)
 	return NULL;
 }
 
+FILE *
+rewind_stream(struct xfig_stream *restrict xf_stream)
+{
+	if (xf_stream->fp == NULL)
+		return NULL;
+
+	if (xf_stream->uncompress[0] == '\0') {
+		/* a regular file */
+		rewind(xf_stream->fp);
+		return xf_stream->fp;
+	} else  {
+		/* a pipe */
+		(void)close_stream(xf_stream);
+		/* if, in the meantime, e.g., the file on disk
+		   was uncompressed, change the filetype. */
+		return open_stream(xf_stream->name, xf_stream);
+	}
+}
 /*
  * Return the name of a file that contains the uncompressed contents of "name"
  * in "plainname". If plainname[0] == '\0', the original file is not compressed.
@@ -612,6 +732,82 @@ uncompressed_file(char *plainname, char *name)
 end:
 	if (found != found_buf)
 		free(found);
+	return ret;
+}
+
+/*
+ * Have xf_stream->content either point to a regular file containing the
+ * uncompressed content of xf_stream->name, or to xf_stream->name_on_disk, if
+ * name_on_disk is not compressed.
+ * Use after a call to open_stream():
+ *	struct xfig_stream	xf_stream;
+ *	open_stream(name, &xf_stream);
+ *	close_stream(&xf_stream);
+ *	uncompressed_content(&xf_stream)
+ *	do_something(xf_stream->content);
+ *	free_stream(&xf_stream);
+ */
+int
+uncompressed_content(struct xfig_stream *restrict xf_stream)
+{
+	int		ret = -1;
+	int		fd;
+	size_t		len;
+	char		command_buf[256];
+	char		*command = command_buf;
+
+	if (*xf_stream->uncompress == '\0') {
+		xf_stream->content = xf_stream->name_on_disk;
+		return 0;
+	}
+
+	/* uncompress to a temporary file */
+
+	len = snprintf(xf_stream->content, sizeof xf_stream->content_buf,
+			"%s/xfigXXXXXX", TMPDIR);
+	if (len >= sizeof xf_stream->content_buf) {
+		if ((xf_stream->content = malloc(len)) == NULL) {
+			file_msg("Out of memory.");
+			return ret;
+		}
+		sprintf(xf_stream->content, "%s/xfigXXXXXX", TMPDIR);
+	}
+
+	if ((fd = mkstemp(xf_stream->content)) == -1) {
+		fd = errno;
+		file_msg("Could not open temporary file %s, error: %s",
+				xf_stream->content, strerror(fd));
+		return ret;
+	}
+
+	/*
+	 * One could already here redirect stdout to the fd of our tmp
+	 * file - but then, how to re-open stdout?
+	 *   close(1);
+	 *   dup(fd);	* takes the lowest integer found, now 1 *
+	 *   close(fd);
+	 */
+	len = snprintf(command, sizeof command_buf, "%s %s 1>&%d",
+			xf_stream->uncompress, xf_stream->name_on_disk, fd);
+	if (len >= sizeof command_buf) {
+		if ((command = malloc(len)) == NULL) {
+			file_msg("Out of memory.");
+			close(fd);
+			return ret;
+		}
+		sprintf(command, "%s %s 1>&%d", xf_stream->uncompress,
+						xf_stream->name_on_disk, fd);
+	}
+
+	if (system(command) == 0)
+		ret = 0;
+	else
+		file_msg("Could not uncompress %s, command: %s",
+				xf_stream->name_on_disk, command);
+
+	close(fd);
+	if (command != command_buf)
+		free(command);
 	return ret;
 }
 
