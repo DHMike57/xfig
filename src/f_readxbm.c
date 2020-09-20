@@ -25,6 +25,10 @@
  */
 
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +38,7 @@
 
 #include "resources.h"
 #include "object.h"
+#include "f_picobj.h"
 #include "w_setup.h"
 
 /* attempt to read a bitmap file */
@@ -48,19 +53,20 @@ ReadDataFromBitmapFile (FILE *file, unsigned int *width,
 				unsigned int *height, unsigned char **data_ret);
 
 int
-read_xbm(FILE *file, int filetype, F_pic *pic)
+read_xbm(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)filetype;
-
 	unsigned int	x, y;
 	/* make scale factor smaller for metric */
 	const double	scale =
 		(appres.INCHES ? (double)PIX_PER_INCH : 2.54*PIX_PER_CM)
 						/ DISPLAY_PIX_PER_INCH;
 
+	if (!rewind_stream(pic_stream))
+		return FileInvalid;
+
 	/* first try for a X Bitmap file format */
-	if (ReadDataFromBitmapFile(file, &x, &y, &pic->pic_cache->bitmap)
-			== BitmapSuccess) {
+	if (ReadDataFromBitmapFile(pic_stream->fp, &x, &y,
+				&pic->pic_cache->bitmap) == BitmapSuccess) {
 		pic->pic_cache->subtype = T_PIC_XBM;
 		pic->hw_ratio = (float) y / x;
 		pic->pic_cache->numcols = 0;

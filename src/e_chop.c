@@ -364,7 +364,7 @@ dice_polylines(int nr_segs, l_point_s * top_l_points, F_line * l)
 	append_point(this_x, this_y, &this_point);
 	add_line(this_line);
 	/* check for duplicate adjacent points */
-	if (True == check_poly(this_line, NULL, T_POLYLINE)) 
+	if (True == check_poly(this_line, NULL, T_POLYLINE))
 	  ++rc;
 	else delete_line(this_line);
 

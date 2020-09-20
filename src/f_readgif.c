@@ -31,6 +31,9 @@
 /* |   provided "as is" without express or implied warranty.           | */
 /* +-------------------------------------------------------------------+ */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
+#endif
 
 #include <X11/Intrinsic.h>	/* Boolean */
 #include <X11/Xlib.h>		/* True, False */
@@ -46,7 +49,7 @@
 #include "w_msgpanel.h"
 
 
-#define BUFLEN 1024
+#define BUFLEN 1024	/* FIXME: use BUFSIZ, below */
 
 
 static Boolean	ReadColorMap(FILE *fd, unsigned int number, struct Cmap *cmap);
@@ -54,10 +57,11 @@ static Boolean	DoGIFextension(FILE *fd, int label);
 static int	GetDataBlock(FILE *fd, unsigned char *buf);
 
 #define LOCALCOLORMAP		0x80
-#define	ReadOK(file,buffer,len)	(fread((void *) buffer, (size_t) len, (size_t) 1, (FILE *) file) != 0)
+#define	ReadOK(file,buffer,len)	\
+	    (fread((void *)buffer, (size_t)len, (size_t)1, (FILE *)file) != 0)
 #define BitSet(byte, bit)	(((byte) & (bit)) == (bit))
 
-#define LM_to_uint(a,b)			(((b)<<8)|(a))
+#define LM_to_uint(a,b)		(((b)<<8)|(a))
 
 struct {
 	unsigned int	Width;
@@ -83,9 +87,9 @@ struct {
 
 
 int
-read_gif(FILE *file, int filetype, F_pic *pic)
+read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	char		buf[BUFLEN],pcxname[PATH_MAX];
+	char		buf[BUFLEN], pcxname[PATH_MAX];
 	FILE		*giftopcx;
 	struct Cmap	localColorMap[MAX_COLORMAP_SIZE];
 	int		i, stat, size, fd;
@@ -93,14 +97,17 @@ read_gif(FILE *file, int filetype, F_pic *pic)
 	unsigned int	bitPixel, red, green, blue;
 	unsigned char	c;
 	char		version[4];
+	struct xfig_stream	pcx;
+
+	if (!rewind_stream(pic_stream))
+		return FileInvalid;
 
 	/* first read header to look for any transparent color extension */
-
-	if (! ReadOK(file,buf,6)) {
+	if (!ReadOK(pic_stream->fp, buf, 6)) {
 		return FileInvalid;
 	}
 
-	if (strncmp((char*)buf,"GIF",3) != 0) {
+	if (strncmp((char*)buf, "GIF", 3) != 0) {
 		return FileInvalid;
 	}
 
@@ -108,11 +115,11 @@ read_gif(FILE *file, int filetype, F_pic *pic)
 	version[3] = '\0';
 
 	if ((strcmp(version, "87a") != 0) && (strcmp(version, "89a") != 0)) {
-		file_msg("Unknown GIF version %s",version);
+		file_msg("Unknown GIF version %s", version);
 		return FileInvalid;
 	}
 
-	if (! ReadOK(file,buf,7)) {
+	if (!ReadOK(pic_stream->fp, buf, 7)) {
 		return FileInvalid;		/* failed to read screen descriptor */
 	}
 
@@ -124,14 +131,15 @@ read_gif(FILE *file, int filetype, F_pic *pic)
 	GifScreen.AspectRatio     = (unsigned int) buf[6];
 
 	if (BitSet(buf[4], LOCALCOLORMAP)) {	/* Global Colormap */
-		if (!ReadColorMap(file,GifScreen.BitPixel,GifScreen.ColorMap)) {
+		if (!ReadColorMap(pic_stream->fp, GifScreen.BitPixel,
+					GifScreen.ColorMap)) {
 			return FileInvalid;  /* error reading global colormap */
 		}
 	}
 
 	if (GifScreen.AspectRatio != 0 && GifScreen.AspectRatio != 49) {
-	    if (appres.DEBUG)
-		fprintf(stderr,"warning - non-square pixels\n");
+		if (appres.DEBUG)
+			fprintf(stderr, "warning - non-square pixels\n");
 	}
 
 	/* assume no transparent color for now */
@@ -139,7 +147,7 @@ read_gif(FILE *file, int filetype, F_pic *pic)
 
 	/* read the full header to get any transparency information */
 	for (;;) {
-		if (! ReadOK(file,&c,1)) {
+		if (!ReadOK(pic_stream->fp, &c, 1)) {
 			return FileInvalid;	/* EOF / read error on image data */
 		}
 
@@ -148,42 +156,45 @@ read_gif(FILE *file, int filetype, F_pic *pic)
 		}
 
 		if (c == '!') {			/* Extension */
-			if (! ReadOK(file,&c,1))
+			if (!ReadOK(pic_stream->fp, &c, 1))
 				file_msg("GIF read error on extension function code");
-			(void) DoGIFextension(file, c);
+			(void)DoGIFextension(pic_stream->fp, c);
 			continue;
 		}
 
-		if (c != ',') {			/* Not a valid start character */
+		if (c != ',') {			/* Not a valid start character*/
 			continue;
 		}
 
-		if (! ReadOK(file,buf,9)) {
-			return FileInvalid;	/* couldn't read left/top/width/height */
+		if (!ReadOK(pic_stream->fp, buf, 9)) {
+			/* couldn't read left/top/width/height */
+			return FileInvalid;
 		}
 
-		useGlobalColormap = ! BitSet(buf[8], LOCALCOLORMAP);
+		useGlobalColormap = !BitSet(buf[8], LOCALCOLORMAP);
 
 		bitPixel = 1<<((buf[8]&0x07)+1);
 
-		if (! useGlobalColormap) {
-		    if (!ReadColorMap(file, bitPixel, localColorMap)) {
-			file_msg("error reading local GIF colormap" );
-			return PicSuccess;
-		    }
+		if (!useGlobalColormap) {
+			if (!ReadColorMap(pic_stream->fp, bitPixel,
+						localColorMap)) {
+				file_msg("error reading local GIF colormap" );
+				return PicSuccess;
+			}
 		}
-		break;				/* image starts here, header is done */
+		break;			/* image starts here, header is done */
 	}
 
 	/* save transparent indicator */
 	pic->pic_cache->transp = Gif89.transparent;
 
-	file = rewind_file(file, pic->pic_cache->file, &filetype);
-
 	/* now call giftopnm and ppmtopcx */
 
 	/* make name for temp output file */
-	snprintf(pcxname, sizeof(pcxname), "%s/xfig-pcx.XXXXXX", TMPDIR);
+	/* FIXME: provide for too short buffer pcxname;
+	   FIXME: sanitize TMPDIR, no "'", probably in main?
+	   FIXME: try convert, gm convert */
+	snprintf(pcxname, sizeof pcxname, "%s/xfig-pcx.XXXXXX", TMPDIR);
 	if ((fd = mkstemp(pcxname)) == -1) {
 		file_msg("Cannot create temporary file\n");
 		return FileInvalid;
@@ -191,29 +202,42 @@ read_gif(FILE *file, int filetype, F_pic *pic)
 	close(fd);
 
 	/* make command to convert gif to pcx into temp file */
-	sprintf(buf, "giftopnm -quiet | ppmtopcx -quiet > %s", pcxname);
-	if ((giftopcx = popen(buf,"w" )) == 0) {
+	sprintf(buf, "giftopnm -quiet | ppmtopcx -quiet >'%s'", pcxname);
+	if ((giftopcx = popen(buf, "w")) == 0) {
 		unlink(pcxname);
 		file_msg("Cannot open pipe to giftopnm or ppmtopcx\n");
 		return FileInvalid;
 	}
-	while ((size=fread(buf, 1, BUFLEN, file)) != 0)
+
+	rewind_stream(pic_stream);
+	while ((size = fread(buf, 1, BUFLEN, pic_stream->fp)) != 0)
 		fwrite(buf, size, 1, giftopcx);
-	/* close pipe */
 	pclose(giftopcx);
 
-	if ((giftopcx = fopen(pcxname, "rb")) == NULL) {
-		unlink(pcxname);
-		file_msg("Can't open temp output file\n");
+	/*
+	 * Construct a rudimentary struct xfig_stream that can be passed to
+	 * read_pcx(). Tell read_pcx() that the FILE pointer is positioned at
+	 * the start (*name == '\0') and that it is a regular file
+	 * (*uncompress == '\0').
+	 * ATTENTION, requires knowledge of fields of struct xfig_stream.
+	 */
+	pcx.name_buf[0] = '\0';
+	pcx.name = pcx.name_buf;
+	pcx.uncompress = pcx.name_buf;
+
+	if ((pcx.fp = fopen(pcxname, "rb")) == NULL) {
+		file_msg("Cannot open temporary output file\n");
 		return FileInvalid;
 	}
+
 	/* now call read_pcx to read the pcx file */
-	stat = read_pcx(giftopcx, filetype, pic);
-	pic->pic_cache->subtype = T_PIC_GIF;
+	stat = read_pcx(pic, &pcx);
 
 	/* remove temp file */
+	fclose(pcx.fp);
 	unlink(pcxname);
 
+	pic->pic_cache->subtype = T_PIC_GIF;
 	/* now match original transparent colortable index with possibly new
 	   colortable from ppmtopcx */
 	if (pic->pic_cache->transp != TRANSP_NONE) {
@@ -226,7 +250,7 @@ read_gif(FILE *file, int filetype, F_pic *pic)
 		green = localColorMap[pic->pic_cache->transp].green;
 		blue = localColorMap[pic->pic_cache->transp].blue;
 	    }
-	    for (i=0; i<pic->pic_cache->numcols; i++) {
+	    for (i = 0; i < pic->pic_cache->numcols; ++i) {
 		if (pic->pic_cache->cmap[i].red == red &&
 		    pic->pic_cache->cmap[i].green == green &&
 		    pic->pic_cache->cmap[i].blue == blue)

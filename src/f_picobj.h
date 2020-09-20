@@ -16,11 +16,23 @@
  *
  */
 
+#ifndef F_PICOBJ_H
+#define F_PICOBJ_H
+
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"		/* restrict */
+#endif
+
 #include <stdio.h>
 #include <X11/Intrinsic.h>	/* Boolean */
 
 #include "object.h"		/* F_pic */
 
+/*
+ * The xfig_stream struct either refers to a file, or to a pipe obtained by
+ * uncompressing a compressed file. In addition, the uncompressed content
+ * may be provided.
+ */
 struct xfig_stream {
 	FILE	*fp;		/* NULL, if not open */
 	char	*name;		/* e.g., image.ppm */
@@ -35,11 +47,6 @@ struct xfig_stream {
 	/* regular file, if *uncompress == '\0' */
 };
 
-#define UNCOMPRESS_ADD	12	/* see the definition of uncompressed_file() */
-extern int	uncompressed_file(char *plainname, char *name);
-extern FILE	*open_file(char *name, int *filetype);
-extern int	close_file(FILE *fp, int filetype);
-extern FILE	*rewind_file(FILE *fp, char *name, int *filetype);
 extern void	read_picobj(F_pic *pic, char *file, int color, Boolean force,
 				Boolean *existing);
 extern void	image_size(int *size_x, int *size_y, int pixels_x, int pixels_y,
@@ -49,5 +56,7 @@ extern FILE	*open_stream(char *restrict name,
 				struct xfig_stream *restrict xf_stream);
 extern int	close_stream(struct xfig_stream *restrict xf_stream);
 extern FILE	*rewind_stream(struct xfig_stream *restrict xf_stream);
-extern int	*uncompressed_content(struct xfig_stream *restrict xf_stream);
+extern int	uncompressed_content(struct xfig_stream *restrict xf_stream);
 extern void	free_stream(struct xfig_stream *restrict xf_stream);
+
+#endif

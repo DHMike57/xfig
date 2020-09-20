@@ -48,76 +48,77 @@
 #include "w_setup.h"		/* PIX_PER_INCH, PIX_PER_CM */
 #include "w_util.h"		/* app_flush() */
 
-extern	int	read_gif(FILE *file, int filetype, F_pic *pic);
-extern	int	read_eps(char *name, int filetype, F_pic *pic);
-extern	int	read_pdf(char *name, int filetype, F_pic *pic);
-extern	int	read_ppm(FILE *file, int filetype, F_pic *pic);
+extern	int	read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream);
+extern	int	read_eps(F_pic *pic, struct xfig_stream *restrict pic_stream);
+extern	int	read_pdf(F_pic *pic, struct xfig_stream *restrict pic_stream);
+extern	int	read_ppm(F_pic *pic, struct xfig_stream *restrict pic_stream);
 #ifdef HAVE_TIFF
-extern	int	read_tif(char *name, int filetype, F_pic *pic);
+extern	int	read_tif(F_pic *pic, struct xfig_stream *restrict pic_stream);
 #endif
-extern	int	read_xbm(FILE *file, int filetype, F_pic *pic);
+extern	int	read_xbm(F_pic *pic, struct xfig_stream *restrict pic_stream);
 #ifdef HAVE_JPEG
-extern	int	read_jpg(FILE *file, int filetype, F_pic *pic);
+extern	int	read_jpg(F_pic *pic, struct xfig_stream *restrict pic_stream);
 #endif
 #ifdef HAVE_PNG
-extern	int	read_png(FILE *file, int filetype, F_pic *pic);
+extern	int	read_png(F_pic *pic, struct xfig_stream *restrict pic_stream);
 #endif
 #ifdef USE_XPM
-extern	int	read_xpm(char *name, int filetype, F_pic *pic);
+extern	int	read_xpm(F_pic *pic, struct xfig_stream *restrict pic_stream);
 #endif
 
-enum	streamtype {
-	regular_file,
-	pipe_stream
-};
 
 static struct _haeders {
 	char	*type;
 	char	*bytes;
 	int	(*readfunc)();
-	Boolean	pipeok;
 } headers[] = {
-	{"GIF",	"GIF",				read_gif,	True},
-	{"PCX", "\012\005\001",			read_pcx,	True},
-	{"EPS", "%!",				read_eps,	False},
-	{"PDF", "%PDF",				read_pdf,	False},
-	{"PPM", "P3",				read_ppm,	True},
-	{"PPM", "P6",				read_ppm,	True},
+	{"GIF",		"GIF",					read_gif},
+	{"PCX",		"\012\005\001",				read_pcx},
+	{"EPS",		"%!",					read_eps},
+	{"PDF",		"%PDF",					read_pdf},
+	{"PPM",		"P3",					read_ppm},
+	{"PPM",		"P6",					read_ppm},
 #ifdef HAVE_TIFF
-	{"TIFF", "II*\000",			read_tif,	False},
-	{"TIFF", "MM\000*",			read_tif,	False},
+	{"TIFF",	"II*\000",				read_tif},
+	{"TIFF",	"MM\000*",				read_tif},
 #endif
-	{"XBM", "#define",			read_xbm,	True},
+	{"XBM",		"#define",				read_xbm},
 #ifdef HAVE_JPEG
-	{"JPEG", "\377\330\377\340",		read_jpg,	True},
-	{"JPEG", "\377\330\377\341",		read_jpg,	True},
+	{"JPEG",	"\377\330\377\340",			read_jpg},
+	{"JPEG",	"\377\330\377\341",			read_jpg},
 #endif
 #ifdef HAVE_PNG
-	{"PNG", "\211\120\116\107\015\012\032\012",	read_png,	True},
+	{"PNG",		"\211\120\116\107\015\012\032\012",	read_png},
 #endif
 #ifdef USE_XPM
-	{"XPM", "/* XPM */",			read_xpm,	False},
+	{"XPM",		"/* XPM */",				read_xpm},
 #endif
 };
 
 
 static void
-init_xfig_stream(struct xfig_stream *restrict xf_stream)
+init_stream(struct xfig_stream *restrict xf_stream)
 {
 	xf_stream->fp = NULL;
 	xf_stream->name = xf_stream->name_buf;
 	xf_stream->name_on_disk = xf_stream->name_on_disk_buf;
 	xf_stream->uncompress = NULL;
 	xf_stream->content = xf_stream->content_buf;
-	//xf_stream->name_buf[0] = '\0';
+	*xf_stream->content = '\0';
 }
 
 void
 free_stream(struct xfig_stream *restrict xf_stream)
 {
-	if (xf_stream->content != xf_stream->name_on_disk &&
-			xf_stream->content != xf_stream->content_buf)
-		free(xf_stream->content);
+	if (xf_stream->content != xf_stream->name_on_disk) {
+		if (*xf_stream->content && unlink(xf_stream->content)) {
+			int	err = errno;
+			file_msg("Cannot remove temporary file %s\nError: %s",
+					xf_stream->content, strerror(err));
+		}
+		if (xf_stream->content != xf_stream->content_buf)
+			free(xf_stream->content);
+	}
 	if (xf_stream->name != xf_stream->name_buf)
 		free(xf_stream->name);
 	if (xf_stream->name_on_disk != xf_stream->name_on_disk_buf)
@@ -315,11 +316,11 @@ void
 read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 {
 	FILE		*fp;
-	int		type;
 	int		i;
 	char		buf[16];
 	bool		reread;
 	struct _pics	*pics, *lastpic;
+	struct xfig_stream	pic_stream;
 
 	pic->color = color;
 	/* don't touch the flipped flag - caller has already set it */
@@ -387,13 +388,16 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 	if (appres.DEBUG)
 		fprintf(stderr, "Reading file %s\n", file);
 
+	init_stream(&pic_stream);
+
 	/* open the file and read a few bytes of the header to see what it is */
-	if ((fp = open_file(file, &type)) == NULL) {
-		file_msg("No such picture file: %s",file);
+	if ((fp = open_stream(file, &pic_stream)) == NULL) {
+		file_msg("No such picture file: %s", file);
+		free_stream(&pic_stream);
 		return;
 	}
 	/* get the modified time and save it */
-	pics->time_stamp = file_timestamp(file);
+	pics->time_stamp = file_timestamp(pic_stream.name_on_disk);
 
 	/* read some bytes from the file */
 	for (i = 0; i < (int)sizeof buf; ++i) {
@@ -413,102 +417,21 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 		file_msg("%s: Unknown image format", file);
 		put_msg("Reading Picture object file...Failed");
 		app_flush();
+		close_stream(&pic_stream);
+		free_stream(&pic_stream);
 		return;
 	}
 
-	if (headers[i].pipeok) {
-		rewind_file(fp, file, &type);
-		if ((*headers[i].readfunc)(fp,type,pic) == FileInvalid) {
-			file_msg("%s: Bad %s format", file, headers[i].type);
-		}
-		close_file(fp, type);
+	/* readfunc() expect an open file stream, positioned not at the
+	   start of the stream. The stream remains open after returning. */
+	if (headers[i].readfunc(pic, &pic_stream) != PicSuccess) {
+		file_msg("%s: Bad %s format", file, headers[i].type);
 	} else {
-		/* routines that cannot take a pipe get the name of the file, if
-		   it is not compressed, or the name of a temporary file. */
-		char	plainname_buf[64];
-		char	*plainname = plainname_buf;
-		char	*name;
-
-		close_file(fp, type);
-		if (strlen(TMPDIR) + UNCOMPRESS_ADD > sizeof plainname_buf) {
-			plainname = malloc(strlen(TMPDIR) + UNCOMPRESS_ADD);
-			if (plainname == NULL) {
-				file_msg("Out of memory, could not read picture"
-						" file %s.", file);
-				return;
-			}
-		}
-		if (uncompressed_file(plainname, file)) {
-			file_msg("Could not uncompress picture file %s.", file);
-			if (*plainname) {
-				unlink(plainname);
-				if (plainname != plainname_buf)
-					free(plainname);
-			}
-			return;
-		}
-
-		if (*plainname)
-			name = plainname;
-		else
-			name = file;
-
-		if ((*headers[i].readfunc)(name, type, pic) == FileInvalid)
-			file_msg("%s: Bad %s format", file, headers[i].type);
-		if (*plainname) {
-			unlink(plainname);
-			if (plainname != plainname_buf)
-				free(plainname);
-		}
+		put_msg("Reading Picture object file...Done");
 	}
 
-	put_msg("Reading Picture object file...Done");
-	return;
-}
-
-/*
- * Open the file "name". Return an open file stream. Also, return an opaque data
- * object, which later must be passed to close_file(). (Well, opaque, an
- * integer in the range between 0 and 1.)
- */
-FILE *
-open_file(char *name, int *filetype)
-{
-	char		found_buf[256];
-	char		*found = found_buf;
-	const char	*uncompress;
-	size_t		len;
-
-	if (file_on_disk(name, &found, sizeof found_buf, &uncompress)) {
-		if (found != found_buf)
-			free(found);
-		return NULL;
-	}
-
-	if (*uncompress) {
-		/* a compressed file */
-		char		command_buf[256];
-		char		*command = command_buf;
-		FILE		*fp;
-
-		len = strlen(found) + strlen(uncompress) + 2;
-		if (len > sizeof command_buf) {
-			if ((command = malloc(len)) == NULL) {
-				file_msg("Out of memory.");
-				return NULL;
-			}
-		}
-		sprintf(command, "%s %s", uncompress, found);
-		*filetype = pipe_stream;
-		fp =  popen(command, "r");
-		if (command != command_buf)
-			free(command);
-		return fp;
-	} else {
-		/* uncompressed file */
-		*filetype = regular_file;
-		return fopen(found, "rb");
-	}
+	close_stream(&pic_stream);
+	free_stream(&pic_stream);
 }
 
 /*
@@ -519,7 +442,6 @@ FILE *
 open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 {
 	size_t	len;
-	FILE	*fp;
 
 	if (xf_stream->name != name) {
 		/* strcpy (xf_stream->name, name) */
@@ -556,42 +478,15 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 		}
 		sprintf(command, "%s %s",
 				xf_stream->uncompress, xf_stream->name_on_disk);
-		fp = popen(command, "r");
+		xf_stream->fp = popen(command, "r");
 		if (command != command_buf)
 			free(command);
-		return fp;
 	} else {
 		/* uncompressed file */
-		return fopen(xf_stream->name_on_disk, "rb");
+		xf_stream->fp = fopen(xf_stream->name_on_disk, "rb");
 	}
-}
 
-int
-close_file(FILE *fp, int filetype)
-{
-	if (fp == NULL)
-		return -1;
-
-	if (filetype == regular_file) {
-		if (fclose(fp) != 0) {
-			file_msg("Error closing picture file: %s",
-					strerror(errno));
-			return -1;
-		}
-	} else if (filetype == pipe_stream) {
-		char	trash[BUFSIZ];
-		/* for a pipe, must read everything or
-		   we'll get a broken pipe message */
-		while (fread(trash, (size_t)1, (size_t)BUFSIZ, fp) ==
-				(size_t)BUFSIZ)
-			;
-		return pclose(fp);
-	} else {
-		file_msg("Error on line %d in %s. Please report this error.",
-				__LINE__, __FILE__);
-		return -1;
-	}
-	return 0;
+	return xf_stream->fp;
 }
 
 /*
@@ -619,23 +514,6 @@ close_stream(struct xfig_stream *restrict xf_stream)
 }
 
 FILE *
-rewind_file(FILE *fp, char *name, int *filetype)
-{
-	if (*filetype == regular_file) {
-		rewind(fp);
-		return fp;
-	} else if (*filetype == pipe_stream) {
-		close_file(fp, *filetype);
-		/* if, in the meantime, e.g., the file on disk
-		   was uncompressed, change the filetype. */
-		return open_file(name, filetype);
-	}
-	file_msg("Internal error, line %d in %s. Please report this error.",
-				__LINE__, __FILE__);
-	return NULL;
-}
-
-FILE *
 rewind_stream(struct xfig_stream *restrict xf_stream)
 {
 	if (xf_stream->fp == NULL)
@@ -652,87 +530,6 @@ rewind_stream(struct xfig_stream *restrict xf_stream)
 		   was uncompressed, change the filetype. */
 		return open_stream(xf_stream->name, xf_stream);
 	}
-}
-/*
- * Return the name of a file that contains the uncompressed contents of "name"
- * in "plainname". If plainname[0] == '\0', the original file is not compressed.
- * The length of plainname[] must be at least strlen(TMPDIR) + UNCOMPRESS_ADD;
- * To use uncompressed_file(), do
- *   uncompressed_file(plainname, name);
- *   .. * do something *
- *   if (*plainname)
- *        unlink(plainname);
- * Return 0 on success, -1 on failure.
- */
-int
-uncompressed_file(char *plainname, char *name)
-{
-	char		found_buf[256];
-	char		*found = found_buf;
-	const char	*uncompress;
-	int		ret = -1;
-	size_t		len;
-
-	if (file_on_disk(name, &found, sizeof found_buf, &uncompress))
-		goto end;
-
-	if (*uncompress) {
-		/* uncompress to a temporary file */
-		char		command_buf[256];
-		char		*command = command_buf;
-		int		fd;
-
-		/* UNCOMPRESS_ADD = sizeof("/xfigXXXXXX") */
-		if (sprintf(plainname, "%s/xfigXXXXXX", TMPDIR) < 0) {
-			fd = errno;
-			file_msg("Could not write temporary file, error: %s",
-					strerror(fd));
-			goto end;
-		}
-
-		if ((fd = mkstemp(plainname)) == -1) {
-			fd = errno;
-			file_msg("Could not open temporary file %s, error: %s",
-					plainname, strerror(fd));
-			goto end;
-		}
-
-		len = strlen(found) + strlen(uncompress) + 12;
-		if (len > sizeof command_buf) {
-			if ((command = malloc(len)) == NULL) {
-				file_msg("Out of memory.");
-				close(fd);
-				goto end;
-			}
-		}
-
-		/*
-		 * One could already here redirect stdout to the fd of our tmp
-		 * file - but then, how to re-open stdout?
-		 *   close(1);
-		 *   dup(fd);	* takes the lowest integer found, now 1 *
-		 *   close(fd);
-		 */
-		sprintf(command, "%s %s 1>&%d", uncompress, found, fd);
-
-		if (system(command) == 0)
-			ret = 0;
-		else
-			file_msg("Could not uncompress %s, command: %s",
-					found, command);
-		close(fd);
-		if (command != command_buf)
-			free(command);
-	} else {
-		/* uncompressed file */
-		*plainname = '\0';
-		ret = 0;
-	}
-
-end:
-	if (found != found_buf)
-		free(found);
-	return ret;
 }
 
 /*

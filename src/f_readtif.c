@@ -17,8 +17,8 @@
  */
 
 
-#if defined HAVE_CONFIG_H && !defined VERSION
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
 #endif
 
 #include <stdarg.h>
@@ -45,21 +45,23 @@ error_handler(const char *module, const char *fmt, va_list ap)
 		  FileInvalid (-2) : invalid file
 */
 int
-read_tif(char *filename, int filetype, F_pic *pic)
+read_tif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)		filetype;
 	int		stat = FileInvalid;
 	uint16		unit;
 	uint32		w, h;
 	float		res_x, res_y;
 	TIFF		*tif;
 
+	if (uncompressed_content(pic_stream))
+		return FileInvalid;
+
 	/* re-direct TIFF errors to file_msg() */
 	(void)TIFFSetErrorHandler(error_handler);
 	/* ignore warnings */
 	(void)TIFFSetWarningHandler(NULL);
 
-	if ((tif = TIFFOpen(filename, "r")) == NULL)
+	if ((tif = TIFFOpen(pic_stream->content, "r")) == NULL)
 		return stat;
 
 	/* read image width and height */

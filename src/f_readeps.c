@@ -21,7 +21,7 @@
  * Copyright (c) 1992 by Brian Boyter
  */
 
-#if defined HAVE_CONFIG_H && !defined VERSION
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
@@ -37,6 +37,7 @@
 
 #include "resources.h"
 #include "object.h"
+#include "f_picobj.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"
@@ -117,12 +118,14 @@ correct_boundingbox(int *llx, int *lly, int *urx, int *ury, const char *box) {
  * Return gs_bitmap().
  */
 int
-read_pdf(char *name, int filetype, F_pic *pic)
+read_pdf(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)	filetype;
 	char	*savelocale;
 	/* prime with an invalid bounding box */
 	int	llx = 0, lly = 0, urx = 0, ury = 0;
+
+	if (uncompressed_content(pic_stream))
+		return FileInvalid;
 
 	/*
 	 * Find the /MediaBox. First, do a simple text-scan for "/MediaBox",
@@ -138,8 +141,8 @@ read_pdf(char *name, int filetype, F_pic *pic)
 	else
 		savelocale = "";
 #endif
-	if (scan_mediabox(name, &llx, &lly, &urx, &ury))
-		gs_mediabox(name, &llx, &lly, &urx, &ury);
+	if (scan_mediabox(pic_stream->content, &llx, &lly, &urx, &ury))
+		gs_mediabox(pic_stream->content, &llx, &lly, &urx, &ury);
 #ifdef I18N
 	if (*savelocale)
 		setlocale(LC_NUMERIC, savelocale);
@@ -161,7 +164,10 @@ read_pdf(char *name, int filetype, F_pic *pic)
 	pic->pic_cache->numcols = 0;
 
 	/* create the bitmap */
-	return gs_bitmap(name, pic, llx, lly, urx, ury);
+	if (gs_bitmap(pic_stream->content, pic, llx, lly, urx, ury))
+		return FileInvalid;
+	else
+		return PicSuccess;
 }
 
 
@@ -171,10 +177,8 @@ read_pdf(char *name, int filetype, F_pic *pic)
  *			FileInvalid (-2): invalid file
  */
 int
-read_eps(char *name, int filetype, F_pic *pic)
+read_eps(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)		filetype;
-
 	bool		bitmapz;
 	bool		flag;
 	int		llx, lly, urx, ury;
@@ -185,9 +189,8 @@ read_eps(char *name, int filetype, F_pic *pic)
 	unsigned char	*last;
 	char		buf[300];
 	size_t		nbitmap;
-	FILE		*file;
 
-	if ((file = fopen(name, "rb")) == NULL)
+	if (!rewind_stream(pic_stream))
 		return FileInvalid;
 
 	/* invalid bounding box */
@@ -195,7 +198,7 @@ read_eps(char *name, int filetype, F_pic *pic)
 
 	/* scan for the bounding box */
 	nested = 0;
-	while (fgets(buf, sizeof buf, file) != NULL) {
+	while (fgets(buf, sizeof buf, pic_stream->fp) != NULL) {
 		if (!nested && !strncmp(buf, "%%BoundingBox:", 14)) {
 			/* make sure doesn't say (atend) */
 			if (!strstr(buf, "(atend)")) {
@@ -207,7 +210,6 @@ read_eps(char *name, int filetype, F_pic *pic)
 							/* name might be a
 							   temporary file */
 							pic->pic_cache->file);
-					fclose(file);
 					return FileInvalid;
 				}
 				llx = floor(rllx);
@@ -244,7 +246,7 @@ read_eps(char *name, int filetype, F_pic *pic)
 
 	/* look for a preview bitmap */
 	bitmapz = False;
-	while (fgets(buf, sizeof buf, file) != NULL) {
+	while (fgets(buf, sizeof buf, pic_stream->fp) != NULL) {
 		lower(buf);
 		if (!strncmp(buf, "%%beginpreview", 14)) {
 			sscanf(buf, "%%%%beginpreview: %d %d %*d",
@@ -258,15 +260,14 @@ read_eps(char *name, int filetype, F_pic *pic)
 	}
 
 	/* use ghostscript, if a preview bitmap does not exist */
-	if (!bitmapz && !gs_bitmap(name, pic, llx, lly, urx, ury)) {
-		fclose(file);
+	if (!bitmapz && !uncompressed_content(pic_stream) && !gs_bitmap(
+				pic_stream->content, pic, llx, lly, urx, ury)) {
 		return PicSuccess;
 	}
 
 	if (!bitmapz) {
 		file_msg("EPS object read OK, but no preview bitmap "
 				"found/generated");
-		fclose(file);
 		return PicSuccess;
 	}
 
@@ -274,7 +275,6 @@ read_eps(char *name, int filetype, F_pic *pic)
 	if (pic->pic_cache->bit_size.x <= 0 || pic->pic_cache->bit_size.y <=0) {
 		file_msg("Strange bounding-box/bitmap-size error, no bitmap "
 				"found/generated");
-		fclose(file);
 		return FileInvalid;
 	}
 
@@ -285,7 +285,6 @@ read_eps(char *name, int filetype, F_pic *pic)
 	if (pic->pic_cache->bitmap == NULL) {
 		file_msg("Could not allocate %zd bytes of memory for "
 				"EPS bitmap", nbitmap);
-		fclose(file);
 		return PicSuccess;
 	}
 
@@ -296,7 +295,7 @@ read_eps(char *name, int filetype, F_pic *pic)
 	memset(mp, 0, nbitmap);
 	last = pic->pic_cache->bitmap + nbitmap;
 	flag = true;
-	while (fgets(buf, sizeof buf, file) != NULL && mp < last) {
+	while (fgets(buf, sizeof buf, pic_stream->fp) != NULL && mp < last) {
 		lower(buf);
 		if (!strncmp(buf, "%%endpreview", 12) ||
 				!strncmp(buf, "%%endimage", 10))
@@ -322,7 +321,6 @@ read_eps(char *name, int filetype, F_pic *pic)
 			cp++;
 		}
 	}
-	fclose(file);
 	return PicSuccess;
 }
 

@@ -28,6 +28,7 @@
 
 #include "resources.h"
 #include "object.h"
+#include "f_picobj.h"
 #include "f_util.h"
 #include "w_msgpanel.h"
 
@@ -291,10 +292,8 @@ read_ascii_max_ppm(FILE *file, unsigned char *restrict dst, unsigned int maxval,
 }
 
 int
-read_ppm(FILE *file, int filetype, F_pic *pic)
+read_ppm(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)filetype;
-
 	int		c;
 	int		magic;
 	int		stat = FileInvalid;
@@ -303,31 +302,37 @@ read_ppm(FILE *file, int filetype, F_pic *pic)
 	unsigned int	rowbytes;
 	unsigned int	maxval = 0u;
 
+	if (!rewind_stream(pic_stream))
+		return FileInvalid;
+
 	/* get the magic number */
-	if ((c = fgetc(file)) == EOF || c != 'P')
+	if ((c = fgetc(pic_stream->fp)) == EOF || c != 'P')
 		return stat;
-	if ((magic = fgetc(file)) == EOF || (magic != '6' && magic != '3'))
-		return stat;
-
-	if (skip_comments_whitespace(file))
+	if ((magic = fgetc(pic_stream->fp)) == EOF ||
+			(magic != '6' && magic != '3'))
 		return stat;
 
-	if (fscanf(file, "%u", &width) != 1)
+	if (skip_comments_whitespace(pic_stream->fp))
 		return stat;
 
-	if (skip_comments_whitespace(file))
+	if (fscanf(pic_stream->fp, "%u", &width) != 1)
 		return stat;
 
-	if (fscanf(file, "%u", &height) != 1 || width == 0u || height == 0u)
+	if (skip_comments_whitespace(pic_stream->fp))
 		return stat;
 
-	if (skip_comments_whitespace(file))
+	if (fscanf(pic_stream->fp, "%u", &height) != 1 ||
+			width == 0u || height == 0u)
 		return stat;
 
-	if (fscanf(file, "%u", &maxval) != 1 || maxval > 65535u || maxval == 0u)
+	if (skip_comments_whitespace(pic_stream->fp))
 		return stat;
 
-	if (skip_comments_whitespace(file))
+	if (fscanf(pic_stream->fp, "%u", &maxval) != 1 ||
+			maxval > 65535u || maxval == 0u)
+		return stat;
+
+	if (skip_comments_whitespace(pic_stream->fp))
 		return stat;
 
 	if (width > INT16_MAX || height > INT16_MAX) { /* large enough */
@@ -347,25 +352,27 @@ read_ppm(FILE *file, int filetype, F_pic *pic)
 			fprintf(stderr, "Reading raw PPM file, %u x %u, max. "
 					"value %u.\n", width, height, maxval);
 		if (maxval < 256u) {
-			stat = read_8bitppm(file, pic->pic_cache->bitmap,
-					width, height);
+			stat = read_8bitppm(pic_stream->fp,
+					pic->pic_cache->bitmap, width, height);
 			if (maxval != 255u)
 				scale_to_255(pic->pic_cache->bitmap, maxval,
 						rowbytes, height);
 		} else {
-			stat = read_16bitppm(file, pic->pic_cache->bitmap,
-						maxval, width, height);
+			stat = read_16bitppm(pic_stream->fp,
+					pic->pic_cache->bitmap, maxval,
+					width, height);
 		}
 	} else { /* magic == '3' */
 		if (appres.DEBUG)
 			fprintf(stderr, "Reading ascii PPM file, %u x %u, max. "
 					"value %u.\n", width, height, maxval);
 		if (maxval == 255u)
-			stat = read_asciippm(file, pic->pic_cache->bitmap,
-					width, height);
+			stat = read_asciippm(pic_stream->fp,
+					pic->pic_cache->bitmap, width, height);
 		else
-			stat = read_ascii_max_ppm(file, pic->pic_cache->bitmap,
-					maxval, width, height);
+			stat = read_ascii_max_ppm(pic_stream->fp,
+					pic->pic_cache->bitmap, maxval,
+					width, height);
 	}
 
 	if (stat != PicSuccess) {

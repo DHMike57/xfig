@@ -58,7 +58,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "config.h"	/* restrict */
 #endif
 
 #include <setjmp.h>
@@ -85,11 +85,12 @@ static int	read_JPEG_file(FILE *file, F_pic *pic);
 		  FileInvalid (-2) : invalid file
 */
 int
-read_jpg(FILE *file, int filetype, F_pic *pic)
+read_jpg(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)filetype;
+	if (!rewind_stream(pic_stream))
+		return FileInvalid;
 
-	if (read_JPEG_file(file, pic)) {
+	if (read_JPEG_file(pic_stream->fp, pic)) {
 		return FileInvalid;
 	}
 	if (tool_cells <= 2 || appres.monochrome)

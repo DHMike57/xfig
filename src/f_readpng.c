@@ -16,6 +16,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
+#endif
+
 #include <png.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,16 +28,15 @@
 
 #include "resources.h"
 #include "object.h"
+#include "f_picobj.h"
 #include "f_util.h"		/* map_to_mono(), map_to_palette() */
 #include "w_msgpanel.h"		/* file_msg() */
 #include "w_setup.h"		/* PIX_PER_INCH */
 
 
 int
-read_png(FILE *file, int filetype, F_pic *pic)
+read_png(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)filetype;
-
 	int		bpp;
 	int		bit_depth, color_type, interlace_type;
 	int		compression_type, filter_type;
@@ -47,6 +50,9 @@ read_png(FILE *file, int filetype, F_pic *pic)
 	png_infop	info_ptr;
 	png_color_16	background;
 	png_colorp	palette;
+
+	if (!rewind_stream(pic_stream))
+		return FileInvalid;
 
 	/* read the png file here */
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
@@ -80,7 +86,7 @@ read_png(FILE *file, int filetype, F_pic *pic)
 	}
 
 	/* set up the input code */
-	png_init_io(png_ptr, file);
+	png_init_io(png_ptr, pic_stream->fp);
 
 	/* now read the file info */
 	png_read_info(png_ptr, info_ptr);
@@ -122,7 +128,7 @@ read_png(FILE *file, int filetype, F_pic *pic)
 		/* png_set_packswap(png_ptr); */
 
 		row_bytes = (w + 7) / 8;
-		bpp = 1; 	/* not true, but good enough for the overflow
+		bpp = 1;	/* not true, but good enough for the overflow
 				   checking further below */
 
 		pic->pic_cache->numcols = 0;

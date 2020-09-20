@@ -22,6 +22,11 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
+#endif
+
+#include "f_readpcx.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +36,7 @@
 #include "resources.h"
 #include "object.h"
 #include "f_util.h"
+#include "f_picobj.h"
 #include "w_setup.h"
 
 /* This is based on: */
@@ -68,16 +74,21 @@ static int	_read_pcx(FILE *pcxfile, F_pic *pic);
 
 
 int
-read_pcx(FILE *file, int filetype, F_pic *pic)
+read_pcx(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	(void)filetype;
-
 	/* make scale factor smaller for metric */
 	const double scale =
 		(appres.INCHES ? (double)PIX_PER_INCH : 2.54*PIX_PER_CM)
 		/ DISPLAY_PIX_PER_INCH;
 
-	if (_read_pcx(file,pic) != PicSuccess)
+	if (*pic_stream->name) {
+		/* called directly from read_picobj() */
+		if (!rewind_stream(pic_stream))
+			return FileInvalid;
+	}
+	/* otherwise, called from read_gif(), rewind not necessary */
+
+	if (_read_pcx(pic_stream->fp, pic) != PicSuccess)
 		return FileInvalid;
 
 	pic->pixmap = None;
@@ -219,9 +230,14 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 
 	    case 8:
 		/* 8-bit */
-		/* FIXME: pcxfile might refer to a pipe, fseek() would return
-		   ESPIPE */
-		fseek(pcxfile, -768L, SEEK_END);/* locate colormap in last 768 bytes of file */
+		/*
+		 * The palette at the end is separated by a byte, value 12, from
+		 * the image data. For a regular file, one could also
+		 * fseek(pcxfile, -768L, SEEK_END)
+		 */
+		i = fgetc(pcxfile);
+		while (i != 12)
+			i = fgetc(pcxfile);
 		for (x=0; x<256; x++) {
 		    pic->pic_cache->cmap[x].red   = fgetc(pcxfile);
 		    pic->pic_cache->cmap[x].green = fgetc(pcxfile);
