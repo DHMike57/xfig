@@ -49,9 +49,6 @@
 #include "w_msgpanel.h"
 
 
-#define BUFLEN 1024	/* FIXME: use BUFSIZ, below */
-
-
 static Boolean	ReadColorMap(FILE *fd, unsigned int number, struct Cmap *cmap);
 static Boolean	DoGIFextension(FILE *fd, int label);
 static int	GetDataBlock(FILE *fd, unsigned char *buf);
@@ -89,14 +86,18 @@ struct {
 int
 read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-	char		buf[BUFLEN], pcxname[PATH_MAX];
+	char		buf[BUFSIZ];
+	char		pcxname_buf[128];
+	char		*pcxname = pcxname_buf;
+	char *const	pcxname_fmt = "%s/xfig-pcx.XXXXXX";
 	FILE		*giftopcx;
 	struct Cmap	localColorMap[MAX_COLORMAP_SIZE];
-	int		i, stat, size, fd;
+	int		i, stat, fd;
 	int		useGlobalColormap;
 	unsigned int	bitPixel, red, green, blue;
 	unsigned char	c;
 	char		version[4];
+	size_t		size;
 	struct xfig_stream	pcx;
 
 	if (!rewind_stream(pic_stream))
@@ -120,7 +121,7 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	}
 
 	if (!ReadOK(pic_stream->fp, buf, 7)) {
-		return FileInvalid;		/* failed to read screen descriptor */
+		return FileInvalid;	/* failed to read screen descriptor */
 	}
 
 	GifScreen.Width           = LM_to_uint(buf[0],buf[1]);
@@ -143,7 +144,7 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	}
 
 	/* assume no transparent color for now */
-	Gif89.transparent =  TRANSP_NONE;
+	Gif89.transparent = TRANSP_NONE;
 
 	/* read the full header to get any transparency information */
 	for (;;) {
@@ -191,12 +192,25 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	/* now call giftopnm and ppmtopcx */
 
 	/* make name for temp output file */
-	/* FIXME: provide for too short buffer pcxname;
-	   FIXME: sanitize TMPDIR, no "'", probably in main?
+	/* FIXME: sanitize TMPDIR, no "'", probably in main?
 	   FIXME: try convert, gm convert */
-	snprintf(pcxname, sizeof pcxname, "%s/xfig-pcx.XXXXXX", TMPDIR);
+	size = sizeof pcxname_fmt + strlen(TMPDIR) - 2;
+	if (size > sizeof pcxname_buf && (pcxname = malloc(size)) == NULL) {
+		file_msg("Out of memory.");
+		return FileInvalid;
+	}
+	if (sprintf(pcxname, pcxname_fmt, TMPDIR) < 0) {
+		i = errno;
+		file_msg("Unable to write temporary file path to string");
+		file_msg("error: %s", strerror(i));
+		if (pcxname != pcxname_buf)
+			free(pcxname);
+		return FileInvalid;
+	}
 	if ((fd = mkstemp(pcxname)) == -1) {
 		file_msg("Cannot create temporary file\n");
+		if (pcxname != pcxname_buf)
+			free(pcxname);
 		return FileInvalid;
 	}
 	close(fd);
@@ -210,7 +224,7 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	}
 
 	rewind_stream(pic_stream);
-	while ((size = fread(buf, 1, BUFLEN, pic_stream->fp)) != 0)
+	while ((size = fread(buf, 1, sizeof buf, pic_stream->fp)) != 0)
 		fwrite(buf, size, 1, giftopcx);
 	pclose(giftopcx);
 
@@ -236,6 +250,8 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	/* remove temp file */
 	fclose(pcx.fp);
 	unlink(pcxname);
+	if (pcxname != pcxname_buf)
+		free(pcxname);
 
 	pic->pic_cache->subtype = T_PIC_GIF;
 	/* now match original transparent colortable index with possibly new
