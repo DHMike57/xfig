@@ -549,9 +549,11 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 {
 	int		ret = -1;
 	int		fd;
-	size_t		len;
+	int		len;
 	char		command_buf[256];
 	char		*command = command_buf;
+	char *const	command_fmt = "%s '%s' 1>&%d";
+	char *const	content_fmt = "%s/xfigXXXXXX";
 
 	if (*xf_stream->uncompress == '\0') {
 		xf_stream->content = xf_stream->name_on_disk;
@@ -561,13 +563,19 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 	/* uncompress to a temporary file */
 
 	len = snprintf(xf_stream->content, sizeof xf_stream->content_buf,
-			"%s/xfigXXXXXX", TMPDIR);
-	if (len >= sizeof xf_stream->content_buf) {
-		if ((xf_stream->content = malloc(len)) == NULL) {
+			content_fmt, TMPDIR);
+	if (len >= (int)(sizeof xf_stream->content_buf)) {
+		if ((xf_stream->content = malloc(len + 1)) == NULL) {
 			file_msg("Out of memory.");
 			return ret;
 		}
-		sprintf(xf_stream->content, "%s/xfigXXXXXX", TMPDIR);
+		len = sprintf(xf_stream->content, content_fmt, TMPDIR);
+	}
+	if (len < 0) {
+		len = errno;
+		file_msg("Unable to write temporary file path to string.");
+		file_msg("Error: %s", strerror(len));
+		return ret;
 	}
 
 	if ((fd = mkstemp(xf_stream->content)) == -1) {
@@ -584,16 +592,22 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 	 *   dup(fd);	* takes the lowest integer found, now 1 *
 	 *   close(fd);
 	 */
-	len = snprintf(command, sizeof command_buf, "%s %s 1>&%d",
+	len = snprintf(command, sizeof command_buf, command_fmt,
 			xf_stream->uncompress, xf_stream->name_on_disk, fd);
-	if (len >= sizeof command_buf) {
-		if ((command = malloc(len)) == NULL) {
+	if (len >= (int)(sizeof command_buf)) {
+		if ((command = malloc(len + 1)) == NULL) {
 			file_msg("Out of memory.");
 			close(fd);
 			return ret;
 		}
-		sprintf(command, "%s %s 1>&%d", xf_stream->uncompress,
+		len = sprintf(command, command_fmt, xf_stream->uncompress,
 						xf_stream->name_on_disk, fd);
+	}
+	if (len < 0) {
+		len = errno;
+		file_msg("Unable to write command string.");
+		file_msg("Error: %s", strerror(len));
+		return ret;
 	}
 
 	if (system(command) == 0)
