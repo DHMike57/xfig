@@ -12,6 +12,8 @@ USER INTERFACE CHANGES:
 	  sideways could only be achieved by moving the wheel sideways.
 
 NEW FEATURES:
+	o To display gif image files, either giftopnm and ppmtopcx from the
+	  netpbm package, imagemagick, or graphicsmagick must be installed.
 	o Obey the resolution given in embedded png, tiff and jpeg image files.
 	o Embedded image files are displayed in full color, not reduced to
 	  a maximum of 256 colors.

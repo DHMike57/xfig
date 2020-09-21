@@ -37,6 +37,7 @@
 
 #include <X11/Intrinsic.h>	/* Boolean */
 #include <X11/Xlib.h>		/* True, False */
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>		/* mkstemp */
 #include <string.h>		/* mkstemp */
@@ -87,9 +88,11 @@ int
 read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
 	char		buf[BUFSIZ];
+	const char 	pcxname_fmt[] = "%s/xfig-pcx.XXXXXX";
 	char		pcxname_buf[128];
 	char		*pcxname = pcxname_buf;
-	char *const	pcxname_fmt = "%s/xfig-pcx.XXXXXX";
+	char		*cmd_fmt;
+	char		*cmd = buf;
 	FILE		*giftopcx;
 	struct Cmap	localColorMap[MAX_COLORMAP_SIZE];
 	int		i, stat, fd;
@@ -102,6 +105,20 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 
 	if (!rewind_stream(pic_stream))
 		return FileInvalid;
+
+	/* command string to convert gif to pcx */
+	if (!system("{ giftopnm -version && ppmtopcx -version; } 2>/dev/null"))
+		cmd_fmt = "giftopnm -quiet | ppmtopcx -quiet >'%s'";
+	else if (!system("convert -version >/dev/null"))
+		cmd_fmt = "convert - pcx:'%s'";
+	else if (!system("gm -version >/dev/null"))
+		cmd_fmt = "gm convert - pcx:'%s'";
+	else {
+		file_msg("Cannot read gif files.");
+		file_msg("To read gif files, install either the netpbm, or the "
+				"imagemagick, or the graphicsmagick package.");
+		return FileInvalid;
+	}
 
 	/* first read header to look for any transparent color extension */
 	if (!ReadOK(pic_stream->fp, buf, 6)) {
@@ -192,8 +209,6 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	/* now call giftopnm and ppmtopcx */
 
 	/* make name for temp output file */
-	/* FIXME: sanitize TMPDIR, no "'", probably in main?
-	   FIXME: try convert, gm convert */
 	size = sizeof pcxname_fmt + strlen(TMPDIR) - 2;
 	if (size > sizeof pcxname_buf && (pcxname = malloc(size)) == NULL) {
 		file_msg("Out of memory.");
@@ -202,7 +217,7 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	if (sprintf(pcxname, pcxname_fmt, TMPDIR) < 0) {
 		i = errno;
 		file_msg("Unable to write temporary file path to string");
-		file_msg("error: %s", strerror(i));
+		file_msg("Error: %s", strerror(i));
 		if (pcxname != pcxname_buf)
 			free(pcxname);
 		return FileInvalid;
@@ -215,18 +230,59 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	}
 	close(fd);
 
-	/* make command to convert gif to pcx into temp file */
-	sprintf(buf, "giftopnm -quiet | ppmtopcx -quiet >'%s'", pcxname);
-	if ((giftopcx = popen(buf, "w")) == 0) {
+	/* make command to convert gif to pcx */
+	size += strlen(cmd_fmt) - 2;	/* from above, size == sizeof pcxname */
+	if (size > sizeof buf && (cmd = malloc(size)) == NULL) {
+		file_msg("Out of memory.");
 		unlink(pcxname);
-		file_msg("Cannot open pipe to giftopnm or ppmtopcx\n");
+		if (pcxname != pcxname_buf)
+			free(pcxname);
+		return FileInvalid;
+	}
+	if (sprintf(cmd, cmd_fmt, pcxname) < 0) {
+		i = errno;
+		file_msg("Cannot write command to convert gif to pcx.");
+		file_msg("Error: %s", strerror(i));
+		unlink(pcxname);
+		if (pcxname != pcxname_buf)
+			free(pcxname);
 		return FileInvalid;
 	}
 
+	giftopcx = popen(cmd, "w");
+	if (giftopcx == NULL) {
+		i = errno;
+		file_msg("Cannot open pipe to convert gif to pcx\n");
+		file_msg("Command: %s", cmd);
+		file_msg("Error: %s", strerror(i));
+		if (cmd != buf)
+			free(cmd);
+		unlink(pcxname);
+		if (pcxname != pcxname_buf)
+			free(pcxname);
+		return FileInvalid;
+	}
+
+	/* write the temporary pcx file */
 	rewind_stream(pic_stream);
 	while ((size = fread(buf, 1, sizeof buf, pic_stream->fp)) != 0)
 		fwrite(buf, size, 1, giftopcx);
-	pclose(giftopcx);
+
+	if (pclose(giftopcx)) {
+		i = errno; 
+		file_msg("Cannot convert gif to pcx\n");
+		file_msg("Command: %s", cmd);
+		file_msg("Error: %s", strerror(i));
+		if (cmd != buf)
+			free(cmd);
+		unlink(pcxname);
+		if (pcxname != pcxname_buf)
+			free(pcxname);
+		return FileInvalid;
+	}
+
+	if (cmd != buf)
+		free(cmd);
 
 	/*
 	 * Construct a rudimentary struct xfig_stream that can be passed to
@@ -241,6 +297,10 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 
 	if ((pcx.fp = fopen(pcxname, "rb")) == NULL) {
 		file_msg("Cannot open temporary output file\n");
+		perror("Error");
+		unlink(pcxname);
+		if (pcxname != pcxname_buf)
+			free(pcxname);
 		return FileInvalid;
 	}
 
