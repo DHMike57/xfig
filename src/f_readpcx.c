@@ -117,9 +117,8 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	unsigned char	*pal;
 	struct pcxhed	 header;
 	int		 count, cnt;
-	long		 bytemax,bytesdone;
 	byte		 inbyte;
-	int		 real_bpp;		/* how many bpp file really is */
+	int		 real_bpp;  /* how many bits per pixel file really is */
 
 	pic->pic_cache->bitmap=NULL;
 
@@ -150,7 +149,13 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	  case 8:
 	    switch(header.nplanes) {
 	      case 1: real_bpp=8; break;
-	      case 3: real_bpp=24; bytepp = 3; break;
+	      case 3: real_bpp=24;
+		      if (tool_vclass == TrueColor && image_bpp == 4 &&
+				      !appres.monochrome)
+			      bytepp = 4;
+		      else
+			      bytepp = 3;
+		      break;
 	    }
 	    break;
 	  }
@@ -169,17 +174,12 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	    return FileInvalid;
 
 	x=0; y=0;
-	bytemax=w*h;
-	if (real_bpp==1 || real_bpp==4)
-	    bytemax=(1<<30);	/* we use a 'y<h' test instead for these files */
-
+					/* why (h+2) ? */
 	if ((pic->pic_cache->bitmap=malloc(w*(h+2)*bytepp))==NULL)
 	    return FileInvalid;
 
-	/* need this if more than one bitplane */
-	memset(pic->pic_cache->bitmap,0,w*h*bytepp);
-
-	bytesdone=0;
+	/* need this if more than one bitplane, and also if one bitplane */
+	memset(pic->pic_cache->bitmap, 0, w * h * bytepp);
 
 	/* start reading image */
 	for (yy=0; yy<h; yy++) {
@@ -193,14 +193,12 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	    if ((inbyte & 0xC0) != 0xC0) {
 	      dispbyte(pic->pic_cache->bitmap,&x,&y,inbyte,w,h,real_bpp,
 		byteline,&plane,&pmask);
-	      bytesdone++;
 	    } else {
 	      cnt = inbyte & 0x3F;
 	      inbyte = fgetc(pcxfile);
 	      for (count=0; count<cnt; count++)
 		dispbyte(pic->pic_cache->bitmap,&x,&y,inbyte,w,h,real_bpp,
 			byteline,&plane,&pmask);
-	      bytesdone += cnt;
 	    }
 	  }
 	}
@@ -210,6 +208,8 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 
 	/* read palette */
 	switch(real_bpp) {
+	    unsigned char	*src;
+	    unsigned char	*dst;
 	    case 1:
 		pic->pic_cache->cmap[0].red = pic->pic_cache->cmap[0].green = pic->pic_cache->cmap[0].blue = 0;
 		pic->pic_cache->cmap[1].red = pic->pic_cache->cmap[1].green = pic->pic_cache->cmap[1].blue = 255;
@@ -257,10 +257,25 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 		break;
 
 	    case 24:
-		/* no palette, must use neural net to reduce to 256 colors with palette */
-		/* FIXME no need to use palette, if TrueColor */
-		if (!map_to_palette(pic))
-		    return FileInvalid;		/* out of memory or something */
+		/* no palette ...*/
+		if (tool_vclass == TrueColor && image_bpp == 4 &&
+				!appres.monochrome) {
+			/* ...expand BGR to BGRA */
+			src = pic->pic_cache->bitmap + w * h * 3;
+			dst = pic->pic_cache->bitmap + w * h * 4 - 1;
+			while (src > pic->pic_cache->bitmap + 2) {
+				*(--dst) = *(--src);
+				*(--dst) = *(--src);
+				*(--dst) = *(--src);
+				--dst;
+			}
+			pic->pic_cache->numcols = -1;
+		} else {
+			/* ...or use neural net to reduce to 256 colors
+			   with palette */
+			if (!map_to_palette(pic))
+				return FileInvalid;
+		}
 		break;
 	}
 	return PicSuccess;
