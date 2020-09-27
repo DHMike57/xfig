@@ -16,6 +16,10 @@
  *
  */
 
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"		/* restrict */
+#endif
+
 #include "f_picobj.h"	/* struct xfig_stream */
 
 extern int	read_pcx(F_pic *pic, struct xfig_stream *restrict pic_stream);
