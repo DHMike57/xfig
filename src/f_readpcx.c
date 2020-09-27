@@ -210,17 +210,13 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	switch(real_bpp) {
 	    unsigned char	*src;
 	    unsigned char	*dst;
-	    case 1:
-		pic->pic_cache->cmap[0].red = pic->pic_cache->cmap[0].green = pic->pic_cache->cmap[0].blue = 0;
-		pic->pic_cache->cmap[1].red = pic->pic_cache->cmap[1].green = pic->pic_cache->cmap[1].blue = 255;
-		pic->pic_cache->numcols = 2;
-		break;
 
+	    case 1:
 	    case 2:
 	    case 3:
 	    case 4:
-		/* 2-,3-, and 4-bit, palette is embedded in header */
-		pic->pic_cache->numcols = (1<<real_bpp);
+		/* 1 to 4 bit, palette is embedded in header */
+		pic->pic_cache->numcols = 1 << real_bpp;
 		for (x=0; x < pic->pic_cache->numcols; x++) {
 		    pic->pic_cache->cmap[x].red   = header.pal16[x*3  ];
 		    pic->pic_cache->cmap[x].green = header.pal16[x*3+1];
