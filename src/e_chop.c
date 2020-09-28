@@ -466,9 +466,10 @@ chop_polyline(F_line * l, int x, int y)
       beep();
       return -1;
     }
-    for (p = l->points, nr_verts = 0; p != NULL; p = p->next)
+    nr_verts = 0;
+    for (p = l->points; p != NULL; p = p->next)
       ++nr_verts;		/* just counting */
-    nr_segs = nr_verts - 1;
+    nr_segs = nr_verts > 0 ? nr_verts - 1 : 0;
 
     if ((top_l_points = malloc(nr_segs * sizeof(l_point_s))) == NULL) {
       put_msg("Not enough memory - cannot crop.");
