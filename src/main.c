@@ -675,10 +675,20 @@ main(int argc, char **argv)
     update_figs = False;
 
     /* get the TMPDIR environment variable for temporary files */
-    if ((TMPDIR = getenv("XFIGTMPDIR"))==NULL) {
-		if ((TMPDIR = getenv("TMPDIR")) == NULL)
-			TMPDIR = "/tmp";
+    if (((TMPDIR = getenv("XFIGTMPDIR")) && !access(TMPDIR, W_OK | X_OK)) ||
+		(TMPDIR = getenv("TMPDIR") && !access(TMPDIR, W_OK | X_OK))) {
+	if (strchr(TMPDIR, '\'')) {
+		fprintf(stderr, "Cannot use a temporary directory with an "
+			"apostrophe (') in its name: %s.\nPlease set the "
+			"environment variables XFIGTMPDIR or TMPDIR to a\n"
+			"different location.\n", TMPDIR);
+		exit(-1);
 	}
+    } else {
+	TMPDIR = P_tmpdir;
+	/* if this is not writable and accessible, fail later, at a time
+	   when a temporary file is needed. */
+    }
 
     /* ratio of Fig units to display resolution (80ppi) */
     /* might also be needed when updating a figure */
