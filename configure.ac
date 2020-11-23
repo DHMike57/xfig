@@ -191,8 +191,6 @@ AM_CONDITIONAL([ALLOW_MULTIPLE_DEFINITION],
 
 # Checks for library functions.
 AC_FUNC_FORK
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
 dnl AC_FUNC_STRTOD
 # The setlocale seems to be broken, grep HAVE_SETLOCALE, setlocale
 AC_CHECK_FUNCS_ONCE([getcwd setlocale strerror])
