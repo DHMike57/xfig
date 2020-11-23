@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <html>
 <head>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=EUC-JP">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 <title>Panning, Zooming, Rulers and Units</title>
 <link rev="made" href="mailto:VEF00200@nifty.ne.jp">
 </head>
@@ -10,200 +10,200 @@
 <a href="contents.html"><img src="../images/xfig-title.png"
   alt="XFIG Users Manual" border=0></a>
 
-<h1>���������롢�����ࡢ�롼�顢�ڤ�ñ��</h1>
+<h1>スクロール、ズーム、ルーラ、及び単位</h1>
 
 <ul>
-<li><a href="#scroll">�����Х��Υ���������</a>
+<li><a href="#scroll">キャンバスのスクロール</a>
   <ul>
-  <li><a href="#rulers">�롼�顼 (����)</a>
-  <li><a href="#pan-by-key">�������ˤ�륹��������</a>
-  <li><a href="#pan-to-origin">�����ؤΰ�ư</a>
-  <li><a href="#neg-coord">��κ�ɸ</a>
+  <li><a href="#rulers">ルーラー (目盛)</a>
+  <li><a href="#pan-by-key">キー操作によるスクロール</a>
+  <li><a href="#pan-to-origin">原点への移動</a>
+  <li><a href="#neg-coord">負の座標</a>
   </ul>
-<li><a href="#zooming">������</a>
+<li><a href="#zooming">ズーム</a>
   <ul>
-  <li><a href="#zoom-fit">�����Х��˹�碌��������</a>
-  <li><a href="#zoom-in">���� (Zoom in)</a>
-  <li><a href="#zoom-out">�̾� (Zoom out)</a>
-  <li><a href="#unzoom">������β�� (Unzoom)</a>
+  <li><a href="#zoom-fit">キャンバスに合わせたズーム</a>
+  <li><a href="#zoom-in">拡大 (Zoom in)</a>
+  <li><a href="#zoom-out">縮小 (Zoom out)</a>
+  <li><a href="#unzoom">ズームの解除 (Unzoom)</a>
   </ul>
-<li><a href="#units">ñ��</a>
+<li><a href="#units">単位</a>
   <ul>
-  <li><a href="#unit-box">UNIT �ܥå���</a>
-  <li><a href="#set-unit">��ˡ��ñ�̤�����</a>
+  <li><a href="#unit-box">UNIT ボックス</a>
+  <li><a href="#set-unit">寸法の単位の設定</a>
   </ul>
 </ul>
 
 <p><hr>
 
-<h2><a name="scroll">�����Х��Υ���������</a></h2>
+<h2><a name="scroll">キャンバスのスクロール</a></h2>
 
-<h3><a name="rulers">�롼�顼 (����)</a></h3>
+<h3><a name="rulers">ルーラー (目盛)</a></h3>
 
 <blockquote>
   <img src="../images/ruler.png" alt="[Ruler]">
 </blockquote>
 <p>
-�롼�顼�ϥ����Х��ξ塢�ڤӱ�
-(<a href="drawing.html">����⡼�ɡ��ѥͥ�</a>����¦�ˤ�����ˤϺ�)
-���֤���Ƥ��ꡢ
-<a href="#unit-box">UNIT �ܥå���</a> �����ꤵ��Ƥ���ñ��
-(inch���⤷���� cm) �Ǥ��������դ����Ƥ��ޤ���
-�̾���ξ�ˤϥ�������ΰ��֤򼨤����ѷ��Υޡ�������ɽ������ޤ���
-�롼�顼�ϡ������Х������ƤΥ���������ʤɤΤ�����Ѥ��뤳�Ȥ�Ǥ��ޤ���
+ルーラーはキャンバスの上、及び右
+(<a href="drawing.html">描画モード・パネル</a>が右側にある場合には左)
+に置かれており、
+<a href="#unit-box">UNIT ボックス</a> で設定されている単位
+(inch、もしくは cm) での目盛が付けられています。
+通常、この上にはカーソルの位置を示す三角形のマーカーも表示されます。
+ルーラーは、キャンバスの内容のスクロールなどのために用いることもできます。
 <p>
-�����Х��򥹥������뤹��ˤϡ�
-�롼�顼�ξ�ǥޥ����ܥ���2 (`Drag') �򲡤���
-���Τޤ޺������⤷���Ͼ岼�˥���������ư�����ޤ���
-���������ư���˱����ƥ롼�顼����ư����
-�ޥ����ܥ����Υ���ȥ����Х������Ƥ���ư�������ޤ���
-�������� SHIFT �����򲡤������֤ǹԤʤ��ȡ�
-����������ư��������Υ��5�ܤε�Υ�Υ��������뤬�Ԥʤ��ޤ���
+キャンバスをスクロールするには、
+ルーラーの上でマウスボタン2 (`Drag') を押し、
+そのまま左右、もしくは上下にカーソルを移動させます。
+カーソルの動きに応じてルーラーが移動し、
+マウスボタンを離すとキャンバスの内容が移動させられます。
+この操作を SHIFT キーを押した状態で行なうと、
+カーソルを移動させた距離の5倍の距離のスクロールが行なわれます。
 <p>
-�롼�顼��ޥ����ܥ���1 (`Pan Left'���⤷���� `Pan Up')��
-�⤷���ϥޥ����ܥ���3 (`Pan Right'���⤷���� `Pan Down') �ǥ���å�����ȡ�
-�����Х������Ƥ����ꤵ�줿������ 1/2 inch
-(ñ�̤Ȥ��� cm �����򤵤�Ƥ�����ˤ� 1cm)
-�Ťĥ��������뤷�ޤ���
-���������� SHIFT �����򲡤������֤ǹԤʤ��ȡ�
-������������̤�5�ܤˤʤ�ޤ���
+ルーラーをマウスボタン1 (`Pan Left'、もしくは `Pan Up')、
+もしくはマウスボタン3 (`Pan Right'、もしくは `Pan Down') でクリックすると、
+キャンバスの内容が指定された方向に 1/2 inch
+(単位として cm が選択されている場合には 1cm)
+づつスクロールします。
+それらの操作を SHIFT キーを押した状態で行なうと、
+スクロールの量が5倍になります。
 <p>
 <img src="../images/pict-new.png" alt="New">
-<b>xfig</b> ��<a href="installation.html#wheelmouse">�ۥ����롦�ޥ��������ݡ���</a>
-��ͭ���Ȥ��ƥ���ѥ��뤵��Ƥ��ꡢ���ĥۥ����롦�ޥ�����ȤäƤ���ʤ�С�
-�����Х���ǥۥ������󤹤��Ȥˤ�äƤ⥭���Х���岼�˥��������뤵�����ޤ���
+<b>xfig</b> が<a href="installation.html#wheelmouse">ホイール・マウス・サポート</a>
+を有効としてコンパイルされており、かつホイール・マウスを使っているならば、
+キャンバス上でホイールを回すことによってもキャンバスを上下にスクロールさせられます。
 
-<h3><a name="pan-by-key">�������ˤ�륹��������</a></h3>
+<h3><a name="pan-by-key">キー操作によるスクロール</a></h3>
 
-�����Х��Υ���������ϡ�
-�ޥ������������뤬�����Х���ˤ������
-���������塢�ڤӲ�����������򲡤����Ȥˤ�äƹԤʤ����Ȥ�Ǥ��ޤ���
-���������� SHIFT �����򲡤������֤ǹԤʤ��ȡ�
-������������̤�5�ܤˤʤ�ޤ���
+キャンバスのスクロールは、
+マウス・カーソルがキャンバス上にある時に
+左、右、上、及び下の矢印キーを押すことによって行なうこともできます。
+これらの操作を SHIFT キーを押した状態で行なうと、
+スクロールの量が5倍になります。
 <p>
-����ϡ�<a href="#rulers">�롼�顼</a>��ޥ����ܥ���1��
-�⤷����3�ǥ���å����뤳�Ȥˤ�äƹԤʤ����Ȥ�Ǥ��ޤ���
+これは、<a href="#rulers">ルーラー</a>をマウスボタン1、
+もしくは3でクリックすることによって行なうこともできます。
 
-<h3><a name="pan-to-origin">�����ؤΰ�ư</a></h3>
+<h3><a name="pan-to-origin">原点への移動</a></h3>
 
-<a href="#unit-box">UNIT �ܥå���</a> ��
-�ޥ����ܥ���1 (`Pan to Origin') �ǥ���å����뤫��
-���뤤�� Control �����򲡤������֤�
-�����Х��ξ�ǥޥ����ܥ���2 (`Pan to Origin') �򥯥�å�����ȡ�
-�����Х��ϸ��������ޤ���
-<a href="main_menus.html#view-menu">View ��˥塼</a> ����
-<i>Pan to origin</i> �����򤷤Ƥ⡢Ʊ�����̤������ޤ���
+<a href="#unit-box">UNIT ボックス</a> を
+マウスボタン1 (`Pan to Origin') でクリックするか、
+あるいは Control キーを押した状態で
+キャンバスの上でマウスボタン2 (`Pan to Origin') をクリックすると、
+キャンバスは原点に戻ります。
+<a href="main_menus.html#view-menu">View メニュー</a> から
+<i>Pan to origin</i> を選択しても、同じ効果が得られます。
 
-<h3><a name="neg-coord">��κ�ɸ</a></h3>
+<h3><a name="neg-coord">負の座標</a></h3>
 
-�ǥե���ȤǤϡ���κ�ɸ�ޤǥ���������Ǥ���褦�ˤʤäƤ��ޤ���
+デフォルトでは、負の座標までスクロールできるようになっています。
 <p>
-����ϡ�
-<a href="options.html#com-modes"><tt>-dont_allow_neg_coords</tt> ���ץ����</a>��
-<a href="options.html#res-modes"><tt>allow_neg_coords</tt> �꥽����</a>��
-���뤤�� <a href="global_settings.html">Global Settings �ѥͥ�</a>
-������Ƕػߤ��뤳�Ȥ��Ǥ��ޤ���
+これは、
+<a href="options.html#com-modes"><tt>-dont_allow_neg_coords</tt> オプション</a>、
+<a href="options.html#res-modes"><tt>allow_neg_coords</tt> リソース</a>、
+あるいは <a href="global_settings.html">Global Settings パネル</a>
+の設定で禁止することができます。
 
 <p><hr>
 
-<h2><a name="zooming">������</a></h2>
+<h2><a name="zooming">ズーム</a></h2>
 
 <img src="../images/zoom-button.png" align="right" border=1 alt="">
-�����Х��γ���/�̾��ϡ�<a href="attributes.html">°���ѥͥ�</a>��
-<a href="attributes.html#zoom-scale">Zoom Scale</a> ��
-����Ψ�����ꤹ�뤳�Ȥˤ�äƹԤʤ����Ȥ��Ǥ��ޤ���
-�����Ǥϡ������̾������᤯�Ԥʤ�����Τ����Ĥ��ζ�ƻ���������ޤ���
+キャンバスの拡大/縮小は、<a href="attributes.html">属性パネル</a>の
+<a href="attributes.html#zoom-scale">Zoom Scale</a> で
+拡大率を設定することによって行なうことができます。
+ここでは、拡大や縮小を素早く行なうためのいくつかの近道を説明します。
 
-<h3><a name="zoom-fit">�����Х��˹�碌��������</a></h3>
+<h3><a name="zoom-fit">キャンバスに合わせたズーム</a></h3>
 
 <ul>
-<li>�����Τ������Х���ɽ�������褦�˥����ह�뤿��ˤϡ�
-<a href="main_menus.html#view-menu">View ��˥塼</a>����
-<i>Zoom to Fit canvas</i> �����򤹤뤫��
-��������졼�� <tt>Ctrl-Z</tt> ����Ѥ��ޤ���
+<li>図全体がキャンバスに表示されるようにズームするためには、
+<a href="main_menus.html#view-menu">View メニュー</a>から
+<i>Zoom to Fit canvas</i> を選択するか、
+アクセラレータ <tt>Ctrl-Z</tt> を使用します。
 
 <p>
-<li><a href="attributes.html#zoom-scale">Zoom ����������</a> ��
-<i>Fit to canvas</i> �ܥ���⡢�����Ʊ����ǽ������ޤ���
+<li><a href="attributes.html#zoom-scale">Zoom ダイアログ</a> の
+<i>Fit to canvas</i> ボタンも、これと同じ機能を持ちます。
 </ul>
 
-<h3><a name="zoom-in">���� (Zoom in)</a></h3>
+<h3><a name="zoom-in">拡大 (Zoom in)</a></h3>
 
 <ul>
-<li><a href="attributes.html">°���ѥͥ�</a>��
-<a href="attributes.html#zoom-scale">Zoom Scale</a> ��
-�ޥ����ܥ���3 (`Inc/Next') �ǥ���å�����
+<li><a href="attributes.html">属性パネル</a>の
+<a href="attributes.html#zoom-scale">Zoom Scale</a> を
+マウスボタン3 (`Inc/Next') でクリックする
 
 <p>
-<li><a href="main_menus.html#view-menu">View ��˥塼</a>����
-<i>Zoom in</i> �����򤹤뤫��
-��������졼�� <tt>Shift-Z</tt> ���Ѥ���
+<li><a href="main_menus.html#view-menu">View メニュー</a>から
+<i>Zoom in</i> を選択するか、
+アクセラレータ <tt>Shift-Z</tt> を用いる
 
 <p>
-<li>�����Х���ǡ�
-CONTROL �����򲡤������֤ǥޥ����ܥ���1 (`zoom area') �򥯥�å����뤳�Ȥˤ�ä�
-���礷�����ΰ��1�ĤγѤ���ꤷ��
-���ˤ����гѤǥޥ����ܥ���1 (`final point') �򲡤����Ȥˤ�ꡢ
-���礷�����ΰ����ꤹ��
+<li>キャンバス上で、
+CONTROL キーを押した状態でマウスボタン1 (`zoom area') をクリックすることによって
+拡大したい領域の1つの角を指定し、
+次にその対角でマウスボタン1 (`final point') を押すことにより、
+拡大したい領域を指定する
 
 <p>
 <li><img src="../images/pict-new.png" alt="New">
-<b>xfig</b> ��<a href="installation.html#wheelmouse">�ۥ����롦�ޥ��������ݡ���</a>
-��ͭ���Ȥ��ƥ���ѥ��뤵��Ƥ��ꡢ���ĥۥ����롦�ޥ�����ȤäƤ���ʤ�С�
-�����Х���γ��礷�������� CONTROL �����򲡤������֤ǥۥ�����򲼤˲�
+<b>xfig</b> が<a href="installation.html#wheelmouse">ホイール・マウス・サポート</a>
+を有効としてコンパイルされており、かつホイール・マウスを使っているならば、
+キャンバス上の拡大したい点で CONTROL キーを押した状態でホイールを下に回す
 </ul>
 
-<h3><a name="zoom-out">�̾� (Zoom out)</a></h3>
+<h3><a name="zoom-out">縮小 (Zoom out)</a></h3>
 
 <ul>
-<li><a href="attributes.html">°���ѥͥ�</a>��
-<a href="attributes.html#zoom-scale">Zoom Scale</a> ��
-�ޥ����ܥ���2 (`Dec/Prev') �ǥ���å�����
+<li><a href="attributes.html">属性パネル</a>の
+<a href="attributes.html#zoom-scale">Zoom Scale</a> を
+マウスボタン2 (`Dec/Prev') でクリックする
 
 <p>
-<li><a href="main_menus.html#view-menu">View ��˥塼</a>����
-<i>Zoom out</i> �����򤹤뤫��
-��������졼�� <tt>Z</tt> ���Ѥ���
+<li><a href="main_menus.html#view-menu">View メニュー</a>から
+<i>Zoom out</i> を選択するか、
+アクセラレータ <tt>Z</tt> を用いる
 
 <p>
 <li><img src="../images/pict-new.png" alt="New">
-<b>xfig</b> ��<a href="installation.html#wheelmouse">�ۥ����롦�ޥ��������ݡ���</a>
-��ͭ���Ȥ��ƥ���ѥ��뤵��Ƥ��ꡢ���ĥۥ����롦�ޥ�����ȤäƤ���ʤ�С�
-�����Х���� CONTROL �����򲡤������֤ǥۥ�������˲�
+<b>xfig</b> が<a href="installation.html#wheelmouse">ホイール・マウス・サポート</a>
+を有効としてコンパイルされており、かつホイール・マウスを使っているならば、
+キャンバス上で CONTROL キーを押した状態でホイールを上に回す
 </ul>
 
-<h3><a name="unzoom">������β�� (Unzoom)</a></h3>
+<h3><a name="unzoom">ズームの解除 (Unzoom)</a></h3>
 
 <ul>
-<li><a href="main_menus.html#view-menu">View ��˥塼</a>����
-<i>Unzoom</i> �����򤹤�
+<li><a href="main_menus.html#view-menu">View メニュー</a>から
+<i>Unzoom</i> を選択する
 
 <p>
-<li>�����Х���ǡ�
-CONTROL �����򲡤������֤ǥޥ����ܥ���3 (`Unzoom') �򥯥�å�����
+<li>キャンバス上で、
+CONTROL キーを押した状態でマウスボタン3 (`Unzoom') をクリックする
 </ul>
 
 <p><hr>
 
-<h2><a name="units">ñ��</a></h2>
+<h2><a name="units">単位</a></h2>
 
-<h3><a name="unit-box">UNIT �ܥå���</a></h3>
+<h3><a name="unit-box">UNIT ボックス</a></h3>
 
 <blockquote>
   <img src="../images/unit-box.png" alt="[Unit Box]">
 </blockquote>
 <p>
-UNIT �ܥå�����
-�ĤȲ��Υ롼�顼 (����) �θ����ˤ���ܥå����Ǥ���
-�����ˤϡ��롼�顼��ñ�� (<i>in</i>���⤷���� <i>cm</i>)��
-�ڤ�����Υ������� (�㤨�� 1cm=3km) ��ɽ������Ƥ��ޤ���
+UNIT ボックスは
+縦と横のルーラー (目盛) の交点にあるボックスです。
+ここには、ルーラーの単位 (<i>in</i>、もしくは <i>cm</i>)、
+及び描画のスケール (例えば 1cm=3km) が表示されています。
 
-<h3><a name="set-unit">��ˡ��ñ�̤�����</a></h3>
+<h3><a name="set-unit">寸法の単位の設定</a></h3>
 
-UNIT �ܥå�����ޥ����ܥ���3 (`Set Units/Scale')�ǥ���å����뤫��
-<a href="main_menus.html#edit-menu">Edit ��˥塼</a> ����
-<i>Set unit...</i> �����򤹤�ȡ�
-ñ�̤�����Τ���Υݥåץ��åס��ѥͥ뤬������ޤ���
+UNIT ボックスをマウスボタン3 (`Set Units/Scale')でクリックするか、
+<a href="main_menus.html#edit-menu">Edit メニュー</a> から
+<i>Set unit...</i> を選択すると、
+単位の設定のためのポップアップ・パネルが開かれます。
 <p>
 <blockquote>
   <img src="../images/unit-panel.png" alt="[Unit Panel]">
@@ -212,51 +212,51 @@ UNIT �ܥå�����ޥ����ܥ���3 (`Set Units/Scale')�ǥ���å����뤫��
 <p>
 <dl>
 <dt><i>Ruler units</i>
-<dd><a href="#rulers">�롼�顼</a>���������Ѥ���ñ�̤�
-<i>Imperial (fraction)</i>��<i>Imperial (decimal)</i>��
-�⤷���� <i>Metric (cm)</i> �Τ����줫�����ꤷ�ޤ���
-<i>Imperial (fraction)</i> �����򤵤�Ƥ����硢
-Ĺ���� ``3-5/8 in'' �� ``3 ft 7-1/2 in'' �Τ褦��ʬ����ɽ������ޤ���
-¾�Τ�Τ����򤵤�Ƥ�����ˤϡ�
-``3.3242 cm'' �Τ褦�˾������ͤ�ɽ������ޤ���
+<dd><a href="#rulers">ルーラー</a>の目盛に用いる単位を、
+<i>Imperial (fraction)</i>、<i>Imperial (decimal)</i>、
+もしくは <i>Metric (cm)</i> のいずれかに設定します。
+<i>Imperial (fraction)</i> が選択されている場合、
+長さは ``3-5/8 in'' や ``3 ft 7-1/2 in'' のように分数で表示されます。
+他のものが選択されている場合には、
+``3.3242 cm'' のように小数の値が表示されます。
 
 <p>
 <dt><i>Figure units</i>
-<dd>���֥������Ȥ����Ϥ��Խ��˺ݤ��Ƥ���ˡ��ɽ�����Ѥ���ñ�̤�
-<i>Ruler units</i>���ڤ� <i>User defined</i> �������򤷤ޤ���
-������ <i>User defined</i> �����򤷤����ˤϡ�
-<i>Unit Name</i> �����ꤵ�줿ʸ������ˡ��ñ�̤Ȥ���ɽ�������褦�ˤʤ�ޤ���
+<dd>オブジェクトの入力や編集に際しての寸法の表示に用いる単位を、
+<i>Ruler units</i>、及び <i>User defined</i> から選択します。
+ここで <i>User defined</i> を選択した場合には、
+<i>Unit Name</i> で設定された文字列が寸法の単位として表示されるようになります。
 
 <p>
 <dt><i>Unit name</i>
-<dd>ñ�̤�̾�Τ����ꤷ�ޤ���
-����ϡ�<i>Figure units</i> �� <i>User defined</i> ��
-���򤵤�Ƥ�����˸¤ä�ͭ���Ȥʤ�ޤ���
+<dd>単位の名称を設定します。
+これは、<i>Figure units</i> で <i>User defined</i> が
+選択されている場合に限って有効となります。
 
 <p>
 <dt><i>Figure scale</i>
-<dd>���֥������Ȥ����Ϥ��Խ��˺ݤ�����ˡ��ɽ������ݤ��Ѥ�����Ψ��
-<i>Unity</i>���ڤ� <i>User defined</i> �������򤷤ޤ���
-������ <i>User defined</i> �����򤷤����ˤϡ�
-��ˡ��ɽ���˺ݤ��� <i>Scale factor</i> �����ꤵ�줿��Ψ���ݤ����ޤ���
+<dd>オブジェクトの入力や編集に際して寸法を表示する際に用いる倍率を、
+<i>Unity</i>、及び <i>User defined</i> から選択します。
+ここで <i>User defined</i> を選択した場合には、
+寸法の表示に際して <i>Scale factor</i> で設定された倍率が掛けられます。
 
 <p>
 <dt><i>Scale factor</i>
-<dd>��ˡ��ɽ���˺ݤ��Ƴݤ���٤���Ψ�����ꤷ�ޤ���
-����ϡ�<i>Figure scale</i> �� <i>User defined</i> ��
-���򤵤�Ƥ�����˸¤ä�ͭ���Ȥʤ�ޤ���
+<dd>寸法の表示に際して掛けるべき倍率を設定します。
+これは、<i>Figure scale</i> で <i>User defined</i> が
+選択されている場合に限って有効となります。
 </dl>
 <p>
-��Υѥͥ����Ǥϡ�<i>Ruler units</i> �� <i>Imperial (fraction)</i>��
-<i>Figure units</i> �� <i>User defined</i>��
-<i>Unit name</i> �� ``<tt>ft</tt>'' (feet)��
-<i>Figure scale</i> �� <i>User defined</i>��
-<i>Scale factor</i> �� 2.0 �Ǥ���Τǡ�
-����˺ݤ��Ƥ� 1 inch �� 2 ft �ȡ�
-1-7/16 inch �� 2 ft 10-1/2 in ����𤵤�ޤ���
+上のパネルの例では、<i>Ruler units</i> は <i>Imperial (fraction)</i>、
+<i>Figure units</i> は <i>User defined</i>、
+<i>Unit name</i> は ``<tt>ft</tt>'' (feet)、
+<i>Figure scale</i> は <i>User defined</i>、
+<i>Scale factor</i> は 2.0 であるので、
+描画に際しては 1 inch は 2 ft と、
+1-7/16 inch は 2 ft 10-1/2 in と報告されます。
 <p>
-�����ν���ͤϡ�<a href="options.html">���ޥ�ɹԥ��ץ����</a>��
-<a href="options.html#resources">�꥽����</a>�ˤ�äƻ��ꤹ�뤳�Ȥ��Ǥ��ޤ���
+これらの初期値は、<a href="options.html">コマンド行オプション</a>や
+<a href="options.html#resources">リソース</a>によって指定することができます。
 
 <p>
 <hr>
