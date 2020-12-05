@@ -676,7 +676,7 @@ main(int argc, char **argv)
 
     /* get the TMPDIR environment variable for temporary files */
     if (((TMPDIR = getenv("XFIGTMPDIR")) && !access(TMPDIR, W_OK | X_OK)) ||
-		(TMPDIR = getenv("TMPDIR") && !access(TMPDIR, W_OK | X_OK))) {
+		((TMPDIR = getenv("TMPDIR")) && !access(TMPDIR, W_OK | X_OK))) {
 	if (strchr(TMPDIR, '\'')) {
 		fprintf(stderr, "Cannot use a temporary directory with an "
 			"apostrophe (') in its name: %s.\nPlease set the "
