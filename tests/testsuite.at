@@ -71,6 +71,7 @@ m4_for([i], [1], [102], [], [#
         0 0 100 100
 ])
 AT_CHECK([xfig -update comments.fig],0,ignore,ignore)
+AT_SKIP_IF([test x"$DISPLAY" = x])
 AT_CAPTURE_FILE([comments.fig])
 AT_CAPTURE_FILE([comments.fig.bak])
 AT_CLEANUP
