@@ -56,6 +56,7 @@ AT_BANNER([Integration tests])
 
 AT_SETUP([ignore too many comment lines, ticket #47])
 AT_KEYWORDS([f_read.c])
+AT_SKIP_IF([test x"$DISPLAY" = x])
 AT_DATA(comments.fig, [#FIG 3.2
 Landscape
 Center
@@ -71,7 +72,6 @@ m4_for([i], [1], [102], [], [#
         0 0 100 100
 ])
 AT_CHECK([xfig -update comments.fig],0,ignore,ignore)
-AT_SKIP_IF([test x"$DISPLAY" = x])
 AT_CAPTURE_FILE([comments.fig])
 AT_CAPTURE_FILE([comments.fig.bak])
 AT_CLEANUP
