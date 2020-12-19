@@ -8,7 +8,7 @@ to build xfig and install it below /usr/local.  For requirements, see below.
 
 Optionally, run `make check' after make and `make installcheck' after
 installation. A variation to the above is to do "make -sj" to do a parallel
-build (-j) and be less verbose (-s) and use the "make install-strip" target,
+build (-j), be less verbose (-s) and use the "make install-strip" target,
 which strips debugging symbols from the final executable.
 
 The path given by the --with-appdefaultdir option varies between systems.
@@ -37,14 +37,22 @@ very end of its output.
 
 
 Requirements:
+
 The following runtime libraries and header file must be installed:
 libx11, libxt, libxaw, libxi, libxpm;
 Optionally, libxaw3d, libpng, libjpeg, libtiff, libgs or ghostscript.
+libxaw3d enables a three-dimensional look of the graphical user interface.
+With libpng, libjpeg, and libtiff, these image files can be read and displayed.
+To embed and display the first page of a postscript, eps or pdf document in
+xfig, either libgs should be linked with xfig, or the ghostscript executable is
+needed at runtime.
 
 Usually, if a package manager is used, the runtime libraries are contained in a
 "lib*" package, the header files in a "lib*-dev" or "lib*-devel" package,
 e.g., "libx11" and "libx11-dev".
 
+
+Specific distributions:
 
 On Mac Darwin, OS X 10.11.1 (El Capitan), using XQuartz and having installed
 jpeg, libpng, libtiff and zlib via Macports, the following command should work:

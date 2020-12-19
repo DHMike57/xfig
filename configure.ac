@@ -254,16 +254,12 @@ AC_DEFINE_UNQUOTED([CACHE_SIZE_LIMIT], [$enableval],
     [Define to the maximum size of bitmaps (kB) cached in the X-server.])dnl
 
 AC_ARG_ENABLE(xpm, [AS_HELP_STRING([--disable-xpm],
-	[disable support for xpm color-bitmaps, internally \
-		 and for import/export (default: enable)])],
-    [], [enableval=yes])dnl
+	[disable support for xpm color-bitmaps, internally and for import \
+		(default: enable)])], [], [enableval=yes])dnl
 AS_IF([test "x$enableval" = xyes],
     [AC_SEARCH_LIBS([XpmFree], [Xpm],
-	[AC_DEFINE([USE_XPM], 1, [Define to use xpm color-bitmaps and enable \
-		import/export to xpm files.])
-	 AM_SUBST_NOTMAKE(XPM_MAN)
-	 AC_SUBST(XPM_MAN, ["
-xpm	X11 Pixmap"])], [enableval=no])])
+	[AC_DEFINE([USE_XPM], 1, [Define to use xpm color-bitmaps and enable
+	import of xpm files.])], [enableval=no])])
 AM_CONDITIONAL([USE_XPM], [test "x$enableval" = xyes])dnl
 
 AC_ARG_ENABLE(splash, [AS_HELP_STRING([--enable-splash],

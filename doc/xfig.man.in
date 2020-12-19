@@ -398,7 +398,8 @@ png	PNG
 ppm	PPM (portable pixmap package)
 sld	(AutoCad slide)
 tiff	TIFF
-xbm	X11 Bitmap@XPM_MAN@
+xbm	X11 Bitmap
+xpm     X11 Pixmap
 .if n \l'\nnu\&-'
 .if t \l'\nnu'
 .DT
