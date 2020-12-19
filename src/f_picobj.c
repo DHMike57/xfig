@@ -476,7 +476,7 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 				return NULL;
 			}
 		}
-		sprintf(command, "%s %s",
+		sprintf(command, "%s '%s'",
 				xf_stream->uncompress, xf_stream->name_on_disk);
 		xf_stream->fp = popen(command, "r");
 		if (command != command_buf)
