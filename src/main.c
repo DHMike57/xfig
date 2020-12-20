@@ -78,6 +78,7 @@
 #include "w_fontpanel.h"
 #include "w_help.h"
 #include "w_icons.h"
+#include "w_indpanel.h"
 #include "w_layers.h"
 #include "w_library.h"
 #include "w_modepanel.h"

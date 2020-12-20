@@ -1,6 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -13,11 +16,18 @@
  *
  */
 
-void		init_trace_drawing(int x, int y);
-void		create_lineobject(int x, int y);
-void		get_intermediatepoint(int x, int y, int shift);
-void		freehand_get_intermediatepoint(int x, int y);
+#ifndef D_LINE_H
+#define D_LINE_H
+
+#include <X11/Intrinsic.h>
+
+extern void	init_trace_drawing(int x, int y);
+extern void	create_lineobject(int x, int y);
+extern void	get_intermediatepoint(int x, int y, int shift);
+extern void	freehand_get_intermediatepoint(int x, int y);
 
 extern Boolean	freehand_line;
-extern void line_drawing_selected (void);
-extern void line_drawing_selected (void);
+extern void	line_drawing_selected (void);
+extern void	line_drawing_selected (void);
+
+#endif

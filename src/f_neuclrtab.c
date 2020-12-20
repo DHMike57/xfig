@@ -27,17 +27,12 @@
  * Neural-Net quantization algorithm based on work of Anthony Dekker
  */
 
+#include "f_neuclrtab.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>		/* INT_MAX */
-#include <sys/types.h>
-#include <X11/Intrinsic.h>	/* Boolean */
-
-#include "resources.h"
-#include "object.h"
-#include "f_neuclrtab.h"
-#include "f_util.h"
 
 
 static	void initnet(void);

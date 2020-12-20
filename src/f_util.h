@@ -16,6 +16,9 @@
  *
  */
 
+#ifndef F_UTIL_H
+#define F_UTIL_H
+
 #include <X11/Intrinsic.h>	/* Boolean */
 #include <sys/types.h>		/* time_t */
 
@@ -48,3 +51,5 @@ extern void	remap_imagecolors(void);
 extern void	update_recent_files(void);
 extern void	update_xfigrc(char *name, char *string);
 extern int	update_fig_files(int argc, char **argv);
+
+#endif

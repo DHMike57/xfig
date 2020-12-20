@@ -66,10 +66,10 @@ extern void	swap_counts(void);	/* w_layers.c */
  * all the "next" fields of objects pointed to by object_tails to NULL.
  */
 
-F_compound	saved_objects = {0, 0, { 0, 0 }, { 0, 0 },
-				NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-F_compound	object_tails = {0, 0, { 0, 0 }, { 0, 0 },
-				NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+F_compound	saved_objects = {0, 0, {0, 0}, {0, 0}, NULL, NULL, NULL, NULL,
+				NULL, NULL, NULL, NULL, False, NULL, NULL};
+F_compound	object_tails = {0, 0, {0, 0}, {0, 0}, NULL, NULL, NULL, NULL,
+				NULL, NULL, NULL, NULL, False, NULL, NULL};
 F_arrow		*saved_for_arrow = (F_arrow *) NULL;
 F_arrow		*saved_back_arrow = (F_arrow *) NULL;
 F_line		*latest_line;		/* for undo_join (line) */
@@ -488,7 +488,6 @@ void undo_change(void)
 void undo_add(void)
 {
     int		    xmin, ymin, xmax, ymax;
-    char	    ctemp[PATH_MAX];
 
     switch (last_object) {
       case O_POLYLINE:
@@ -528,7 +527,6 @@ void undo_delete(void)
 {
     char	   *swp_comm;
     int		    xmin, ymin, xmax, ymax;
-    char	    ctemp[PATH_MAX];
 
     switch (last_object) {
       case O_POLYLINE:

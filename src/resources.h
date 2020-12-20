@@ -20,7 +20,11 @@
 #define RESOURCES_H
 
 #include <limits.h>		/* PATH_MAX, below */
+#include <sys/types.h>
 #include <X11/Intrinsic.h>
+#ifdef USE_XPM
+#include <X11/xpm.h>
+#endif
 #include "paintop.h"
 
 #ifndef PATH_MAX
@@ -144,7 +148,6 @@ extern char		 orig_dir[PATH_MAX+2];
 extern Boolean		 update_figs;
 
 #ifdef USE_XPM
-#include <X11/xpm.h>
 extern XpmAttributes	 xfig_icon_attr;
 #endif
 extern fig_colors	 colorNames[NUM_STD_COLS + 1];

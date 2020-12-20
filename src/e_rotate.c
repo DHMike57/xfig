@@ -15,26 +15,31 @@
  *
  */
 
-#include "fig.h"
+#include "e_rotate.h"
+
+#include <stddef.h>
+#include <math.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
+#include "d_text.h"
 #include "e_flip.h"
+#include "u_bound.h"
 #include "u_draw.h"
 #include "u_geom.h"
-#include "u_search.h"
 #include "u_create.h"
 #include "u_list.h"
-#include "w_canvas.h"
-#include "w_mousefun.h"
-#include "w_msgpanel.h"
-
-#include "d_text.h"
-#include "u_bound.h"
 #include "u_markers.h"
 #include "u_redraw.h"
+#include "u_search.h"
+#include "w_canvas.h"
 #include "w_cursor.h"
+#include "w_mousefun.h"
+#include "w_msgpanel.h"
+#include "xfig_math.h"
+
 
 /* EXPORTS  */
 
@@ -50,26 +55,23 @@ static int	copy;
 
 static void	init_rotate(F_line *p, int type, int x, int y, int px, int py);
 static void	set_unset_center(int x, int y);
-static void	init_copynrotate(F_line *p, int type, int x, int y, int px, int py);
+static void	init_copynrotate(F_line *p, int type, int x,int y,int px,int py);
 static void	rotate_selected(void);
 static void	rotate_search(F_line *p, int type, int x, int y, int px, int py);
 static void	init_rotateline(F_line *l, int px, int py);
 static void	init_rotatetext(F_text *t, int px, int py);
+static void	init_rotatearc (F_arc *a, int px, int py);
+static void	init_rotateellipse (F_ellipse *e, int px, int py);
+static void	init_rotatespline (F_spline *s, int px, int py);
+static void	init_rotatecompound (F_compound *c, int px, int py);
+static void	rotate_text (F_text *t, int x, int y);
+static void	rotate_ellipse (F_ellipse *e, int x, int y);
+static void	rotate_arc (F_arc *a, int x, int y);
+static void	rotate_spline (F_spline *s, int x, int y);
+static int	valid_rot_angle (F_compound *c);
+static void	rotate_point (F_point *p, int x, int y);
+static void	rotate_xy (int *orig_x, int *orig_y, int x, int y);
 
-
-void init_rotatearc (F_arc *a, int px, int py);
-void init_rotateellipse (F_ellipse *e, int px, int py);
-void init_rotatespline (F_spline *s, int px, int py);
-void init_rotatecompound (F_compound *c, int px, int py);
-void rotate_line (F_line *l, int x, int y);
-void rotate_text (F_text *t, int x, int y);
-void rotate_ellipse (F_ellipse *e, int x, int y);
-void rotate_arc (F_arc *a, int x, int y);
-void rotate_spline (F_spline *s, int x, int y);
-int valid_rot_angle (F_compound *c);
-void rotate_compound (F_compound *c, int x, int y);
-void rotate_point (F_point *p, int x, int y);
-void rotate_xy (int *orig_x, int *orig_y, int x, int y);
 
 void
 rotate_cw_selected(void)
@@ -172,6 +174,9 @@ init_copynrotate(F_line *p, int type, int x, int y, int px, int py)
 static void
 rotate_search(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x;
+	(void)y;
+
     switch (type) {
     case O_POLYLINE:
 	cur_l = (F_line *) p;
@@ -334,7 +339,8 @@ void init_rotatecompound(F_compound *c, int px, int py)
     reset_cursor();
 }
 
-void rotate_line(F_line *l, int x, int y)
+void
+rotate_line(F_line *l, int x, int y)
 {
     F_point	   *p;
     int		    dx;
@@ -472,7 +478,8 @@ void rotate_arc(F_arc *a, int x, int y)
 
 /* checks to see if the objects within c can be rotated by act_rotnangle */
 
-int valid_rot_angle(F_compound *c)
+int
+valid_rot_angle(F_compound *c)
 {
     F_line         *l;
     F_compound     *c1;
@@ -488,7 +495,8 @@ int valid_rot_angle(F_compound *c)
     return 1;
 }
 
-void rotate_compound(F_compound *c, int x, int y)
+void
+rotate_compound(F_compound *c, int x, int y)
 {
     F_line	   *l;
     F_arc	   *a;

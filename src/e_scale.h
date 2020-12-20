@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,8 +16,19 @@
  *
  */
 
-extern void	scale_compound(F_compound *c, double sx, double sy, int refx, int refy);
-extern void	scale_radius(F_line *old, F_line *new, int owd, int oht, int nwd, int nht);
-extern Boolean	rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx, int refy);
+#ifndef E_SCALE_H
+#define E_SCALE_H
 
-extern void scale_selected (void);
+#include <X11/Intrinsic.h>
+#include "object.h"
+
+extern void	scale_compound(F_compound *c, double sx, double sy,
+				int refx, int refy);
+extern void	scale_radius(F_line *old, F_line *new, int owd, int oht,
+				int nwd, int nht);
+extern Boolean	rescale_dimension_line(F_compound *dimline,
+				float scalex, float scaley, int refx, int refy);
+
+extern void	scale_selected (void);
+
+#endif

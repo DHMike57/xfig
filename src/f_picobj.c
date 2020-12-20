@@ -35,8 +35,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>		/* time_t */
-#include <X11/X.h>		/* Pixmap */
-#include <X11/Xlib.h>		/* True, False*/
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
 
 #include "resources.h"		/* TMPDIR */
 #include "object.h"

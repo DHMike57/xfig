@@ -19,6 +19,7 @@
 #define W_DRAWPRIM_H
 
 #include "w_zoom.h"
+#include "xfig_math.h"
 
 /* our version of XPoint */
 

@@ -15,21 +15,21 @@
  *
  */
 
-#include "fig.h"
+#include <stdlib.h>
+
 #include "resources.h"
-#include "mode.h"
 #include "object.h"
-#include "paintop.h"
+#include "mode.h"
+#include "f_util.h"
 #include "u_create.h"
 #include "u_elastic.h"
 #include "u_list.h"
+#include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_cursor.h"
 #include "w_msgpanel.h"
 #include "w_mousefun.h"
 
-#include "f_util.h"
-#include "u_redraw.h"
 
 /*************************** local procedures *********************/
 

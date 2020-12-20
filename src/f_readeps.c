@@ -30,10 +30,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 #ifdef I18N
 #include <locale.h>
 #endif
+#include <X11/Xlib.h>
 
 #include "resources.h"
 #include "object.h"

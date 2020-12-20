@@ -23,7 +23,8 @@
 #include "config.h"
 #endif
 
-#include <X11/Intrinsic.h>
+#include <sys/types.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
 #include "resources.h"
 
 /* values to signify color used for transparent GIF color */

@@ -16,9 +16,14 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "mode.h"
+
+#include <X11/Xlib.h>
+
+#include "resources.h"
 #include "object.h"
 #include "u_fonts.h"
 #include "w_indpanel.h"

@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,12 +16,10 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
-#include "mode.h"
 #include "object.h"
-#include "paintop.h"
-#include "w_setup.h"
+
+#include <stddef.h>
+
 
 /************************  Objects  **********************/
 
@@ -39,4 +38,4 @@ F_compound     *cur_c, *new_c, *old_c;
 F_point	       *first_point=NULL, *cur_point=NULL;
 F_linkinfo     *cur_links=NULL;
 
-struct _pics   *pictures=NULL;		/* common repository to share imported pictures */
+struct _pics   *pictures=NULL; /* common repository to share imported pictures */

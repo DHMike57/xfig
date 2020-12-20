@@ -1,9 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2018 by Thomas Loimer
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,31 +16,43 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "e_delete.h"
+
+#include <errno.h>
+#ifdef I18N
+#include <locale.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
-#include "paintop.h"
 #include "d_box.h"
-#include "d_line.h"
 #include "e_compound.h"
 #include "e_glue.h"
 #include "f_read.h"
 #include "f_save.h"
 #include "u_create.h"
-#include "u_draw.h"
 #include "u_elastic.h"
-#include "u_redraw.h"
-#include "u_search.h"
 #include "u_list.h"
 #include "u_markers.h"
+#include "u_redraw.h"
+#include "u_search.h"
 #include "u_undo.h"
 #include "w_canvas.h"
 #include "w_cursor.h"
 #include "w_layers.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-#include "w_setup.h"
+#include "xfig_math.h"
+
 
 static void	init_delete(F_line *p, int type, int x, int y, int px, int py);
 static void	init_delete_region(int x, int y), delete_region(int x, int y), cancel_delete_region(void);
@@ -68,6 +80,8 @@ delete_selected(void)
 static void
 init_delete(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x; (void)y; (void)px; (void)py;
+
     switch (type) {
     case O_COMPOUND:
 	cur_c = (F_compound *) p;
@@ -166,6 +180,7 @@ delete_region(int x, int y)
 static void
 init_delete_to_scrap(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x; (void)y; (void)px; (void)py;
     FILE	   *fp;
     FILE	   *open_cut_file(void);
 
@@ -261,7 +276,8 @@ open_cut_file(void)
     return fp;
 }
 
-void delete_all(void)
+void
+delete_all(void)
 {
     clean_up();
     set_action_object(F_DELETE, O_FIGURE);

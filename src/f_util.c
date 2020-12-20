@@ -25,8 +25,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
 #include <sys/stat.h>
 #include <unistd.h>
+#include <X11/Xlib.h>
 
 #include "resources.h"
 #include "object.h"
@@ -40,10 +44,8 @@
 #include "w_file.h"		/* renamefile() */
 #include "w_color.h"		/* YStoreColors(), alloc_color_cells() */
 #include "w_cursor.h"
-#include "w_icons.h"		/* panel_get_value() */
-#include "w_indpanel.h"		/* ind_sw_info */
 #include "w_msgpanel.h"
-#include "w_util.h"		/* popup_query() */
+#include "w_util.h"		/* popup_query(), panel_get_value() */
 #include "xfig_math.h"
 
 

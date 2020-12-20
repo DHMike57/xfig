@@ -48,7 +48,7 @@ xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	f_read.c f_readeps.c f_readgif.c f_read.h f_readold.c f_readpcx.c \
 	f_readpcx.h f_readppm.c f_readxbm.c f_save.c f_save.h f_util.c \
 	f_util.h f_wrpcx.c main.c main.h mode.c mode.h \
-	object.c object.h paintop.h pcx.h resources.c resources.h \
+	object.c object.h paintop.h resources.c resources.h \
 	u_bound.c u_bound.h u_create.c u_create.h u_drag.c u_drag.h u_draw.c \
 	u_draw.h u_elastic.c u_elastic.h u_error.c u_error.h u_fonts.c \
 	u_fonts.h u_free.c u_free.h u_geom.c u_geom.h u_ghostscript.c u_list.c \

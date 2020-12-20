@@ -15,27 +15,28 @@
  *
  */
 
-#include "fig.h"
+#include "e_addpt.h"
+
+#include <stddef.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
-#include "e_addpt.h"
 #include "u_create.h"
-#include "u_draw.h"
 #include "u_elastic.h"
+#include "u_geom.h"
 #include "u_list.h"
+#include "u_markers.h"
+#include "u_redraw.h"
 #include "u_search.h"
+#include "u_undo.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_drawprim.h"
 #include "w_mousefun.h"
 #include "w_modepanel.h"
 
-#include "u_geom.h"
-#include "u_markers.h"
-#include "u_redraw.h"
-#include "u_undo.h"
-#include "w_cursor.h"
 
 static void	init_point_adding(F_line *p, int type, int x, int y, int px, int py);
 static void	fix_linepoint_adding(int x, int y);
@@ -66,6 +67,9 @@ point_adding_selected(void)
 static void
 init_point_adding(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x;
+	(void)y;
+
     set_action_on();
     set_mousefun("place new point", "", "cancel", LOC_OBJ, LOC_OBJ, LOC_OBJ);
     draw_mousefun_canvas();

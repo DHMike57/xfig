@@ -1,10 +1,11 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1994 by Bill Taylor
  *       "Enter Compound" written by Bill Taylor (bill@mainstream.com) 1994
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -22,58 +23,74 @@
  * then replaces the current drawing with that compound alone so that the
  * user can edit the insides of that compound without taking it apart.
  *
- * close_compound pops out one compound; close_all_compounds pops all the way out.
+ * close_compound pops out one compound;
+ * close_all_compounds pops all the way out.
  *
  */
 
-#include "fig.h"
+#include "e_compound.h"
+
+#include <stdlib.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "figx.h"
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
-#include "u_search.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"
-#include "w_icons.h"
-#include "w_indpanel.h"
-#include "w_setup.h"
-#include "w_util.h"
-
 #include "e_scale.h"
 #include "u_bound.h"
 #include "u_list.h"
 #include "u_markers.h"
 #include "u_redraw.h"
+#include "u_search.h"
+#include "w_canvas.h"
 #include "w_color.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"
+#include "w_icons.h"
+#include "w_indpanel.h"
 #include "w_modepanel.h"
 #include "w_mousefun.h"
-
-Widget	close_compound_popup;
-Boolean	close_popup_isup = False;
-void	open_this_compound(F_compound *c, Boolean vis);
-int	save_mask;
+#include "w_util.h"
 
 
-void popup_close_compound (void);
+static Widget	close_compound_popup;
+static Boolean	close_popup_isup = False;
+static int	save_mask;
+
+static void	open_this_compound(F_compound *c, Boolean vis);
+static void	popup_close_compound (void);
+
 
 static void
 init_open_compound(F_compound *c, int type, int x, int y, int px, int py)
 {
+	(void)x;
+	(void)y;
+	(void)px;
+	(void)py;
+
     if (type != O_COMPOUND)
 	return;
     open_this_compound(c, False);
 }
 
 static void
-init_open_compound_vis(F_compound *c, int type, int x, int y, int px, int py, int loc_tag)
+init_open_compound_vis(F_compound *c, int type, int x, int y, int px, int py,
+		int loc_tag)
 {
+	(void)x;
+	(void)y;
+	(void)px;
+	(void)py;
+	(void)loc_tag;
+
     if (type != O_COMPOUND)
 	return;
     open_this_compound(c, True);
 }
 
-void
+static void
 open_this_compound(F_compound *c, Boolean vis)
 {
   F_compound *d;
@@ -125,7 +142,7 @@ close_compound(void)
   /* if trying to close compound while drawing an object, don't allow it */
   if (check_action_on())
 	return;
-  if (c = (F_compound *)objects.parent) {
+  if ((c = (F_compound *)objects.parent)) {
     objects.parent = NULL;
     d = (F_compound *)objects.GABPtr;	/* Where this compound was */
     objects.GABPtr   = NULL;
@@ -168,7 +185,7 @@ close_all_compounds(void)
   if (check_action_on())
 	return;
   if (objects.parent) {
-    while (c = (F_compound *)objects.parent) {
+    while ((c = (F_compound *)objects.parent)) {
       objects.parent = NULL;
       d = (F_compound *)objects.GABPtr;	/* Where this compound was */
       objects.GABPtr   = NULL;
@@ -193,7 +210,8 @@ close_all_compounds(void)
   }
 }
 
-void popup_close_compound(void)
+static void
+popup_close_compound(void)
 {
     Widget	    close_compound_form;
     Widget	    close_compoundw, close_compound_allw;

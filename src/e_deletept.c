@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,27 +16,29 @@
  *
  */
 
-#include "fig.h"
+#include "e_deletept.h"
+
+#include <stddef.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
-#include "e_deletept.h"
-#include "u_list.h"
-#include "u_search.h"
+#include "d_spline.h"
+#include "f_util.h"
 #include "u_draw.h"
+#include "u_list.h"
+#include "u_redraw.h"
+#include "u_search.h"
+#include "u_undo.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-#include "d_spline.h"
 
-#include "f_util.h"
-#include "u_redraw.h"
-#include "u_undo.h"
-#include "w_cursor.h"
 
-static void	init_delete_point(F_line *obj, int type, int x, int y, F_point *p, F_point *q);
-
+static void	init_delete_point(F_line *obj, int type, int x, int y,
+					F_point *p, F_point *q);
 
 
 void
@@ -56,6 +59,8 @@ delete_point_selected(void)
 static void
 init_delete_point(F_line *obj, int type, int x, int y, F_point *p, F_point *q)
 {
+	(void)x;
+	(void)y;
     int		    n;
 
     switch (type) {

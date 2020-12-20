@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,14 +16,19 @@
  *
  */
 
+#ifndef W_MODEPANEL_H
+#define W_MODEPANEL_H
+
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
+#include "w_icons.h"
+
 extern void	force_positioning(void);
 extern void	force_nopositioning(void);
 extern void	force_anglegeom(void);
 extern void	force_noanglegeom(void);
 extern void	init_mode_panel(Widget tool);
 
-
-#include "w_icons.h"
 
 #define MAX_MODEMSG_LEN 80
 typedef struct mode_switch_struct {
@@ -41,3 +47,5 @@ extern void change_mode (icon_struct *icon);
 extern void turn_off_current (void);
 extern void update_modepanel ();
 extern void setup_mode_panel(void);
+
+#endif
