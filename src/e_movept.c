@@ -15,29 +15,32 @@
  *
  */
 
-#include "fig.h"
+#include "e_movept.h"
+
+#include <math.h>
+#include <stdlib.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
-#include "paintop.h"
 #include "e_scale.h"
-#include "u_draw.h"
+#include "f_util.h"
 #include "u_search.h"
 #include "u_create.h"
+#include "u_geom.h"
 #include "u_elastic.h"
 #include "u_list.h"
 #include "u_markers.h"
+#include "u_redraw.h"
 #include "u_undo.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_modepanel.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-
-#include "f_util.h"
-#include "u_geom.h"
-#include "u_redraw.h"
-#include "w_cursor.h"
 #include "w_util.h"
+#include "xfig_math.h"
 
 /* local routine declarations */
 
@@ -73,8 +76,6 @@ static void	cancel_movedsplinepoint(void);
 static void	cancel_movept_box(void);
 static void	cancel_movedlinepoint(void);
 
-
-void assign_newboxpoint (F_line *b, int x1, int y1, int x2, int y2);
 
 void move_point_selected(void)
 {
@@ -116,8 +117,12 @@ init_stretch_move_point(F_line *obj, int type, int x, int y, F_point *p, F_point
 }
 
 static Boolean
-init_move_point(F_line *obj, int type, int x, int y, F_point *p, F_point *q, int pnum)
+init_move_point(F_line *obj, int type, int x, int y, F_point *p, F_point *q,
+		int pnum)
 {
+	(void)x;
+	(void)y;
+
     left_point = p;
     moved_point = q;
     switch (type) {
@@ -518,6 +523,8 @@ fix_movedsplinepoint(int x, int y)
 static void
 relocate_splinepoint(F_spline *s, int x, int y, F_point *moved_point)
 {
+	(void)s;
+
     moved_point->x = x;
     moved_point->y = y;
     set_modifiedflag();
@@ -750,7 +757,8 @@ fix_box(int x, int y)
     wrapup_movepoint();
 }
 
-void assign_newboxpoint(F_line *b, int x1, int y1, int x2, int y2)
+void
+assign_newboxpoint(F_line *b, int x1, int y1, int x2, int y2)
 {
     F_point	   *p;
 

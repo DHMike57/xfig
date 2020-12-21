@@ -41,9 +41,6 @@ NOTE: For exporting Fig files to any of the bitmap formats (e.g. PNG, JPEG)
 	fig2dev uses ghostscript for exporting and xfig uses it for importing
 	PS and EPS files.
 
-	**** Important ****
-	You need the netpbm package which includes the ppmtojpeg program,
-	see http://netpbm.sourceforge.net.
 
 The sources of xfig are released in a tarball. Alternatively, the development
 version can be downloaded from sourceforge. To compile from the sources released

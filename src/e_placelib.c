@@ -15,57 +15,55 @@
  *
  */
 
-#include "fig.h"
-#include "figx.h"
+#include "e_placelib.h"
+
+#include <string.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
+
 #include "e_edit.h"
-#include "e_placelib.h"
+#include "e_flip.h"
 #include "e_rotate.h"
-#include "u_draw.h"
+#include "e_scale.h"
+#include "u_create.h"
 #include "u_elastic.h"
 #include "u_list.h"
-#include "u_search.h"
-#include "u_create.h"
-#include "w_canvas.h"
-#include "w_indpanel.h"
-#include "w_library.h"
-#include "w_mousefun.h"
-#include "w_drawprim.h"		/* for max_char_height */
-#include "w_dir.h"
-#include "w_util.h"
-#include "w_setup.h"
-#include "w_zoom.h"
-
-#include "e_flip.h"
-#include "e_scale.h"
 #include "u_redraw.h"
 #include "u_translate.h"
 #include "u_undo.h"
+#include "w_canvas.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"		/* for max_char_height */
+#include "w_library.h"
 #include "w_modepanel.h"
+#include "w_mousefun.h"
 #include "w_msgpanel.h"
+#include "w_util.h"
+
 
 /* EXPORTS */
 
 int	cur_library_object = -1;
 int	old_library_object = -1;
 
-/* STATICS */
+/* LOCAL */
 
-static int	off_library_x,off_library_y;
+static Boolean	draw_box = False;
+static int	off_library_x;
+static int	off_library_y;
 
-static void	init_move_object(int x, int y),move_object(int x, int y),change_draw_mode(int x, int y);
-static void	transform_lib_obj(unsigned char *c, int clen, KeySym keysym);
+static void	init_move_object(int x, int y);
+static void	move_object(int x, int y);
+static void	change_draw_mode(int x, int y);
+static void	transform_lib_obj(XKeyEvent *kpe, unsigned char c,KeySym keysym);
 static void	place_lib_object(int x, int y, unsigned int shift);
 static void	put_draw(int paint_mode);
 static void	sel_place_lib_obj_proc(int x, int y, int shift);
 static int	orig_put_x, orig_put_y;
-
-static Boolean	draw_box = False;
-
 
 
 void
@@ -120,6 +118,8 @@ put_selected(void)
 static void
 transform_lib_obj(unsigned char *c, int clen, KeySym keysym)
 {
+	(void)kpe;
+	(void)keysym;
     int x,y;
 
     x = cur_x;
@@ -198,6 +198,9 @@ put_draw(int paint_mode)
 static void
 change_draw_mode(int x, int y)
 {
+	(void)x;
+	(void)y;
+
     put_draw(ERASE);
     draw_box = !draw_box;
     translate_compound(new_c,-new_c->nwcorner.x,-new_c->nwcorner.y);
@@ -212,6 +215,9 @@ change_draw_mode(int x, int y)
 static void
 place_lib_object_orig(int x, int y, unsigned int shift)
 {
+	(void)x;
+	(void)y;
+	(void)shift;
     int dx,dy;
 
     canvas_ref_proc = null_proc;
@@ -232,6 +238,8 @@ place_lib_object_orig(int x, int y, unsigned int shift)
 static void
 place_lib_object(int x, int y, unsigned int shift)
 {
+	(void)x;
+	(void)y;
     F_compound *this_c;
 
     canvas_leftbut_proc = null_proc;

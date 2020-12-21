@@ -13,37 +13,40 @@
  *
  */
 
-#include "fig.h"
+#include "e_tangent.h"
+
+#include <math.h>
+#include <stddef.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
-#include "u_create.h"
-#include "u_elastic.h"
-#include "u_search.h"
-#include "u_smartsearch.h"
-#include "w_canvas.h"
-#include "w_mousefun.h"
-#include "w_setup.h"
-
 #include "f_util.h"
+#include "u_create.h"
 #include "u_draw.h"
 #include "u_list.h"
 #include "u_markers.h"
+#include "u_smartsearch.h"
+#include "w_canvas.h"
 #include "w_cursor.h"
+#include "w_mousefun.h"
 #include "w_msgpanel.h"
+#include "w_setup.h"
+#include "xfig_math.h"
 
 #define ZERO_TOLERANCE 2.0
 
-
-static void	init_tangent_adding(char *p, int type, int x, int y, int px, int py);
-static void	init_normal_adding(char *p, int type, int x, int y, int px, int py);
+static void	init_tangent_adding(char *p, int type, int x, int y,
+					int px, int py);
+static void	init_normal_adding(char *p, int type, int x, int y,
+					int px, int py);
 static void	tangent_or_normal(int x, int y, int flag);
 static void	tangent_normal_line(int x, int y, float vx, float vy);
 
 
-
-void tangent_selected(void)
+void
+tangent_selected(void)
 {
     set_mousefun("add tangent", "add normal", "", LOC_OBJ, LOC_OBJ, LOC_OBJ);
     canvas_kbd_proc = null_proc;
@@ -64,13 +67,17 @@ void tangent_selected(void)
 static void
 init_tangent_adding(char *p, int type, int x, int y, int px, int py)
 {
-    tangent_or_normal(px, py, 0);
+	(void)p; (void)type; (void)x; (void)y;
+
+	tangent_or_normal(px, py, 0);
 }
 
 static void
 init_normal_adding(char *p, int type, int x, int y, int px, int py)
 {
-    tangent_or_normal(px, py, 1);
+	(void)p; (void)type; (void)x; (void)y;
+
+	tangent_or_normal(px, py, 1);
 }
 
 static void

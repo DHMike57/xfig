@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,34 +16,46 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "e_scale.h"
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
+
 #include "d_text.h"
+#include "e_movept.h"
 #include "e_rotate.h"
-#include "e_scale.h"
+#include "f_util.h"
+#include "u_bound.h"
 #include "u_create.h"
 #include "u_draw.h"
 #include "u_elastic.h"
-#include "u_search.h"
-#include "u_undo.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"
-#include "w_mousefun.h"
-#include "w_msgpanel.h"
-#include "w_setup.h"
-
-#include "e_movept.h"
-#include "f_util.h"
-#include "u_bound.h"
 #include "u_fonts.h"
 #include "u_geom.h"
 #include "u_list.h"
 #include "u_markers.h"
 #include "u_redraw.h"
+#include "u_search.h"
+#include "u_undo.h"
+#include "w_canvas.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"
+#include "w_mousefun.h"
+#include "w_msgpanel.h"
+#include "xfig_math.h"
 
 static Boolean	init_boxscale_ellipse(int x, int y);
 static Boolean	init_boxscale_line(int x, int y);
@@ -53,16 +66,17 @@ static Boolean	init_scale_line(void);
 static Boolean	init_scale_spline(void);
 
 static void	scale_line(F_line *l, float sx, float sy, int refx, int refy);
-static void	scale_spline(F_spline *s, float sx, float sy, int refx, int refy);
+static void	scale_spline(F_spline *s, float sx, float sy, int refx,int refy);
 static void	scale_arc(F_arc *a, float sx, float sy, int refx, int refy);
-static void	scale_ellipse(F_ellipse *e, float sx, float sy, int refx, int refy);
+static void	scale_ellipse(F_ellipse *e, float sx,float sy,int refx,int refy);
 static void	scale_text(F_text *t, float sx, float sy, int refx, int refy);
 static void	scale_arrows(F_line *obj, float sx, float sy);
 static void	scale_arrow(F_arrow *arrow, float sx, float sy);
 
-static void	init_box_scale(F_line *obj, int type, int x, int y, int px, int py);
+static void	init_box_scale(F_line *obj, int type, int x,int y,int px,int py);
 static void	boxrelocate_ellipsepoint(F_ellipse *ellipse, int x, int y);
-static void	init_center_scale(F_line *obj, int type, int x, int y, int px, int py);
+static void	init_center_scale(F_line *obj, int type, int x, int y,
+				int px, int py);
 static void	init_scale_compound(void);
 static void	rescale_points(F_line *obj, int x, int y);
 static void	relocate_ellipsepoint(F_ellipse *ellipse, int x, int y);
@@ -88,7 +102,6 @@ static void	cancel_boxscale_compound(void);
 static void	prescale_compound(F_compound *c, int x, int y);
 
 
-
 void
 scale_selected(void)
 {
@@ -112,6 +125,9 @@ char *BOX_SCL2_MSG = "Can't use box scale on selected object; try putting it int
 static void
 init_box_scale(F_line *obj, int type, int x, int y, int px, int py)
 {
+	(void)x;
+	(void)y;
+
     switch (type) {
     case O_POLYLINE:
 	cur_l = (F_line *) obj;
@@ -141,6 +157,8 @@ init_box_scale(F_line *obj, int type, int x, int y, int px, int py)
 static void
 init_center_scale(F_line *obj, int type, int x, int y, int px, int py)
 {
+	(void)x;
+	(void)y;
     double	    dx, dy, l;
 
     cur_x = from_x = px;
@@ -1282,6 +1300,7 @@ fix_boxscale_line(int x, int y)
 void
 scale_radius(F_line *old, F_line *new, int owd, int oht, int nwd, int nht)
 {
+	(void)old;
 	float wdscale, htscale;
 
 	wdscale = 1.0 * nwd/owd;

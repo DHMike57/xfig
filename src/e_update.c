@@ -14,38 +14,50 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "e_update.h"
+
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
+
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
 #include "paintop.h"
 #include "d_text.h"
+#include "e_scale.h"
+#include "f_util.h"
+#include "u_bound.h"
 #include "u_create.h"
-#include "u_list.h"
 #include "u_draw.h"
+#include "u_fonts.h"
+#include "u_free.h"
+#include "u_list.h"
+#include "u_redraw.h"
 #include "u_search.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_drawprim.h"
 #include "w_indpanel.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-#include "w_setup.h"
 #include "w_util.h"
+#include "xfig_math.h"
 
-#include "e_scale.h"
-#include "f_util.h"
-#include "u_bound.h"
-#include "u_fonts.h"
-#include "u_free.h"
-#include "u_redraw.h"
-#include "w_cursor.h"
-#include "w_util.h"
-
-static void	init_update_object(F_line *p, int type, int x, int y, int px, int py);
-static void	init_update_settings(F_line *p, int type, int x, int y, int px, int py);
 
 static Boolean	keep_depth = False;
 static int	delta_depth;
+
+static void	init_update_object(F_line *p, int type, int x, int y,
+					int px, int py);
+static void	init_update_settings(F_line *p, int type, int x, int y,
+					int px, int py);
 
 
 #define min(a,b) ((a)<(b)) ? (a) : (b)
@@ -129,6 +141,7 @@ get_arrow_type(F_line *object)
 static void
 init_update_settings(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x; (void)y; (void)px; (void)py;
     int		    old_psfont_flag, new_psfont_flag;
     F_line	   *dline, *dtick1, *dtick2, *dbox;
     F_text	   *dtext;
@@ -169,7 +182,7 @@ init_update_settings(F_line *p, int type, int x, int y, int px, int py)
 		cur_dimline_boxthick = dbox->thickness;
 		cur_dimline_boxcolor = dbox->fill_color;
 	    }
-	    if (dtext = cur_c->texts) {
+	    if ((dtext = cur_c->texts)) {
 		cur_dimline_textcolor = dtext->color;
 		cur_dimline_font = dtext->font;
 		cur_dimline_fontsize = dtext->size;
@@ -319,6 +332,7 @@ void up_from_arrow(F_arrow *arrow, int thick)
 static void
 init_update_object(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x; (void)y; (void)px; (void)py;
     int		    largest;
     Boolean	    dontupdate;
 
@@ -707,7 +721,7 @@ void update_compound(F_compound *compound)
 	   compound->lines = dbox;
 
 	/* finally, the text */
-	if (dtext = compound->texts) {
+	if ((dtext = compound->texts)) {
 	    dtext->color = cur_dimline_textcolor;
 	    dtext->font = cur_dimline_font;
 	    dtext->size = cur_dimline_fontsize;
@@ -797,6 +811,8 @@ void update_texts(F_text *texts)
 
 void up_dashdot(float styleval, int style, unsigned int mask)
 {
+	(void)mask;
+
 	if ((style == DASH_LINE) ||
 	    (style == DASH_DOT_LINE) ||
 	    (style == DASH_2_DOTS_LINE) ||

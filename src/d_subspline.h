@@ -18,7 +18,10 @@
 #ifndef D_SUBSPLINE_H
 #define D_SUBSPLINE_H
 
-extern F_spline  *create_subspline(int *num_pts, F_spline *spline, F_point *point, F_sfactor **sfactor, F_sfactor **sub_sfactor);
+#include "object.h"
+
+extern F_spline  *create_subspline(int *num_pts, F_spline *spline,
+	F_point *point, F_sfactor **sfactor, F_sfactor **sub_sfactor);
 extern void       free_subspline(int num_pts, F_spline **spline);
 extern void       draw_subspline(int num_pts, F_spline *spline, int op);
 

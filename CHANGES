@@ -2,7 +2,29 @@ Changes to Xfig
 =============================================================================
 Version 3.2
 =============================================================================
-Patchlevel Xx (Xxx 20xx)
+Patchlevel 8 (Dez 2020)
+
+USER INTERFACE CHANGES:
+	o Shift + Wheel Up pans left, Shift + Wheel Down pans right.
+	  Alt or Meta + Wheel Up pops up the edit panel, Alt or Meta + Wheel
+	  Down pops up the drawing panel. Previously, Shift + Wheel Up or Down
+	  popped up the edit or drawing panel, respectively, and panning
+	  sideways could only be achieved by moving the wheel sideways.
+
+NEW FEATURES:
+	o To display gif image files, either giftopnm and ppmtopcx from the
+	  netpbm package, imagemagick, or graphicsmagick must be installed.
+	o Obey the resolution given in embedded png, tiff and jpeg image files.
+	o Embedded image files are displayed in full color, not reduced to
+	  a maximum of 256 colors.
+	o Display embedded pdf files.
+
+BUGS FIXED:
+	o Read version 1.3 fig files.
+	o The default resolution of embedded raster images is changed
+	  from 80 dpi to 72 dpi.
+	o Read compressed files, but do not silently uncompress them.
+	o Get correct bounding box (/MediaBox) of embedded pdf files.
 
 -----------------------------------
 Patchlevel 7b (Oct 2019)

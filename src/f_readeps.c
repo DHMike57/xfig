@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1992 by Brian Boyter
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,430 +16,331 @@
  *
  */
 
-#include "fig.h"
+/*
+ * Import eps files.
+ * Copyright (c) 1992 by Brian Boyter
+ */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <ctype.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef I18N
+#include <locale.h>
+#endif
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "object.h"
 #include "f_picobj.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
-
 #include "w_util.h"
+#include "xfig_math.h"
 
-int         _read_pcx(FILE *pcxfile, F_pic *pic);
-Boolean	    bitmap_from_gs();
+/* u_ghostscript.c */
+extern int	gs_mediabox(char *file, int *llx, int *lly, int *urx, int *ury);
+extern int	gs_bitmap(char *file, F_pic *pic, int llx, int lly,
+						int urx, int ury);
 
-/* read a PDF file */
+static void	lower(char *buf);
+static int	hex(char c);
 
 
-int read_epsf_pdf (FILE *file, int filetype, F_pic *pic, Boolean pdf_flag);
-void lower (char *buf);
-int hex (char c);
-
-int
-read_pdf(FILE *file, int filetype, F_pic *pic)
+/*
+ * Scan a pdf-file for a /MediaBox specification.
+ * Return 0 on success, -1 on failure.
+ */
+static int
+scan_mediabox(char *name, int *llx, int *lly, int *urx, int *ury)
 {
-    return read_epsf_pdf(file, filetype, pic, True);
-}
+	/*
+	 * The line length of pdfs should not exceed 256 characters. However, in
+	 * pdfs, the line end character might be a carriage return, while
+	 * fgets() reads lines ended by newlines.
+	 */
+	char	buf[512];
+	char	*s;
+	int	ret = -1;	/* prime with failure */
+	double	lx, ly, ux, uy;
+	FILE	*file;
 
-/* read an EPS file */
+	if ((file = fopen(name, "rb")) == NULL)
+		return -1;
 
-/* return codes:  PicSuccess   (1) : success
-		  FileInvalid (-2) : invalid file
-*/
-
-int
-read_epsf(FILE *file, int filetype, F_pic *pic)
-{
-    return read_epsf_pdf(file, filetype, pic, False);
-}
-
-int
-read_epsf_pdf(FILE *file, int filetype, F_pic *pic, Boolean pdf_flag)
-{
-    int         nbitmap;
-    Boolean     bitmapz;
-    Boolean     foundbbx;
-    int         nested;
-    char       *cp;
-    unsigned char *mp;
-    unsigned int hexnib;
-    int         flag;
-    char        buf[300];
-    int         llx, lly, urx, ury, bad_bbox;
-    unsigned char *last;
-    Boolean     useGS;
-
-    useGS = False;
-
-    llx = lly = urx = ury = 0;
-    foundbbx = False;
-    nested = 0;
-    while (fgets(buf, 300, file) != NULL) {
-
-	/* look for /MediaBox for pdf file */
-	if (pdf_flag) {
-	  char *s;
-	  for(s=buf; (s=strchr(s,'/')); s++) {
-	    if (!strncmp(s, "/MediaBox", 8)) {	/* look for the MediaBox spec */
-		char       *c;
-
-		c = strchr(s, '[');
-		if (c && sscanf(c+1, "%d %d %d %d", &llx, &lly, &urx, &ury) < 4) {
-		    llx = lly = 0;
-		    urx = paper_sizes[0].width * 72 / PIX_PER_INCH;
-		    ury = paper_sizes[0].height * 72 / PIX_PER_INCH;
-		    file_msg("Bad MediaBox in header, assuming %s size",
-			     appres.INCHES ? "Letter" : "A4");
-		    app_flush();
+	while (fgets(buf, sizeof buf, file) != NULL) {
+		if ((s = strstr(buf, "/MediaBox"))) {
+			s = strchr(s, '[');
+			if (s && sscanf(s + 1, "%lf %lf %lf %lf",
+						&lx, &ly, &ux, &uy) == 4) {
+				*llx = (int)floor(lx);
+				*lly = (int)floor(ly);
+				*urx = (int)ceil(ux);
+				*ury = (int)ceil(uy);
+				ret = 0;
+			}
+			/* do not search for a second occurrence of /MediaBox */
+			break;
 		}
-		break;
-	    }
-	  }
-	    /* look for bounding box */
-	} else if (!nested && !strncmp(buf, "%%BoundingBox:", 14)) {
-	    if (!strstr(buf, "(atend)")) {	/* make sure doesn't say (atend) */
-		float       rllx, rlly, rurx, rury;
-
-		if (sscanf(strchr(buf, ':') + 1, "%f %f %f %f", &rllx, &rlly, &rurx, &rury) < 4) {
-		    file_msg("Bad EPS file: %s", file);
-		    close_picfile(file,filetype);
-		    return FileInvalid;
-		}
-		foundbbx = True;
-		llx = round(rllx);
-		lly = round(rlly);
-		urx = round(rurx);
-		ury = round(rury);
-		break;
-	    }
-	} else if (!strncmp(buf, "%%Begin", 7)) {
-	    ++nested;
-	} else if (nested && !strncmp(buf, "%%End", 5)) {
-	    --nested;
 	}
-    }
-    if (!pdf_flag && !foundbbx) {
-	file_msg("No bounding box found in EPS file");
-	close_picfile(file,filetype);
-	return FileInvalid;
-    }
-    if ((urx - llx) == 0) {
-	llx = lly = 0;
-	urx = (appres.INCHES ? LETTER_WIDTH : A4_WIDTH) * 72 / PIX_PER_INCH;
-	ury = (appres.INCHES ? LETTER_HEIGHT : A4_HEIGHT) * 72 / PIX_PER_INCH;
-	file_msg("Bad %s, assuming %s size",
-		 pdf_flag ? "/MediaBox" : "EPS bounding box",
-		 appres.INCHES ? "Letter" : "A4");
+
+	fclose(file);
+	return ret;
+}
+
+
+/*
+ * Check the bounding box, and provide a fallback for invalid values.
+ */
+static void
+correct_boundingbox(int *llx, int *lly, int *urx, int *ury, const char *box) {
+
+	if (*urx - *llx > 0 && *ury - *lly > 0)
+		return;
+
+	/* bad bounding box */
+	*llx = *lly = 0;
+	*urx = paper_sizes[appres.papersize].width * 72 / PIX_PER_INCH;
+	*ury = paper_sizes[appres.papersize].height * 72 / PIX_PER_INCH;
+	file_msg("Bad %s, assuming %s size", box,
+			paper_sizes[appres.papersize].sname);
 	app_flush();
-    }
-    pic->hw_ratio = (float) (ury - lly) / (float) (urx - llx);
+}
 
-    pic->pic_cache->size_x = round((urx - llx) * PIC_FACTOR);
-    pic->pic_cache->size_y = round((ury - lly) * PIC_FACTOR);
-    /* make 2-entry colormap here if we use monochrome */
-    pic->pic_cache->cmap[0].red = pic->pic_cache->cmap[0].green = pic->pic_cache->cmap[0].blue = 0;
-    pic->pic_cache->cmap[1].red = pic->pic_cache->cmap[1].green = pic->pic_cache->cmap[1].blue = 255;
-    pic->pic_cache->numcols = 0;
 
-    if ((bad_bbox = (urx <= llx || ury <= lly))) {
-	file_msg("Bad values in %s",
-		 pdf_flag ? "/MediaBox" : "EPS bounding box");
-	close_picfile(file,filetype);
-	return FileInvalid;
-    }
-    bitmapz = False;
+/*
+ * Read a pdf file. The filename "name" refers to an uncompressed file.
+ * Return gs_bitmap().
+ */
+int
+read_pdf(F_pic *pic, struct xfig_stream *restrict pic_stream)
+{
+	char	*savelocale;
+	/* prime with an invalid bounding box */
+	int	llx = 0, lly = 0, urx = 0, ury = 0;
 
-    /* look for a preview bitmap */
-    if (!pdf_flag) {
-	while (fgets(buf, 300, file) != NULL) {
-	    lower(buf);
-	    if (!strncmp(buf, "%%beginpreview", 14)) {
-		sscanf(buf, "%%%%beginpreview: %d %d %*d",
-		       &pic->pic_cache->bit_size.x, &pic->pic_cache->bit_size.y);
-		bitmapz = True;
-		break;
-	    }
-	}
-    }
-#ifdef GSBIT
-    /* if monochrome and a preview bitmap exists, don't use gs */
-    if ((!appres.monochrome || !bitmapz) && !bad_bbox) {
-	useGS = bitmap_from_gs(file, filetype, pic, urx, llx, ury, lly, pdf_flag);
-    }
-#endif /* GSBIT */
-    if (!useGS) {
-	if (!bitmapz) {
-	    file_msg("EPS object read OK, but no preview bitmap found/generated");
-	    close_picfile(file,filetype);
-	    return PicSuccess;
-	} else if (pic->pic_cache->bit_size.x <= 0 || pic->pic_cache->bit_size.y <= 0) {
-	    file_msg("Strange bounding-box/bitmap-size error, no bitmap found/generated");
-	    close_picfile(file,filetype);
-	    return FileInvalid;
-	} else {
-	    nbitmap = (pic->pic_cache->bit_size.x + 7) / 8 * pic->pic_cache->bit_size.y;
-	    pic->pic_cache->bitmap = (unsigned char *) malloc(nbitmap);
-	    if (pic->pic_cache->bitmap == NULL) {
-		file_msg("Could not allocate %d bytes of memory for %s bitmap\n",
-			 pdf_flag ? "PDF" : "EPS", nbitmap);
-		close_picfile(file,filetype);
+	if (uncompressed_content(pic_stream))
+		return FileInvalid;
+
+	/*
+	 * Find the /MediaBox. First, do a simple text-scan for "/MediaBox",
+	 * failing that, call ghostscript. Both scan_mediabox() and
+	 * gs_mediabox() need the C or POSIX locale. Do not reset the locale to
+	 * the environment, because read_pdf might be called from readfp_fig(),
+	 * which temporarily sets and needs the C locale.
+	 */
+#ifdef I18N
+	savelocale = setlocale(LC_NUMERIC, NULL);
+	if (strcmp(savelocale, "C") && strcmp(savelocale, "POSIX"))
+		setlocale(LC_NUMERIC, "C");
+	else
+		savelocale = "";
+#endif
+	if (scan_mediabox(pic_stream->content, &llx, &lly, &urx, &ury))
+		gs_mediabox(pic_stream->content, &llx, &lly, &urx, &ury);
+#ifdef I18N
+	if (*savelocale)
+		setlocale(LC_NUMERIC, savelocale);
+#endif
+
+	/* provide A4 or Letter bounding box, if reading /MediaBox fails */
+	correct_boundingbox(&llx, &lly, &urx, &ury, "/MediaBox");
+
+	/* set picture properties */
+	pic->hw_ratio = (float) (ury - lly) / (float) (urx - llx);
+	pic->pic_cache->subtype = T_PIC_PDF;
+	pic->pic_cache->size_x = round((urx - llx) * PIC_FACTOR);
+	pic->pic_cache->size_y = round((ury - lly) * PIC_FACTOR);
+	/* make 2-entry colormap here if we use monochrome */
+	pic->pic_cache->cmap[0].red = pic->pic_cache->cmap[0].green =
+		pic->pic_cache->cmap[0].blue = 0;
+	pic->pic_cache->cmap[1].red = pic->pic_cache->cmap[1].green =
+		pic->pic_cache->cmap[1].blue = 255;
+	pic->pic_cache->numcols = 0;
+
+	/* create the bitmap */
+	if (gs_bitmap(pic_stream->content, pic, llx, lly, urx, ury))
+		return FileInvalid;
+	else
 		return PicSuccess;
-	    }
-	    /* for whatever reason, ghostscript wasn't available or didn't work but there
-	     * is a preview bitmap - use that */
-	    mp = pic->pic_cache->bitmap;
-	    bzero((char *) mp, nbitmap);	/* init bitmap to zero */
-	    last = pic->pic_cache->bitmap + nbitmap;
-	    flag = True;
-	    while (fgets(buf, 300, file) != NULL && mp < last) {
-		lower(buf);
-		if (!strncmp(buf, "%%endpreview", 12) ||
-		    !strncmp(buf, "%%endimage", 10))
-		    break;
-		cp = buf;
-		if (*cp != '%')
-		    break;
-		cp++;
-		while (*cp != '\0') {
-		    if (isxdigit(*cp)) {
-			hexnib = hex(*cp);
-			if (flag) {
-			    flag = False;
-			    *mp = hexnib << 4;
-			} else {
-			    flag = True;
-			    *mp = *mp + hexnib;
-			    mp++;
-			    if (mp >= last)
+}
+
+
+/*
+ * Read an EPS file.
+ * Return codes:	PicSuccess (1): success
+ *			FileInvalid (-2): invalid file
+ */
+int
+read_eps(F_pic *pic, struct xfig_stream *restrict pic_stream)
+{
+	bool		bitmapz;
+	bool		flag;
+	int		llx, lly, urx, ury;
+	int		nested;
+	char		*cp;
+	unsigned char	*mp;
+	unsigned int	hexnib;
+	unsigned char	*last;
+	char		buf[300];
+	size_t		nbitmap;
+
+	if (!rewind_stream(pic_stream))
+		return FileInvalid;
+
+	/* invalid bounding box */
+	llx = lly = urx = ury = 0;
+
+	/* scan for the bounding box */
+	nested = 0;
+	while (fgets(buf, sizeof buf, pic_stream->fp) != NULL) {
+		if (!nested && !strncmp(buf, "%%BoundingBox:", 14)) {
+			/* make sure doesn't say (atend) */
+			if (!strstr(buf, "(atend)")) {
+				float       rllx, rlly, rurx, rury;
+
+				if (sscanf(strchr(buf, ':') + 1, "%f %f %f %f",
+						&rllx,&rlly,&rurx,&rury) < 4) {
+					file_msg("Bad EPS file: %s",
+							/* name might be a
+							   temporary file */
+							pic->pic_cache->file);
+					return FileInvalid;
+				}
+				llx = floor(rllx);
+				lly = floor(rlly);
+				urx = ceil(rurx);
+				ury = ceil(rury);
+				if (appres.DEBUG)
+					fputs("Found EPS Bounding Box\n",
+							stderr);
 				break;
 			}
-		    }
-		    cp++;
+		} else if (!strncmp(buf, "%%Begin", 7)) {
+			++nested;
+		} else if (nested && !strncmp(buf, "%%End", 5)) {
+			--nested;
 		}
-	    }
 	}
-    }
-    /* put in type */
-    pic->pic_cache->subtype = T_PIC_EPS;
-    close_picfile(file,filetype);
-    return PicSuccess;
+
+	/* if bounding box is invalid, provide fallback values */
+	correct_boundingbox(&llx, &lly, &urx, &ury, "EPS bounding box");
+
+	/* set picture properties */
+	pic->hw_ratio = (float) (ury - lly) / (float) (urx - llx);
+	pic->pic_cache->subtype = T_PIC_EPS;
+	pic->pic_cache->size_x = round((urx - llx) * PIC_FACTOR);
+	pic->pic_cache->size_y = round((ury - lly) * PIC_FACTOR);
+	/* make 2-entry colormap here if we use monochrome */
+	pic->pic_cache->cmap[0].red = pic->pic_cache->cmap[0].green =
+		pic->pic_cache->cmap[0].blue = 0;
+	pic->pic_cache->cmap[1].red = pic->pic_cache->cmap[1].green =
+		pic->pic_cache->cmap[1].blue = 255;
+	pic->pic_cache->numcols = 0;
+
+
+	/* look for a preview bitmap */
+	bitmapz = False;
+	while (fgets(buf, sizeof buf, pic_stream->fp) != NULL) {
+		lower(buf);
+		if (!strncmp(buf, "%%beginpreview", 14)) {
+			sscanf(buf, "%%%%beginpreview: %d %d %*d",
+					&pic->pic_cache->bit_size.x,
+					&pic->pic_cache->bit_size.y);
+			bitmapz = true;
+			if (appres.DEBUG)
+				fputs("Found preview bitmap.\n", stderr);
+			break;
+		}
+	}
+
+	/* use ghostscript, if a preview bitmap does not exist */
+	if (!bitmapz && !uncompressed_content(pic_stream) && !gs_bitmap(
+				pic_stream->content, pic, llx, lly, urx, ury)) {
+		return PicSuccess;
+	}
+
+	if (!bitmapz) {
+		file_msg("EPS object read OK, but no preview bitmap "
+				"found/generated");
+		return PicSuccess;
+	}
+
+	/* bitmapz == true */
+	if (pic->pic_cache->bit_size.x <= 0 || pic->pic_cache->bit_size.y <=0) {
+		file_msg("Strange bounding-box/bitmap-size error, no bitmap "
+				"found/generated");
+		return FileInvalid;
+	}
+
+	/* read the preview bitmap */
+	nbitmap = (pic->pic_cache->bit_size.x + 7) / 8 *
+						pic->pic_cache->bit_size.y;
+	pic->pic_cache->bitmap = malloc(nbitmap);
+	if (pic->pic_cache->bitmap == NULL) {
+		file_msg("Could not allocate %zd bytes of memory for "
+				"EPS bitmap", nbitmap);
+		return PicSuccess;
+	}
+
+	if (appres.DEBUG)
+		fputs("Reading preview bitmap in EPS file.\n", stderr);
+
+	mp = pic->pic_cache->bitmap;
+	memset(mp, 0, nbitmap);
+	last = pic->pic_cache->bitmap + nbitmap;
+	flag = true;
+	while (fgets(buf, sizeof buf, pic_stream->fp) != NULL && mp < last) {
+		lower(buf);
+		if (!strncmp(buf, "%%endpreview", 12) ||
+				!strncmp(buf, "%%endimage", 10))
+			break;
+		cp = buf;
+		if (*cp != '%')
+			break;
+		cp++;
+		while (*cp != '\0') {
+			if (isxdigit(*cp)) {
+				hexnib = hex(*cp);
+				if (flag) {
+					flag = false;
+					*mp = hexnib << 4;
+				} else {
+					flag = true;
+					*mp = *mp + hexnib;
+					mp++;
+					if (mp >= last)
+						break;
+				}
+			}
+			cp++;
+		}
+	}
+	return PicSuccess;
 }
 
-int
+
+static int
 hex(char c)
 {
-    if (isdigit(c))
-	return (c - 48);
-    else
-	return (c - 87);
+	if (isdigit(c))
+		return c - 48;
+	else
+		return c - 87;
 }
 
-void lower(char *buf)
+static void
+lower(char *buf)
 {
-    while (*buf) {
-	if (isupper(*buf))
-	    *buf = (char) tolower(*buf);
-	buf++;
-    }
+	while (*buf) {
+		if (isupper(*buf))
+			*buf = (char)tolower(*buf);
+		++buf;
+	}
 }
-
-#ifdef GSBIT
-/* if GhostScript */
-
-/* Read bitmap from gs, return True if success */
-Boolean
-bitmap_from_gs(file, filetype, pic, urx, llx, ury, lly, pdf_flag)
-    FILE       *file;
-    int         filetype;
-    F_pic      *pic;
-    int         urx, llx, ury, lly;
-    int         pdf_flag;
-{
-    char        buf[300];
-    FILE       *tmpfp, *pixfile, *gsfile;
-    char       *driver;
-    int         status, wid, ht, nbitmap, fd;
-    char        tmpfile[PATH_MAX],
-		pixnam[PATH_MAX],
-		errnam[PATH_MAX],
-		gscom[2 * PATH_MAX],
-		psnam[PATH_MAX];
-
-    wid = urx - llx;
-    ht = ury - lly;
-
-    strcpy(tmpfile, pic->pic_cache->file);
-    /* is the file a pipe? (This would mean that it is compressed) */
-    if (filetype == 1) {	/* yes, now we have to uncompress the file into a temp
-				 * file */
-	/* re-open the pipe */
-	close_picfile(file, filetype);
-	file = open_picfile(tmpfile, &filetype, PIPEOK, pixnam);
-   snprintf(tmpfile, sizeof(tmpfile), "%s/xfig-eps.XXXXXX", TMPDIR);
-   if ((fd = mkstemp(tmpfile)) == -1 || (tmpfp = fdopen(fd, "wb")) == NULL) {
-       if (fd != -1) {
-         unlink(tmpfile);
-         close(fd);
-       }
-	    file_msg("Couldn't open tmp file %s, %s", tmpfile, strerror(errno));
-	    return False;
-	}
-	while (fgets(buf, 300, file) != NULL)
-	    fputs(buf, tmpfp);
-	fclose(tmpfp);
-    }
-    /* make name /TMPDIR/xfig-pic######.pix */
-    snprintf(pixnam, sizeof(pixnam), "%s/xfig-pic.XXXXXX", TMPDIR);
-    if ((fd = mkstemp(pixnam)) == -1) {
-        file_msg("Couldn't open tmp file %s, %s", pixnam, strerror(errno));
-        return False;
-    }
-    close(fd);
-
-    /* and file name for any error messages from gs */
-    snprintf(errnam, sizeof(errnam), "%s/xfig-picerr.XXXXXX", TMPDIR);
-    if ((fd = mkstemp(errnam)) == -1) {
-       file_msg("Couldn't open tmp file %s, %s", errnam, strerror(errno));
-       return False;
-    }
-    close(fd);
-
-    /* generate gs command line */
-    /* for monochrome, use pbm */
-    if (tool_cells <= 2 || appres.monochrome) {
-	/* monochrome output */
-	driver = "pbmraw";
-    } else {
-	/* for color, use pcx */
-	driver = "pcx24b";
-    }
-    /* Canonicalize the eps file filename, needed to "defeat" -dSAFER */
-    if (!realpath(tmpfile, psnam)) {
-	file_msg("Cannot canonicalize %s: %s\n", tmpfile, strerror(errno));
-	return False;
-    }
-    sprintf(gscom,
-	    "%s -r72x72 -sDEVICE=%s -g%dx%d -sOutputFile=%s -dDELAYSAFER -c '<< /PermitFileReading [ (%s)] >> setuserparams .locksafe' -dSAFER -q - > %s 2>&1",
-	    appres.ghostscript, driver, wid, ht, pixnam, psnam, errnam);
-    if (appres.DEBUG)
-	fprintf(stderr,"calling: %s\n",gscom);
-    if ((gsfile = popen(gscom, "w")) == 0) {
-	file_msg("Cannot open pipe with command: %s\n", gscom);
-	return False;
-    }
-    /*********************************************
-    gs commands (New method)
-
-    W is the width in pixels and H is the height
-    gs -dSAFER -sDEVICE=pbmraw(or pcx24b) -gWxH -sOutputFile=/tmp/xfig-pic%%%.pix -q -
-
-    -llx -lly translate
-    % mark dictionary (otherwise fails for tiger.ps (e.g.):
-    % many ps files don't 'end' their dictionaries)
-    countdictstack
-    mark
-    /oldshowpage {showpage} bind def
-    /showpage {} def
-    /initgraphics {} def	<<< this nasty command should never be used!
-    /initmmatrix {} def		<<< this one too
-    (psfile) run
-    oldshowpage
-    % clean up stacks and dicts
-    cleartomark
-    countdictstack exch sub { end } repeat
-    quit
-    *********************************************/
-
-    fprintf(gsfile, "%d %d translate\n", -llx, -lly);
-    fprintf(gsfile, "countdictstack\n");
-    fprintf(gsfile, "mark\n");
-    fprintf(gsfile, "/oldshowpage {showpage} bind def\n");
-    fprintf(gsfile, "/showpage {} def\n");
-    fprintf(gsfile, "/initgraphics {} def\n");
-    fprintf(gsfile, "/initmatrix {} def\n");
-    fprintf(gsfile, "(%s) run\n", psnam);
-    fprintf(gsfile, "oldshowpage\n");
-    fprintf(gsfile, "cleartomark\n");
-    fprintf(gsfile, "countdictstack exch sub { end } repeat\n");
-    fprintf(gsfile, "quit\n");
-
-    status = pclose(gsfile);
-
-    if (filetype == 1)
-	unlink(tmpfile);
-    /* error return from ghostscript, look in error file */
-    if (status != 0 || (pixfile = fopen(pixnam, "rb")) == NULL) {
-	FILE       *errfile = fopen(errnam, "r");
-
-	file_msg("Could not parse %s file with ghostscript: %s",
-		 pdf_flag ? "PDF" : "EPS", file);
-	if (errfile) {
-	    file_msg("ERROR from ghostscript:");
-	    while (fgets(buf, 300, errfile) != NULL) {
-		buf[strlen(buf) - 1] = '\0';	/* strip newlines */
-		file_msg("%s", buf);
-	    }
-	    fclose(errfile);
-	    unlink(errnam);
-	}
-	unlink(pixnam);
-	return False;
-    }
-    pic->pic_cache->bit_size.x = wid;
-    pic->pic_cache->bit_size.y = ht;
-    if (tool_cells <= 2 || appres.monochrome) {
-	pic->pic_cache->numcols = 0;
-	nbitmap = (pic->pic_cache->bit_size.x + 7) / 8 * pic->pic_cache->bit_size.y;
-	pic->pic_cache->bitmap = (unsigned char *) malloc(nbitmap);
-	if (pic->pic_cache->bitmap == NULL) {
-	    file_msg("Could not allocate %d bytes of memory for %s bitmap\n",
-		     pdf_flag ? "PDF" : "EPS", nbitmap);
-	    return False;
-	}
-	fgets(buf, 300, pixfile);
-	/* skip any comments */
-	/* the last line read is the image size */
-	do
-	    fgets(buf, 300, pixfile);
-	while (buf[0] == '#');
-	if (fread(pic->pic_cache->bitmap, nbitmap, 1, pixfile) != 1) {
-	    file_msg("Error reading output (%s problems?): %s",
-		     pdf_flag ? "PDF" : "EPS", pixnam);
-	    file_msg("Look in %s for errors", errnam);
-	    fclose(pixfile);
-	    unlink(pixnam);
-	    pic->pic_cache->bitmap = NULL;
-	    return False;
-	}
-    } else {
-	FILE       *pcxfile;
-	int         filtyp;
-
-	/* now read the pcx file just produced by gs */
-	/* don't need bitmap - _read_pcx() will allocate a new one */
-	/* save picture width/height because read_pcx will overwrite it */
-	wid = pic->pic_cache->size_x;
-	ht = pic->pic_cache->size_y;
-	pcxfile = open_picfile(pixnam, &filtyp, PIPEOK, tmpfile);
-	status = _read_pcx(pcxfile, pic);
-	/* restore width/height */
-	pic->pic_cache->size_x = wid;
-	pic->pic_cache->size_y = ht;
-	if (status != 1) {
-	    file_msg("Error reading output from ghostscript (%s problems?): %s",
-		     pdf_flag ? "PDF" : "EPS", pixnam);
-	    file_msg("Look in %s for errors", errnam);
-	    unlink(pixnam);
-	    if (pic->pic_cache->bitmap)
-		free((char *) pic->pic_cache->bitmap);
-	    pic->pic_cache->bitmap = NULL;
-	    return False;
-	}
-    }
-    fclose(pixfile);
-    unlink(pixnam);
-    unlink(errnam);
-    return True;		/* Success */
-}
-
-#endif /* GSBIT */

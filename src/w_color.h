@@ -17,7 +17,8 @@
 #ifndef W_COLOR_H
 #define W_COLOR_H
 
-#include "w_indpanel.h"
+#include <X11/Intrinsic.h>
+#include "w_indpanel.h"		/* ind_sw_info */
 
 #define USE_EXISTING_COLOR	True
 #define DONT_USE_EXISTING_COLOR	False

@@ -16,26 +16,21 @@
  *
  */
 
-#include "object.h"
+#ifndef XFIG_MATH_H
+#define XFIG_MATH_H
+/* use my own PI because GNUC has a long double and others have something else */
+#undef M_PI
+#undef M_PI_2
+#undef M_2PI
+#define M_PI	3.14159265358979323846
+#define M_PI_2	1.57079632679489661923
+#define M_2PI	6.28318530717958647692
 
-#include <stddef.h>
+#define		min2(a, b)	(((a) < (b)) ? (a) : (b))
+#define		max2(a, b)	(((a) > (b)) ? (a) : (b))
+#define		min3(a,b,c)	((((a<b)?a:b)<c)?((a<b)?a:b):c)
+#define		max3(a,b,c)	((((a>b)?a:b)>c)?((a>b)?a:b):c)
+#define		round(a)	(int)(((a)<0.0)?(a)-.5:(a)+.5)
+#define		signof(a)	(((a) < 0) ? -1 : 1)
 
-
-/************************  Objects  **********************/
-
-F_compound	objects = {0, 0, { 0, 0 }, { 0, 0 },
-				NULL, NULL, NULL, NULL, NULL,
-				(char*) NULL, NULL, NULL, False, NULL, NULL};
-
-/************  global object pointers ************/
-
-F_line	       *cur_l, *new_l, *old_l;
-F_arc	       *cur_a, *new_a, *old_a;
-F_ellipse      *cur_e, *new_e, *old_e;
-F_text	       *cur_t, *new_t, *old_t;
-F_spline       *cur_s, *new_s, *old_s;
-F_compound     *cur_c, *new_c, *old_c;
-F_point	       *first_point=NULL, *cur_point=NULL;
-F_linkinfo     *cur_links=NULL;
-
-struct _pics   *pictures=NULL; /* common repository to share imported pictures */
+#endif

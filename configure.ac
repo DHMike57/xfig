@@ -6,7 +6,7 @@ AC_COPYRIGHT([FIG : Facility for Interactive Generation of figures
 Copyright (c) 1985-1988 by Supoj Sutanthavibul
 Parts Copyright (c) 1989-2015 by Brian V. Smith
 Parts Copyright (c) 1991 by Paul King
-Parts Copyright (c) 2016-2019 by Thomas Loimer
+Parts Copyright (c) 2016-2020 by Thomas Loimer
 
 Any party obtaining a copy of these files is granted, free of charge, a
 full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,24 +19,18 @@ and this permission notice remain intact.
 ])
 
 # configure.ac
-# Author: Thomas Loimer, 2016-2019
+# Author: Thomas Loimer, 2016-2020
 
 dnl The minimum autoconf version to process this file. In version 2.60,
 dnl the directory variables changed, see info autoconf, section 4.8.3.
 AC_PREREQ([2.60])
 
-dnl Define VERSION in version.m4
+dnl Define XFIG_VERSION and RELEASEDATE in version.m4
 m4_include([version.m4])
 
 # Initialize
 AC_INIT([xfig], [XFIG_VERSION], [thomas.loimer@tuwien.ac.at],
 	[], [https://sourceforge.net/projects/mcj/])
-dnl AC_INIT([FULL-PACKAGE-NAME], [VERSION], [BUG-REPORT-ADDRESS],
-dnl	[TARNAME], [URL])
-dnl TARNAME defaults to FULL-PACKAGE-NAME, converted to lower case
-dnl and all characters other than alphanumerics and _ changed to -.
-dnl defines PACKAGE_NAME, PACKAGE_TARNAME, PACKAGE_VERSION, PACKAGE_STRING,
-dnl PACKAGE_BUGREPORT and PACKAGE_URL
 
 # Define variables that are written into config.h.
 dnl Need to double-quote (shell-)vars identical to m4-variables.
@@ -54,7 +48,6 @@ AC_DEFINE_UNQUOTED([RELEASE_YEAR], ["$RELEASE_YEAR"],
 # Set automake options.
 dnl The options are written to AUTOMAKE_OPTIONS. A minimum version
 dnl of automake, e.g., 1.6.1, can also be put into AM_INIT_AUTOMAKE.
-# AM_INIT_AUTOMAKE([-Wall foreign dist-xz no-dist-gzip subdir-objects])
 AM_INIT_AUTOMAKE([-Wall foreign dist-xz no-dist-gzip subdir-objects])
 dnl  -Wall.....enable all (automake) warnings
 dnl  -Werror...and report them as error
@@ -105,7 +98,6 @@ dnl AC_CHECK_PROG(XDG_MENU, [xdg-desktop-menu], [xdg-desktop-menu])
 # Checks for libraries.
 AC_SEARCH_LIBS([pow], [m])dnl
 dnl AC_SEARCH_LIBS([deflate], [z])  # libz is not needed.
-AC_SEARCH_LIBS([png_read_info], [png])
 AC_SEARCH_LIBS([FcInit], [fontconfig])
 AS_IF([test "x$ac_cv_search_pow" = xno \
 	|| test "x$ac_cv_search_png_read_info" = xno],
@@ -114,7 +106,7 @@ AS_IF([test "x$ac_cv_search_pow" = xno \
 
 # Checks for header files.
 AC_HEADER_DIRENT
-AC_CHECK_HEADERS_ONCE([features.h sys/time.h png.h])
+AC_CHECK_HEADERS_ONCE([sys/time.h])
 
 # Get X header and library location.
 # Simply add libraries to LIBS, x_includes to XCPPFLAGS
@@ -139,7 +131,53 @@ XLIBS="-lXft -lXt -lX11"
 AC_CHECK_HEADER([X11/X.h])
 
 
+# Check for libraries and header files
+dnl First search for the header, only then search for the libs. The other way
+dnl round, the found library would be prepended to LIBS, unnecessarily.
+AC_CHECK_HEADER([ghostscript/iapi.h],
+    [AC_SEARCH_LIBS([gsapi_revision], [gs],
+	[AC_DEFINE([HAVE_GSLIB], 1,
+	    [Define to 1 if you have the ghostscript library and header files.])])],
+    [], [AC_INCLUDES_DEFAULT])
+AS_IF([test $ac_cv_header_ghostscript_iapi_h = yes && \
+	test "x$ac_cv_search_gsapi_revision" != xno],
+    [gsman="This version of xfig links into the ghostscript library.
+The ghostscript executable is not needed, it is only called as a fallback-solution."],
+    [gsman="This is needed when importing PDF or Encapsulated
+PostScript files. To disable calling ghostscript, set to the empty string,
+.BR \"\-ghostscript \"\"\"\"\" ."])dnl
+AC_SUBST([gsman])
+AM_SUBST_NOTMAKE([gsman])
+
+AC_CHECK_HEADER([jpeglib.h],
+    [AC_SEARCH_LIBS([jpeg_read_header], [jpeg],
+	[AC_DEFINE([HAVE_JPEG], 1,
+	    [Define to 1 if you have the jpeg library and header files.])])],
+    [], [AC_INCLUDES_DEFAULT])
+AM_CONDITIONAL([HAVE_JPEG], [test $ac_cv_header_jpeglib_h = yes && \
+	test "x$ac_cv_search_jpeg_read_header" != xno])dnl
+
+AC_CHECK_HEADER([png.h],
+    [AC_SEARCH_LIBS([png_read_info], [png],
+	[AC_DEFINE([HAVE_PNG], 1,
+	    [Define to 1 if you have the png library and header files.])])],
+    [], [AC_INCLUDES_DEFAULT])
+AM_CONDITIONAL([HAVE_PNG], [test $ac_cv_header_png_h = yes && \
+	test "x$ac_cv_search_png_read_info" != xno])dnl
+
+AC_CHECK_HEADER([tiffio.h],
+    [AC_SEARCH_LIBS([TIFFOpen], [tiff],
+	[AC_DEFINE([HAVE_TIFF], 1,
+	    [Define to 1 if you have the tiff library and header files.])])],
+    [], [AC_INCLUDES_DEFAULT])
+AM_CONDITIONAL([HAVE_TIFF], [test $ac_cv_header_tiffio_h = yes && \
+	test "x$ac_cv_search_TIFFOpen" != xno])dnl
+
+
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
+AC_C_INLINE
+AC_C_RESTRICT
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_CHECK_DECLS([S_IFDIR, S_IWRITE],[],[],[[#include <sys/stat.h>]])dnl
@@ -157,8 +195,6 @@ AM_CONDITIONAL([ALLOW_MULTIPLE_DEFINITION],
 
 # Checks for library functions.
 AC_FUNC_FORK
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
 dnl AC_FUNC_STRTOD
 # The setlocale seems to be broken, grep HAVE_SETLOCALE, setlocale
 AC_CHECK_FUNCS_ONCE([getcwd setlocale strerror])
@@ -191,23 +227,15 @@ AS_IF([test "x$enableval" = xyes],
 	[Define to use preediting with i18n.])])
 AM_CONDITIONAL([I18N], [test "x$enableval" = xyes])dnl
 
-AC_ARG_ENABLE(jpeg, [AS_HELP_STRING([--disable-jpeg],
-	[disable support to import jpeg files (default: enable)])],
-    [],[enableval=yes])
-AS_IF([test "x$enableval" = xyes],
-    [AC_SEARCH_LIBS([jpeg_read_header], [jpeg],
-	[AC_DEFINE([USE_JPEG], 1,
-	    [Define to enable support for importing jpeg files.])])])
-AM_CONDITIONAL([USE_JPEG], [test "x$enableval" = xyes && \
-	test "x$ac_cv_search_jpeg_read_header" != xno])dnl
-
-AC_ARG_WITH(gs, [AS_HELP_STRING([--without-gs],
-	[do not use ghostscript to render embedded eps or pdf images)])],
-    [],[withval=yes])dnl
-AS_IF([test "x$withval" = xyes],
-    [AC_DEFINE([GSBIT], 1,
-	[Define to use ghostscript for rendering of embedded \
-		eps or pdf-images.])])dnl
+AC_ARG_WITH(gsexe, [AS_HELP_STRING([--with-gsexe=<name>],
+       [specify filename or path of the ghostscript executable (default: gs);
+ empty string, "", to avoid calling the executable])],
+    [AS_IF([test "x$withval" = xno], [withval=""])],
+    [withval=yes])dnl
+AS_IF([test "x$withval" = xyes], [withval="gs"])
+AC_DEFINE_UNQUOTED([GSEXE], ["$withval"],
+    [Define to the filename or path of the ghostscript executable.])dnl
+AC_SUBST([GSEXE], ["$withval"])
 
 dnl With # as comment, configure fails on the lines below!
 dnl Currently only w_rottext.c includes CACHE_[XIMAGES|BITMAPS], logic there
@@ -230,16 +258,12 @@ AC_DEFINE_UNQUOTED([CACHE_SIZE_LIMIT], [$enableval],
     [Define to the maximum size of bitmaps (kB) cached in the X-server.])dnl
 
 AC_ARG_ENABLE(xpm, [AS_HELP_STRING([--disable-xpm],
-	[disable support for xpm color-bitmaps, internally \
-		 and for import/export (default: enable)])],
-    [], [enableval=yes])dnl
+	[disable support for xpm color-bitmaps, internally and for import \
+		(default: enable)])], [], [enableval=yes])dnl
 AS_IF([test "x$enableval" = xyes],
     [AC_SEARCH_LIBS([XpmFree], [Xpm],
-	[AC_DEFINE([USE_XPM], 1, [Define to use xpm color-bitmaps and enable \
-		import/export to xpm files.])
-	 AM_SUBST_NOTMAKE(XPM_MAN)
-	 AC_SUBST(XPM_MAN, ["
-xpm	X11 Pixmap"])], [enableval=no])])
+	[AC_DEFINE([USE_XPM], 1, [Define to use xpm color-bitmaps and enable
+	import of xpm files.])], [enableval=no])])
 AM_CONDITIONAL([USE_XPM], [test "x$enableval" = xyes])dnl
 
 AC_ARG_ENABLE(splash, [AS_HELP_STRING([--enable-splash],
@@ -297,7 +321,7 @@ AS_IF([test "$enableval" -ge 1 && test "$enableval" -le 4],
 	 when entering multi-key characters.])])dnl
 
 printcapfile="/etc/printcap"
-AC_ARG_WITH(printcap, [AS_HELP_STRING([--with-printcap=<pathname>],
+AC_ARG_WITH(printcap, [AS_HELP_STRING([--with-printcap=<path>],
 	[specify path to printcap file (default: /etc/printcap)])],
     [AS_IF([test "x$withval" = xno || test "x$withval" = xyes],
 	[AC_MSG_NOTICE([using $printcapfile as printcap file])],
@@ -314,7 +338,7 @@ dnl	AS_IF([test -n "$PKG_CONFIG"],dnl
 dnl	[appdefaultdir="$($PKG_CONFIG --variable=appdefaultdir xt)"],dnl
 
 default_appdefaultdir=
-AC_ARG_WITH(appdefaultdir, [AS_HELP_STRING([--with-appdefaultdir=<pathname>],
+AC_ARG_WITH(appdefaultdir, [AS_HELP_STRING([--with-appdefaultdir=<path>],
 	[specifiy directory for X resources file (default: \
 		${datarootdir}/X11/app-defaults)])],
     [],[withval='${datarootdir}/X11/app-defaults'])dnl
@@ -330,13 +354,13 @@ AS_IF([test "x$prefix" = xNONE],
      APPDEFAULTDIR=`eval echo "$APPDEFAULTDIR"`;])dnl
 AC_SUBST([APPDEFAULTDIR])dnl
 
-AC_ARG_WITH(icondir, [AS_HELP_STRING([--with-icondir=<pathname>],
+AC_ARG_WITH(icondir, [AS_HELP_STRING([--with-icondir=<path>],
 	[specify icon directory, to put xfig.png \
 		(default: $datarootdir/pixmaps)])],
     [], [withval='${datarootdir}/pixmaps'])dnl
 AC_SUBST(icondir, ["$withval"])dnl
 
-AC_ARG_WITH(applicationsdir, AS_HELP_STRING([--with-applicationsdir=<pathname>],
+AC_ARG_WITH(applicationsdir, AS_HELP_STRING([--with-applicationsdir=<path>],
 	[specify directory for xfig.desktop file \
 		(default: $datarootdir/applications)]),
     [], [withval='${datarootdir}/applications'])dnl
@@ -350,7 +374,7 @@ AS_IF([test "x$withval" != xyes],dnl
     [AC_DEFINE([NO_COMPKEYDB], 1,dnl
 	[Define to not use the Compose Key Database file shipped with xfig.])])
 
-AC_ARG_WITH(compkeydbdir, [AS_HELP_STRING([--with-compkeydbdir=<pathname>],
+AC_ARG_WITH(compkeydbdir, [AS_HELP_STRING([--with-compkeydbdir=<path>],
 	[specify directory for the compose key database file, CompKeyDB \
 		(default: $datadir/xfig)])],
     [], [withval='${datadir}/xfig'])dnl

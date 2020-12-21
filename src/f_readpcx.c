@@ -1,7 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Based on (public domain) code from Russell Marks
- * Parts Copyright (c) 2000-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,15 +16,27 @@
  *
  */
 
-#include "fig.h"
+/*
+ * f_readpcx.c
+ * Based on (public domain) code from Russell Marks
+ *
+ */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
+#endif
+
+#include "f_readpcx.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/X.h>
+
 #include "resources.h"
 #include "object.h"
-#include "f_neuclrtab.h"
-#include "f_picobj.h"
 #include "f_util.h"
-#include "w_indpanel.h"
-#include "w_color.h"
-#include "w_msgpanel.h"
+#include "f_picobj.h"
 #include "w_setup.h"
 
 /* This is based on: */
@@ -53,39 +67,41 @@ struct pcxhed
 
 
 /* prototypes */
-void dispbyte(unsigned char *ptr,int *xp,int *yp,int c,int w,int h,
-              int real_bpp,int byteline,int *planep,int *pmaskp);
+static void	dispbyte(unsigned char *ptr,int *xp,int *yp,int c,int w,int h,
+			int real_bpp,int byteline,int *planep,int *pmaskp);
 
-int	_read_pcx(FILE *pcxfile, F_pic *pic);
+static int	_read_pcx(FILE *pcxfile, F_pic *pic);
 
 
 int
-read_pcx(FILE *file, int filetype, F_pic *pic)
+read_pcx(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-    int		    status;
+	/* make scale factor smaller for metric */
+	const double scale =
+		(appres.INCHES ? (double)PIX_PER_INCH : 2.54*PIX_PER_CM)
+		/ DISPLAY_PIX_PER_INCH;
 
-    /* make scale factor smaller for metric */
-    float scale = (appres.INCHES ?
-		    (float)PIX_PER_INCH :
-		    2.54*PIX_PER_CM)/(float)DISPLAY_PIX_PER_INCH;
+	if (*pic_stream->name) {
+		/* called directly from read_picobj() */
+		if (!rewind_stream(pic_stream))
+			return FileInvalid;
+	}
+	/* otherwise, called from read_gif(), rewind not necessary */
 
-    status = _read_pcx(file,pic);
-    if (status != 1) {
-	close_picfile(file,filetype);
-	return FileInvalid;
-    }
+	if (_read_pcx(pic_stream->fp, pic) != PicSuccess)
+		return FileInvalid;
 
-    pic->pixmap = None;
-    pic->hw_ratio = (float) pic->pic_cache->bit_size.y / pic->pic_cache->bit_size.x;
-    pic->pic_cache->subtype = T_PIC_PCX;
-    pic->pic_cache->size_x = pic->pic_cache->bit_size.x * scale;
-    pic->pic_cache->size_y = pic->pic_cache->bit_size.y * scale;
-    /* if monochrome display map bitmap */
-    if (tool_cells <= 2 || appres.monochrome)
-	map_to_mono(pic);
+	pic->pixmap = None;
+	pic->hw_ratio = (float)pic->pic_cache->bit_size.y
+					/ pic->pic_cache->bit_size.x;
+	pic->pic_cache->subtype = T_PIC_PCX;
+	pic->pic_cache->size_x = pic->pic_cache->bit_size.x * scale;
+	pic->pic_cache->size_y = pic->pic_cache->bit_size.y * scale;
+	/* if monochrome display map bitmap */
+	if (tool_cells <= 2 || appres.monochrome)
+		map_to_mono(pic);
 
-    close_picfile(file,filetype);
-    return PicSuccess;
+	return PicSuccess;
 }
 
 /* _read_pcx() is called from read_pcx() and read_epsf().
@@ -101,9 +117,8 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	unsigned char	*pal;
 	struct pcxhed	 header;
 	int		 count, cnt;
-	long		 bytemax,bytesdone;
 	byte		 inbyte;
-	int		 real_bpp;		/* how many bpp file really is */
+	int		 real_bpp;  /* how many bits per pixel file really is */
 
 	pic->pic_cache->bitmap=NULL;
 
@@ -134,7 +149,13 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	  case 8:
 	    switch(header.nplanes) {
 	      case 1: real_bpp=8; break;
-	      case 3: real_bpp=24; bytepp = 3; break;
+	      case 3: real_bpp=24;
+		      if (tool_vclass == TrueColor && image_bpp == 4 &&
+				      !appres.monochrome)
+			      bytepp = 4;
+		      else
+			      bytepp = 3;
+		      break;
 	    }
 	    break;
 	  }
@@ -153,17 +174,12 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	    return FileInvalid;
 
 	x=0; y=0;
-	bytemax=w*h;
-	if (real_bpp==1 || real_bpp==4)
-	    bytemax=(1<<30);	/* we use a 'y<h' test instead for these files */
-
+					/* why (h+2) ? */
 	if ((pic->pic_cache->bitmap=malloc(w*(h+2)*bytepp))==NULL)
 	    return FileInvalid;
 
-	/* need this if more than one bitplane */
-	memset(pic->pic_cache->bitmap,0,w*h*bytepp);
-
-	bytesdone=0;
+	/* need this if more than one bitplane, and also if one bitplane */
+	memset(pic->pic_cache->bitmap, 0, w * h * bytepp);
 
 	/* start reading image */
 	for (yy=0; yy<h; yy++) {
@@ -177,14 +193,12 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 	    if ((inbyte & 0xC0) != 0xC0) {
 	      dispbyte(pic->pic_cache->bitmap,&x,&y,inbyte,w,h,real_bpp,
 		byteline,&plane,&pmask);
-	      bytesdone++;
 	    } else {
 	      cnt = inbyte & 0x3F;
 	      inbyte = fgetc(pcxfile);
 	      for (count=0; count<cnt; count++)
 		dispbyte(pic->pic_cache->bitmap,&x,&y,inbyte,w,h,real_bpp,
 			byteline,&plane,&pmask);
-	      bytesdone += cnt;
 	    }
 	  }
 	}
@@ -194,17 +208,15 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 
 	/* read palette */
 	switch(real_bpp) {
-	    case 1:
-		pic->pic_cache->cmap[0].red = pic->pic_cache->cmap[0].green = pic->pic_cache->cmap[0].blue = 0;
-		pic->pic_cache->cmap[1].red = pic->pic_cache->cmap[1].green = pic->pic_cache->cmap[1].blue = 255;
-		pic->pic_cache->numcols = 2;
-		break;
+	    unsigned char	*src;
+	    unsigned char	*dst;
 
+	    case 1:
 	    case 2:
 	    case 3:
 	    case 4:
-		/* 2-,3-, and 4-bit, palette is embedded in header */
-		pic->pic_cache->numcols = (1<<real_bpp);
+		/* 1 to 4 bit, palette is embedded in header */
+		pic->pic_cache->numcols = 1 << real_bpp;
 		for (x=0; x < pic->pic_cache->numcols; x++) {
 		    pic->pic_cache->cmap[x].red   = header.pal16[x*3  ];
 		    pic->pic_cache->cmap[x].green = header.pal16[x*3+1];
@@ -214,7 +226,14 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 
 	    case 8:
 		/* 8-bit */
-		fseek(pcxfile, -768L, SEEK_END);/* locate colormap in last 768 bytes of file */
+		/*
+		 * The palette at the end is separated by a byte, value 12, from
+		 * the image data. For a regular file, one could also
+		 * fseek(pcxfile, -768L, SEEK_END)
+		 */
+		i = fgetc(pcxfile);
+		while (i != 12)
+			i = fgetc(pcxfile);
 		for (x=0; x<256; x++) {
 		    pic->pic_cache->cmap[x].red   = fgetc(pcxfile);
 		    pic->pic_cache->cmap[x].green = fgetc(pcxfile);
@@ -234,9 +253,25 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 		break;
 
 	    case 24:
-		/* no palette, must use neural net to reduce to 256 colors with palette */
-		if (!map_to_palette(pic))
-		    return FileInvalid;		/* out of memory or something */
+		/* no palette ...*/
+		if (tool_vclass == TrueColor && image_bpp == 4 &&
+				!appres.monochrome) {
+			/* ...expand BGR to BGRA */
+			src = pic->pic_cache->bitmap + w * h * 3;
+			dst = pic->pic_cache->bitmap + w * h * 4 - 1;
+			while (src > pic->pic_cache->bitmap + 2) {
+				*(--dst) = *(--src);
+				*(--dst) = *(--src);
+				*(--dst) = *(--src);
+				--dst;
+			}
+			pic->pic_cache->numcols = -1;
+		} else {
+			/* ...or use neural net to reduce to 256 colors
+			   with palette */
+			if (!map_to_palette(pic))
+				return FileInvalid;
+		}
 		break;
 	}
 	return PicSuccess;

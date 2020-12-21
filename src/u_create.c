@@ -1,8 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ *
  * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
@@ -16,29 +18,28 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "mode.h"
 #include "object.h"
 #include "e_edit.h"
-#include "u_create.h"
-#include "w_indpanel.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_setup.h"
-#include "w_util.h"
-
 #include "e_scale.h"
+#include "u_create.h"
 #include "u_free.h"
 #include "u_list.h"
 #include "w_cursor.h"
 #include "w_modepanel.h"
 #include "w_mousefun.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
 
 static char	Err_mem[] = "Running out of memory.";
 
-/****************** ARROWS ****************/
 
+/****************** ARROWS ****************/
 
 
 F_arrow *
@@ -457,7 +458,7 @@ create_picture_entry(void)
 
     picture = malloc(sizeof(struct _pics));
 
-    picture->file = picture->realname = NULL;
+    picture->file = NULL;
     picture->bitmap = NULL;
     picture->transp = TRANSP_NONE;
     picture->numcols = 0;
@@ -515,7 +516,7 @@ copy_line(F_line *l)
 	    return NULL;
 	}
 	/* copy all the numbers and the pointer to the picture repository (pic->pic_cache) */
-	bcopy(l->pic, line->pic, PIC_SIZE);
+	memcpy(line->pic, l->pic, PIC_SIZE);
 	/* increase reference count for this picture */
 	if (line->pic->pic_cache)
 	    line->pic->pic_cache->refcount++;

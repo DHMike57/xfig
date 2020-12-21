@@ -15,37 +15,44 @@
  *
  */
 
-#include "fig.h"
-#include "figx.h"
+#include "f_load.h"
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/StringDefs.h>	/* XtNlabel, XtNstring */
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
-#include "f_read.h"
-#include "f_util.h"
-#include "u_create.h"
-#include "u_undo.h"
-#include "w_cmdpanel.h"
-#include "w_export.h"
-#include "w_file.h"
-#include "w_indpanel.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_rulers.h"
-#include "w_print.h"
-#include "w_util.h"
-#include "w_setup.h"
 
 #include "e_compound.h"
+#include "f_read.h"
+#include "f_util.h"
 #include "u_bound.h"
+#include "u_create.h"
 #include "u_draw.h"
 #include "u_list.h"
 #include "u_redraw.h"
+#include "u_undo.h"
+#include "w_cmdpanel.h"
 #include "w_cursor.h"
+#include "w_export.h"
 #include "w_grid.h"
+#include "w_layers.h"
+#include "w_msgpanel.h"
+#include "w_print.h"
+#include "w_rulers.h"
+#include "w_setup.h"
+#include "w_util.h"
 
 /* LOCAL declarations */
 
-void	read_fail_message(char *file, int err);
+static void	read_fail_message(char *file, int err);
+static void	update_settings (fig_settings *settings);
+
 
 /* load Fig file.
 
@@ -53,11 +60,6 @@ void	read_fail_message(char *file, int err);
 	file		= name of Fig file
 	xoff, yoff	= offset from 0 (Fig units)
 */
-
-
-void update_settings (fig_settings *settings);
-void update_recent_list (char *file);
-
 int
 load_file(char *file, int xoff, int yoff)
 {
@@ -143,7 +145,8 @@ load_file(char *file, int xoff, int yoff)
     return 1;
 }
 
-void update_settings(fig_settings *settings)
+static void
+update_settings(fig_settings *settings)
 {
 	DeclareArgs(2);
 	char    buf[30];
@@ -294,7 +297,8 @@ void merge_file(char *file, int xoff, int yoff)
 
 /* update the recent list */
 
-void update_recent_list(char *file)
+void
+update_recent_list(char *file)
 {
     int    i;
     char   *name, path[PATH_MAX], num[3];
@@ -348,7 +352,7 @@ void update_recent_list(char *file)
     update_recent_files();
 }
 
-void
+static void
 read_fail_message(char *file, int err)
 {
     if (err == 0)		/* Successful read */

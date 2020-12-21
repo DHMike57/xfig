@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,7 +16,11 @@
  *
  */
 
-#include "fig.h"
+#include "e_flip.h"
+
+#include <math.h>
+#include <stddef.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
@@ -23,14 +28,14 @@
 #include "e_rotate.h"
 #include "u_draw.h"
 #include "u_search.h"
+#include "u_redraw.h"
 #include "u_create.h"
 #include "u_list.h"
-#include "w_canvas.h"
-#include "w_mousefun.h"
-
 #include "u_markers.h"
-#include "u_redraw.h"
+#include "w_canvas.h"
 #include "w_cursor.h"
+#include "w_mousefun.h"
+#include "xfig_math.h"
 
 /* EXPORTS */
 
@@ -38,11 +43,13 @@ int		setanchor;
 int		setanchor_x;
 int		setanchor_y;
 
+/* LOCAL */
+
 static int	flip_axis;
 static int	copy;
 
 static void	init_flip(F_line *p, int type, int x, int y, int px, int py);
-static void	init_copynflip(F_line *p, int type, int x, int y, int px, int py);
+static void	init_copynflip(F_line *p, int type, int x,int y, int px,int py);
 static void	set_unset_anchor(int x, int y);
 static void	init_fliparc(F_arc *old_a, int px, int py);
 static void	init_flipcompound(F_compound *old_c, int px, int py);
@@ -51,13 +58,11 @@ static void	init_flipline(F_line *old_l, int px, int py);
 static void	init_flipspline(F_spline *old_s, int px, int py);
 static void	flip_selected(void);
 static void	flip_search(F_line *p, int type, int x, int y, int px, int py);
+static void	flip_arc (F_arc *a, int x, int y, int flip_axis);
+static void	flip_ellipse (F_ellipse *e, int x, int y, int flip_axis);
+static void	flip_line (F_line *l, int x, int y, int flip_axis);
+static void	flip_spline (F_spline *s, int x, int y, int flip_axis);
 
-
-void flip_arc (F_arc *a, int x, int y, int flip_axis);
-void flip_compound (F_compound *c, int x, int y, int flip_axis);
-void flip_ellipse (F_ellipse *e, int x, int y, int flip_axis);
-void flip_line (F_line *l, int x, int y, int flip_axis);
-void flip_spline (F_spline *s, int x, int y, int flip_axis);
 
 void
 flip_ud_selected(void)
@@ -155,6 +160,9 @@ init_copynflip(F_line *p, int type, int x, int y, int px, int py)
 static void
 flip_search(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x;
+	(void)y;
+
     switch (type) {
     case O_POLYLINE:
 	cur_l = (F_line *) p;
@@ -285,7 +293,8 @@ init_flipspline(F_spline *old_s, int px, int py)
     redisplay_spline(new_s);
 }
 
-void flip_line(F_line *l, int x, int y, int flip_axis)
+static void
+flip_line(F_line *l, int x, int y, int flip_axis)
 {
     F_point	   *p;
 
@@ -345,7 +354,8 @@ void flip_text(F_text *t, int x, int y, int flip_axis)
     }
 }
 
-void flip_ellipse(F_ellipse *e, int x, int y, int flip_axis)
+static void
+flip_ellipse(F_ellipse *e, int x, int y, int flip_axis)
 {
     switch (flip_axis) {
     case UD_FLIP:		/* x axis  */
@@ -364,7 +374,8 @@ void flip_ellipse(F_ellipse *e, int x, int y, int flip_axis)
     e->angle = - e->angle;
 }
 
-void flip_arc(F_arc *a, int x, int y, int flip_axis)
+static void
+flip_arc(F_arc *a, int x, int y, int flip_axis)
 {
     switch (flip_axis) {
     case UD_FLIP:		/* x axis  */
@@ -384,7 +395,8 @@ void flip_arc(F_arc *a, int x, int y, int flip_axis)
     }
 }
 
-void flip_compound(F_compound *c, int x, int y, int flip_axis)
+void
+flip_compound(F_compound *c, int x, int y, int flip_axis)
 {
     F_line	   *l;
     F_arc	   *a;

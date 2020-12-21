@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,10 +16,17 @@
  *
  */
 
+#ifndef E_FLIP_H
+#define E_FLIP_H
+
+#include "object.h"
+
 extern int	setanchor;
 extern int	setanchor_x;
 extern int	setanchor_y;
 
-extern int flip_compound (F_compound *c, int x, int y, int flip_axis);
-extern void flip_lr_selected (void);
-extern void flip_ud_selected (void);
+extern void	flip_compound (F_compound *c, int x, int y, int flip_axis);
+extern void	flip_lr_selected (void);
+extern void	flip_ud_selected (void);
+
+#endif

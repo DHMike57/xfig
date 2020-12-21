@@ -15,41 +15,49 @@
  *
  */
 
-#include "fig.h"
+#include "e_glue.h"
+
+#include <stdlib.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
-#include "paintop.h"
-#include "d_line.h"
+#include "d_box.h"
 #include "f_read.h"
 #include "u_bound.h"
 #include "u_create.h"
-#include "u_draw.h"
 #include "u_elastic.h"
 #include "u_list.h"
+#include "u_markers.h"
 #include "u_search.h"
 #include "u_undo.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_layers.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-
-#include "d_box.h"
-#include "u_markers.h"
-#include "w_cursor.h"
-
-static void	create_compoundobject(int x, int y), cancel_tag_region(void),
-		init_tag_region(int x, int y), tag_region(int x, int y), tag_object(F_line *p, int type, int x, int y, int px, int py);
-static void	get_arc(F_arc **list), sel_arc(int xmin, int ymin, int xmax, int ymax);
-static void	get_compound(F_compound **list), sel_compound(int xmin, int ymin, int xmax, int ymax);
-static void	get_ellipse(F_ellipse **list), sel_ellipse(int xmin, int ymin, int xmax, int ymax);
-static void	get_line(F_line **list), sel_line(int xmin, int ymin, int xmax, int ymax);
-static void	get_spline(F_spline **list), sel_spline(int xmin, int ymin, int xmax, int ymax);
-static void	get_text(F_text **list), sel_text(int xmin, int ymin, int xmax, int ymax);
+#include "xfig_math.h"
 
 
-void tag_obj_in_region (int xmin, int ymin, int xmax, int ymax);
-int compose_compound (F_compound *c);
+static void	create_compoundobject(int x, int y);
+static void	cancel_tag_region(void);
+static void	init_tag_region(int x, int y);
+static void	tag_region(int x, int y);
+static void	tag_object(F_line *p, int type, int x, int y, int px, int py);
+static void	get_arc(F_arc **list);
+static void	sel_arc(int xmin, int ymin, int xmax, int ymax);
+static void	get_compound(F_compound **list);
+static void	sel_compound(int xmin, int ymin, int xmax, int ymax);
+static void	get_ellipse(F_ellipse **list);
+static void	sel_ellipse(int xmin, int ymin, int xmax, int ymax);
+static void	get_line(F_line **list);
+static void	sel_line(int xmin, int ymin, int xmax, int ymax);
+static void	get_spline(F_spline **list);
+static void	sel_spline(int xmin, int ymin, int xmax, int ymax);
+static void	get_text(F_text **list);
+static void	sel_text(int xmin, int ymin, int xmax, int ymax);
+
 
 void
 compound_selected(void)
@@ -70,6 +78,8 @@ compound_selected(void)
 static void
 tag_object(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x; (void)y; (void)px; (void)py;
+
     switch (type) {
     case O_COMPOUND:
         cur_c = (F_compound *) p;
@@ -147,6 +157,7 @@ tag_region(int x, int y)
 static void
 create_compoundobject(int x, int y)
 {
+	(void)x; (void)y;
     F_compound	   *c;
 
     if ((c = create_compound()) == NULL)
@@ -191,7 +202,8 @@ create_compoundobject(int x, int y)
     draw_mousefun_canvas();
 }
 
-void tag_obj_in_region(int xmin, int ymin, int xmax, int ymax)
+void
+tag_obj_in_region(int xmin, int ymin, int xmax, int ymax)
 {
     sel_ellipse(xmin, ymin, xmax, ymax);
     sel_line(xmin, ymin, xmax, ymax);

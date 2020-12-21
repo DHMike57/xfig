@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <html>
 <head>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=EUC-JP">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 <title>LaTeX and Xfig</title>
 <link rev="made" href="mailto:VEF00200@nifty.ne.jp">
 </head>
@@ -10,16 +10,16 @@
 <a href="contents.html"><img src="../images/xfig-title.png"
   alt="XFIG Users Manual" border=0></a>
 
-<h2><a name="latex_and_xfig">LaTeX �� Xfig</a></h2>
+<h2><a name="latex_and_xfig">LaTeX と Xfig</a></h2>
 
 <ul>
-<li><a href="#LaTeX">xfig �οޤ� LaTeX �ե�����˼�����</a>
+<li><a href="#LaTeX">xfig の図を LaTeX ファイルに取り込む</a>
   <br>by Eric Masson (ericm@kirk.ee.mcgill.ca)
 <p>
-<li><a href="#picsize"><tt>pstex_t</tt> �Ǥοޤ��礭�����ѹ�</a>
+<li><a href="#picsize"><tt>pstex_t</tt> での図の大きさの変更</a>
   <br>by Stephen Eglen (stephene@cogs.susx.ac.uk)
 <p>
-<li><a href="#PDFLaTeX">xfig �� PDFLaTeX</a>
+<li><a href="#PDFLaTeX">xfig と PDFLaTeX</a>
   <br>by Josselin Mouette (jmouette@ens-lyon.fr)
 <p>
 <li><a href="#misc">Miscellaneous Notes</a>
@@ -27,48 +27,48 @@
 
 <hr>
 
-<h3>xfig �οޤ� LaTeX �ե�����˼�����</h3>
+<h3>xfig の図を LaTeX ファイルに取り込む</h3>
 
-<b>xfig</b> �ε�ư�˺ݤ��ơ����Τ褦�ʥ��ޥ�ɤ��Ѥ��ޤ���
+<b>xfig</b> の起動に際して、次のようなコマンドを用います：
 <pre>
   xfig -specialtext -latexfonts -startlatexFont default
 </pre>
 <p>
-�⤷<b>���</b>
-<a href="attributes.html#text-flags"><i>Special</i> �ե饰</a>
-�� <a href="attributes.html#font-panel"><i>LaTeX</i> �ե����</a>
-�����򤷤Ƴ��Ϥ������ΤǤ���С�<tt>.Xresources</tt> �ե����뤫
-���ʤ����ȤäƤ���꥽�������ե�����Ǽ��Τ褦�˻��ꤷ�ޤ���
+もし<b>常に</b>
+<a href="attributes.html#text-flags"><i>Special</i> フラグ</a>
+と <a href="attributes.html#font-panel"><i>LaTeX</i> フォント</a>
+を選択して開始したいのであれば、<tt>.Xresources</tt> ファイルか
+あなたが使っているリソース・ファイルで次のように指定します：
 <pre>
   Fig.latexfonts: true
   Fig.specialtext: true
 </pre>
 <p>
-<b>xfig</b> �������Ǥ���LaTeX ���ɤळ�ȤΤǤ��롢
-�����Ĥ��Υե����ޥåȤ�����ޤ���
-�����Ǥ�3�ĤΥ������Τߤ򥫥С����ޤ���
+<b>xfig</b> が生成でき、LaTeX が読むことのできる、
+いくつかのフォーマットがあります。
+ここでは3つのケースのみをカバーします：
 
 <ol type="A">
-<li>ľ�� LaTeX �����ǽ��Ϥ���
-<li>Encapsulated PostScript (EPS) �ǽ��Ϥ�������� LaTeX �Ǽ�����
-<li>�ޤΰ����� PostScript �ǡ������� LaTeX �ǽ��Ϥ���
-  ������ʸ��ξ�ǽŤ͹�碌��
+<li>直接 LaTeX 形式で出力する
+<li>Encapsulated PostScript (EPS) で出力し、それを LaTeX で取り込む
+<li>図の一部を PostScript で、一部を LaTeX で出力し、
+  それらを文書の上で重ね合わせる
 </ol>
 <p>
-��������ˡ�ˤϤ��줾������������ꡢƱ���٤��ưפ˰������Ȥ��Ǥ��ޤ���
-��ˡ (A) �������ϡ����Ƥ� TeX �����˴ޤޤ�Ƥ��ꡢ
-DVI �ե����뤬ɬ�פʾ������Ƥ��ݻ����뤳�ȤǤ���
-(B) �ǤϽ��Ϥ˺ݤ��� PostScript �����Ƥε�ǽ�ȥե���Ȥ���ѤǤ��ޤ���
-(C) �Ǥ� PostScript �����赡ǽ�ȡ�
-LaTeX �Υƥ����ȤΥ����ץ��åȵ�ǽ���Ѥ��뤳�Ȥ��Ǥ��ޤ���
+これらの方法にはそれぞれの利点があり、同程度に容易に扱うことができます。
+方法 (A) の利点は、全てが TeX 形式に含まれており、
+DVI ファイルが必要な情報全てを保持することです。
+(B) では出力に際して PostScript の全ての機能とフォントを使用できます。
+(C) では PostScript の描画機能と、
+LaTeX のテキストのタイプセット機能を用いることができます。
 <p>
-LaTeX ʸ��Υץꥢ��֥� (<tt>\begin{document}</tt> ����������ʬ)
-�ˡ����ιԤ��֤��ޤ���
+LaTeX 文書のプリアンブル (<tt>\begin{document}</tt> よりも前の部分)
+に、次の行を置きます：
 <pre>
         \usepackage{psfig}
 </pre>
 <p>
-�ץꥢ��ץ�ϼ��Τ褦�ʤ�ΤȤʤ뤫���Τ�ޤ���
+プリアンプルは次のようなものとなるかも知れません：
 <pre>
   \documentclass[12pt,bezier,amstex]{article}  % include bezier curves
   \renewcommand\baselinestretch{1.0}           % single space
@@ -91,39 +91,39 @@ LaTeX ʸ��Υץꥢ��֥� (<tt>\begin{document}</tt> ����������ʬ)
   \end{document}
 </pre>
 
-<h3>Type A �� ľ�� LaTeX �����ǽ��Ϥ���</h3>
+<h3>Type A ― 直接 LaTeX 形式で出力する</h3>
 
-����ǽ�Ϥ����Ǥϡ�����ϺǤ����ϤǤ���
-LaTeX �Ǥϡ������Ĥ�������γ��٤����Τߤ����褹�뤳�Ȥ��Ǥ��ޤ���
-����������դ��Ƥ����硢�������¤Ϥ���˸������ʤ�ޤ���
-�ʱߡ����ץ饤��ʤɤΡ������Ĥ��ε�ǽ�ϥ��ݡ��Ȥ���Ƥ��ޤ���
-(<b>xfig</b> �� <tt>bezier</tt> �ʤɤ�
-LaTeX �ޥ������ѥå������ˤ���������Ѥ��Ƥ��ޤ���)
+描画能力の点では、これは最も非力です。
+LaTeX では、いくつかの特定の角度の線のみを描画することができます。
+線に矢印が付いている場合、この制限はさらに厳しくなります。
+楕円、スプラインなどの、いくつかの機能はサポートされていません。
+(<b>xfig</b> は <tt>bezier</tt> などの
+LaTeX マクロ・パッケージによる利点を用いていません。)
 <p>
-������ˡ���������褹����ˤϡ�
-<b>xfig</b> ��Ǥ�<a href="attributes.html#angle-geom">���γ���</a>��
-Ŭ�ڤʤ�Τ����¤���褦�ˤ��ʤ���Фʤ�ޤ���
-����ʤ��С��ޤ� LaTeX �ե����ޥåȤǥ������ݡ��Ȥ����ݤˡ�
-<b>xfig</b> �Ϥ���� LaTeX ��������Ǥ�ᤤ���٤Ƕ������
-�̾��˾�ޤ����ʤ���̤������ޤ���
+この方法で線を描画する場合には、
+<b>xfig</b> 上での<a href="attributes.html#angle-geom">線の角度</a>を
+適切なものに制限するようにしなければなりません。
+さもなくば、図を LaTeX フォーマットでエクスポートした際に、
+<b>xfig</b> はそれを LaTeX が扱える最も近い角度で近似し、
+通常は望ましくない結果が生じます。
 <p>
-���Υ⡼�ɤǤϥƥ����Ȥ� LaTeX �Υ��ޥ�ɤ�ޤ�뤳�Ȥ��Ǥ���
-LaTeX �˼����ޤ줿�ݤˤ��Υ��ޥ�ɤ�Ŭ�ڤ˲�ᤵ��ޤ���
-�㤨�С�
+このモードではテキストに LaTeX のコマンドを含めることができ、
+LaTeX に取り込まれた際にそのコマンドは適切に解釈されます。
+例えば：
 <pre>
         $\int_0^9 f(x) dx$
 </pre>
-�ϴؿ� <i>f(x)</i> �� 0 ���� 9 ����ʬ�Ȥʤ�ޤ���
-LaTeX �ե�������������뤿��ˤϡ�<b>xfig</b> ��
-<a href="main_menus.html#file-menu"><i>File</i> ��˥塼</a>
-���� <i>Export...</i> �����򤷡�
-�������ݡ��Ȥ��� <a href="printing.html#language"><i>Language</i></a> �Ȥ���
-<i>LaTeX picture</i> �����򤷤ޤ���
-����ˤ�ä� <tt>.latex</tt> �Ȥ������ե��å�������ĥե��������������
-ľ�� LaTeX ʸ��˼����ळ�Ȥ��Ǥ��ޤ���
+は関数 <i>f(x)</i> の 0 から 9 の積分となります。
+LaTeX ファイルを生成するためには、<b>xfig</b> の
+<a href="main_menus.html#file-menu"><i>File</i> メニュー</a>
+から <i>Export...</i> を選択し、
+エクスポートする <a href="printing.html#language"><i>Language</i></a> として
+<i>LaTeX picture</i> を選択します。
+これによって <tt>.latex</tt> というサフィックスを持つファイルを生成し、
+直接 LaTeX 文書に取り込むことができます。
 <p>
-�㤨�С����Υ����ɤϥե����� <tt>yourfile.latex</tt> ��
-ľ�� LaTeX ʸ��˼����ߤޤ���
+例えば、次のコードはファイル <tt>yourfile.latex</tt> を
+直接 LaTeX 文書に取り込みます：
 <pre>
   \begin{figure}[htbp]
   \begin{center}
@@ -136,20 +136,20 @@ LaTeX �ե�������������뤿��ˤϡ�<b>xfig</b> ��
   \end{figure}
 </pre>
 
-<h3>Type B �� Encapsulated PostScript �Ǥν���</h3>
+<h3>Type B ― Encapsulated PostScript での出力</h3>
 
-������ˡ�ǤϿޤ�����ˤĤ��Ƥ����¤Ϥ���ޤ���
-�����������Υե����ޥåȤˤ����Ƥ� LaTeX �Υ��ޥ�ɤϻ��ѤǤ��ޤ���
-�����������Υե����ޥåȤ����򤵤줿���ˤ�
-¿���� PostScript �ե�������Ƥ����Ѳ�ǽ�Ȥʤ�ޤ���
+この方法では図の描画についての制限はありません。
+ただし、このフォーマットにおいては LaTeX のコマンドは使用できません。
+しかし、このフォーマットが選択された場合には
+多数の PostScript フォント全てが使用可能となります。
 <p>
-�ޤ��������ä��ʤ�С�<b>xfig</b> ��
-<a href="main_menus.html#file-menu"><i>File</i> ��˥塼</a>
-���� <i>Export...</i> �����򤷡�
-�������ݡ��Ȥ��� <a href="printing.html#language"><i>Language</i></a> �Ȥ���
-<i>Encapsulated PostScript</i> �����򤷤ޤ���
-����ˤ�äơ����Τ褦����ˡ�ˤ�ä� LaTeX ʸ��˼����ळ�Ȥ��Ǥ��롢
- <tt>.eps</tt> �Ȥ������ե��å�������ĥե�������������뤳�Ȥ��Ǥ��ޤ���
+図を描き終ったならば、<b>xfig</b> の
+<a href="main_menus.html#file-menu"><i>File</i> メニュー</a>
+から <i>Export...</i> を選択し、
+エクスポートする <a href="printing.html#language"><i>Language</i></a> として
+<i>Encapsulated PostScript</i> を選択します。
+これによって、次のような方法によって LaTeX 文書に取り込むことができる、
+ <tt>.eps</tt> というサフィックスを持つファイルを生成することができます。
 <pre>
   \begin{figure}[htbp]
   \begin{center}
@@ -160,38 +160,38 @@ LaTeX �ե�������������뤿��ˤϡ�<b>xfig</b> ��
   \end{figure}
 </pre>
 <p>
-<b>���ա�</b> �Ķ��ˤ�äƤϤ�����ˡ�ϻ��ѤǤ��ʤ������Τ�ޤ���
-�ޤ���������ˡ����������� DVI �ե������
-�ݡ����֥�ǤϤʤ���ΤȤʤ뤳�Ȥ�����ޤ���
+<b>注意：</b> 環境によってはこの方法は使用できないかも知れません。
+また、この方法で生成される DVI ファイルは
+ポータブルではないものとなることがあります。
 
-<h3>Type C �� Postscript/LaTeX ���Ȥ߹�碌</h3>
+<h3>Type C ― Postscript/LaTeX の組み合わせ</h3>
 
-������ˡ�ǤϤɤΤ褦�����������Ȥ����Ȥ�Ǥ��ޤ���
-�ޤ���LaTeX �Υ��ޥ�ɤλ��Ѥ�����졢
-���� PostScript �ե���Ȥ���Ѥ��뤳�Ȥ�Ǥ��ޤ���
-���äơ��ƥ����Ȥ����
+この方法ではどのような線や曲線を使うこともできます。
+また、LaTeX のコマンドの使用も許され、
+かつ PostScript フォントを使用することもできます。
+従って、テキストの中に
 <pre>
         $\int_0^9 f(x) dx$
 </pre>
-�Τ褦�����Ϥ���С������ LaTeX �ǽ�������ޤ���
-LaTeX �ǽ��Ϥ������ƥ����ȤˤĤ��Ƥ�
-<a href="attributes.html#text-flags"><i>Special</i> �ե饰</a> �� ON �ˤ���
-PostScript �ǽ��Ϥ������ƥ����ȤˤĤ��Ƥ�
-OFF �ˤ���ɬ�פ����뤳�Ȥ����դ��Ʋ�������
+のように入力すれば、それは LaTeX で処理されます。
+LaTeX で出力したいテキストについては
+<a href="attributes.html#text-flags"><i>Special</i> フラグ</a> を ON にし、
+PostScript で出力したいテキストについては
+OFF にする必要があることに注意して下さい。
 
 <p>
-������ˡ���Ѥ�����ˤϡ�
-<a href="main_menus.html#file-menu"><i>File</i> ��˥塼</a>
-���� <i>Export...</i> �����򤷡�
-�������ݡ��Ȥ��� <a href="printing.html#language"><i>Language</i></a> �Ȥ���
-<i>Combined PostScript/LaTeX (both part)</i> �����򤷤ޤ���
-����ˤ�äơ����Τ褦����ˡ�ˤ�ä� LaTeX ʸ��˼����ळ�Ȥ��Ǥ���
-<tt>.pstex_t</tt> �Ȥ������ե��å�������ĥե�����ȡ�
-PostScript �Υ����ɤ�ޤ� <tt>.pstex</tt> �Ȥ������ե��å�������ĥե�����
-���������뤳�Ȥ��Ǥ��ޤ���
-<tt>.pstex_t</tt> �ե�����ϼ�ưŪ�� <tt>.pstex</tt> �ե�����������Τǡ�
-���������Ū�� TeX �ե�����˴ޤ��ɬ�פϤ���ޤ���
-�ޤ�����ि��ˤϡ����Τ褦�ʤ�Τ��Ѥ��ޤ���
+この方法を用いる場合には、
+<a href="main_menus.html#file-menu"><i>File</i> メニュー</a>
+から <i>Export...</i> を選択し、
+エクスポートする <a href="printing.html#language"><i>Language</i></a> として
+<i>Combined PostScript/LaTeX (both part)</i> を選択します。
+これによって、次のような方法によって LaTeX 文書に取り込むことができる
+<tt>.pstex_t</tt> というサフィックスを持つファイルと、
+PostScript のコードを含む <tt>.pstex</tt> というサフィックスを持つファイル
+を生成することができます。
+<tt>.pstex_t</tt> ファイルは自動的に <tt>.pstex</tt> ファイルを取り込むので、
+これを明示的に TeX ファイルに含める必要はありません。
+図を取り込むためには、次のようなものを用います：
 <pre>
   \begin{figure}[htbp]
   \begin{center}
@@ -204,221 +204,221 @@ PostScript �Υ����ɤ�ޤ� <tt>.pstex</tt> �Ȥ������ե��å�������ĥե�����
   \end{figure}
 </pre>
 <p>
-<b>���ա�</b> <b>xfig</b> ���������� <tt>.pstex_t</tt> �ե������
-�Խ��������Ȼפ����Ȥ����뤫���Τ�ޤ���
-����� <tt>.pstex</tt> �ե���������ʥѥ��ǻ��Ȥ��뤳�Ȥ�����ޤ�����
-����Ϥ����Υե������¾�Υǥ��쥯�ȥ��ư��������������������ޤ���
-�Ŀ�Ū�ˤϡ������ʥѥ������������
-�ե�����̾�Τߤ�Ĥ��Ƥ������Ȥ򹥤�Ǥ��ޤ���
+<b>注意：</b> <b>xfig</b> が生成した <tt>.pstex_t</tt> ファイルを
+編集したいと思うことがあるかも知れません。
+それは <tt>.pstex</tt> ファイルを完全なパスで参照することがありますが、
+これはそれらのファイルを他のディレクトリに動かした場合に問題を生じます。
+個人的には、完全なパス指定を削除し、
+ファイル名のみを残しておくことを好んでいます。
 
 <hr>
 
-<h3><a name="picsize"><tt>pstex_t</tt> �Ǥοޤ��礭�����ѹ�</a></h3>
+<h3><a name="picsize"><tt>pstex_t</tt> での図の大きさの変更</a></h3>
 
-�ޤ� <tt>\input{file.psttext_t}</tt> �ˤ�äƼ�������ˤϡ�
-�ޤ��礭������ꤹ����ˡ�Ϥ���ޤ���
+図を <tt>\input{file.psttext_t}</tt> によって取り込む場合には、
+図の大きさを指定する方法はありません。
 <p>
-������Ф��롢2�Ĥβ����ˡ������ޤ���
+これに対する、2つの解決方法があります：
 <ol>
-<li>�ǽ餫�� <b>xfig</b> ���������礭���ǿޤ�������롣
-���뤤�ϡ��ޤ򥨥����ݡ��Ȥ���ݤˡ�
-<a href="printing.html#export">Export �ѥͥ�</a> ��
-<i>Magnification</i> �Ǥ�������ѹ����뤳�Ȥˤ�äƿޤ��礭�����ѹ����롣
-���������ˡ�Ǥ⡢LaTeX ʸ���Ǥοޤ��礭������������ʤ��ä����ˤ�
-<b>xfig</b> �����ʤ���Фʤ�ʤ���
+<li>最初から <b>xfig</b> で正しい大きさで図を作成する。
+あるいは、図をエクスポートする際に、
+<a href="printing.html#export">Export パネル</a> の
+<i>Magnification</i> での設定を変更することによって図の大きさを変更する。
+いずれの方法でも、LaTeX 文書上での図の大きさが気に入らなかった場合には
+<b>xfig</b> に戻らなければならない。
 <p>
-<li><tt>\scalebox</tt>�����뤤�� <tt>\resizebox</tt> ���Ѥ��ơ�
-LaTeX �˿ޤ��礭�����ѹ������롣
-����ϥ���ե��å����ѥå���������Υƥ����Ȥ�ޤ򥹥�����󥰤��뤿���
-����Ū�ʵ�ǽ�Ǥ���
+<li><tt>\scalebox</tt>、あるいは <tt>\resizebox</tt> を用いて、
+LaTeX に図の大きさを変更させる。
+これはグラフィック・パッケージからのテキストや図をスケーリングするための
+一般的な機能です。
 <p>
 <pre>
        \scalebox{factor}{object}
 </pre>
-�ϡ�Ǥ�դ���Ψ�ǥ��֥������Ȥ򥹥�����󥰤��ޤ���
-��Ψ��ñ��ʿ��� (1���⾮������н̾���1�����礭����г���) �Ǥ���
-���֥������Ȥϡ��̾�Ϥ����Ĥ��Υƥ����Ȥ䥰��ե��å��Ǥ���
+は、任意の比率でオブジェクトをスケーリングします。
+比率は単純な数値 (1よりも小さければ縮小、1よりも大きければ拡大) です。
+オブジェクトは、通常はいくつかのテキストやグラフィックです。
 <p>
-�㤨�С�
+例えば：
 <pre>
        \scalebox{2}{ \input{file.pstex_t} }
 </pre>
-�ϡ��ɥ饤�Ф˰�¸���ơ��ޤ�2�ܤ˳��礷�ޤ���
-�ӥåȥޥåס��ե���Ȥ򥹥�����󥰤���Ƚ�����̤�������Τ��򤱤뤳�ȡ�
+は、ドライバに依存して、図を2倍に拡大します。
+ビットマップ・フォントをスケーリングすると醜い結果が得られるので避けること。
 <p>
 <pre>
        \resizebox{width}{ht} {stuff}
 </pre>
-�� "<tt>stuff</tt>" �� <tt>width</tt> �� <tt>ht</tt> ���礭���˥ꥵ�������ޤ���
-�ѥ�᡼���Ȥ��� "<tt>!</tt>" ���Ѥ���ȥܥå����Υ����ڥ����椬��¸����ޤ���
-�㤨�С�
+は "<tt>stuff</tt>" を <tt>width</tt> × <tt>ht</tt> の大きさにリサイズします。
+パラメータとして "<tt>!</tt>" を用いるとボックスのアスペクト比が保存されます。
+例えば：
 <pre>
        \resizebox{5cm}{!}{fat cat}
 </pre>
-�� "<tt>fat cat</tt>" ������ 5cm �ˡ��⤵��Ŭ�ڤ����ꤷ�ޤ���
-(Lamport ���ܤ� 129�ڡ������)
+は "<tt>fat cat</tt>" の幅を 5cm に、高さを適切に設定します。
+(Lamport の本の 129ページより)
 </ol>
 
 <hr>
 
-<h2><a name="PDFLaTeX">xfig �� PDFLaTeX</a></h2>
+<h2><a name="PDFLaTeX">xfig と PDFLaTeX</a></h2>
 
 written by Josselin Mouette (jmouette@ens-lyon.fr)
 
-<h3>���̤� PDF �ե�����</h3>
+<h3>普通の PDF ファイル</h3>
 
-<b>xfig</b> ��<a href="printing.html#language">���ϥե����ޥå�</a>�Ȥ���
-<i>PDF</i> �����򤷡�
-<tt><i>foo</i>.pdf</tt> �ե�������������ޤ���
-ʸ��Υץꥢ��֥�� <tt>\usepackage[pdftex]{graphicx}</tt> ��񤭡�
-�ޤ� <tt>\includegraphics{<i>foo</i>.pdf}</tt> ���������ޤ���
-includegraphics ��Ǥ�դΥ��ץ�����Ȥ��ޤ���
+<b>xfig</b> で<a href="printing.html#language">出力フォーマット</a>として
+<i>PDF</i> を選択し、
+<tt><i>foo</i>.pdf</tt> ファイルを生成します。
+文書のプリアンブルに <tt>\usepackage[pdftex]{graphicx}</tt> を書き、
+図を <tt>\includegraphics{<i>foo</i>.pdf}</tt> で挿入します。
+includegraphics の任意のオプションも使えます。
 <p>
-������ ���Ѥ������ưס�
+利点： 使用が非常に容易。
 <p>
-������ �ޤ���Υƥ����Ȥ�
-ʸ��ˤ⤽�Τޤ� PostScript �ե���Ȥ��Ѥ��Ƹ���뤳�Ȥˤʤ�ޤ���
-������� TeX �����ɤ��Ѥ��뤳�ȤϤǤ��ޤ���
+欠点： 図の中のテキストは
+文書にもそのまま PostScript フォントを用いて現れることになります；
+その中で TeX コードを用いることはできません。
 
-<h3>Combined PDF/LaTeX �ե�����</h3>
+<h3>Combined PDF/LaTeX ファイル</h3>
 
-���줬�䤬����ξ��ˤ����᤹����ˡ�Ǥ���
-�鿴�ԤˤȤäƤϺǽ���񤷤������Τ�ޤ��󤬡�����ϼ¤˶��ϤǤ���
-������ˡ�����򤹤�ʤ�С�
-<b>xfig</b> �ǤΥե���Ȥ� LaTeX �Τ�Τ����ꤷ��
-�ƥ����Ȥ� <a href="attributes.html#text-flags"><i>Special</i></a> °��
-�����ꤹ�뤳�Ȥ�ɬ�פȤʤ�Ǥ��礦��
-�����ưŪ�˹Ԥʤ�����ˤϡ����ʤ���
-<tt>.Xresources</tt> �� <tt>.Xdefaults</tt> (�����ƥ�˰�¸����) �ˡ�
+これが私が大抵の場合にお薦めする方法です。
+初心者にとっては最初は難しいかも知れませんが、それは実に強力です。
+この方法を選択するならば、
+<b>xfig</b> でのフォントを LaTeX のもので設定し、
+テキストの <a href="attributes.html#text-flags"><i>Special</i></a> 属性
+を設定することが必要となるでしょう。
+これを自動的に行なうためには、あなたの
+<tt>.Xresources</tt> や <tt>.Xdefaults</tt> (システムに依存する) に：
 <pre>
   Fig.latexfonts: true
   Fig.specialtext: true
 </pre>
-��2�Ԥ��ɲä�����ɤ��Ǥ��礦��
-�����ơ�<a href="printing.html#export">�������ݡ���</a>�˺ݤ��ơ�
-<i>Combined PDF/LaTeX</i> �ե����ޥåȤ����򤷤ޤ���
-�����ơ�LaTeX �ե�����Υץꥢ��֥�˼��ιԤ��ɲä��ޤ���
+の2行を追加すれば良いでしょう。
+そして、<a href="printing.html#export">エクスポート</a>に際して、
+<i>Combined PDF/LaTeX</i> フォーマットを選択します。
+そして、LaTeX ファイルのプリアンブルに次の行を追加します：
 <pre>
   \usepackage[pdftex]{graphicx,color}
 </pre>
-color �ѥå������ϡ��ƥ����Ȥ򥫥顼�ǽ��Ϥ������ɬ�פǤ���
-�����ơ��ޤ򼡤Τ褦�ˤ��Ƽ����ߤޤ���
+color パッケージは、テキストをカラーで出力する場合に必要です。
+そして、図を次のようにして取り込みます：
 <pre>
   \input foo.pdftex
 </pre>
-�ꥵ�������ǽ�Ǥ���
+リサイズも可能です：
 <pre>
   \resizebox{3cm}{!}{\input foo.pdftex} % sets the width to 3cm
 </pre>
 <p>
-������ �ƥ����ȤȤ��ƽ񤤤���Τ���ʸ����Υ����ɤ�����Ʊ�ͤ˰����ޤ���
-����ϼ����Υޥ�����Ȥ��뤳�Ȥ��̣��������ϼ¤˥�����Ǥ���
+利点： テキストとして書いたものが、文書中のコードと全く同様に扱われます。
+これは自前のマクロも使えることを意味し、これは実にクールです。
 <p>
-������ �ƥ����Ȥ���������ʤ� LaTeX ̿���ޤ�Ǥ��ꡢ
-xfig �� fig2dev ���ƥ����Ȥ��礭�����Τ�ʤ����Ȥ��顢
-�ޤ�����礭�ʿ����������ݤˤ��줬�����ΰ��ͽ¬���뤳�ȤϺ���Ǥ���
+欠点： テキストが印刷されない LaTeX 命令を含んでおり、
+xfig や fig2dev がテキストの大きさを知らないことから、
+図の中に大きな数式を入れる際にそれが占める領域を予測することは困難です。
 
 <h3>METAPOST</h3>
 
-MetaPost ��Ȥ�����ˤϡ�<b>xfig</b> �Ǥϲ������̤ʤ��ȤϤ���ޤ���
-���Ϥ����ƥ����Ȥ����̤� TeX �����ɤȤ��ư����ޤ�
-���� ���ա� ����Ϥ��ʤ���ʸ����Ǥϥ���ѥ��뤵��ʤ��Τǡ�
-AMS-TeX �ʤɤΥѥå������ؤϥ��������Ǥ�����
-�ޤ������Υޥ�����Ȥ����Ȥ�Ǥ��ޤ���
-<b>xfig</b> �Ǥϡ�<tt><i>foo</i>.mp</tt> ����������
-MetaPost �ե��륿���Ѥ��ƥ������ݡ��Ȥ��ޤ���
-���θ塢<tt>mpost <i>foo.</i>mp</tt> ��¹Ԥ���
-����� <tt><i>foo</i>.0</tt> (���ˤ�äƤ� <tt><i>foo</i>.1</tt>)
-���������ޤ���
-ʸ����Ǥϡ��ץꥢ��֥�˼��Τ褦�˽񤭤ޤ���
+MetaPost を使うためには、<b>xfig</b> では何も特別なことはありません。
+入力したテキストは普通の TeX コードとして扱われます
+―― 注意： これはあなたの文書中ではコンパイルされないので、
+AMS-TeX などのパッケージへはアクセスできず、
+また自前のマクロを使うこともできません。
+<b>xfig</b> では、<tt><i>foo</i>.mp</tt> を生成する
+MetaPost フィルタを用いてエクスポートします。
+その後、<tt>mpost <i>foo.</i>mp</tt> を実行し、
+これは <tt><i>foo</i>.0</tt> (場合によっては <tt><i>foo</i>.1</tt>)
+を生成します。
+文書中では、プリアンブルに次のように書きます：
 <pre>
   \input supp-pdf.tex
   \usepackage[pdftex]{graphicx}
 </pre>
-�����ơ��ޤ�����ि��ˡ����Τ褦�˽񤭤ޤ���
+そして、図を取り込むために、次のように書きます：
 <pre>
   \convertMPtoPDF{<i>foo</i>.0}
 </pre>
-��������Ǥ���
-�¤�ñ��Ǥ��ꡢ��� TeX ��������ޤ���
+それだけです。
+実に単純であり、中に TeX も入れられます。
 <p>
-������ PDF��DVI �Υǥ奢����ϤΥե�������ưפ˼�����ޤ���
-PS �Ȥ��Ƽ����ि��ˤϡ�����ʸ���
-ñ�� <tt>\includegraphics{foo.0}</tt> �Ƚ񤭤ޤ���
+利点： PDF／DVI のデュアル出力のファイルに容易に取り込めます；
+PS として取り込むためには、その文書に
+単に <tt>\includegraphics{foo.0}</tt> と書きます。
 <p>
-������ AMS-LaTeX �ϼ����դ���줺���礭�ʿ����ˤ�Ŭ���ǤϤ���ޤ���
-ʸ�񤬱Ѹ�ʳ��Ǥ�����ˤϡ�
-Ĺ���ե졼����󤤤��Ȥˤʤ뤫���Τ�ޤ���
-(bebel �ѥå������ϻȤ��ޤ���)��
+欠点： AMS-LaTeX は受け付けられず、大きな数式には適当ではありません。
+文書が英語以外である場合には、
+長いフレーズも酷いことになるかも知れません
+(bebel パッケージは使えません)。
 
 <h3>MULTI-METAPOST</h3>
 
-������ˡ�� PDF �ץ쥼��ơ���������ǻȤ��褦���߷פ���Ƥ��ޤ���
-<tt>\pause</tt> ���ޥ�ɤ��Ѥ��ơ�
-�ܥ���Υ���å��˱����ƥ쥤�����֤�ɽ�����뤳�Ȥ��Ǥ���
-�����ͭ�Ѥʤ�ΤȤʤ����ޤ���
-MetaPost �μ����ߤˤĤ��Ƹ��ä����Ȥ��������ƤϤޤ�ޤ�����
-�ΤäƤ����٤������Ĥ�����������ޤ���
+この方法は PDF プレゼンテーションの中で使うように設計されています。
+<tt>\pause</tt> コマンドを用いて、
+ボタンのクリックに応じてレイヤを順番に表示することができ、
+これは有用なものとなり得ます。
+MetaPost の取り込みについて言ったことは全て当てはまりますが、
+知っておくべきいくつかの点があります：
 <p>
 <ol type="A">
-<li>�ޤκ����˺ݤ��Ƥϡ�
-���֥������Ȥ�<a href="attributes.html#depth">����</a>�����դ��Ʋ�������
-�ޤ� MultiMetapost �ե����ޥåȤǥ������ݡ��Ȥ���ݡ�
-transfig �ϥ��֥������Ȥ�¸�ߤ��Ƥ���Ϣ³����������ñ��Υ쥤��Ȥ��ư����ޤ���
-�㤨�С�
+<li>図の作成に際しては、
+オブジェクトの<a href="attributes.html#depth">深さ</a>に注意して下さい。
+図を MultiMetapost フォーマットでエクスポートする際、
+transfig はオブジェクトが存在している連続した深さを単一のレイヤとして扱います。
+例えば：
 <pre>
-   ���� 51 �� Circle ���� ɽ�������ǽ�Υ쥤��
-   ���� 50 �� Text   ��
-   *** ���� 49 �ˤϲ���ʤ�
-   ���� 48 �� Square ��
-   ���� 48 �� Text   ���� ɽ�������2���ܤΥ쥤��
-   ���� 47 �� Curve  ��
-   ... �ʲ�Ʊ��
+   深さ 51 に Circle ┐＿ 表示される最初のレイヤ
+   深さ 50 に Text   ┘
+   *** 深さ 49 には何もない
+   深さ 48 に Square ┐
+   深さ 48 に Text   │─ 表示される2番目のレイヤ
+   深さ 47 に Curve  ┘
+   ... 以下同様
 </pre>
 
 <p>
-<li>�������ݡ��Ȥθ�ǡ�<tt>mpost <i>foo</i>.mmp</tt> ��
-<tt><i>foo</i>.0</tt>��<tt><i>foo</i>.1</tt> �� �Ȥ���̾����
-��Ϣ�Υե������������ޤ���
-������ʸ��˼����ि��ˡ�
-PPower4 �κǿ��� (�������ǤϤޤ��١����ʳ�) �ȤȤ���󶡤���Ƥ���
-<tt>mpmulti.sty</tt> ��ɬ�פȤʤ�ޤ���
-ʸ��Υץꥢ��֥�ϡ����Τ褦�ˤʤ�Ǥ��礦��
+<li>エクスポートの後で、<tt>mpost <i>foo</i>.mmp</tt> は
+<tt><i>foo</i>.0</tt>、<tt><i>foo</i>.1</tt> … という名前の
+一連のファイルを作成します。
+それらを文書に取り込むために、
+PPower4 の最新版 (現時点ではまだベータ段階) とともに提供されている
+<tt>mpmulti.sty</tt> が必要となります。
+文書のプリアンブルは、次のようになるでしょう：
 <pre>
   \input supp-pdf.tex
   \usepackage[pdftex]{graphicx}
   \usepackage{pause,mpmulti}
 </pre>
-�����ơ����˥᡼����������ि��ˤϡ�ñ�˼��Τ褦�˽񤭤ޤ���
+そして、アニメーションを取り込むためには、単に次のように書きます：
 <pre>
   \multiinclude{foo}
 </pre>
-���Τ褦�ˤ��ơ����ꤷ���礭����Ĵ�����뤳�Ȥ���ǽ�Ǥ���
+次のようにして、指定した大きさに調整することが可能です：
 <pre>
   \multiinclude[graphics={width=5cm}]{foo}
 </pre>
-����ʸ��򥳥�ѥ��뤷������� <tt>ppower4</tt> �˳ݤ��ޤ���
-ޯ��Ƥ���Ǥ��硩
+その文書をコンパイルし、それを <tt>ppower4</tt> に掛けます。
+洒落ているでしょ？
 </ol>
 
 <p>
-������ ���˥᡼�����������ͣ�����ˡ��
-xfig �δ�¸�ο������ηϤβ��á�
+利点： アニメーションを取り込む唯一の方法。
+xfig の既存の深さの体系の恩恵。
 <p>
-������ ������
+欠点： 何か？
 
 <hr>
 
-<h3><a name="misc">����¾</a></h3>
+<h3><a name="misc">その他</a></h3>
 
-LaTeX �ƥ����Ȥ� ``mn'' �Ƚ��Ϥ���뤳�Ȥ����뤫���Τ�ޤ���
-�����Ǽ����Τϡ�����桼�����������������򤹤뤿��˹Ԥʤä����ȤǤ���
+LaTeX テキストで ``mn'' と出力されることがあるかも知れません。
+ここで示すのは、あるユーザーがこの問題を回避するために行なったことです：
 <p>
-��������ϡ��������ݡ��Ƚ��Ϥ� LaTeX �����������줿
-<tt>\smash</tt> ���ޥ�ɤˤ���ޤ���
-�⤷���ʤ��Υ����ƥ��
-<tt>\mddefault</tt> �� <tt>\updefault</tt> �����������ꤵ��Ƥ��ʤ��ʤ�С�
-�����򲿤⤷�ʤ��褦��������뤳�Ȥ�ɬ�פǤ���
+この問題は、エクスポート出力の LaTeX 部に生成された
+<tt>\smash</tt> コマンドにあります。
+もしあなたのシステムで
+<tt>\mddefault</tt> と <tt>\updefault</tt> が正しく設定されていないならば、
+それらを何もしないように定義することが必要です。
 
 <hr>
 

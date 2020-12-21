@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -23,6 +24,7 @@
 #include <X11/Xft/Xft.h>
 
 #include "paintop.h"
+
 #ifndef PATH_MAX
 #define PATH_MAX	1024
 #endif
@@ -122,7 +124,6 @@ extern char		 orig_dir[PATH_MAX+2];
 extern Boolean		 update_figs;
 
 #ifdef USE_XPM
-#include <X11/xpm.h>
 extern XpmAttributes	 xfig_icon_attr;
 #endif
 extern int		 current_memory;
@@ -226,6 +227,7 @@ typedef struct _appres {
     char	*tgrid_unit;		/* units of grid/point positioning (1/10" or 1/16") */
     Boolean	 overlap;		/* overlap/no-overlap multiple pages for export/print */
     char	*ghostscript;		/* name of ghostscript (e.g. gs or gswin32) */
+    char	*gslib;			/* name of ghostscript library */
     Boolean	 correct_font_size;	/* adjust for difference in Fig screen res vs points (80/72) */
     int		 encoding;		/* encoding for latex escape translation */
     Boolean	save8bit;		/* save 8bit files */

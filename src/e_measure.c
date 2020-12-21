@@ -1,5 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  * This part Copyright (c) 1999-2002 Alexander Durner
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
@@ -10,27 +14,28 @@
  * the Software, and to permit persons who receive copies from any such
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
+ *
  */
 
-#include "fig.h"
+#include "e_measure.h"
+
+#include <math.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
-#include "u_create.h"
 #include "u_elastic.h"
-#include "u_list.h"
-#include "u_search.h"
-#include "w_canvas.h"
-#include "w_mousefun.h"
-#include "w_msgpanel.h"
-#include "w_setup.h"
-
 #include "u_geom.h"
 #include "u_markers.h"
+#include "u_search.h"
+#include "w_canvas.h"
 #include "w_cursor.h"
 #include "w_drawprim.h"
 #include "w_indpanel.h"
+#include "w_mousefun.h"
+#include "w_msgpanel.h"
+#include "xfig_math.h"
 
 /* Measuring angles, lengths and areas */
 
@@ -133,6 +138,10 @@ init_anglemeas_object_r(char *p, int type, int x, int y, F_point *pp, F_point *p
 static void
 init_anglemeas_object(char *p, int type, int x, int y, F_point *pp, F_point *pq)
 {
+	(void)x;
+	(void)y;
+	(void)pp;
+
     switch(type) {
     case O_POLYLINE:
         cur_l = (F_line*)p;
@@ -309,6 +318,7 @@ void lenmeas_selected(void)
 static void
 init_lenmeas_object(char *p, int type, int x, int y, int px, int py)
 {
+	(void)x; (void)y; (void)px; (void)py;
     float	    len;
     double	    a,b,z;
     int		    ok;
@@ -417,6 +427,7 @@ void areameas_selected(void)
 static void
 init_areameas_object(char *p, int type, int x, int y, int px, int py)
 {
+	(void)x; (void)y; (void)px; (void)py;
     float	    area;
     int		    ok;
     char	   *msgtext;
@@ -492,6 +503,8 @@ init_areameas_object_m(char *p, int type, int x, int y, int px, int py)
 static void
 clear_areameas_memory(int x, int y, int arg)
 {
+	(void)x;
+	(void)y;
    total_area = 0.0;
    signed_area = (arg != 0);
    if (signed_area)

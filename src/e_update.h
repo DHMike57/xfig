@@ -1,7 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Parts Copyright (c) 1997 by T. Sato
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,6 +16,13 @@
  *
  */
 
-extern void update_text(F_text *text);
-extern void fix_fillstyle (void *object);
-extern void update_selected (void);
+#ifndef E_UPDATE_H
+#define E_UPDATE_H
+
+#include "object.h"
+
+extern void	update_text(F_text *text);
+extern void	fix_fillstyle(void *object);
+extern void	update_selected(void);
+
+#endif

@@ -1,7 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
- * Parts Copyright, 1987, Massachusetts Institute of Technology
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,7 +16,26 @@
  *
  */
 
-#include "fig.h"
+/*
+ * This file contains a modified version of the
+ * XReadBitmapFromFile() routine from the X11R5 distribution.
+ * Parts Copyright, 1987, Massachusetts Institute of Technology
+ * See the copyright notice below.
+ *
+ */
+
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
+#endif
+
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Xlib.h>		/* Bool, True, False */
+#include <X11/Xutil.h>
+
 #include "resources.h"
 #include "object.h"
 #include "f_picobj.h"
@@ -32,31 +53,32 @@ ReadDataFromBitmapFile (FILE *file, unsigned int *width,
 				unsigned int *height, unsigned char **data_ret);
 
 int
-read_xbm(FILE *file, int filetype, F_pic *pic)
+read_xbm(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
-    int status;
-    unsigned int x, y;
-    /* make scale factor smaller for metric */
-    float scale = (appres.INCHES ?
-			(float)PIX_PER_INCH :
-			2.54*PIX_PER_CM)/(float)DISPLAY_PIX_PER_INCH;
+	unsigned int	x, y;
+	/* make scale factor smaller for metric */
+	const double	scale =
+		(appres.INCHES ? (double)PIX_PER_INCH : 2.54*PIX_PER_CM)
+						/ DISPLAY_PIX_PER_INCH;
 
-    /* first try for a X Bitmap file format */
-    status = ReadDataFromBitmapFile(file, &x, &y, &pic->pic_cache->bitmap);
-    if (status == BitmapSuccess) {
-	pic->pic_cache->subtype = T_PIC_XBM;
-	pic->hw_ratio = (float) y / x;
-	pic->pic_cache->numcols = 0;
-	pic->pic_cache->bit_size.x = x;
-	pic->pic_cache->bit_size.y = y;
-	pic->pic_cache->size_x = x * scale;
-	pic->pic_cache->size_y = y * scale;
-	close_picfile(file,filetype);
-	return PicSuccess;
-    }
-    close_picfile(file,filetype);
-    /* Non Bitmap file */
-    return FileInvalid;
+	if (!rewind_stream(pic_stream))
+		return FileInvalid;
+
+	/* first try for a X Bitmap file format */
+	if (ReadDataFromBitmapFile(pic_stream->fp, &x, &y,
+				&pic->pic_cache->bitmap) == BitmapSuccess) {
+		pic->pic_cache->subtype = T_PIC_XBM;
+		pic->hw_ratio = (float) y / x;
+		pic->pic_cache->numcols = 0;
+		pic->pic_cache->bit_size.x = x;
+		pic->pic_cache->bit_size.y = y;
+		pic->pic_cache->size_x = x * scale;
+		pic->pic_cache->size_y = y * scale;
+		return PicSuccess;
+	}
+
+	/* Non Bitmap file */
+	return FileInvalid;
 }
 
 /* The following is a modified version of the

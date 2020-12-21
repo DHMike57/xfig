@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -18,30 +19,30 @@
 
 /* >>>>>>>>>>>>>>>>>>> fixme -- don't forget undo ! <<<<<<<<<<<<<<<< */
 
+#include "e_chop.h"
+
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
-#include "fig.h"
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
+#include "f_util.h"
 #include "u_create.h"
-#include "u_draw.h"
-#include "u_list.h"
-#include "u_search.h"
-#include "u_undo.h"
-#include "u_markers.h"
 #include "u_geom.h"
+#include "u_list.h"
+#include "u_markers.h"
 #include "u_redraw.h"
+#include "u_search.h"
 #include "w_canvas.h"
-#include "w_drawprim.h"
+#include "w_cursor.h"
+#include "w_intersect.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-#include "w_modepanel.h"
-#include "w_zoom.h"
 #include "w_snap.h"
-#include "w_intersect.h"
-#include "w_cursor.h"
-#include "f_util.h"
+#include "xfig_math.h"
 
 static void select_axe_object();
 static void select_log_object();
@@ -106,13 +107,10 @@ chop_selected(void)
 }
 
 static void
-select_axe_object(obj, type, x, y, p, q)		/* select axe objects */
-     void   * obj;
-     int      type;
-     int      x, y;
-     F_point * p;
-     F_point * q;
+select_axe_object(void *obj, int type, int x, int y, F_point *p, F_point * q)
 {
+	(void)x; (void)y; (void)p; (void)q;
+
   int i;
 
   for (i = 0; i < axe_objects_next; i++) {
@@ -133,13 +131,10 @@ select_axe_object(obj, type, x, y, p, q)		/* select axe objects */
 }
 
 static void
-clear_axe_objects(obj, type, x, y, p, q)		/* clear axe objects */
-     void   * obj;
-     int      type;
-     int      x, y;
-     F_point * p;
-     F_point * q;
+clear_axe_objects(void *obj, int type, int x, int y, F_point *p, F_point * q)
 {
+	(void)obj; (void)type; (void)x; (void)y; (void)p; (void)q;
+
   put_msg("Axe object list cleared.");
   axe_objects_next = 0;
 }
@@ -364,7 +359,7 @@ dice_polylines(int nr_segs, l_point_s * top_l_points, F_line * l)
 	append_point(this_x, this_y, &this_point);
 	add_line(this_line);
 	/* check for duplicate adjacent points */
-	if (True == check_poly(this_line, NULL, T_POLYLINE)) 
+	if (True == check_poly(this_line, NULL, T_POLYLINE))
 	  ++rc;
 	else delete_line(this_line);
 
@@ -416,10 +411,12 @@ chop_polyline(F_line * l, int x, int y)
 
   l_point_s * top_l_points;
 
+  /*
   typedef enum {
     STATE_PLINE_IDLE,
     STATE_PLINE_RUNNING
   } state_pline_e;
+  */
 
   if ((T_POLYLINE != l->type) && (T_POLYGON != l->type)) {
     put_msg("Only unconstrained polylines and polygons may be chopped.");
@@ -466,9 +463,10 @@ chop_polyline(F_line * l, int x, int y)
       beep();
       return -1;
     }
-    for (p = l->points, nr_verts = 0; p != NULL; p = p->next)
+    nr_verts = 0;
+    for (p = l->points; p != NULL; p = p->next)
       ++nr_verts;		/* just counting */
-    nr_segs = nr_verts - 1;
+    nr_segs = nr_verts > 0 ? nr_verts - 1 : 0;
 
     if ((top_l_points = malloc(nr_segs * sizeof(l_point_s))) == NULL) {
       put_msg("Not enough memory - cannot crop.");
@@ -828,13 +826,10 @@ chop_ellipse(F_ellipse * e, int x, int y)
 }
 
 static void
-select_log_object(obj, type, x, y, p, q)		/* select log objects */
-     void   * obj;
-     int      type;
-     int      x, y;
-     F_point * p;
-     F_point * q;
+select_log_object(void *obj, int type, int x, int y, F_point *p, F_point *q)
 {
+	(void)p;
+	(void)q;
   Boolean rc;
 
   switch(type) {
@@ -891,30 +886,5 @@ init_chop_right(obj, type, x, y, px, py)
     int		    x, y;
     int		    px, py;
 {
-}
-#endif
-
-#if 0				/* fixme -- may find a use for this stuff */
-draw_join_marker(point)
-    F_point	   *point;
-{
-	int x=ZOOMX(point->x), y=ZOOMY(point->y);
-	pw_vector(canvas_win, x-10, y-10, x-10, y+10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-	pw_vector(canvas_win, x-10, y+10, x+10, y+10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-	pw_vector(canvas_win, x+10, y+10, x+10, y-10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-	pw_vector(canvas_win, x+10, y-10, x-10, y-10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-}
-
-erase_join_marker(point)
-    F_point	   *point;
-{
-    int x=ZOOMX(point->x), y=ZOOMY(point->y);
-    if (point) {
-	pw_vector(canvas_win, x-10, y-10, x-10, y+10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-	pw_vector(canvas_win, x-10, y+10, x+10, y+10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-	pw_vector(canvas_win, x+10, y+10, x+10, y-10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-	pw_vector(canvas_win, x+10, y-10, x-10, y-10, INV_PAINT,1,PANEL_LINE,0.0,MAGENTA);
-    }
-    point = NULL;
 }
 #endif

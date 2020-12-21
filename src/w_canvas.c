@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2007 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2017 by Thomas Loimer
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,49 +16,56 @@
  *
  */
 
-/*********************** IMPORTS ************************/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_canvas.h"
 
-#include "fig.h"
-#include "figx.h"
+#include <limits.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
+#include <X11/Xaw3d/Command.h>
+#include <X11/Xaw3d/Form.h>
+#include <X11/Xaw3d/Label.h>
+
 #include "resources.h"
 #include "object.h"
 #include "main.h"
 #include "mode.h"
 #include "paintop.h"
-#include <X11/keysym.h>
+
 #include "d_text.h"
 #include "e_edit.h"
-#include "u_bound.h"
 #include "u_pan.h"
 #include "u_create.h"
+#include "u_redraw.h"
+#include "u_search.h"
 #include "w_canvas.h"
 #include "w_cmdpanel.h"
+#include "w_cursor.h"
+#include "w_grid.h"
 #include "w_layers.h"
-#include "w_indpanel.h"
 #include "w_modepanel.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
 #include "w_rulers.h"
 #include "w_setup.h"
 #include "w_util.h"
-#include "w_zoom.h"
 #include "w_drawprim.h"
-#include "w_snap.h"
 #include "w_keyboard.h"
+#include "w_snap.h"
+#include "w_zoom.h"
 
-#include "u_redraw.h"
-#include "u_search.h"
-#include "w_cursor.h"
-#include "w_grid.h"
-
-#include <limits.h>
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-#include <X11/Xatom.h>
-
-static void popup_mode_panel(Widget widget, XButtonEvent *event, String *params, Cardinal *num_params);
-static void popdown_mode_panel(void);
 
 /*********************** EXPORTS ************************/
 
@@ -70,7 +77,6 @@ void		(*canvas_middlebut_proc) ();
 void		(*canvas_middlebut_save) ();
 void		(*canvas_rightbut_proc) ();
 void		(*return_proc) ();
-void		null_proc(void);
 
 int		clip_xmin, clip_ymin, clip_xmax, clip_ymax;
 int		clip_width, clip_height;
@@ -80,6 +86,7 @@ int		last_x, last_y;		/* last position of mouse */
 int		shift;			/* global state of shift key */
 
 String		local_translations = "";
+
 
 /*********************** LOCAL ************************/
 
@@ -92,9 +99,7 @@ struct _CompKey {
     unsigned char   second;
     CompKey	   *next;
 };
-#endif /* NO_COMPKEYDB */
 
-#ifndef NO_COMPKEYDB
 static CompKey *allCompKey = NULL;
 /* static unsigned char getComposeKey(char *buf); */
 static void	readComposeKey(void);
@@ -113,6 +118,10 @@ null_proc(void)
 static void
 canvas_exposed(Widget tool, XEvent *event, String *params, Cardinal *nparams)
 {
+    (void)tool;
+    (void)params;
+    (void)nparams;
+
     static int	    xmin = 9999, xmax = -9999, ymin = 9999, ymax = -9999;
     XExposeEvent   *xe = (XExposeEvent *) event;
     register int    tmp;
@@ -136,7 +145,6 @@ canvas_exposed(Widget tool, XEvent *event, String *params, Cardinal *nparams)
     xmin = 9999, xmax = -9999, ymin = 9999, ymax = -9999;
 }
 
-static void canvas_paste(Widget w, XKeyEvent *paste_event);
 
 XtActionsRec	canvas_actions[] =
 {
@@ -215,8 +223,14 @@ void setup_canvas(void)
     reset_clip_window();
 }
 
-void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
+void
+canvas_selected(Widget tool, XButtonEvent *event, String *params,
+		Cardinal *nparams)
 {
+    (void)tool;
+    (void)params;
+    (void)nparams;
+
     KeySym	    key;
     static int	    sx = -10000, sy = -10000;
     XButtonPressedEvent *be = (XButtonPressedEvent *) event;
@@ -353,19 +367,21 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 
 	else if (be->button == Button4 && !shift)
 	    /* pan down with wheelmouse */
-	    pan_down(event->state & ShiftMask);
+	    pan_down(0);
 
 	else if (be->button == Button5 && !shift)
 	    /* pan up with wheelmouse */
-	    pan_up(event->state & ShiftMask);
+	    pan_up(0);
 
-	else if (be->button == 6 /* Button6 */ && !shift)
+	else if ((be->button == 6 /* Button6 */ && !shift) ||
+		(be->button == Button4 && shift))
 	    /* pan right with wheelmouse or touchpad */
-	    pan_right(event->state & ShiftMask);
+	    pan_right(0);
 
-	else if (be->button == 7 /* Button7 */ && !shift)
+	else if ((be->button == 7 /* Button7 */ && !shift) ||
+		(be->button == Button5 && shift))
 	    /* pan left with wheelmouse or touchpad */
-	    pan_left(event->state & ShiftMask);
+	    pan_left(0);
 
 	break;
 
@@ -530,7 +546,8 @@ void canvas_selected(Widget tool, XButtonEvent *event, String *params, Cardinal 
 
 /* clear the canvas - this can't be called to clear a pixmap, only a window */
 
-void clear_canvas(void)
+void
+clear_canvas(void)
 {
     /* clear the splash graphic if it is still on the screen */
     if (splash_onscreen) {
@@ -544,27 +561,16 @@ void clear_canvas(void)
     redisplay_pageborder();
 }
 
-void clear_region(int xmin, int ymin, int xmax, int ymax)
+void
+clear_region(int xmin, int ymin, int xmax, int ymax)
 {
     XClearArea(tool_d, canvas_win, xmin, ymin,
 	       xmax - xmin + 1, ymax - ymin + 1, False);
 }
 
-static void get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection, Atom *type, XtPointer buf, long unsigned int *length, int *format);
-
-/* paste primary X selection to the canvas */
-
-void
-paste_primary_selection(void)
-{
-    /* turn off Compose key LED */
-    setCompLED(0);
-
-    canvas_paste(canvas_sw, NULL);
-}
-
 static void
-canvas_paste(Widget w, XKeyEvent *paste_event)
+get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
+		Atom *type, XtPointer buf, unsigned long *length, int *format)
 {
 	Time event_time;
 	Atom	atom_utf8_string;
@@ -615,6 +621,45 @@ get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
 		canvas_kbd_proc((unsigned char *)buf, (int)(*length),(KeySym)0);
 	}
 	XtFree(buf);
+}
+
+/* paste primary X selection to the canvas */
+
+void
+paste_primary_selection(void)
+{
+    /* turn off Compose key LED */
+    setCompLED(0);
+
+    canvas_paste(canvas_sw, NULL);
+}
+
+static void
+canvas_paste(Widget w, XKeyEvent *paste_event)
+{
+	Time event_time;
+
+	if (canvas_kbd_proc != (void (*)())char_handler)
+		return;
+
+	if (paste_event != NULL)
+		event_time = paste_event->time;
+	else
+		event_time = CurrentTime;
+
+#ifdef I18N
+	if (appres.international) {
+	  Atom atom_compound_text = XInternAtom(XtDisplay(w), "COMPOUND_TEXT", False);
+	  if (atom_compound_text) {
+	    XtGetSelectionValue(w, XA_PRIMARY, atom_compound_text,
+				get_canvas_clipboard, NULL, event_time);
+	    return;
+	  }
+	}
+#endif  /* I18N */
+
+	XtGetSelectionValue(w, XA_PRIMARY,
+		XA_STRING, get_canvas_clipboard, NULL, event_time);
 }
 
 #ifndef NO_COMPKEYDB
@@ -677,7 +722,7 @@ readComposeKey(void)
      else if (! strncmp(appres.keyFile, "~/", 2)) {
 	 strcpy(line, getenv("HOME"));
 	 for (charinto = strlen(line), charfrom = 1;
-	      line[charinto++] = appres.keyFile[charfrom++]; );
+	      (line[charinto++] = appres.keyFile[charfrom++]); );
        }
     else
 	strcpy(line, appres.keyFile);
@@ -824,13 +869,18 @@ void static popdown_mode_panel(void)
   active_mode_panel = None;
 }
 
-void static mode_panel_button_selected(Widget w, icon_struct *icon, char *call_data)
+static void
+mode_panel_button_selected(Widget w, icon_struct *icon, char *call_data)
 {
-  change_mode(icon);
-  popdown_mode_panel();
+	(void)w;
+	(void)call_data;
+
+	change_mode(icon);
+	popdown_mode_panel();
 }
 
-static void create_mode_panel(void)
+static void
+create_mode_panel(void)
 {
   Widget draw_form, edit_form;
   Widget form, entry;
@@ -879,8 +929,13 @@ static void create_mode_panel(void)
   }
 }
 
-static void popup_mode_panel(Widget widget, XButtonEvent *event, String *params, Cardinal *num_params)
+static void
+popup_mode_panel(Widget widget, XButtonEvent *event, String *params,
+		Cardinal *num_params)
 {
+  (void)widget;
+  (void)num_params;
+
   Dimension wd, ht;
   Widget panel;
 

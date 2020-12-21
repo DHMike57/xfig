@@ -14,13 +14,18 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_modepanel.h"
+
+#include <stddef.h>
+#include <math.h>
+
 #include "figx.h"
 #include "resources.h"
-#include "main.h"
 #include "mode.h"
 #include "object.h"
-#include "paintop.h"
 #include "d_arc.h"
 #include "d_arcbox.h"
 #include "d_box.h"
@@ -56,14 +61,11 @@
 #include "u_markers.h"
 #include "u_search.h"
 #include "w_drawprim.h"
-#include "w_library.h"
 #include "w_indpanel.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-#include "w_modepanel.h"
 #include "w_setup.h"
 #include "w_util.h"
-#include "d_spline.h"
 
 /* EXPORTS */
 
@@ -147,132 +149,143 @@ mode_sw_info mode_switches[] = {
 
     /* DRAWING MODES */
 
-    {&ellrad_ic, F_CIRCLE_BY_RAD, circle_ellipse_byradius_drawing_selected, M_NONE,
-       I_ELLIPSE,
-       "CIRCLE/ELLIPSE drawing: specify RADII   (c or e)", False},
-    {&elldia_ic, F_CIRCLE_BY_DIA, circle_ellipse_bydiameter_drawing_selected, M_NONE,
-       I_ELLIPSE,
-       "CIRCLE/ELLIPSE drawing: specify DIAMETER(S)   (Shift-c or e)", False},
-    {&c_spl_ic, F_CLOSED_APPROX_SPLINE, spline_drawing_selected, M_NONE,
-       I_CLOSED,
-       "CLOSED APPROXIMATED SPLINE drawing: specify control points   (Shift-s)", False},
-    {&spl_ic, F_APPROX_SPLINE, spline_drawing_selected, M_NONE,
-       I_OPEN,
-       "APPROXIMATED SPLINE drawing: specify control points   (s)", False},
-    {&c_intspl_ic, F_CLOSED_INTERP_SPLINE, spline_drawing_selected, M_NONE,
-       I_CLOSED,
-       "CLOSED INTERPOLATED SPLINE drawing: specify control points   (Shift-i)", False},
-    {&intspl_ic, F_INTERP_SPLINE, spline_drawing_selected, M_NONE,
-       I_OPEN,
-       "INTERPOLATED SPLINE drawing: specify control points   (i)", False},
-    {&polygon_ic, F_POLYGON, line_drawing_selected, M_NONE,
-       I_CLOSED,
-       "POLYGON drawing   (p)", False},
-    {&line_ic, F_POLYLINE, line_drawing_selected, M_NONE,
-       I_LINE,
-       "POLYLINE drawing   (l)", False},
-    {&box_ic, F_BOX, box_drawing_selected, M_NONE,
-       I_BOX,
-       "Rectangular BOX drawing   (b)", False},
-    {&arc_box_ic, F_ARCBOX, arcbox_drawing_selected, M_NONE,
-       I_ARCBOX,
-       "Rectangular BOX drawing with ROUNDED CORNERS   (Shift-b)", False},
-    {&regpoly_ic, F_REGPOLY, regpoly_drawing_selected, M_NONE,
-       I_REGPOLY,
-       "Regular Polygon   (Shift-p)", False},
-    {&arc_ic, F_CIRCULAR_ARC, arc_drawing_selected, M_NONE,
-       I_ARC,
-       "ARC drawing: specify three points on the arc   (r)", False},
-    {&picobj_ic, F_PICOBJ, picobj_drawing_selected, M_NONE,
-       I_PICOBJ,
-       "Picture Object   (Ctrl-p)", True},			/* popups a panel */
-    {&text_ic, F_TEXT, text_drawing_selected, M_TEXT_NORMAL,
-       I_TEXT,
-       "TEXT input from keyboard   (t)", False},
-    {&library_ic, F_PLACE_LIB_OBJ, sel_place_lib_obj, M_NONE,
-       I_MIN2,
-       "PLACE a library element   (Shift-l)", True},		/* popups a panel */
+	{&ellrad_ic, F_CIRCLE_BY_RAD, circle_ellipse_byradius_drawing_selected,
+		M_NONE, I_ELLIPSE,
+		"CIRCLE/ELLIPSE drawing: specify RADII   (c or e)", False,
+		NULL, (Pixmap)0, (Pixmap)0},
+	{&elldia_ic, F_CIRCLE_BY_DIA,circle_ellipse_bydiameter_drawing_selected,
+		M_NONE, I_ELLIPSE,
+		"CIRCLE/ELLIPSE drawing: specify DIAMETER(S)   (Shift-c or e)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&c_spl_ic, F_CLOSED_APPROX_SPLINE, spline_drawing_selected,
+		M_NONE, I_CLOSED,
+		"CLOSED APPROXIMATED SPLINE drawing: specify control points   (Shift-s)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&spl_ic, F_APPROX_SPLINE, spline_drawing_selected, M_NONE, I_OPEN,
+		"APPROXIMATED SPLINE drawing: specify control points   (s)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&c_intspl_ic, F_CLOSED_INTERP_SPLINE, spline_drawing_selected, M_NONE,
+		I_CLOSED,
+	       "CLOSED INTERPOLATED SPLINE drawing: specify control points   (Shift-i)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&intspl_ic, F_INTERP_SPLINE, spline_drawing_selected, M_NONE, I_OPEN,
+		"INTERPOLATED SPLINE drawing: specify control points   (i)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&polygon_ic, F_POLYGON, line_drawing_selected, M_NONE, I_CLOSED,
+		"POLYGON drawing   (p)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&line_ic, F_POLYLINE, line_drawing_selected, M_NONE, I_LINE,
+		"POLYLINE drawing   (l)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&box_ic, F_BOX, box_drawing_selected, M_NONE, I_BOX,
+		"Rectangular BOX drawing   (b)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&arc_box_ic, F_ARCBOX, arcbox_drawing_selected, M_NONE, I_ARCBOX,
+		"Rectangular BOX drawing with ROUNDED CORNERS   (Shift-b)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&regpoly_ic, F_REGPOLY, regpoly_drawing_selected, M_NONE, I_REGPOLY,
+		"Regular Polygon   (Shift-p)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&arc_ic, F_CIRCULAR_ARC, arc_drawing_selected, M_NONE, I_ARC,
+		"ARC drawing: specify three points on the arc   (r)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&picobj_ic, F_PICOBJ, picobj_drawing_selected, M_NONE, I_PICOBJ,
+		"Picture Object   (Ctrl-p)",
+		True, NULL, (Pixmap)0, (Pixmap)0},	/* popups a panel */
+	{&text_ic, F_TEXT, text_drawing_selected, M_TEXT_NORMAL, I_TEXT,
+		"TEXT input from keyboard   (t)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&library_ic, F_PLACE_LIB_OBJ, sel_place_lib_obj, M_NONE, I_MIN2,
+		"PLACE a library element   (Shift-l)",
+		True, NULL, (Pixmap)0, (Pixmap)0},	/* popups a panel */
 
       /* EDITING MODES FOLLOW */
 
-    {&glue_ic, F_GLUE, compound_selected, M_ALL,
-       I_MIN2,
-       "GLUE objects into COMPOUND object   (g)", False},
-    {&break_ic, F_BREAK, break_selected, M_COMPOUND,
-       0,
-       "BREAK COMPOUND object   (Shift-g)", False},
-    {&open_comp_ic, F_ENTER_COMP, open_compound_selected, M_COMPOUND,
-       0,
-       "OPEN COMPOUND object   (o)", False},
-    {&join_split_ic, F_JOIN, join_split_selected, M_POLYLINE | M_SPLINE_O |M_SPLINE_C,
-       0,
-       "Join or Split lines/splines   (j)", False},
-    {&chop_ic, F_CHOP, chop_selected, M_POLYLINE | M_ARC |M_ELLIPSE,  /* maybe spline someday */
-       I_CHOP,
-       "Chop objects   (x)", False},
-    {&scale_ic, F_SCALE, scale_selected, M_NO_TEXT,
-       I_MIN2,
-       "SCALE objects   (Ctrl-s)", False},
-    {&align_ic, F_ALIGN, align_selected, M_COMPOUND,
-       I_ALIGN,
-       "ALIGN objects within a COMPOUND or to CANVAS   (a)", False},
-    {&movept_ic, F_MOVE_POINT, move_point_selected, M_NO_TEXT,
-       I_ADDMOVPT,
-       "MOVE POINTs   (Shift-m)", False},
-    {&move_ic, F_MOVE, move_selected, M_ALL,
-       I_MIN3,
-       "MOVE objects   (m)", False},
-    {&addpt_ic, F_ADD_POINT, point_adding_selected, M_VARPTS_OBJECT,
-       I_ADDMOVPT,
-       "ADD POINTs to lines, polygons and splines   (Ctrl-a)", False},
-    {&copy_ic, F_COPY, copy_selected, M_ALL,
-       I_COPY,
-       "COPY objects  (Ctrl-c)", False},
-    {&deletept_ic, F_DELETE_POINT, delete_point_selected, M_VARPTS_OBJECT,
-       0,
-       "DELETE POINTs from lines, polygons and splines   (Shift-d)", False},
-    {&delete_ic, F_DELETE, delete_selected, M_ALL,
-       0,
-       "DELETE objects   (d)", False},
-    {&update_ic, F_UPDATE, update_selected, M_ALL,
-       I_OBJECT,
-       "UPDATE object <-> current settings   (u)", False},
-    {&edit_ic, F_EDIT, edit_item_selected, M_ALL,
-       0,
-       "CHANGE OBJECT via EDIT panel   (Ctrl-e)", False},
-    {&flip_y_ic, F_FLIP, flip_ud_selected, M_NO_TEXT,
-       I_MIN2,
-       "FLIP objects up or down   (f)", False},
-    {&flip_x_ic, F_FLIP, flip_lr_selected, M_NO_TEXT,
-       I_MIN2,
-       "FLIP objects left or right   (Shift-f)", False},
-    {&rotCW_ic, F_ROTATE, rotate_cw_selected, M_ALL,
-       I_ROTATE,
-       "ROTATE objects clockwise   (Ctrl-r)", False},
-    {&rotCCW_ic, F_ROTATE, rotate_ccw_selected, M_ALL,
-       I_ROTATE,
-       "ROTATE objects counter-clockwise   (Shift-r)", False},
-    {&convert_ic, F_CONVERT, convert_selected, M_VARPTS_OBJECT | M_POLYLINE_BOX,
-       0,
-       "CONVERSION between lines, polygons and splines   (v)", False},
-    {&autoarrow_ic, F_AUTOARROW, arrow_head_selected, M_OPEN_OBJECT,
-       I_ADD_DEL_ARROW,
-       "ADD/DELETE ARROWHEADS   (Shift-a)", False},
-    {&tangent_ic, F_TANGENT, tangent_selected, M_TANGENT_OBJECT,
-       I_TANGENT,
-       "Add TANGENT/NORMAL to curve   (n)", False},
-    {&anglemeas_ic, F_ANGLEMEAS, anglemeas_selected, M_ANGLEMEAS_OBJECT,
-       I_MIN2,
-       "MEASURE angle (specify three points or select object)   (Ctrl-g)", False},
-    {&lenmeas_ic, F_LENMEAS, lenmeas_selected, M_LENMEAS_OBJECT,
-       I_MIN2,
-       "Measure LENGTH of polylines, arcs and ellipses   (Ctrl-n)", False},
-    {&areameas_ic, F_AREAMEAS, areameas_selected, M_AREAMEAS_OBJECT,
-       I_MIN2,
-       "Measure AREA of polygons, arcs and ellipses   (Ctrl-m)", False},
+	{&glue_ic, F_GLUE, compound_selected, M_ALL, I_MIN2,
+		"GLUE objects into COMPOUND object   (g)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&break_ic, F_BREAK, break_selected, M_COMPOUND, 0,
+		"BREAK COMPOUND object   (Shift-g)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&open_comp_ic, F_ENTER_COMP, open_compound_selected, M_COMPOUND, 0,
+		"OPEN COMPOUND object   (o)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&join_split_ic, F_JOIN, join_split_selected,
+		M_POLYLINE | M_SPLINE_O |M_SPLINE_C, 0,
+		"Join or Split lines/splines   (j)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&chop_ic, F_CHOP, chop_selected,
+		M_POLYLINE | M_ARC |M_ELLIPSE,  /* maybe spline someday */
+		I_CHOP,
+		"Chop objects   (x)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&scale_ic, F_SCALE, scale_selected, M_NO_TEXT, I_MIN2,
+		"SCALE objects   (Ctrl-s)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&align_ic, F_ALIGN, align_selected, M_COMPOUND, I_ALIGN,
+		"ALIGN objects within a COMPOUND or to CANVAS   (a)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&movept_ic, F_MOVE_POINT, move_point_selected, M_NO_TEXT, I_ADDMOVPT,
+		"MOVE POINTs   (Shift-m)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&move_ic, F_MOVE, move_selected, M_ALL, I_MIN3,
+		"MOVE objects   (m)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&addpt_ic, F_ADD_POINT, point_adding_selected, M_VARPTS_OBJECT,
+		I_ADDMOVPT,
+		"ADD POINTs to lines, polygons and splines   (Ctrl-a)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&copy_ic, F_COPY, copy_selected, M_ALL, I_COPY,
+		"COPY objects  (Ctrl-c)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&deletept_ic, F_DELETE_POINT, delete_point_selected, M_VARPTS_OBJECT,0,
+		"DELETE POINTs from lines, polygons and splines   (Shift-d)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&delete_ic, F_DELETE, delete_selected, M_ALL, 0,
+		"DELETE objects   (d)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&update_ic, F_UPDATE, update_selected, M_ALL, I_OBJECT,
+		"UPDATE object <-> current settings   (u)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&edit_ic, F_EDIT, edit_item_selected, M_ALL, 0,
+		"CHANGE OBJECT via EDIT panel   (Ctrl-e)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&flip_y_ic, F_FLIP, flip_ud_selected, M_NO_TEXT, I_MIN2,
+		"FLIP objects up or down   (f)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&flip_x_ic, F_FLIP, flip_lr_selected, M_NO_TEXT, I_MIN2,
+		"FLIP objects left or right   (Shift-f)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&rotCW_ic, F_ROTATE, rotate_cw_selected, M_ALL, I_ROTATE,
+		"ROTATE objects clockwise   (Ctrl-r)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&rotCCW_ic, F_ROTATE, rotate_ccw_selected, M_ALL, I_ROTATE,
+		"ROTATE objects counter-clockwise   (Shift-r)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&convert_ic, F_CONVERT, convert_selected,
+		M_VARPTS_OBJECT | M_POLYLINE_BOX, 0,
+		"CONVERSION between lines, polygons and splines   (v)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&autoarrow_ic, F_AUTOARROW, arrow_head_selected, M_OPEN_OBJECT,
+		I_ADD_DEL_ARROW,
+		"ADD/DELETE ARROWHEADS   (Shift-a)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&tangent_ic, F_TANGENT, tangent_selected, M_TANGENT_OBJECT, I_TANGENT,
+		"Add TANGENT/NORMAL to curve   (n)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&anglemeas_ic, F_ANGLEMEAS, anglemeas_selected, M_ANGLEMEAS_OBJECT,
+		I_MIN2,
+		"MEASURE angle (specify three points or select object)   (Ctrl-g)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&lenmeas_ic, F_LENMEAS, lenmeas_selected, M_LENMEAS_OBJECT, I_MIN2,
+		"Measure LENGTH of polylines, arcs and ellipses   (Ctrl-n)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
+	{&areameas_ic, F_AREAMEAS, areameas_selected, M_AREAMEAS_OBJECT, I_MIN2,
+		"Measure AREA of polygons, arcs and ellipses   (Ctrl-m)",
+		False, NULL, (Pixmap)0, (Pixmap)0},
 
-    /* This must be last for create_mode_panel() (in w_canvas.c) */
-    { NULL, 0 }
+	/* This must be last for create_mode_panel() (in w_canvas.c) */
+	{ NULL, 0, NULL, 0, 0, "", False, NULL, 0, 0}
 
 };
 
@@ -295,9 +308,15 @@ static Arg      button_args[] =
 
 
 static void
-stub_enter_mode_btn(Widget widget, XEvent *event, String *params, Cardinal *num_params)
+stub_enter_mode_btn(Widget widget, XEvent *event, String *params,
+		Cardinal *num_params)
 {
-    draw_mousefun_mode();
+	(void)widget;
+	(void)event;
+	(void)params;
+	(void)num_params;
+
+	draw_mousefun_mode();
 }
 
 static XtActionsRec mode_actions[] =
@@ -581,8 +600,11 @@ mode_unballoon(Widget widget, XtPointer closure, XEvent *event, Boolean *continu
 /* come here when a button is pressed in the mode panel */
 
 static void
-sel_mode_but(Widget widget, XtPointer closure, XEvent *event, Boolean *continue_to_dispatch)
+sel_mode_but(Widget widget, XtPointer closure, XEvent *event,
+		Boolean *continue_to_dispatch)
 {
+	(void)widget;
+	(void)continue_to_dispatch;
     XButtonEvent    xbutton;
     mode_sw_info    *msw = (mode_sw_info *) closure;
 

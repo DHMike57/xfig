@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,13 +16,20 @@
  *
  */
 
+#ifndef E_ROTATE_H
+#define E_ROTATE_H
+
+#include "object.h"
+
 extern int	setcenter;
 extern int	setcenter_x;
 extern int	setcenter_y;
 extern int	rotn_dirn;
 extern float	act_rotnangle;
 
-extern int rotate_compound (F_compound *c, int x, int y);
-extern int rotate_line (F_line *l, int x, int y);
-extern void rotate_ccw_selected (void);
-extern void rotate_cw_selected (void);
+extern void	rotate_compound(F_compound *c, int x, int y);
+extern void	rotate_line(F_line *l, int x, int y);
+extern void	rotate_ccw_selected(void);
+extern void	rotate_cw_selected(void);
+
+#endif

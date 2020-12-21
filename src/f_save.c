@@ -15,43 +15,43 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "f_save.h"
+
+#include <errno.h>
+#ifdef I18N
+#include <locale.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
+
+#include "e_compound.h"
+#include "f_load.h"
 #include "f_read.h"
 #include "f_util.h"
 #include "u_colors.h"
 #include "u_create.h"
+#include "u_bound.h"
 #include "w_export.h"
-#include "w_indpanel.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
-#include "w_util.h"
-#include "w_zoom.h"
-
-#include "e_compound.h"
-#include "f_load.h"
-#include "u_bound.h"
 
 static int	write_tmpfile = 0;
 static char	save_cur_dir[PATH_MAX];
 
-/* Prototypes */
+static void	write_arrows(FILE *fp, F_arrow *f, F_arrow *b);
+static void	write_comments (FILE *fp, char *com);
+static void	write_colordefs (FILE *fp);
+static int	write_objects (FILE *fp);
 
-static void write_arrows(FILE *fp, F_arrow *f, F_arrow *b);
-
-
-int write_objects (FILE *fp);
-void write_fig_header (FILE *fp);
-void write_arc (FILE *fp, F_arc *a);
-void write_compound (FILE *fp, F_compound *com);
-void write_ellipse (FILE *fp, F_ellipse *e);
-void write_line (FILE *fp, F_line *l);
-void write_spline (FILE *fp, F_spline *s);
-void write_text (FILE *fp, F_text *t);
-void write_comments (FILE *fp, char *com);
-void write_colordefs (FILE *fp);
 
 void init_write_tmpfile(void)
 {

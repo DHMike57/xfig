@@ -18,11 +18,15 @@
 #ifndef E_CONVERT_H
 #define E_CONVERT_H
 
+#include "object.h"
+
 extern void     spline_line(F_spline *s);
 extern void     line_spline(F_line *l, int type_value);
-extern void     toggle_polyline_polygon(F_line *line, F_point *previous_point, F_point *selected_point);
-extern void     toggle_open_closed_spline(F_spline *spline, F_point *previous_point, F_point *selected_point);
+extern void     toggle_polyline_polygon(F_line *line, F_point *previous_point,
+			F_point *selected_point);
+extern void     toggle_open_closed_spline(F_spline *spline,
+			F_point *previous_point, F_point *selected_point);
 extern void	box_2_box(F_line *old_l);
-extern void convert_selected (void);
+extern void	convert_selected (void);
 
 #endif /* E_CONVERT_H */

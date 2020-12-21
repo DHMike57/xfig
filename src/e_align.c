@@ -14,26 +14,31 @@
  *
  */
 
-#include "fig.h"
+#include "e_align.h"
+
+#include <stdlib.h>
+#include <limits.h>		/* INT_MAX, INT_MIN */
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
+
 #include "resources.h"
 #include "object.h"
 #include "paintop.h"
 #include "mode.h"
+#include "u_bound.h"
 #include "u_create.h"
 #include "u_draw.h"
+#include "u_markers.h"
 #include "u_search.h"
+#include "u_translate.h"
 #include "u_undo.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_layers.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
-#include "u_bound.h"
-#include "u_markers.h"
-#include "u_translate.h"
-#include "w_cursor.h"
+#include "xfig_math.h"
 
-#include <limits.h>	/* INT_MAX, INT_MIN */
 
 static int	llx, lly, urx, ury;
 static int	xcmin, ycmin, xcmax, ycmax;
@@ -81,6 +86,9 @@ static void
 init_align_canvas(int x, int y, unsigned int shift)
 /* Shift Key Status from XEvent */
 {
+	(void)x;
+	(void)y;
+	(void)shift;
     int		    ux;
 
     cur_c = &objects;
@@ -133,6 +141,11 @@ init_align_canvas(int x, int y, unsigned int shift)
 static void
 init_align(F_line *p, int type, int x, int y, int px, int py)
 {
+	(void)x;
+	(void)y;
+	(void)px;
+	(void)py;
+
     if (type != O_COMPOUND)
 	return;
     cur_c = (F_compound *) p;
