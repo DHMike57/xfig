@@ -24,6 +24,7 @@
 #include "u_search.h"
 #include "w_drawprim.h"
 #include "w_layers.h"
+#include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_zoom.h"
 #include "w_snap.h"

@@ -19,9 +19,16 @@
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"
+#endif
+
 #include <limits.h>		/* PATH_MAX, below */
 #include <X11/Intrinsic.h>	/* Boolean */
 #include <X11/Xft/Xft.h>
+#ifdef USE_XPM
+#include <X11/xpm.h>
+#endif
 
 #include "paintop.h"
 

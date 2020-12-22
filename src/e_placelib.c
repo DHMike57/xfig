@@ -59,7 +59,7 @@ static int	off_library_y;
 static void	init_move_object(int x, int y);
 static void	move_object(int x, int y);
 static void	change_draw_mode(int x, int y);
-static void	transform_lib_obj(XKeyEvent *kpe, unsigned char c,KeySym keysym);
+static void	transform_lib_obj(unsigned char *c, int clen, KeySym keysym);
 static void	place_lib_object(int x, int y, unsigned int shift);
 static void	put_draw(int paint_mode);
 static void	sel_place_lib_obj_proc(int x, int y, int shift);
@@ -118,7 +118,6 @@ put_selected(void)
 static void
 transform_lib_obj(unsigned char *c, int clen, KeySym keysym)
 {
-	(void)kpe;
 	(void)keysym;
     int x,y;
 

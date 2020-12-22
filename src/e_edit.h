@@ -24,6 +24,7 @@
 #include <X11/Xlib.h>
 
 #include "resources.h"
+#include "u_colors.h"
 
 extern void	change_sfactor(int x, int y, unsigned int button);
 extern void	Quit(void);

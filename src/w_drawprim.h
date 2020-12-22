@@ -18,6 +18,9 @@
 #ifndef W_DRAWPRIM_H
 #define W_DRAWPRIM_H
 
+#include <X11/Xft/Xft.h>
+
+#include "resources.h"
 #include "u_colors.h"		/* Color */
 #include "w_zoom.h"
 #include "xfig_math.h"

@@ -20,7 +20,7 @@
 #define OBJECT_H
 
 #include <X11/extensions/Xrender.h>	/* XGlyphInfo */
-#include "u_colors.h"			/* Color */
+#include "u_colors.h"			/* Color, struct Cmap */
 
 /* DEFAULT is used for many things - font, color etc */
 

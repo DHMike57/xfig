@@ -109,12 +109,18 @@
 
 /* EXPORTS */
 
+char		*arg_filename = NULL;
 Boolean		geomspec;
+Atom		wm_protocols[2];
+int		xargc;		/* keep copies of the command line arguments */
+char		**xargv;
 
 /* LOCALS */
 
 static int	cnt;
 static int	screen_res;
+static int	xpm_icon_status;
+static Arg	args[10];
 static void	make_cut_buf_name(void);
 static void	check_resource_ranges(void);
 static void	set_icon_geom(void);

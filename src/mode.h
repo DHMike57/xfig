@@ -19,6 +19,7 @@
 
 #ifndef MODE_H
 #define MODE_H
+
 #if defined HAVE_CONFIG_H && !defined VERSION
 #include "config.h"
 #endif

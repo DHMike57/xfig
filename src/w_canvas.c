@@ -84,28 +84,29 @@ int		cur_x, cur_y;
 int		fix_x, fix_y;
 int		last_x, last_y;		/* last position of mouse */
 int		shift;			/* global state of shift key */
-
+int		ignore_exp_cnt = 1;	/* we get 2 expose events at startup */
 String		local_translations = "";
 
 
 /*********************** LOCAL ************************/
 
 #ifndef NO_COMPKEYDB
-typedef struct _CompKey CompKey;
-
+typedef struct _CompKey	CompKey;
 struct _CompKey {
     unsigned char   key;
     unsigned char   first;
     unsigned char   second;
     CompKey	   *next;
 };
-
-static CompKey *allCompKey = NULL;
-/* static unsigned char getComposeKey(char *buf); */
-static void	readComposeKey(void);
+static CompKey		*allCompKey = NULL;
+static void		readComposeKey(void);
 #endif /* NO_COMPKEYDB */
 
-int		ignore_exp_cnt = 1;	/* we get 2 expose events at startup */
+static void		canvas_paste(Widget w, XKeyEvent *paste_event);
+static void		popup_mode_panel(Widget widget, XButtonEvent *event,
+					String *params, Cardinal *num_params);
+static void		popdown_mode_panel(void);
+
 
 void
 null_proc(void)
@@ -572,30 +573,6 @@ static void
 get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
 		Atom *type, XtPointer buf, unsigned long *length, int *format)
 {
-	Time event_time;
-	Atom	atom_utf8_string;
-
-	if (canvas_kbd_proc != (void (*)())char_handler)
-		return;
-
-	if (paste_event != NULL)
-		event_time = paste_event->time;
-	else
-		event_time = CurrentTime;
-
-	atom_utf8_string = XInternAtom(XtDisplay(w), "UTF8_STRING", False);
-	if (atom_utf8_string)
-		XtGetSelectionValue(w, XA_PRIMARY, atom_utf8_string,
-				get_canvas_clipboard, NULL, event_time);
-	else
-		XtGetSelectionValue(w, XA_PRIMARY, XA_STRING,
-				get_canvas_clipboard, NULL, event_time);
-}
-
-static void
-get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
-		Atom *type, XtPointer buf, unsigned long *length, int *format)
-{
 	char		**tmp;
 	int		i, num_values, ret_status;
 	XTextProperty	prop;
@@ -638,6 +615,7 @@ static void
 canvas_paste(Widget w, XKeyEvent *paste_event)
 {
 	Time event_time;
+	Atom	atom_utf8_string;
 
 	if (canvas_kbd_proc != (void (*)())char_handler)
 		return;
@@ -647,39 +625,16 @@ canvas_paste(Widget w, XKeyEvent *paste_event)
 	else
 		event_time = CurrentTime;
 
-#ifdef I18N
-	if (appres.international) {
-	  Atom atom_compound_text = XInternAtom(XtDisplay(w), "COMPOUND_TEXT", False);
-	  if (atom_compound_text) {
-	    XtGetSelectionValue(w, XA_PRIMARY, atom_compound_text,
+	atom_utf8_string = XInternAtom(XtDisplay(w), "UTF8_STRING", False);
+	if (atom_utf8_string)
+		XtGetSelectionValue(w, XA_PRIMARY, atom_utf8_string,
 				get_canvas_clipboard, NULL, event_time);
-	    return;
-	  }
-	}
-#endif  /* I18N */
-
-	XtGetSelectionValue(w, XA_PRIMARY,
-		XA_STRING, get_canvas_clipboard, NULL, event_time);
+	else
+		XtGetSelectionValue(w, XA_PRIMARY, XA_STRING,
+				get_canvas_clipboard, NULL, event_time);
 }
 
 #ifndef NO_COMPKEYDB
-/*
-static unsigned char
-getComposeKey(char *buf)
-{
-    CompKey	   *compKeyPtr = allCompKey;
-
-    while (compKeyPtr != NULL) {
-	if (compKeyPtr->first == (unsigned char) (buf[0]) &&
-	    compKeyPtr->second == (unsigned char) (buf[1]))
-	    return (compKeyPtr->key);
-	else
-	    compKeyPtr = compKeyPtr->next;
-    }
-    return ('\0');
-}
-*/
-
 static void
 readComposeKey(void)
 {

@@ -34,14 +34,15 @@
 #include "f_util.h"		/* xf_basename() */
 #include "u_bound.h"		/* <obj>_bound(), overlapping() */
 #include "u_draw.h"
-#include "u_geom.h"		/* compute_angle() */
+#include "u_fonts.h"
 #include "u_error.h"		/* X_error_handler() */
+#include "u_geom.h"		/* compute_angle() */
+#include "u_redraw.h"		/* redisplay_line() */
 #include "w_canvas.h"		/* clip_xmax, clip_xmin */
 #include "w_file.h"		/* check_cancel() */
 #include "w_layers.h"		/* active_layer() */
 #include "w_msgpanel.h"		/* put_msg() */
 #include "w_util.h"		/* NUM_ARROW_TYPES */
-#include "u_redraw.h"		/* redisplay_line() */
 #include "w_cursor.h"		/* reset_cursor() */
 #include "xfig_math.h"
 
