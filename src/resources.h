@@ -19,6 +19,10 @@
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"
+#endif
+
 #include <limits.h>		/* PATH_MAX, below */
 #include <sys/types.h>
 #include <X11/Intrinsic.h>
