@@ -1071,31 +1071,36 @@ void update_indpanel(long unsigned int mask)
      */
 
 #ifdef XAW3D1_5E
-    if (upd_ctrl)
+    if (upd_ctrl) {
 	if (appres.showballoons)
 	    XawTipEnable(upd_ctrl, upd_sw_info.line1);
 	else
 	    XawTipDisable(upd_ctrl);
-    if (upd_ctrl_lab)
+    }
+    if (upd_ctrl_lab) {
 	if (appres.showballoons)
 	    XawTipEnable(upd_ctrl_lab, upd_sw_info.line1);
 	else
 	    XawTipDisable(upd_ctrl_lab);
-    if (set_upd)
+    }
+    if (set_upd) {
 	if (appres.showballoons)
 	    XawTipEnable(set_upd, upd_set_sw_info.line1);
 	else
 	    XawTipDisable(set_upd);
-    if (clr_upd)
+    }
+    if (clr_upd) {
 	if (appres.showballoons)
 	    XawTipEnable(clr_upd, upd_clr_sw_info.line1);
 	else
 	    XawTipDisable(clr_upd);
-    if (tog_upd)
+    }
+    if (tog_upd) {
 	if (appres.showballoons)
 	    XawTipEnable(tog_upd, upd_tog_sw_info.line1);
 	else
 	    XawTipDisable(tog_upd);
+    }
     for (isw = ind_switches, i = 0; i < NUM_IND_SW; isw++, i++) {
 	if (!isw->button)
 	    continue;

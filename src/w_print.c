@@ -184,7 +184,7 @@ do_print(Widget w)
 	    strcpy(cmd, param_val);
 	    /* see if the user wants the filename in the param list (%f) */
 	    if (!strstr(cur_filename,"%f")) {	/* don't substitute if the filename has a %f */
-		while (c1=strstr(cmd,"%f")) {
+		while ((c1=strstr(cmd,"%f"))) {
 		    strcpy(cmd2, c1+2);		/* save tail */
 		    strcpy(c1, cur_filename);	/* change %f to filename */
 		    strcat(c1, cmd2);		/* append tail */

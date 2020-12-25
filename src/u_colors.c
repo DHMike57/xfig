@@ -133,7 +133,7 @@ write_xftcolor_nontrue(const fig_color *restrict in, int c)
 	buf.green = in->green;
 	buf.blue = in->blue;
 	/* buf.flags = DoRed | DoGreen | DoBlue; not used by XAllocColor() */
-	if (status = XAllocColor(tool_d, tool_cm, &buf)) {
+	if ((status = XAllocColor(tool_d, tool_cm, &buf))) {
 		xtoxftcolor(&xftcolor[c], &buf);
 		xftcolor[c].color.alpha = OPAQUE;
 	}

@@ -1385,7 +1385,7 @@ MakeLibrary(void)
 			strcpy(name, strrchr(path2, '/') + 1);
 		    else {
 			/* use the last dir in the path for the name */
-			if (c=strrchr(path2,'/'))
+			if ((c=strrchr(path2,'/')))
 			    strcpy(name,c);
 			else
 			    strcpy(name, path2);

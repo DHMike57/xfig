@@ -444,7 +444,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 
 			/* now change the output file name to xxx.pdf */
 			/* strip off current suffix, if any */
-			if (suf = strrchr(outfile, '.'))
+			if ((suf = strrchr(outfile, '.')))
 				sprintf(suf, ".pdf'");
 			else
 				strcat(outfile, ".pdf'");

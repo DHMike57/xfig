@@ -117,12 +117,13 @@ setup_mousefun(void)
 #ifdef XAW3D1_5E
 void update_mousepanel()
 {
-    if (mousefun)
+    if (mousefun) {
 	if (appres.showballoons)
 	    XawTipEnable(mousefun,
 			 "Shows which mouse buttons\nare active in each mode");
 	else
 	    XawTipDisable(mousefun);
+    }
 }
 #else
 /* come here when the mouse passes over a button in the mouse indicator panel */

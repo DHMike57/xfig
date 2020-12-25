@@ -525,11 +525,11 @@ static void ScaleUp(from_image, to_image, width, height, scale)
       for (y2 = 0; y2 < ht; y2++) {
 	y1 = y2 / scale;
 	if (y1 != j) {
-	  if (scale_buf[y2] = XGetPixel(from_image, x1, y1))
+	  if ((scale_buf[y2] = XGetPixel(from_image, x1, y1)))
 	    XPutPixel(to_image, x2, y2, 1);
 	  j = y1;
 	} else {
-	  if (scale_buf[y2] = scale_buf[y2 - 1])
+	  if ((scale_buf[y2] = scale_buf[y2 - 1]))
 	    XPutPixel(to_image, x2, y2, 1);
 	}
       }

@@ -754,36 +754,42 @@ void update_layerpanel()
      * w_cmdpanel.c:refresh_view_menu().
      */
 
-    if (all_active_but)
+    if (all_active_but) {
 	if (appres.showballoons)
 	    XawTipEnable(all_active_but, "Display all depths");
 	else
 	    XawTipDisable(all_active_but);
-    if (all_inactive_but)
+    }
+    if (all_inactive_but) {
 	if (appres.showballoons)
 	    XawTipEnable(all_inactive_but, "Hide all depths");
 	else
 	    XawTipDisable(all_inactive_but);
-    if (toggle_all_but)
+    }
+    if (toggle_all_but) {
 	if (appres.showballoons)
 	    XawTipEnable(toggle_all_but, "Toggle displayed/hidden depths");
 	else
 	    XawTipDisable(toggle_all_but);
-    if (layer_viewp)
+    }
+    if (layer_viewp) {
 	if (appres.showballoons)
 	    XawTipEnable(layer_viewp, "Display or hide any depth");
 	else
 	    XawTipDisable(layer_viewp);
-    if (graylabel)
+    }
+    if (graylabel) {
 	if (appres.showballoons)
 	    XawTipEnable(graylabel, "Display inactive layers in gray");
 	else
 	    XawTipDisable(graylabel);
-    if (blanklabel)
+    }
+    if (blanklabel) {
 	if (appres.showballoons)
 	    XawTipEnable(blanklabel, "Blank inactive layers");
 	else
 	    XawTipDisable(blanklabel);
+    }
 }
 #else
 static	Widget layer_balloon_popup = (Widget) 0;

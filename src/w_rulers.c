@@ -405,11 +405,12 @@ void update_rulerpanel()
     else
 	sprintf(msg + strlen(msg), "(right button)");
 
-    if (unitbox_sw)
+    if (unitbox_sw) {
 	if (appres.showballoons)
 	    XawTipEnable(unitbox_sw, msg);
 	else
 	    XawTipDisable(unitbox_sw);
+    }
 }
 #else
 /* come here when the mouse passes over the unit box */

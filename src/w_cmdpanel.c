@@ -1463,7 +1463,7 @@ load_recent_file(Widget w, XtPointer client_data, XtPointer call_data)
 	return;
     /* go to the directory where the figure is in case it has imported pictures */
     strcpy(dir,filename);
-    if (c=strrchr(dir,'/')) {
+    if ((c=strrchr(dir,'/'))) {
 	*c = '\0';			/* terminate dir at last '/' */
 	change_directory(dir);
 	strcpy(cur_file_dir, dir);	/* update current directory */
