@@ -19,8 +19,9 @@
 #ifndef F_UTIL_H
 #define F_UTIL_H
 
-#include <X11/Intrinsic.h>	/* Boolean */
 #include <sys/types.h>		/* time_t */
+#include <X11/Intrinsic.h>	/* Boolean */
+#include <X11/Xft/Xft.h>
 
 #include "object.h"
 #include "u_colors.h"

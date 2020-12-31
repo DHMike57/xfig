@@ -23,10 +23,12 @@
 #include "config.h"
 #endif
 
+/*
 #include <X11/cursorfont.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xatom.h>
+*/
 
 #ifdef XAW3D
 #include <X11/Xaw3d/Command.h>

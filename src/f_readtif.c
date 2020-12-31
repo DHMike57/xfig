@@ -22,8 +22,10 @@
 #endif
 
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <tiffio.h>
+#include <X11/X.h>
 
 #include "resources.h"
 #include "object.h"

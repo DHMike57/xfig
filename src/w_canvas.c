@@ -21,7 +21,7 @@
 #endif
 #include "w_canvas.h"
 
-#include <limits.h>
+#include <limits.h>		/* INT_MIN, INT_MAX */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,36 +34,34 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
-#include <X11/Xaw3d/Command.h>
-#include <X11/Xaw3d/Form.h>
-#include <X11/Xaw3d/Label.h>
 
+#include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "main.h"
 #include "mode.h"
 #include "paintop.h"
-
 #include "d_text.h"
 #include "e_edit.h"
-#include "u_pan.h"
+#include "u_colors.h"
 #include "u_create.h"
+#include "u_pan.h"
 #include "u_redraw.h"
 #include "u_search.h"
-#include "w_canvas.h"
 #include "w_cmdpanel.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"
 #include "w_grid.h"
+#include "w_icons.h"
+#include "w_keyboard.h"
 #include "w_layers.h"
 #include "w_modepanel.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
 #include "w_rulers.h"
 #include "w_setup.h"
-#include "w_util.h"
-#include "w_drawprim.h"
-#include "w_keyboard.h"
 #include "w_snap.h"
+#include "w_util.h"
 #include "w_zoom.h"
 
 

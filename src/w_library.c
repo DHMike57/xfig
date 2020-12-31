@@ -1,7 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1998 by Stephane Mancini
- * Parts Copyright (c) 1999-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 1998 by Stephane Mancini
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,47 +19,60 @@
 
 /* This is where the library popup is created */
 
-#include "fig.h"
-#include "figx.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_library.h"
 
+#include <dirent.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <sys/stat.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
 #include <X11/Xft/Xft.h>
 
+#include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
-#include "e_placelib.h"
+#include "paintop.h"
+#include "dirstruct.h"
 #include "e_placelib.h"
 #include "f_read.h"
-#include "u_create.h"
-#include "u_redraw.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"		/* for max_char_height */
-#include "w_dir.h"
-#include "w_file.h"
-#include "w_indpanel.h"
-#include "w_library.h"
-#include "w_listwidget.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_util.h"
-#include "w_setup.h"
-#include "w_icons.h"
-#include "w_zoom.h"
-
 #include "f_util.h"
+#include "u_colors.h"
+#include "u_create.h"
 #include "u_free.h"
 #include "u_list.h"
 #include "u_markers.h"
+#include "u_redraw.h"
 #include "u_translate.h"
+#include "w_canvas.h"
 #include "w_color.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"		/* for max_char_height */
+#include "w_dir.h"
+#include "w_file.h"
+#include "w_listwidget.h"
+#include "w_layers.h"
 #include "w_mousefun.h"
-#include "dirstruct.h"
-
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
 #ifndef XAW3D1_5E
 #include "SmeCascade.h"
 #endif /* XAW3D1_5E */
+
 
 #define N_LIB_MAX	  100		/* max number of libraries */
 #define N_LIB_OBJECT_MAX  400		/* max number of objects in a library */

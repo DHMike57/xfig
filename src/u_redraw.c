@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,7 +16,11 @@
  *
  */
 
-#include "fig.h"
+#include "u_redraw.h"
+
+#include <string.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "object.h"
 #include "paintop.h"
@@ -23,23 +28,19 @@
 #include "d_arc.h"
 #include "e_flip.h"
 #include "e_rotate.h"
-#include "u_draw.h"
-#include "u_redraw.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"
-#include "w_file.h"
-#include "w_indpanel.h"
-#include "w_layers.h"
-#include "w_setup.h"
-#include "w_util.h"
-#include "w_zoom.h"
-
-#include "d_text.h"
 #include "u_bound.h"
+#include "u_draw.h"
 #include "u_elastic.h"
 #include "u_markers.h"
+#include "w_canvas.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"
+#include "w_file.h"
+#include "w_layers.h"
 #include "w_rulers.h"
+#include "w_setup.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
 
 /* EXPORTS */
 
@@ -69,14 +70,14 @@ struct counts	counts[MAX_DEPTH + 1], saved_counts[MAX_DEPTH + 1];
  */
 
 
-void redisplay_arcobject (F_arc *arcs, int depth);
-void redisplay_compoundobject (F_compound *compounds, int depth);
-void redisplay_ellipseobject (F_ellipse *ellipses, int depth);
-void redisplay_lineobject (F_line *lines, int depth);
-void redisplay_splineobject (F_spline *splines, int depth);
-void redisplay_textobject (F_text *texts, int depth);
-void redraw_pageborder (void);
-void draw_pb (int x, int y, int w, int h);
+static void	redraw_pageborder (void);
+static void	draw_pb (int x, int y, int w, int h);
+
+static void	redisplay_arcobject(F_arc *arcs, int depth);
+static void	redisplay_ellipseobject(F_ellipse *ellipses, int depth);
+static void	redisplay_lineobject(F_line *lines, int depth);
+static void	redisplay_splineobject(F_spline *splines, int depth);
+static void	redisplay_textobject(F_text *texts, int depth);
 
 void
 clearallcounts(void)
@@ -194,7 +195,8 @@ void redisplay_objects(F_compound *active_objects)
  * the counts array.
  */
 
-void redisplay_arcobject(F_arc *arcs, int depth)
+static void
+redisplay_arcobject(F_arc *arcs, int depth)
 {
     F_arc	   *arc;
     struct counts  *cp;
@@ -219,7 +221,8 @@ void redisplay_arcobject(F_arc *arcs, int depth)
  * appropriate depth in the counts array.
  */
 
-void redisplay_ellipseobject(F_ellipse *ellipses, int depth)
+static void
+redisplay_ellipseobject(F_ellipse *ellipses, int depth)
 {
     F_ellipse	   *ep;
     struct counts  *cp;
@@ -245,7 +248,8 @@ void redisplay_ellipseobject(F_ellipse *ellipses, int depth)
  * depth in the counts array.
  */
 
-void redisplay_lineobject(F_line *lines, int depth)
+static void
+redisplay_lineobject(F_line *lines, int depth)
 {
     F_line	   *lp;
     struct counts  *cp;
@@ -271,7 +275,8 @@ void redisplay_lineobject(F_line *lines, int depth)
  * appropriate depth in the counts array.
  */
 
-void redisplay_splineobject(F_spline *splines, int depth)
+static void
+redisplay_splineobject(F_spline *splines, int depth)
 {
     F_spline	   *spline;
     struct counts  *cp;
@@ -500,7 +505,8 @@ void redisplay_pageborder(void)
 	redraw_pageborder();
 }
 
-void redraw_pageborder(void)
+static void
+redraw_pageborder(void)
 {
     int		   pwd, pht, ux;
     int		   x, y;
@@ -566,7 +572,8 @@ void redraw_pageborder(void)
     XDrawString(tool_d,canvas_win,border_gc,ZOOMX(pwd)+3,ZOOMY(pht),pname,strlen(pname));
 }
 
-void draw_pb(int x, int y, int w, int h)
+static void
+draw_pb(int x, int y, int w, int h)
 {
 	zXDrawLine(tool_d, canvas_win, border_gc, x,   y,   x+w, y);
 	zXDrawLine(tool_d, canvas_win, border_gc, x+w, y,   x+w, y+h);

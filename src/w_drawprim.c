@@ -28,11 +28,17 @@
  * SHADING
  */
 
-/* IMPORTS */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_drawprim.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>	/* XFT DEBUG */
 
-#include "fig.h"
-#include "figx.h"
 #include "resources.h"
 #include "paintop.h"
 #include "mode.h"
@@ -41,17 +47,15 @@
 #include "u_create.h"
 #include "u_fonts.h"
 #include "w_canvas.h"
-#include "w_drawprim.h"
+#include "w_cursor.h"
+#include "w_file.h"
+#include "w_icons.h"
 #include "w_indpanel.h"
 #include "w_layers.h"
 #include "w_msgpanel.h"
-#include "w_setup.h"
-#include "w_util.h"
-
-#include "u_create.h"
-#include "w_cursor.h"
-#include "w_file.h"
 #include "w_rottext.h"
+#include "w_setup.h"
+
 
 #define zXDrawArc(disp,win,gc,x,y,d1,d2,a1,a2)\
     XDrawArc(disp,win,gc,ZOOMX(x),ZOOMY(y), \

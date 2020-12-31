@@ -1,9 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2017 by Thomas Loimer
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,21 +16,25 @@
  *
  */
 
-#include "fig.h"
+#include "u_bound.h"
+
+#include <limits.h>		/* INT_MIN, INT_MAX */
+#include <math.h>
+#include <stdlib.h>
+
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
 #include "paintop.h"
-#include "u_bound.h"
+#include "u_colors.h"
+#include "u_draw.h"
 #include "u_fonts.h"
 #include "w_canvas.h"		/* round_coords() */
 #include "w_drawprim.h"
 #include "w_file.h"
 #include "w_layers.h"
-#include "w_setup.h"
-#include "w_zoom.h"
+#include "xfig_math.h"
 
-#include "u_draw.h"
 
 #define		Ninety_deg		M_PI_2
 #define		One_eighty_deg		M_PI

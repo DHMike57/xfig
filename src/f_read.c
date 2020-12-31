@@ -23,7 +23,6 @@
 
 #include <ctype.h>		/* isdigit() */
 #include <errno.h>
-#include <limits.h>		/* PATH_MAX */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,16 +32,18 @@
 #ifdef I18N
 #include <locale.h>
 #endif
+#include <X11/Xft/Xft.h>
 
 #include "resources.h"
-#include "object.h"
 #include "mode.h"
+#include "object.h"
 
 #include "d_spline.h"
 #include "e_update.h"
 #include "f_picobj.h"
 #include "f_util.h"
 #include "u_bound.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_free.h"
@@ -50,14 +51,12 @@
 #include "u_translate.h"
 #include "w_canvas.h"
 #include "w_color.h"
-#include "w_drawprim.h"
 #include "w_file.h"
 #include "w_layers.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"
 #include "w_zoom.h"
-
 #include "xfig_math.h"
 
 extern int	read_1_3_objects(FILE *fp, char *buf, F_compound *obj,
@@ -1324,7 +1323,6 @@ read_textobject(FILE *fp)
     float	    tx_size;
     float	    length, height;
     Boolean	    more;
-    PR_SIZE	    tx_dim;
 
     if ((t = create_text()) == NULL){
 	numcom=0;

@@ -16,29 +16,38 @@
  *
  */
 
-#include "fig.h"
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"
+#endif
+#include "w_print.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <X11/StringDefs.h>
+#include <X11/Shell.h>
+#include <X11/IntrinsicP.h>
+
 #include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
-#include "e_edit.h"
-#include "u_create.h"
-#include "u_print.h"
-#include "w_export.h"
-#include "w_print.h"
-#include "w_icons.h"
-#include "w_indpanel.h"
-#include "w_msgpanel.h"
-#include "w_setup.h"
-#include "w_util.h"
-
 #include "f_util.h"
 #include "u_bound.h"
+#include "u_create.h"
+#include "u_print.h"
 #include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_cmdpanel.h"
 #include "w_color.h"
 #include "w_cursor.h"
+#include "w_export.h"
+#include "w_icons.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+
 
 /* EXPORTS */
 

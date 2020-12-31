@@ -73,6 +73,7 @@
 #include "object.h"
 #include "f_picobj.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "w_msgpanel.h"
 
 

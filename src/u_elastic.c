@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,23 +16,26 @@
  *
  */
 
-#include "fig.h"
+#include "u_elastic.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
-#include "u_elastic.h"
+#include "d_arc.h"
+#include "u_draw.h"
 #include "u_geom.h"
 #include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_drawprim.h"
-#include "w_setup.h"
-#include "w_zoom.h"
-#include "d_arc.h"
-
-#include "u_draw.h"
 #include "w_cursor.h"
 #include "w_msgpanel.h"
+#include "xfig_math.h"
+
 
 /********************** EXPORTS **************/
 
@@ -257,15 +261,17 @@ constrainedangle_line(int x, int y)
 static void
 angle0_line(int x, int y)
 {
-    cur_x = x;
-    cur_y = fix_y;
+	(void)y;
+	cur_x = x;
+	cur_y = fix_y;
 }
 
 static void
 angle90_line(int x, int y)
 {
-    cur_y = y;
-    cur_x = fix_x;
+	(void)x;
+	cur_y = y;
+	cur_x = fix_x;
 }
 
 static void
@@ -369,6 +375,8 @@ elastic_moveline(F_point *pts)
 static void
 elastic_links(int dx, int dy, float sx, float sy)
 {
+	(void)sx;
+	(void)sy;
     F_linkinfo	   *k;
 
     if (cur_linkmode == SMART_OFF)
@@ -409,6 +417,8 @@ elastic_links(int dx, int dy, float sx, float sy)
 void
 scaling_line(int x, int y)
 {
+	(void)x;
+	(void)y;
     elastic_scalepts(cur_l->points);
     adjust_box_pos(x, y, fix_x, fix_y, &cur_x, &cur_y);
     if (cur_l->type == T_BOX || cur_l->type == T_ARCBOX || cur_l->type == T_PICTURE)
@@ -738,6 +748,7 @@ elastic_scale_curellipse(void)
 void
 arc_point(int x, int y, int numpoint)
 {
+	(void)numpoint;
     elastic_line();
     cur_x = x;
     cur_y = y;

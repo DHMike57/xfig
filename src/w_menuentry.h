@@ -1,6 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,8 +22,12 @@
     This adds the underline resource to underline one character of the label
 */
 
-#ifndef _FigSmeBSB_h
-#define _FigSmeBSB_h
+#ifndef W_MENUENTRY_H
+#define W_MENUENTRY_H
+
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"
+#endif
 
 #ifdef XAW3D
 #include <X11/Xaw3d/Sme.h>
@@ -55,4 +62,4 @@ extern WidgetClass figSmeBSBObjectClass;
 
 #define XtNunderline   "underline"
 
-#endif /* Fig_SmeBSB_h */
+#endif

@@ -452,7 +452,6 @@ sel_text(int xmin, int ymin, int xmax, int ymax)
 {
     F_text	   *t;
     int		    txmin, txmax, tymin, tymax;
-    int		    dum;
 
     for (t = objects.texts; t != NULL; t = t->next) {
 	if (!active_layer(t->depth))

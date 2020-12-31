@@ -1,7 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1987 Christopher A. Kent
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,10 +16,43 @@
  *
  */
 
+/*
+ * color.h - color definitions
+ *
+ * Author:	Christopher A. Kent
+ *		Western Research Laboratory
+ *		Digital Equipment Corporation
+ * Date:	Sun Dec 13 1987
+ */
+
+/*
+ * $Log: w_color.h,v $
+ * Revision 1.1  1995/02/28  15:40:16  feuille
+ * Initial revision
+ *
+ * Revision 1.2  90/06/30  14:33:12  rlh2
+ * patchlevel 1
+ *
+ * Revision 1.1  90/05/10  11:16:54  rlh2
+ * Initial revision
+ *
+ * Revision 1.2  88/06/30  09:58:56  mikey
+ * Handles CMY also.
+ *
+ * Revision 1.1  88/06/30  09:10:53  mikey
+ * Initial revision
+ *
+ */
+
 #ifndef W_COLOR_H
 #define W_COLOR_H
 
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"
+#endif
+
 #include <X11/Intrinsic.h>
+#include <X11/Xft/Xft.h>
 #include "w_indpanel.h"		/* ind_sw_info */
 
 #define USE_EXISTING_COLOR	True
@@ -38,37 +73,8 @@ extern void set_cmap (Window window);
 
 
 extern	Widget	delunusedColors;
-
-/*
- * color.h - color definitions
- *
- * Author:	Christopher A. Kent
- *		Western Research Laboratory
- *		Digital Equipment Corporation
- * Date:	Sun Dec 13 1987
- */
-
 extern Boolean switch_colormap(void);
 extern Boolean alloc_color_cells(Pixel *pixels, int n);
-
-/*
- * $Log: w_color.h,v $
- * Revision 1.1  1995/02/28  15:40:16  feuille
- * Initial revision
- *
- * Revision 1.2  90/06/30  14:33:12  rlh2
- * patchlevel 1
- *
- * Revision 1.1  90/05/10  11:16:54  rlh2
- * Initial revision
- *
- * Revision 1.2  88/06/30  09:58:56  mikey
- * Handles CMY also.
- *
- * Revision 1.1  88/06/30  09:10:53  mikey
- * Initial revision
- *
- */
 
 typedef	struct _RGB {
 	unsigned short r, g, b;

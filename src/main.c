@@ -22,7 +22,6 @@
 #include "main.h"
 
 #include <errno.h>
-#include <limits.h>
 #include <locale.h>
 #include <signal.h>
 #include <stdio.h>
@@ -35,7 +34,6 @@
 #include <sys/types.h>
 
 #include <X11/IntrinsicP.h>
-#include <X11/CoreP.h>		/* requires X11/IntrinsicP.h */
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Xlib.h>
@@ -55,6 +53,7 @@
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
 #endif /* XAW3D */
+#include <X11/Xft/Xft.h>
 
 #include "resources.h"
 #include "object.h"
@@ -95,17 +94,6 @@
 #include "w_zoom.h"
 #include "xfig_math.h"
 
-/* input extensions for an input tablet */
-#ifdef USE_TAB
-#include <X11/extensions/XInput.h>
-#endif /* USE_TAB */
-
-#ifdef I18N
-#include <X11/keysym.h>
-#endif  /* I18N */
-
-#include <X11/IntrinsicP.h>
-#include <X11/Xft/Xft.h>
 
 /* EXPORTS */
 
@@ -679,7 +667,6 @@ main(int argc, char **argv)
     int		    init_canv_wd, init_canv_ht;
     XWMHints	   *wmhints;
     int		    i,j;
-    XColor	    dumcolor;
     char	   *dval;
     char	    tmpstr[PATH_MAX];
 
@@ -2109,6 +2096,8 @@ toggle_refresh_mode(void)
 static void
 check_refresh(XtPointer client_data, XtIntervalId *id)
 {
+	(void)client_data;
+	(void)id;
 	time_t	    cur_timestamp;
 
 	/* get current timestamp and reload if newer */

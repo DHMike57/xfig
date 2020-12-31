@@ -18,6 +18,7 @@
 #ifndef W_DRAWPRIM_H
 #define W_DRAWPRIM_H
 
+#include <math.h>		/* MUST be included before xfig_math.h */
 #include <X11/Xft/Xft.h>
 
 #include "resources.h"

@@ -1,8 +1,11 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Parts Copyright (c) 1994-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright 1990,1992 Richard Hesketh
  *          Computing Lab. University of Kent at Canterbury, UK
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Pixel Grab color lookup Copyright 1993, David Koblas (koblas@netcom.com)
  * and Copyright 1995, 1996 Torsten Martinsen (bullestock@dk-online.dk)
@@ -56,20 +59,34 @@
  *		to be edited.
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/cursorfont.h>
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xft/Xft.h>
+
 #include "figx.h"
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
+#include "f_util.h"
 #include "u_colors.h"
-#include "w_drawprim.h"
 #include "w_indpanel.h"
 #include "w_color.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"
+#include "xfig_math.h"
 
-#include "f_util.h"
 
 /* EXPORTS */
 

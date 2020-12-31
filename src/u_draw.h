@@ -1,9 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,12 +19,18 @@
 #ifndef U_DRAW_H
 #define U_DRAW_H
 
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
+#include "object.h"
+#include "u_colors.h"
 #include "w_drawprim.h"
+
 
 #define DRAW_POINTS		True
 #define DONT_DRAW_POINTS	False
 #define DRAW_CENTER		True
 #define DONT_DRAW_CENTER	False
+
 
 /*
  * declarations of routines for drawing objects
@@ -40,8 +46,8 @@ void	quick_draw_spline(F_spline *spline, int operator);
 
 /* curve routine needed by arc() and show_boxradius() */
 
-void	curve(Window window, int depth, int xstart, int ystart, int xend, int yend,
-		Boolean draw_points, Boolean draw_center, int direction,
+void	curve(Window window, int depth, int xstart, int ystart, int xend,
+		int yend, Boolean draw_points,Boolean draw_center,int direction,
 		int a, int b, int xoff, int yoff, int op, int thick,
 		int style, float style_val, int fill_style,
 		Color pen_color, Color fill_color, int cap_style);

@@ -39,6 +39,7 @@
 #include "resources.h"
 #include "object.h"
 #include "f_picobj.h"
+#include "u_colors.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"

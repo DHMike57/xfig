@@ -16,17 +16,21 @@
  *
  */
 
-
-#if defined HAVE_CONFIG_H && !defined VERSION
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "u_free.h"
+
+#include <X11/Xlib.h>		/* includes X11/X.h */
+#include <X11/Xft/Xft.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "resources.h"
 #include "object.h"
+#include "paintop.h"
 #include "u_fonts.h"
-#include "u_free.h"
 #include "w_drawprim.h"
 
 

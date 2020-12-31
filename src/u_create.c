@@ -19,14 +19,21 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
+#include "u_create.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Xlib.h>		/* includes X11/X.h */
+
+#include "resources.h"
 #include "mode.h"
 #include "object.h"
+#include "paintop.h"
+
 #include "e_edit.h"
 #include "e_scale.h"
-#include "u_create.h"
+#include "u_colors.h"
 #include "u_free.h"
 #include "u_list.h"
 #include "w_cursor.h"

@@ -16,21 +16,33 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
-#include "object.h"
-#include "mode.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_print.h"
-#include "w_setup.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "u_print.h"
 
+#include <errno.h>
+#ifdef I18N
+#include <locale.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <unistd.h>
+#include <X11/Intrinsic.h>
+
+#include "resources.h"
+#include "mode.h"
 #include "f_save.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "w_cursor.h"
-#include "w_drawprim.h"
+#include "w_layers.h"
+#include "w_msgpanel.h"
 #include "w_util.h"
-#include "u_print.h"
 
 Boolean	print_all_layers = True;
 Boolean	bound_active_layers = False;
@@ -155,6 +167,9 @@ print_to_printer(char *printer, char *backgrnd, float mag,
 		Boolean print_all_layers, Boolean bound_active_layers,
 		char *grid, char *params)
 {
+	(void)mag;
+	(void)print_all_layers;
+	(void)bound_active_layers;
 	char	layers[PATH_MAX];
 	char	syspr[2*PATH_MAX+200];
 	char	prcmd[2*PATH_MAX+200];
@@ -314,7 +329,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 
 		/* Options common to PS and PDF in PS-mode (not EPS-mode) */
 		if (cur_exp_lang == LANG_PS ||
-				cur_exp_lang == LANG_PDF && pdf_pagemode) {
+				(cur_exp_lang == LANG_PDF && pdf_pagemode)) {
 
 			if (cur_exp_lang == LANG_PDF /* && pdf_pagemode */)
 				n += sprintf(prcmd + n, " -P");

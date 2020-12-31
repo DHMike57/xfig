@@ -20,11 +20,19 @@
  * Copyright (c) 1995-2002 by T. Sato
  */
 
-#include "fig.h"
-#include "figx.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_i18n.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "resources.h"
 #include "u_fonts.h"
-#include "object.h"  /* for spell_canvas() */
+#include "xfig_math.h"
+
 
 /* replacement of Times_Roman_bits etc, for Japanese */
 unsigned char Japanese_Times_Roman_bits[] = {

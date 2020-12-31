@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
 
 #include "resources.h"
 #include "mode.h"
@@ -38,7 +38,6 @@
 #include "f_read.h"
 #include "f_util.h"
 #include "u_colors.h"
-#include "u_create.h"
 #include "u_bound.h"
 #include "w_export.h"
 #include "w_msgpanel.h"

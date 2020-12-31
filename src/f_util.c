@@ -19,6 +19,7 @@
 #if defined HAVE_CONFIG_H && !defined VERSION
 #include "config.h"
 #endif
+#include "f_util.h"
 
 #include <errno.h>
 #include <time.h>
@@ -30,15 +31,15 @@
 #endif
 #include <sys/stat.h>
 #include <unistd.h>
-#include <X11/Xlib.h>
+#include <X11/Xlib.h>		/* includes X11/X.h */
+#include <X11/Xft/Xft.h>
 
-#include "resources.h"
+#include "resources.h"		/* PATH_MAX */
 #include "object.h"
 #include "mode.h"
 #include "f_neuclrtab.h"
 #include "f_read.h"
 #include "f_save.h"		/* write_file() */
-#include "f_util.h"
 #include "u_colors.h"
 #include "u_create.h"		/* new_string() */
 #include "u_fonts.h"		/* psfontnum() */

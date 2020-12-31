@@ -17,14 +17,13 @@
  */
 
 
-#if defined HAVE_CONFIG_H && !defined VERSION
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
 #include "w_icons.h"
 
-/*********** icons for mode panel *****************/
 
+/*********** icons for mode panel *****************/
 
 #define addpt_width_small 22
 #define addpt_height_small 22

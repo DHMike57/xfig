@@ -52,7 +52,6 @@
 #include "u_undo.h"
 #include "w_canvas.h"
 #include "w_cursor.h"
-#include "w_drawprim.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
 #include "xfig_math.h"

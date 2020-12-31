@@ -19,7 +19,9 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include <X11/extensions/Xrender.h>	/* XGlyphInfo */
+#include <sys/types.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xft/Xft.h>
 #include "u_colors.h"			/* Color, struct Cmap */
 
 /* DEFAULT is used for many things - font, color etc */

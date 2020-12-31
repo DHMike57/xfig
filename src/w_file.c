@@ -1,7 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,40 +16,47 @@
  *
  */
 
-#include "fig.h"
-#include "figx.h"
+#include "w_file.h"
 
+#include <errno.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
 #include <X11/Xft/Xft.h>
 
+#include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
-#include "e_edit.h"
-#include "f_read.h"
-#include "f_util.h"
-#include "u_create.h"
-#include "u_redraw.h"
-#include "w_drawprim.h"		/* for max_char_height */
-#include "w_dir.h"
-#include "w_export.h"
-#include "w_file.h"
-#include "w_indpanel.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_util.h"
-#include "w_setup.h"
-#include "w_icons.h"
-#include "w_zoom.h"
-
+#include "paintop.h"
 #include "e_compound.h"
 #include "f_load.h"
+#include "f_read.h"
 #include "f_save.h"
+#include "f_util.h"
+#include "u_colors.h"
+#include "u_create.h"
 #include "u_free.h"
 #include "u_list.h"
+#include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_cmdpanel.h"
 #include "w_color.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"		/* for max_char_height */
+#include "w_dir.h"
+#include "w_export.h"
+#include "w_layers.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
 
 #define	FILE_WID	157	/* width of Current file etc to show preview to the right */
 #define FILE_ALT_WID	260	/* width of file alternatives panel */

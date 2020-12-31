@@ -32,6 +32,8 @@
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
 
 #include "figx.h"
 #include "resources.h"

@@ -3,9 +3,9 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
  * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
- * Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -23,15 +23,25 @@
   and write a png file of the contents of that area.
 */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_capture.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <X11/X.h>
+#include <X11/Xutil.h>
+
 #include "resources.h"
-#include "object.h"
-//#include "u_colors.h"
+#include "u_colors.h"
 #include "w_capture.h"
 #include "w_msgpanel.h"
 #include "f_util.h"
-#include "w_drawprim.h"
 #include "w_util.h"
+#include "xfig_math.h"
+
 
 #ifdef HAVE_PNG
 extern Boolean write_png(FILE *file, unsigned char *data, int type,

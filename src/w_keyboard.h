@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,16 +20,15 @@
 #ifndef W_KEYBOARD_H
 #define W_KEYBOARD_H
 
-extern void popup_keyboard_panel(Widget widget,
-				 XButtonEvent * event,
-				 String * params,
-				 Cardinal * num_params);
-extern void popdown_keyboard_panel();
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
 
-extern Boolean keyboard_input_available;
+extern Boolean	keyboard_input_available;
+extern int	keyboard_state;
+extern int	keyboard_x;
+extern int	keyboard_y;
 
-extern int keyboard_state;
-extern int keyboard_x;
-extern int keyboard_y;
+extern void	popup_keyboard_panel(Widget widget, XButtonEvent *event,
+				 String *params, Cardinal *num_params);
+extern void	popdown_keyboard_panel(void);
 
 #endif

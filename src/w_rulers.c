@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,31 +16,42 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_rulers.h"
+
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>
+
 #include "figx.h"
 #include "resources.h"
-#include "mode.h"
-#include "paintop.h"
-#include "u_pan.h"
-#include "w_drawprim.h"
-#include "w_icons.h"
-#include "w_indpanel.h"
-#include "w_mousefun.h"
-#include "w_msgpanel.h"
-#include "w_rulers.h"
-#include "w_setup.h"
-#include "w_util.h"
-#include "w_zoom.h"
 #include "object.h"
+#include "mode.h"
 
 #include "f_util.h"
+#include "u_pan.h"
 #include "u_redraw.h"
 #include "u_scale.h"
 #include "w_canvas.h"
 #include "w_color.h"
+#include "w_drawprim.h"
 #include "w_export.h"
 #include "w_grid.h"
+#include "w_icons.h"
+#include "w_mousefun.h"
+#include "w_msgpanel.h"
 #include "w_print.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
 
 /*
  * The following will create rulers the same size as the initial screen size.

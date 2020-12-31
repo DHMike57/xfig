@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/X.h>		/* TrueColor, None */
-#include <X11/Xlib.h>		/* XColor */
 
 #include "resources.h"
 #include "object.h"

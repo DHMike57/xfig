@@ -1,7 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,8 +21,10 @@
 #endif
 #include "w_modepanel.h"
 
-#include <stddef.h>
 #include <math.h>
+#include <stddef.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
 
 #include "figx.h"
 #include "resources.h"

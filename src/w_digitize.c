@@ -1,6 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -13,17 +16,22 @@
  *
  */
 
-#include "fig.h"
+#include "w_digitize.h"
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+
 #include "figx.h"
 #include "resources.h"
-#include "object.h"
-#include "mode.h"
-#include "w_digitize.h"
-#include "w_indpanel.h"
+#include "w_canvas.h"
 #include "w_setup.h"
 #include "w_util.h"
 
-#include "w_canvas.h"
 
 /* LOCAL */
 

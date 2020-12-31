@@ -20,7 +20,12 @@
 
 /**************** IMPORTS ****************/
 
-#include "fig.h"
+#include "u_undo.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
@@ -28,28 +33,24 @@
 #include "e_addpt.h"
 #include "e_arrow.h"
 #include "e_convert.h"
-#include "u_draw.h"
-#include "u_elastic.h"
-#include "u_list.h"
-#include "u_redraw.h"
-#include "u_undo.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"
-#include "w_file.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_setup.h"
-
 #include "e_deletept.h"
 #include "e_scale.h"
 #include "f_read.h"
 #include "u_bound.h"
+#include "u_draw.h"
 #include "u_free.h"
+#include "u_list.h"
 #include "u_markers.h"
+#include "u_redraw.h"
 #include "u_translate.h"
+#include "w_canvas.h"
 #include "w_cmdpanel.h"
-#include "w_indpanel.h"
 #include "w_color.h"
+#include "w_drawprim.h"
+#include "w_file.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+
 
 extern void	swap_depths(void);	/* w_layers.c */
 extern void	swap_counts(void);	/* w_layers.c */

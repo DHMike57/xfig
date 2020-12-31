@@ -21,9 +21,10 @@
 #endif
 #include "resources.h"
 
+#include <stddef.h>
 #include <sys/types.h>
 
-#include "object.h"
+#include <u_colors.h>
 
 
 /* current export/print background color */
@@ -39,7 +40,7 @@ Pixmap		fig_icon;
 char		xfig_version[100];
 
 /* original directory where xfig started */
-char	orig_dir[PATH_MAX+2];
+char		orig_dir[PATH_MAX+2];
 
 /* whether user is updating Fig files or loading one to view */
 Boolean		update_figs = False;

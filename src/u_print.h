@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2018 by Thomas Loimer
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,6 +15,11 @@
  * and this permission notice remain intact.
  *
  */
+
+#ifndef U_PRINT_H
+#define U_PRINT_H
+
+#include <X11/Intrinsic.h>
 
 extern Boolean	print_all_layers;
 extern Boolean	bound_active_layers;
@@ -31,3 +36,5 @@ extern int	print_to_file(char *file, int xoff, int yoff, char *backgrnd,
 extern void	make_rgb_string (int color, char *rgb_string);
 extern void	gen_print_cmd(char *cmd, char *file, char *printer,
 				char *pr_params);
+
+#endif

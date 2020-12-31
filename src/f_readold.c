@@ -25,13 +25,12 @@
 #include "object.h"
 #include "d_spline.h"
 #include "f_read.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_free.h"
-#include "w_drawprim.h"
 #include "w_msgpanel.h"
 #include "w_zoom.h"
-#include "xfig_math.h"
 
 
 /*******    Fig 1.3 subtype of objects	  *******/

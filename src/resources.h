@@ -24,7 +24,8 @@
 #endif
 
 #include <limits.h>		/* PATH_MAX, below */
-#include <X11/Intrinsic.h>	/* Boolean */
+#include <sys/types.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
 #include <X11/Xft/Xft.h>
 #ifdef USE_XPM
 #include <X11/xpm.h>

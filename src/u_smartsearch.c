@@ -1,5 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ *
  * This part Copyright (c) 1999-2002 by Alexander Durner
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
@@ -10,21 +15,24 @@
  * the Software, and to permit persons who receive copies from any such
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
+ *
  */
-
-#include "fig.h"
-#include "resources.h"
-#include "object.h"
-#include "mode.h"
-#include "u_list.h"
-#include "w_setup.h"
-#include "w_zoom.h"
 
 #include "u_smartsearch.h"
 
+#include <stddef.h>
+#include <math.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h */
+
+#include "object.h"
+#include "mode.h"
 #include "u_geom.h"
+#include "u_list.h"
 #include "u_markers.h"
 #include "u_search.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
+
 
 /* how close to user-selected location? */
 #define TOLERANCE (zoomscale>1?2:(int)(2/zoomscale))

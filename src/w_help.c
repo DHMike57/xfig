@@ -3,50 +3,51 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2019 by Thomas Loimer
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
  * nonexclusive right and license to deal in this software and documentation
  * files (the "Software"), including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense and/or sell copies
- * of the Software, and to permit persons who receive copies from any such
+ * copy, modify, merge, publish, distribute, sublicense and/or sell copies of
+ * the Software, and to permit persons who receive copies from any such
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_help.h"
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "figx.h"
 #include "resources.h"
-#include "object.h"
 #include "mode.h"
 #include "f_util.h"
-#include "w_indpanel.h"
+#include "w_canvas.h"
 #include "w_msgpanel.h"
 #include "w_util.h"
 
-#include "w_canvas.h"
 
-char	*browsecommand;
-Boolean  check_docfile(char *name);
-char	 filename[PATH_MAX];
-
-void	help_ok(Widget w, XtPointer closure, XtPointer call_data);
-
-static String	about_translations =
-	"<Message>WM_PROTOCOLS: DismissAbout()\n";
-static XtActionsRec	about_actions[] =
-{
-    {"DismissAbout", (XtActionProc) help_ok},
-};
-
-
-void launch_viewer (char *filename, char *message, char *viewer);
+static Boolean	check_docfile(char *name);
+static void	help_ok(Widget w, XtPointer closure, XtPointer call_data);
+static void	launch_viewer (char *filename, char *message, char *viewer);
 
 void
 launch_refman(Widget w, XtPointer closure, XtPointer call_data)
 {
+	char	filename[PATH_MAX];
+
 	/* first check if at least the index file is installed */
 	sprintf(filename, "%s/html/index.html", XFIGDOCDIR);
 #ifdef I18N
@@ -63,6 +64,8 @@ launch_refman(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_refpdf_en(Widget w, XtPointer closure, XtPointer call_data)
 {
+	char	filename[PATH_MAX];
+
 	sprintf(filename,"%s/xfig_ref_en.pdf",XFIGDOCDIR);
 	launch_viewer(filename,"Launching PDF viewer for Xfig reference", cur_pdfviewer);
 }
@@ -70,6 +73,8 @@ launch_refpdf_en(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_refpdf_jp(Widget w, XtPointer closure, XtPointer call_data)
 {
+	char	filename[PATH_MAX];
+
 	sprintf(filename,"%s/xfig_ref_jp.pdf",XFIGDOCDIR);
 	launch_viewer(filename,"Launching PDF viewer for Xfig reference", cur_pdfviewer);
 }
@@ -78,6 +83,8 @@ launch_refpdf_jp(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_howto(Widget w, XtPointer closure, XtPointer call_data)
 {
+	char	filename[PATH_MAX];
+
 	sprintf(filename,"%s/xfig-howto.pdf",XFIGDOCDIR);
 	launch_viewer(filename,"Launching PDF viewer for How-to Tutorial", cur_pdfviewer);
 }
@@ -85,12 +92,17 @@ launch_howto(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_man(Widget w, XtPointer closure, XtPointer call_data)
 {
+	char	filename[PATH_MAX];
+
 	sprintf(filename,"%s/xfig_man.html",XFIGDOCDIR);
 	launch_viewer(filename,"Launching Web browser for man pages", cur_browser);
 }
 
-void launch_viewer(char *filename, char *message, char *viewer)
+static void
+launch_viewer(char *filename, char *message, char *viewer)
 {
+	char	*browsecommand;
+
 	/* turn off Compose key LED */
 	setCompLED(0);
 
@@ -139,6 +151,11 @@ launch_about(Widget w, XtPointer closure, XtPointer call_data)
 
     /* don't make more than one */
     if (!help_popup) {
+	String		about_translations =
+				"<Message>WM_PROTOCOLS: DismissAbout()\n";
+	XtActionsRec	about_actions[] =
+				{ {"DismissAbout", (XtActionProc)help_ok}, };
+
 
 	/* get the position of the help button */
 	XtTranslateCoords(w, (Position) 0, (Position) 0, &x, &y);

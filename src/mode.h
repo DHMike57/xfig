@@ -24,18 +24,12 @@
 #include "config.h"
 #endif
 
-#include <limits.h>		/* PATH_MAX, below */
 #include <X11/Intrinsic.h>	/* Boolean */
-
-#include "u_colors.h"		/* Color */
-
-#ifndef PATH_MAX
-#define PATH_MAX	1024
-#endif
 
 #ifndef RESOURCES_H
 #include "resources.h"
 #endif
+#include "u_colors.h"		/* Color */
 
 #define		F_NULL			0
 #define	    FIRST_DRAW_MODE	    F_CIRCLE_BY_RAD

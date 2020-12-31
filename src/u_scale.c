@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,18 +16,21 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
+#include "u_scale.h"
+
+#include <stddef.h>
+
 #include "object.h"
 
 
-void read_scale_arrow (F_arrow *arrow, float mul);
-void read_scale_lines (F_line *lines, float mul, int offset);
-void read_scale_splines (F_spline *splines, float mul, int offset);
-void read_scale_ellipses (F_ellipse *ellipses, float mul, int offset);
-void read_scale_arcs (F_arc *arcs, float mul, int offset);
-void read_scale_texts (F_text *texts, float mul, int offset);
-void read_scale_compounds (F_compound *compounds, float mul, int offset);
+static void read_scale_arrow(F_arrow *arrow, float mul)
+{
+  if(!arrow)
+    return;
+
+    arrow->wd  = arrow->wd * mul;
+    arrow->ht   = arrow->ht  * mul;
+}
 
 void read_scale_ellipse(F_ellipse *ellipse, float mul, int offset)
 {
@@ -91,15 +95,6 @@ void read_scale_spline(F_spline *spline, float mul, int offset)
 
     read_scale_arrow(spline->for_arrow, mul);
     read_scale_arrow(spline->back_arrow, mul);
-}
-
-void read_scale_arrow(F_arrow *arrow, float mul)
-{
-  if(!arrow)
-    return;
-
-    arrow->wd  = arrow->wd * mul;
-    arrow->ht   = arrow->ht  * mul;
 }
 
 void read_scale_compound(F_compound *compound, float mul, int offset)

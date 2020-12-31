@@ -1,5 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ *
  * This file Copyright (c) 2002 Stephane Mancini
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
@@ -13,31 +18,27 @@
  *
  */
 
-#include "fig.h"
+#include "w_style.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>	/* includes X11/Xlib.h */
+
 #include "figx.h"
 #include "resources.h"
-#include "object.h"
 #include "mode.h"
-#include "paintop.h"
-#include "d_text.h"
-#include "e_edit.h"
-#include "e_update.h"
-#include "u_draw.h"
-#include "u_fonts.h"
 #include "w_drawprim.h"
-#include "w_file.h"
-#include "w_fontbits.h"
+#include "w_icons.h"
 #include "w_indpanel.h"
-#include "w_color.h"
 #include "w_listwidget.h"
-#include "w_mousefun.h"
+#include "w_modepanel.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
-#include "w_style.h"
 #include "w_util.h"
-#include "w_zoom.h"
 
-#include "w_modepanel.h"
 
 /* EXPORTS */
 

@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1990 by Digital Equipment Corporation. All Rights Reserved.
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 1990 by Digital Equipment Corporation
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -13,6 +14,11 @@
  * the Software, and to permit persons who receive copies from any such
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
+ *
+ *
+ * Part of the code in this file is taken from xdir,
+ * an X-based directory browser.
+ *
  *
  * Original xdir code:
  *
@@ -49,25 +55,34 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* restrict */
+#endif
+#include "w_dir.h"
+
+#include <X11/StringDefs.h>
+#include <X11/Xlib.h>
+
+#include <pwd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include "dirstruct.h"
+
 #include "figx.h"
 #include "resources.h"
 #include "mode.h"
+#include "f_util.h"
 #include "w_browse.h"
-#include "w_dir.h"
+#include "w_cursor.h"
 #include "w_drawprim.h"		/* for max_char_height */
 #include "w_export.h"
 #include "w_file.h"
-#include "w_indpanel.h"
 #include "w_listwidget.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"
 
-#include "object.h"
-#include "f_util.h"
-#include "w_cursor.h"
-#include "dirstruct.h"
 
 static char	CurrentSelectionName[PATH_MAX];
 static int	file_entry_cnt, dir_entry_cnt;

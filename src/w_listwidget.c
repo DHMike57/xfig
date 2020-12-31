@@ -1,6 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 2000-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -20,23 +23,66 @@
    the functionality of up/down arrows to scroll up/down in the list
 */
 
-/* Thomas Loimer, 2016: Make ./configure work */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "w_listwidget.h"
 
 #include <stdio.h>
-#include <ctype.h>
+#include <string.h>
 
-#include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>	/* includes X11/Xlib.h */
 #ifdef XAW3D
+#include <X11/Xaw3d/ListP.h>	/* includes X11/Xaw3d/SimpleP.h */
 #include <X11/Xaw3d/XawInit.h>
 #else /* XAW3D */
+#include <X11/Xaw/ListP.h>
 #include <X11/Xaw/XawInit.h>
 #endif /* XAW3D */
 
-#include "w_listwidgetP.h"
+
+/* New fields we need for the class record */
+
+typedef struct {
+    int make_compiler_happy;	/* just so it's not empty */
+} FigListClassPart;
+
+/* Full class record declaration */
+
+typedef struct _FigListClassRec {
+    CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
+    ListClassPart	list_class;
+    FigListClassPart	figList_class;
+} FigListClassRec;
+
+extern FigListClassRec	figListClassRec;
+
+/* New fields for the FigList widget record */
+
+typedef struct {
+    /* resources */
+
+    /* (none) */
+
+    /* private state */
+
+    /* (none) */
+    int make_compiler_happy;
+
+} FigListPart;
+
+
+/* Full instance record declaration */
+
+typedef struct _FigListRec {
+    CorePart	core;
+    SimplePart	simple;
+    ListPart	list;
+    FigListPart	figlist;
+} FigListRec;
+
 
 /* new translations for scrolling up/down in the list */
 

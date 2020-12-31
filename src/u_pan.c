@@ -1,8 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1991 by Henning Spruth
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Henning Spruth
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,22 +17,14 @@
  *
  */
 
-#include "fig.h"
-/*
- * really, only needs
- *
- * #include <stdio.h>
- * #include <limits.h>
- * #include <X11/Xlib.h>
- * #include <X11/Intrinsic.h>
- */
+#include "u_pan.h"
+
 #include "resources.h"
 #include "mode.h"
-#include "w_zoom.h"
-
 #include "w_canvas.h"
 #include "w_grid.h"
 #include "w_rulers.h"
+#include "w_zoom.h"
 
 
 #define	PAN_OFFSET	((int)(posn_rnd[cur_gridunit][P_GRID3] / \

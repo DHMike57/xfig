@@ -45,13 +45,13 @@ xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	e_edit.h e_flip.c e_flip.h e_glue.c e_glue.h e_joinsplit.c \
 	e_joinsplit.h e_measure.c e_measure.h e_move.c e_move.h e_movept.c \
 	e_movept.h e_placelib.c e_placelib.h e_rotate.c e_rotate.h e_scale.c \
-	e_scale.h e_tangent.c e_tangent.h e_update.c e_update.h fig.h figx.h \
+	e_scale.h e_tangent.c e_tangent.h e_update.c e_update.h figx.h \
 	f_load.c f_load.h f_neuclrtab.c f_neuclrtab.h f_picobj.c f_picobj.h \
 	f_read.c f_readeps.c f_readgif.c f_read.h f_readold.c f_readpcx.c \
 	f_readpcx.h f_readppm.c f_readxbm.c f_save.c f_save.h f_util.c \
-	f_util.h f_wrpcx.c main.c main.h mode.c mode.h \
-	object.c object.h paintop.h resources.c resources.h \
-	u_bound.c u_bound.h u_colors.c u_colors.h u_create.c u_create.h u_drag.c u_drag.h u_draw.c \
+	f_util.h f_wrpcx.c main.c main.h mode.c mode.h object.c object.h \
+	paintop.h resources.c resources.h u_bound.c u_bound.h u_colors.c \
+	u_colors.h u_create.c u_create.h u_drag.c u_drag.h u_draw.c \
 	u_draw.h u_elastic.c u_elastic.h u_error.c u_error.h u_fonts.c \
 	u_fonts.h u_free.c u_free.h u_geom.c u_geom.h u_ghostscript.c u_list.c \
 	u_list.h u_markers.c u_markers.h u_pan.c u_pan.h u_print.c u_print.h \
@@ -65,7 +65,7 @@ xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	w_grid.c w_grid.h w_help.c w_help.h w_icons.c w_icons.h w_indpanel.c \
 	w_indpanel.h w_intersect.c w_intersect.h w_keyboard.c w_keyboard.h \
 	w_layers.c w_layers.h w_library.c w_library.h w_listwidget.c \
-	w_listwidget.h w_listwidgetP.h w_modepanel.c w_modepanel.h \
+	w_listwidget.h w_modepanel.c w_modepanel.h \
 	w_mousefun.c w_mousefun.h w_msgpanel.c w_msgpanel.h w_print.c \
 	w_print.h w_rottext.c w_rottext.h w_rulers.c w_rulers.h w_setup.c \
 	w_setup.h w_snap.c w_snap.h w_srchrepl.c w_srchrepl.h w_style.c \
@@ -97,7 +97,7 @@ xfig_SOURCES += w_i18n.c w_i18n.h
 endif
 
 if !XAW3D1_5E
-xfig_SOURCES += w_menuentry.c w_menuentry.h w_menuentryP.h \
+xfig_SOURCES += w_menuentry.c w_menuentry.h \
 	SmeBSB.h SmeCascade.c SmeCascade.h SmeCascadeP.h \
 	SimpleMenu.c SmeBSB.c SmeBSBP.h
 endif

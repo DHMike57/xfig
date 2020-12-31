@@ -20,30 +20,34 @@
  *
  */
 
+#include "u_draw.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <X11/Intrinsic.h> /* includes X11/Xlib.h */	/* Boolean */
 #include <X11/ImUtil.h>	/* must first include X11/Xlib.h */
 			/* _XInitImageFuncPtrs() */
+#include <X11/Xft/Xft.h>
 
 #include "resources.h"
-#include "mode.h"
 #include "object.h"
+#include "paintop.h"
 #include "d_text.h"		/* reload_text_fstruct() */
 #include "f_util.h"		/* xf_basename() */
 #include "u_bound.h"		/* <obj>_bound(), overlapping() */
-#include "u_draw.h"
-#include "u_fonts.h"
 #include "u_error.h"		/* X_error_handler() */
+#include "u_fonts.h"
 #include "u_geom.h"		/* compute_angle() */
 #include "u_redraw.h"		/* redisplay_line() */
 #include "w_canvas.h"		/* clip_xmax, clip_xmin */
+#include "w_cursor.h"		/* reset_cursor() */
 #include "w_file.h"		/* check_cancel() */
 #include "w_layers.h"		/* active_layer() */
 #include "w_msgpanel.h"		/* put_msg() */
 #include "w_util.h"		/* NUM_ARROW_TYPES */
-#include "w_cursor.h"		/* reset_cursor() */
+#include "w_zoom.h"
 #include "xfig_math.h"
 
 static Boolean add_point(int x, int y);

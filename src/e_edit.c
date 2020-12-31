@@ -35,6 +35,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <X11/Intrinsic.h>	/* Widget, Boolean */
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Xatom.h>
 
 #include "figx.h"
 #include "resources.h"		/* also PATH_MAX */
@@ -76,9 +79,6 @@
 #include "w_mousefun.h"
 #include "w_setup.h"
 #include "w_util.h"
-#ifdef I18N
-#include "w_i18n.h"
-#endif
 #include "xfig_math.h"
 
 /* EXPORTS */

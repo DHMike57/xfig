@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,22 +17,36 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_snap.h"
+
+#include <math.h>
+#include <stddef.h>
+#include <X11/StringDefs.h>
+#include <X11/Xlib.h>
+#ifdef XAW3D
+#include <X11/Xaw3d/Form.h>
+#include <X11/Xaw3d/Label.h>
+#else
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#endif
+
 #include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
-#include "w_snap.h"
-#include "w_intersect.h"
-#include "w_layers.h"
-#include "w_setup.h"
-#include "w_indpanel.h"
-#include "w_util.h"
-#include "w_msgpanel.h"
+#include "f_util.h"
 #include "u_quartic.h"
 #include "u_search.h"
-#include "f_util.h"
-#include <math.h>
+#include "w_intersect.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "xfig_math.h"
+
 
 int snap_gx;
 int snap_gy;

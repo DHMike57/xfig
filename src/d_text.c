@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,48 +16,52 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "d_text.h"
+
+#include <errno.h>
+#include <math.h>
+#include <signal.h>		/* kill, SIGTERM */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <unistd.h>
+#include <fontconfig/fontconfig.h>
+#ifdef I18N_USE_PREEDIT
+#include <sys/wait.h>  /* waitpid() */
+#endif
+#include <X11/keysym.h>
+#include <X11/IntrinsicP.h>    /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xft/Xft.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
-#include "f_util.h"
 #include "d_text.h"
 #include "u_bound.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
-#include "u_free.h"
 #include "u_list.h"
+#include "u_markers.h"
+#include "u_redraw.h"
 #include "u_search.h"
 #include "u_undo.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
+#include "w_cmdpanel.h"
 #include "w_drawprim.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
-#include "w_setup.h"
 #include "w_zoom.h"
+#include "xfig_math.h"
 
-#include "u_draw.h"
-#include "u_markers.h"
-#include "u_redraw.h"
-#include "w_cmdpanel.h"
-#include "w_cursor.h"
-
-#ifdef I18N
-#include "w_i18n.h"
-#endif
-
-#include <sys/wait.h>  /* waitpid() */
-#include <limits.h>
-#include <math.h>
-
-#include <X11/keysym.h>
-#include <X11/Xatom.h>
-#include <wchar.h>
-
-#include <X11/Xlib.h>	/* XFT DEBUG */
-#include <X11/Xft/Xft.h> /* XFT DEBUG */
-//#include <X11/extensions/Xrender.h>
 
 /* EXPORTS */
 int		work_font;
@@ -94,7 +99,7 @@ XFontStruct	*canvas_font;
 
 static char	prefix[BUF_SIZE],	/* part of string left of mouse click */
 		suffix[BUF_SIZE];	/* part to right of click */
-static int	leng_prefix, leng_suffix;
+static int	leng_prefix;
 static int	start_suffix;
 static int	char_ht;
 static int	base_x, base_y;
@@ -123,7 +128,6 @@ static F_text  *new_text(int len, char *string);
 
 static void	new_text_line(void);
 static void     overlay_text_input(int x, int y);
-static void	create_textobject(void);
 static int	split_at_cursor(F_text *t, int x, int y, int *cursor_len,
 				int *start_suffix);
 static void	draw_cursor(int x, int y);
@@ -135,7 +139,6 @@ static void	turn_off_blinking_cursor(void);
 static void	move_blinking_cursor(int x, int y);
 
 #ifdef I18N
-#include <sys/wait.h>
 
 XIM		xim_im = NULL;
 XIC		xim_ic = NULL;
@@ -225,6 +228,8 @@ finish_n_start(int x, int y)
 void
 finish_text_input(int x, int y, int shift)
 {
+	(void)x;
+	(void)y;
     if (shift) {
 	paste_primary_selection();
 	return;
@@ -413,7 +418,6 @@ static void
 init_text_input(int x, int y)
 {
     int		    length, posn;
-    PR_SIZE	    tsize;
     float	    lensin, lencos;
     int		    prev_work_font;
     int		cursor_len;
@@ -566,7 +570,6 @@ static F_text *
 new_text(int len, char *string)
 {
     F_text	   *text;
-    PR_SIZE	size;
 
     if ((text = create_text()) == NULL)
 	return (NULL);
@@ -689,8 +692,8 @@ begin_utf8char(unsigned char *str, int *pos)
 {
 	/* Skip over combining diacritical marks; These are in the range U+0300
 	   to U+036F, which corresponds to UTF-8 0xcc 0x80 to 0xcd 0xaf. */
-	if (*pos > 2 && (str[*pos-1] == 0xcc && str[*pos] > 0x7f ||
-				str[*pos-1] == 0xcd && str[*pos] < 0xb0))
+	if (*pos > 2 && ((str[*pos-1] == 0xcc && str[*pos] > 0x7f) ||
+				(str[*pos-1] == 0xcd && str[*pos] < 0xb0)))
 		*pos -= 2;
 	while (*pos > 0 && str[*pos] > 0x7f && str[*pos] < 0xc2)
 		--*pos;
@@ -719,8 +722,8 @@ end_utf8char(unsigned char *str, int *pos)
 	/* Include combining diacritical marks; These are in the range U+0300
 	   to U+036F, which corresponds to UTF-8 0xcc 0x80 to 0xcd 0xaf. */
 	if (str[*pos+1] && str[*pos+2] &&
-			(str[*pos+1] == 0xcc && str[*pos+2] > 0x7f ||
-			 str[*pos+1] == 0xcd && str[*pos+2] < 0xb0))
+			((str[*pos+1] == 0xcc && str[*pos+2] > 0x7f) ||
+			 (str[*pos+1] == 0xcd && str[*pos+2] < 0xb0)))
 		*pos += 2;
 }
 
@@ -734,7 +737,6 @@ end_utf8char(unsigned char *str, int *pos)
 #define			BLINK_INTERVAL	700	/* milliseconds blink rate */
 
 static Window	pw;
-static int	ch_height;
 static int	cbase_x, cbase_y;
 static float	rbase_x, rbase_y, rcur_x, rcur_y;
 
@@ -786,7 +788,6 @@ void
 char_handler(unsigned char *c, int clen, KeySym keysym)
 {
     int    i;
-    unsigned char   ch;
 
     if (cr_proc == NULL)
 	return;
@@ -806,7 +807,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
     /* move cursor left - move char from prefix to suffix */
     /* Control-B and the Left arrow key both do this */
     /******************************************************/
-    } else if (keysym == XK_Left || clen == 1 && c[0] == CTRL_B) {
+    } else if (keysym == XK_Left || (clen == 1 && c[0] == CTRL_B)) {
 		/* already at the beginning of the string, return */
 		if (start_suffix == 0)
 			return;
@@ -830,7 +831,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
     /* move cursor right - move char from suffix to prefix */
     /* Control-F and Right arrow key both do this */
     /*******************************************************/
-    } else if (keysym == XK_Right || clen == 1 && c[0] == CTRL_F) {
+    } else if (keysym == XK_Right || (clen == 1 && c[0] == CTRL_F)) {
 		/* already at the end of the string, return */
 		if (cur_t->cstring[start_suffix] == '\0')
 			return;
@@ -857,7 +858,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
     /* move cursor to beginning of text - put everything in suffix */
     /* Control-A and Home key both do this */
     /***************************************************************/
-    } else if (keysym == XK_Home || clen == 1 && c[0] == CTRL_A) {
+    } else if (keysym == XK_Home || (clen == 1 && c[0] == CTRL_A)) {
 		if (start_suffix == 0)
 			return;
 		else
@@ -871,7 +872,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
     /* move cursor to end of text - put everything in prefix */
     /* Control-E and End key both do this */
     /*********************************************************/
-    } else if (keysym == XK_End || clen == 1 && c[0] == CTRL_E) {
+    } else if (keysym == XK_End || (clen == 1 && c[0] == CTRL_E)) {
 		size_t	len = strlen(cur_t->cstring);
 
 		if (start_suffix == (int)len)
@@ -1131,6 +1132,7 @@ turn_off_blinking_cursor(void)
 static	XtTimerCallbackProc
 blink(XtPointer client_data, XtIntervalId *id)
 {
+	(void)id;
 	union {
 		XtPointer	ptr;
 		unsigned long	value;
@@ -1430,6 +1432,9 @@ kill_preedit(void)
 static void
 close_preedit_proc(int x, int y)
 {
+	(void)x;
+	(void)y;
+
   if (is_preedit_running()) {
     kill_preedit();
     put_msg("Pre-edit window closed");
@@ -1441,6 +1446,9 @@ close_preedit_proc(int x, int y)
 static void
 open_preedit_proc(int x, int y)
 {
+	(void)x;
+	(void)y;
+
   int i;
   if (!is_preedit_running()) {
     put_msg("Opening pre-edit window...");

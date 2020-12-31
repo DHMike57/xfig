@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,11 +16,14 @@
  *
  */
 
-#include <X11/Xlib.h>	/* XFT DEBUG */
-#include <X11/Xft/Xft.h> /* XFT DEBUG */
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"
+#endif
+
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include "object.h"
 
 extern int		work_font;
-//extern XftFont		*canvas_xftfont;
 extern XFontStruct	*canvas_font;
 extern void	char_handler(unsigned char *c, int clen, KeySym keysym);
 extern void	finish_text_input(int x, int y, int shift);

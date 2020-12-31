@@ -1,8 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1991 by Henning Spruth
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 1991 by Henning Spruth
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,24 +17,23 @@
  *
  */
 
-#include <X11/keysym.h>
-#include "fig.h"
+#include "w_zoom.h"
+
+#include <stdlib.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
-#include "object.h"
-#include "paintop.h"
-#include "u_create.h"
 #include "u_elastic.h"
 #include "u_pan.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_file.h"
 #include "w_indpanel.h"
-#include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"
-#include "w_zoom.h"
+#include "xfig_math.h"
 
-#include "w_cursor.h"
 
 /* global for w_canvas.c */
 

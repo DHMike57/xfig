@@ -1,5 +1,22 @@
 /*
  * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ *
+ * Any party obtaining a copy of these files is granted, free of charge, a
+ * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
+ * nonexclusive right and license to deal in this software and documentation
+ * files (the "Software"), including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense and/or sell copies of
+ * the Software, and to permit persons who receive copies from any such
+ * party to do so, with the only requirement being that the above copyright
+ * and this permission notice remain intact.
+ *
+ */
+
+/*
  *
  * xvertext 5.0, Copyright (c) 1993 Alan Richardson (mppa3@uk.ac.sussex.syma)
  *
@@ -12,7 +29,6 @@
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
  *
- *  Modified 2018-09-18 by Thomas Loimer <thomas.loimer@tuwien.ac.at>
  *
  */
 
@@ -26,18 +42,31 @@
 
 /* ********************************************************************** */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_rottext.h"
 
-#include "fig.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "resources.h"
 #include <X11/Xatom.h>
-#include "w_rottext.h"
+#include <X11/Xutil.h>
 
 #ifdef I18N
 #include "w_i18n.h"
+#endif
+#include "xfig_math.h"
+
+
+#ifdef I18N
 #define XDrawString		i18n_draw_string
 #define XDrawImageString	i18n_draw_image_string
 #define XTextExtents		i18n_text_extents
 #endif  /* I18N */
+
 
 /* ---------------------------------------------------------------------- */
 
@@ -127,7 +156,6 @@ static struct style_template {
 
 static char            *my_strtok(char *str1, char *str2);
 
-float                   XRotVersion(char *str, int n);
 void                    XRotSetMagnification(float m);
 void                    XRotSetBoundingBoxPad(int p);
 int                     XRotDrawString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *str);
@@ -192,22 +220,6 @@ static char
     start=i+1;
 
     return ret;
-}
-
-
-/* ---------------------------------------------------------------------- */
-
-
-/**************************************************************************/
-/* Return version/copyright information                                   */
-/**************************************************************************/
-
-float
-XRotVersion(char *str, int n)
-{
-    if (str!=NULL)
-	strncpy(str, XV_COPYRIGHT, n);
-    return XV_VERSION;
 }
 
 

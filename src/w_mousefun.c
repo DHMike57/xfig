@@ -1,7 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,15 +16,20 @@
  *
  */
 
-#include "fig.h"
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"
+#endif
+#include "w_mousefun.h"
+
+#include <string.h>
+#include <X11/keysym.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>
+
 #include "figx.h"
 #include "resources.h"
-#include <X11/keysym.h>
-#include "u_colors.h"
 #include "w_icons.h"
 #include "w_drawprim.h"
-#include "w_indpanel.h"
-#include "w_mousefun.h"
 #include "w_setup.h"
 #include "w_util.h"
 
