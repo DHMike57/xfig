@@ -206,6 +206,8 @@ export_panel_dismiss(void)
 static void
 export_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     export_panel_dismiss();
 }
 
@@ -239,7 +241,7 @@ do_export(Widget w)
 	F_line     *l;
 	char	    transparent[10], backgrnd[10], grid[80];
 	char	    msg[200];
-	int	    transp;
+	int	    transp = TRANSP_NONE;
 	int	    border;
 	Boolean	    use_transp_backg;
 
@@ -373,6 +375,7 @@ do_export(Widget w)
 static void
 preview_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)call_data;
 	ptr_int		data = {client_data};
 
 	if (preview_type != data.val) {
@@ -385,6 +388,8 @@ preview_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 orient_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	ptr_int		data = {client_data};
 
 	if (appres.landscape != data.val) {
@@ -399,6 +404,7 @@ orient_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 just_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)call_data;
 	FirstArg(XtNlabel, XtName(w));
 	SetValues(export_just_panel);
 	/* change print justification if it exists */
@@ -410,6 +416,8 @@ just_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 papersize_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	intptr_t papersize = (intptr_t) client_data;
 
 	FirstArg(XtNlabel, paper_sizes[papersize].fname);
@@ -425,6 +433,8 @@ papersize_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 multiple_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	intptr_t multiple = (intptr_t) client_data;
 
 	FirstArg(XtNlabel, multiple_pages[multiple]);
@@ -459,6 +469,8 @@ multiple_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 overlap_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	intptr_t overlap = (intptr_t) client_data;
 
 	FirstArg(XtNlabel, overlap_pages[overlap]);
@@ -504,6 +516,7 @@ set_postscript_pdf_options(void)
 static void
 lang_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)call_data;
 	ptr_int		new_lang = {client_data};
 
 	FirstArg(XtNlabel, XtName(w));
@@ -559,6 +572,8 @@ set_export_mask(int lang)
 static void
 smooth_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	intptr_t new_smooth = (intptr_t) client_data;
 	appres.smooth_factor = new_smooth == 0 ? 1 : new_smooth*2;
 	FirstArg(XtNlabel, smooth_choices[new_smooth]);
@@ -570,6 +585,7 @@ smooth_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 background_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)call_data;
 	ptr_int	data = {client_data};
 	Pixel	    bgcolor, fgcolor;
 
@@ -597,6 +613,7 @@ background_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 transp_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)call_data;
 	Pixel	    bgcolor, fgcolor;
 	ptr_int	data = {client_data};
 
@@ -622,6 +639,8 @@ void
 export_grid_minor_select(Widget w,
 			XtPointer new_grid_choice, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	char	buf[MAX_GRID_STRLEN];
 	char	*val;
 	ptr_int	grid = {new_grid_choice};
@@ -646,6 +665,8 @@ void
 export_grid_major_select(Widget w,
 			XtPointer new_grid_choice, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	char	buf[MAX_GRID_STRLEN];
 	char	*val;
 	ptr_int	grid = {new_grid_choice};
@@ -915,6 +936,7 @@ get_magnif(void)
 static void
 update_mag(Widget widget, Widget *item, int *event)
 {
+	(void)widget; (void)item; (void)event;
     char	   *buf;
 
     buf = panel_get_value(export_mag_text);
@@ -1037,6 +1059,7 @@ popup_export_panel(Widget w)
 static void
 exp_xoff_unit_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)call_data;
     FirstArg(XtNlabel, XtName(w));
     SetValues(exp_xoff_unit_panel);
     xoff_unit_setting = (intptr_t) client_data;
@@ -1045,6 +1068,7 @@ exp_xoff_unit_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 exp_yoff_unit_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)call_data;
     FirstArg(XtNlabel, XtName(w));
     SetValues(exp_yoff_unit_panel);
     yoff_unit_setting = (intptr_t) client_data;
@@ -1054,6 +1078,8 @@ exp_yoff_unit_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void /* XtCallbackProc */
 toggle_hpgl_pcl_switch(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure;
+	(void)call_data;
     Boolean	    state;
 
     /* check state of the toggle and set/remove checkmark */
@@ -1075,6 +1101,8 @@ toggle_hpgl_pcl_switch(Widget w, XtPointer closure, XtPointer call_data)
 static void /* XtCallbackProc */
 toggle_hpgl_font(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure;
+	(void)call_data;
     Boolean	    state;
 
     /* check state of the toggle and set/remove checkmark */
@@ -1096,6 +1124,8 @@ toggle_hpgl_font(Widget w, XtPointer closure, XtPointer call_data)
 static void /* XtCallbackProc */
 toggle_pdf_pagemode(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure;
+	(void)call_data;
 	Boolean state;
 
 	/* check state of the toggle and set/remove checkmark */
@@ -1116,6 +1146,7 @@ toggle_pdf_pagemode(Widget w, XtPointer closure, XtPointer call_data)
 
 void create_export_panel(Widget w)
 {
+	(void)w;
 	Widget		 beside, below;
 	Widget		 entry, papersize_menu;
 	XFontStruct	*temp_font;
@@ -1569,7 +1600,7 @@ void create_export_panel(Widget w)
 	orient_lab = XtCreateManagedWidget("orient_label", labelWidgetClass,
 					 postscript_form, Args, ArgCount);
 
-	FirstArg(XtNlabel, orient_items[appres.landscape]);
+	FirstArg(XtNlabel, orient_items[(int)appres.landscape]);
 	NextArg(XtNfromVert, export_papersize_panel);
 	NextArg(XtNfromHoriz, orient_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);

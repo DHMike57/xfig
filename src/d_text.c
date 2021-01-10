@@ -66,7 +66,6 @@
 /* EXPORTS */
 int		work_font;
 XFontStruct	*canvas_font;
-// XftFont		*canvas_xftfont;
 
 
 /* LOCALS */
@@ -97,19 +96,21 @@ XFontStruct	*canvas_font;
 
 #define		BUF_SIZE	400
 
-static char	prefix[BUF_SIZE],	/* part of string left of mouse click */
-		suffix[BUF_SIZE];	/* part to right of click */
+static char	prefix[BUF_SIZE];	/* part of string left of mouse click */
 static int	leng_prefix;
 static int	start_suffix;
 static int	char_ht;
 static int	base_x, base_y;
-static int	supersub;		/* < 0 = currently subscripted, > 0 = superscripted */
-static int	heights[MAX_SUPSUB];	/* keep prev char heights when super/subscripting */
+static int	supersub;		/* < 0 = currently subscripted,
+					   > 0 = superscripted */
+static int	heights[MAX_SUPSUB];	/* keep prev char heights when
+					   super/subscripting */
 
 static int	ascent, descent;
 static int	orig_x, orig_y;		/* to position next line */
 static int	orig_ht;		/* to advance to next line */
-static float	work_float_fontsize;	/* keep current font size in floating for roundoff */
+static float	work_float_fontsize;	/* keep current font size in floating
+					   for roundoff */
 static XftFont	*canvas_zoomed_xftfont;
 
 static Boolean	is_newline;
@@ -132,7 +133,8 @@ static int	split_at_cursor(F_text *t, int x, int y, int *cursor_len,
 				int *start_suffix);
 static void	draw_cursor(int x, int y);
 static void	reload_compoundfont(F_compound *compounds);
-static void	initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by);
+static void	initialize_char_handler(Window w, void (*cr) (/* ??? */),
+					int bx, int by);
 static void	terminate_char_handler(void);
 static void	turn_on_blinking_cursor(int x, int y);
 static void	turn_off_blinking_cursor(void);
@@ -293,28 +295,28 @@ new_text_line(void)
 static void
 new_text_down(void)
 {
-    /* only so deep */
-    if (supersub <= -MAX_SUPSUB)
-	return;
+	/* only so deep */
+	if (supersub <= -MAX_SUPSUB)
+		return;
 
 	commit_current_text();
 	turn_off_blinking_cursor();
-    /* save current char height */
-    heights[abs(supersub)] = char_ht;
-    if (supersub-- > 0) {
-	/* we were previously in a superscript, go back one */
-	cur_x = round(cur_x + heights[supersub]*sin_t*PSUB_FRAC);
-	cur_y = round(cur_y + heights[supersub]*cos_t*PSUB_FRAC);
-	work_float_fontsize /= CSUB_FRAC;
-    } else if (supersub < 0) {
-	/* we were previously in a subscript, go deeper */
-	cur_x = round(cur_x + char_ht*sin_t*PSUB_FRAC);
-	cur_y = round(cur_y + char_ht*cos_t*PSUB_FRAC);
-	work_float_fontsize *= CSUB_FRAC;
-    }
-    work_fontsize = round(work_float_fontsize);
-    is_newline = False;
-    overlay_text_input(cur_x, cur_y);
+	/* save current char height */
+	heights[abs(supersub)] = char_ht;
+	if (supersub-- > 0) {
+		/* we were previously in a superscript, go back one */
+		cur_x = round(cur_x + heights[supersub]*sin_t*PSUB_FRAC);
+		cur_y = round(cur_y + heights[supersub]*cos_t*PSUB_FRAC);
+		work_float_fontsize /= CSUB_FRAC;
+	} else if (supersub < 0) {
+		/* we were previously in a subscript, go deeper */
+		cur_x = round(cur_x + char_ht*sin_t*PSUB_FRAC);
+		cur_y = round(cur_y + char_ht*cos_t*PSUB_FRAC);
+		work_float_fontsize *= CSUB_FRAC;
+	}
+	work_fontsize = round(work_float_fontsize);
+	is_newline = False;
+	overlay_text_input(cur_x, cur_y);
 }
 
 static void
@@ -324,8 +326,8 @@ new_text_up(void)
     if (supersub >= MAX_SUPSUB)
 	return;
 
-	commit_current_text();
-	turn_off_blinking_cursor();
+    commit_current_text();
+    turn_off_blinking_cursor();
 
     /* save current char height */
     heights[abs(supersub)] = char_ht;
@@ -905,7 +907,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		o = start_suffix - o;
 
 		/* memmove */
-		for (i = start_suffix; i <= len; ++i)
+		for (i = start_suffix; i <= (int)len; ++i)
 			cur_t->cstring[i - o] = cur_t->cstring[i];
 		start_suffix -= o;
 
@@ -925,7 +927,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 				cur_t->type, cur_t->offset);
 
 		/* get the new cursor position */
-		if (start_suffix == len - o) {
+		if (start_suffix == (int)(len - o)) {
 			cur_x += cur_t->offset.x;
 			cur_y += cur_t->offset.y;
 		} else if (start_suffix > 0) {
@@ -960,7 +962,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		end_utf8char((unsigned char *)cur_t->cstring, &o);
 		o = o + 1 - start_suffix;
 
-		for (i = start_suffix; i <= len - o; ++i)
+		for (i = start_suffix; i <= (int)(len - o); ++i)
 			cur_t->cstring[i] = cur_t->cstring[i + o];
 
 		turn_off_blinking_cursor();
@@ -972,7 +974,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		textextents(cur_t);
 		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
 				cur_t->type, cur_t->offset);
-		if (start_suffix == len - o) {
+		if (start_suffix == (int)(len - o)) {
 			cur_x += cur_t->offset.x;
 			cur_y += cur_t->offset.y;
 		} else if (start_suffix > 0) /* && start_suffix < len - o */ {
@@ -1003,7 +1005,7 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		len = strlen(cur_t->cstring);
 
 		/* move to the left by start_suffix */
-		for (i = start_suffix; i <= len; ++i)
+		for (i = start_suffix; i <= (int)len; ++i)
 			cur_t->cstring[i - start_suffix] = cur_t->cstring[i];
 		start_suffix = 0;
 

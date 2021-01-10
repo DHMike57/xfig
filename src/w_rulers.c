@@ -534,12 +534,17 @@ unit_panel_dismiss(void)
 static void
 unit_panel_cancel(Widget w, XButtonEvent *ev)
 {
-    unit_panel_dismiss();
+	(void)w;
+	(void)ev;
+
+	unit_panel_dismiss();
 }
 
 static void
 unit_panel_set(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     int		    old_rul_unit, pix;
     float	    scale_factor;
 
@@ -633,6 +638,8 @@ set_unit_indicator(Boolean use_userscale)
 static void
 fig_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 {
+	(void)garbage;
+
     FirstArg(XtNlabel, XtName(w));
     SetValues(fig_unit_panel);
     fig_unit_setting = (Boolean) (intptr_t) new_unit;
@@ -653,6 +660,8 @@ fig_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 static void
 fig_scale_select(Widget w, XtPointer new_scale, XtPointer garbage)
 {
+	(void)garbage;
+
     FirstArg(XtNlabel, XtName(w));
     SetValues(fig_scale_panel);
     fig_scale_setting = (Boolean) (intptr_t) new_scale;
@@ -673,6 +682,7 @@ fig_scale_select(Widget w, XtPointer new_scale, XtPointer garbage)
 static void
 rul_unit_select(Widget w, XtPointer closure, XtPointer garbage)
 {
+	(void)garbage;
     intptr_t	    new_unit = (intptr_t) closure;
 
     /* return if no change */
@@ -833,8 +843,9 @@ popup_unit_panel(void)
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNleftBitmap, menu_arrow);	/* use menu arrow for pull-down */
-    fig_scale_panel = XtCreateManagedWidget(fig_scale_items[fig_scale_setting],
-				menuButtonWidgetClass, unit_panel, Args, ArgCount);
+    fig_scale_panel = XtCreateManagedWidget(
+		    fig_scale_items[(int)fig_scale_setting],
+		    menuButtonWidgetClass, unit_panel, Args, ArgCount);
     below = fig_scale_panel;
     make_pulldown_menu(fig_scale_items, XtNumber(fig_scale_items), -1, "",
                                      fig_scale_panel, fig_scale_select);
@@ -942,6 +953,7 @@ static String	topruler_translations =
 static void
 topruler_selected(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
     XButtonEvent   *be = (XButtonEvent *) event;
 
     /* see if wheel mouse */
@@ -1026,6 +1038,8 @@ void set_toprulermark(int x)
 static void
 topruler_exposed(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
+
     if (((XExposeEvent *) event)->count > 0)
 	return;
     redisplay_topruler();
@@ -1269,6 +1283,7 @@ static String	sideruler_translations =
 static void
 sideruler_selected(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
     XButtonEvent   *be = (XButtonEvent *) event;
 
     /* see if wheel mouse */
@@ -1335,6 +1350,8 @@ sideruler_selected(Widget tool, XButtonEvent *event, String *params, Cardinal *n
 static void
 sideruler_exposed(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
+
     if (((XExposeEvent *) event)->count > 0)
 	return;
     redisplay_sideruler();

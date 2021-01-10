@@ -305,7 +305,7 @@ close_to_arc(F_arc *a, int xp, int yp, int d, float *px, float *py)
        wang -= 2*M_PI;
        if (uang <= pang)
          pang -= 2*M_PI;
-         ok = (pang >= wang);
+       ok = (pang >= wang);
      }
    }
    if (!ok)

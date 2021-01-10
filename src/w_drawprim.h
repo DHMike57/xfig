@@ -89,10 +89,10 @@ extern GC	    makegc(int op, Pixel fg, Pixel bg);
 
 /* patterns like bricks, etc */
 typedef struct _patrn_strct {
-	  int	 owidth,oheight;	/* original width/height */
-	  char	*odata;			/* original bytes */
-	  int	 cwidth,cheight;	/* current width/height */
-	  char	*cdata;			/* bytes at current zoom */
+	  unsigned int	 owidth,oheight;	/* original width/height */
+	  char	*odata;				/* original bytes */
+	  unsigned int	 cwidth,cheight;	/* current width/height */
+	  char	*cdata;				/* bytes at current zoom */
     } patrn_strct;
 
 #define SHADE_IM_SIZE	32		/* fixed by literal patterns in w_drawprim.c */

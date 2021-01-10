@@ -208,6 +208,7 @@ void app_flush(void)
 static void
 accept_yes(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_YES;
 }
@@ -215,6 +216,7 @@ accept_yes(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_no(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_NO;
 }
@@ -222,6 +224,7 @@ accept_no(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_cancel(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_CANCEL;
 }
@@ -229,6 +232,7 @@ accept_cancel(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_part(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_PART;
 }
@@ -236,6 +240,7 @@ accept_part(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_all(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_ALL;
 }
@@ -403,6 +408,7 @@ make_pulldown_menu(char **entries, Cardinal nent, int divide_line, char *divide_
 static void
 CvtStringToFloat(XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmValuePtr toVal)
 {
+	(void)args;
     static float    f;
 
     if (*num_args != 0)
@@ -417,6 +423,7 @@ CvtStringToFloat(XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmV
 static void
 CvtIntToFloat(XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmValuePtr toVal)
 {
+	(void)args;
     static float    f;
 
     if (*num_args != 0)
@@ -434,8 +441,9 @@ void fix_converters(void)
 
 
 static void
-cancel_color(Widget w, XtPointer widget, XtPointer dum1)
+cancel_color(Widget w, XtPointer widget, XtPointer dum)
 {
+	(void)w; (void)dum;
     XtPopdown((Widget)widget);
 }
 
@@ -607,6 +615,7 @@ set_but_col(Widget widget, int color)
 static void
 inc_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     float val;
     char *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -630,6 +639,7 @@ inc_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 static void
 dec_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     float val;
     char *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -654,6 +664,7 @@ dec_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 static void
 inc_int_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     int     val;
     char   *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -677,6 +688,7 @@ inc_int_spinner(Widget widget, XtPointer info, XtPointer dum)
 static void
 dec_int_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     int     val;
     char   *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -709,6 +721,7 @@ static Widget		   cur_spin = (Widget) 0;
 static void /* XtEventHandler */
 start_spin_timer(Widget widget, XtPointer data, XEvent event)
 {
+	(void)data; (void)event;
     auto_spinid = XtAppAddTimeOut(tool_app, appres.spinner_delay,
 				(XtTimerCallbackProc) auto_spin, (XtPointer) NULL);
     /* add event to cancel timer when user releases button */
@@ -723,6 +736,7 @@ start_spin_timer(Widget widget, XtPointer data, XEvent event)
 static void /* XtEventHandler */
 stop_spin_timer(int widget, int data, int event)
 {
+	(void)widget; (void)data; (void)event;
     XtRemoveTimeOut(auto_spinid);
 
     return;
@@ -731,6 +745,7 @@ stop_spin_timer(int widget, int data, int event)
 static void /* XtTimerCallbackProc */
 auto_spin(XtPointer client_data, XtIntervalId *id)
 {
+	(void)client_data; (void)id;
     auto_spinid = XtAppAddTimeOut(tool_app, appres.spinner_rate,
 				(XtTimerCallbackProc) auto_spin, (XtPointer) NULL);
     /* call the proper spinup/down routine */
@@ -936,10 +951,13 @@ MakeSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget b
 void
 validate_int(Widget w, XtPointer info, XtPointer dum)
 {
+	(void)w;
+	(void)dum;
     DeclareArgs(4);
     spin_struct *spins = (spin_struct*) info;
     char	buf[200];
-    int		val, i, modified = 0;
+    int		val, modified = 0;
+    size_t	i;
     XawTextPosition pos;
 
     /* save cursor position */
@@ -974,7 +992,7 @@ validate_int(Widget w, XtPointer info, XtPointer dum)
         panel_set_value(spins->widget, buf);
 
 	/* put cursor back */
-	if (pos < strlen(buf)) {
+	if (pos < (XawTextPosition)strlen(buf)) {
 	    FirstArg(XtNinsertPosition, (pos+1));
 	    SetValues(spins->widget);
 	}
@@ -984,8 +1002,11 @@ validate_int(Widget w, XtPointer info, XtPointer dum)
 /* handle the wheelmouse wheel */
 
 void
-spinner_up_down(Widget w, XButtonEvent *ev, String *params, Cardinal *num_params)
+spinner_up_down(Widget w, XButtonEvent *ev, String *params,
+		Cardinal *num_params)
 {
+	(void)num_params;
+
   w = XtParent(w);
   if (params[0][0] == '+') w = XtNameToWidget(w, "*spinup");
   else w = XtNameToWidget(w, "*spindown");
@@ -1253,6 +1274,7 @@ CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, W
 void /* XtCallbackProc */
 toggle_checkbutton(Widget w, XtPointer data, XtPointer garbage)
 {
+	(void)garbage;
     DeclareArgs(5);
     Pixmap	   pm;
     Boolean	  *what = (Boolean *) data;
@@ -1306,6 +1328,7 @@ update_wm_title(char *name)
 void
 check_for_resize(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
     int		    dx, dy;
     XConfigureEvent *xc = (XConfigureEvent *) event;
 
@@ -1684,7 +1707,7 @@ convert_gridstr(Widget widget, float mult)
 	char	*sval, fraction[20];
 	double	 fracts[] = { 2, 4, 8, 16, 32 };
 	double	 tol[]    = { 0.05, 0.1, 0.2, 0.3, 0.6};
-#define NUM_FRACTS sizeof(fracts)/sizeof(double)
+#define NUM_FRACTS	(sizeof(fracts)/sizeof(double))
 	int	 i;
 
 	FirstArg(XtNstring, &sval);
@@ -1700,13 +1723,13 @@ convert_gridstr(Widget widget, float mult)
 	}
 	/* if user wants fractions, give him fractions */
 	if (cur_gridunit == FRACT_UNIT) {
-	    for (i=0; i<NUM_FRACTS; i++) {
+	    for (i = 0; i < (int)NUM_FRACTS; ++i) {
 		numer = round(value*fracts[i]);
 		diff = fabs(value*fracts[i] - numer);
 		if (diff < tol[i] && numer > 0.0)
 		    break;
 	    }
-	    if (i < NUM_FRACTS) {
+	    if (i < (int)NUM_FRACTS) {
 		sprintf(fraction, "%d/%d", (int) numer, (int) fracts[i]);
 		panel_set_value(widget, fraction);
 		return;
@@ -1755,7 +1778,6 @@ void splash_screen(void)
 {
 	GC		splash_gc;
 	XColor		col, colbg;
-	XColor		x_fg_color, x_bg_color;
 	Boolean		fade;
 	int		red_step, green_step, blue_step;
 	Pixmap		letters_pm;

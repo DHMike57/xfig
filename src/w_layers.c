@@ -496,6 +496,7 @@ draw_layer_button(Window win, int but)
 static void
 layer_exposed(Widget w, XExposeEvent *event, String *params, Cardinal *nparams)
 {
+	(void)params; (void)nparams;
     int		    y, i;
 
     if (min_depth < 0) return;  /* if no objects return */
@@ -534,6 +535,7 @@ calculate_pressed_depth(int y)
 static void
 set_depth_to_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)params; (void)nparams;
     int		    but;
 
     but = calculate_pressed_depth(event->y);
@@ -546,6 +548,7 @@ set_depth_to_layer(Widget w, XButtonEvent *event, String *params, Cardinal *npar
 static void
 toggle_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)params; (void)nparams;
     Window	    win = XtWindow(layer_canvas);
     int		    but, i;
     Boolean	    obscure;
@@ -582,6 +585,7 @@ toggle_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 static void
 sweep_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)params; (void)nparams;
     Window	    win = XtWindow(layer_canvas);
     int		    but;
     int		    i;
@@ -621,12 +625,14 @@ sweep_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 static void
 leave_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)event; (void)params; (void)nparams;
     pressed_but = -1;
 }
 
 static void
 all_active(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
     int i;
     Boolean changed = False;
 
@@ -648,6 +654,7 @@ all_active(Widget w, XtPointer closure, XtPointer call_data)
 static void
 all_inactive(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
     int i;
     Boolean changed = False;
 
@@ -669,6 +676,7 @@ all_inactive(Widget w, XtPointer closure, XtPointer call_data)
 static void
 toggle_all(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
     int i;
 
     if (min_depth < 0) return;
@@ -685,6 +693,7 @@ toggle_all(Widget w, XtPointer closure, XtPointer call_data)
 static void
 switch_layer_mode(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure; (void)call_data;
     Boolean	    state;
     intptr_t	    which;
 

@@ -143,6 +143,9 @@ void NewList (Widget listwidget, String *list);
 void
 FileSelected(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)client_data;
+
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
     strcpy(CurrentSelectionName, ret_struct->string);
@@ -174,6 +177,9 @@ FileSelected(Widget w, XtPointer client_data, XtPointer call_data)
 void
 DirSelected(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)client_data;
+
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
     strcpy(CurrentSelectionName, ret_struct->string);
@@ -183,6 +189,8 @@ DirSelected(Widget w, XtPointer client_data, XtPointer call_data)
 void
 ShowHidden(Widget w, XtPointer client_data, XtPointer ret_val)
 {
+	(void)w; (void)client_data; (void)ret_val;
+
     show_hidden = !show_hidden;
     FirstArg(XtNlabel, show_hidden? "Hide Hidden": "Show Hidden");
     SetValues(hidden);
@@ -203,6 +211,7 @@ update_file_export_dir(const char *restrict dir)
 void
 GoHome(Widget w, XtPointer client_data, XtPointer ret_val)
 {
+	(void)w; (void)client_data; (void)ret_val;
     char	    dir[PATH_MAX];
 
     parseuserpath("~",dir);
@@ -230,6 +239,7 @@ GoHome(Widget w, XtPointer client_data, XtPointer ret_val)
 void
 SetDir(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)widget; (void)event; (void)params; (void)num_params;
     char	   *ndir;
 
     /* get the string from the widget */
@@ -291,6 +301,7 @@ void parseuserpath(char *path, char *longpath)
 void
 create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside, Widget *ret_below, Widget *mask_w, Widget *dir_w, Widget *flist_w, Widget *dlist_w, int file_width, Boolean file_panel)
 {
+	(void)file_exp;
     Widget	    w,dir_alt,home;
     Widget	    file_viewport;
     Widget	    dir_viewport;
@@ -655,6 +666,7 @@ MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
 static void
 ParentDir(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)w; (void)event; (void)params; (void)num_params;
     DoChangeDir("..");
 }
 
@@ -734,12 +746,14 @@ DoChangeDir(char *dir)
 void
 CallbackRescan(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
      Rescan(0, 0, 0, 0);
 }
 
 void
 Rescan(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)widget; (void)event; (void)params; (void)num_params;
     char	*dir;
 
     /*

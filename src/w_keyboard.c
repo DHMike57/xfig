@@ -58,10 +58,9 @@ static int keyboard_history_nr_etys;
 #define KEYBOARD_HISTORY_MAX	32
 
 static void
-next_keyboard_history(w, event)
-     Widget w;
-     XKeyEvent *event;
+next_keyboard_history(Widget w, XKeyEvent *event)
 {
+	(void)event;
   if (keyboard_history) {
     char * str;
     keyboard_history_read_pointer = keyboard_history_read_pointer->next;
@@ -71,10 +70,9 @@ next_keyboard_history(w, event)
 }
 
 static void
-prior_keyboard_history(w, event)
-     Widget w;
-     XKeyEvent *event;
+prior_keyboard_history(Widget w, XKeyEvent *event)
 {
+	(void)event;
   if (keyboard_history) {
     char * str;
     keyboard_history_read_pointer = keyboard_history_read_pointer->prior;
@@ -85,17 +83,14 @@ prior_keyboard_history(w, event)
 }
 
 static void
-ignore_keyboard_input(w, event)
-     Widget w;
-     XKeyEvent *event;
+ignore_keyboard_input(Widget w, XKeyEvent *event)
 {
-  popdown_keyboard_panel();
+	(void)w; (void)event;
+	popdown_keyboard_panel();
 }
 
 static void
-handle_keyboard_input(w, event)
-     Widget w;
-     XKeyEvent *event;
+handle_keyboard_input(Widget w, XKeyEvent *event)
 {
 
 #define WS "[[:space:]]*"
@@ -484,6 +479,7 @@ popup_keyboard_panel(Widget widget,
 		     String * params,
 		     Cardinal * num_params)
 {
+	(void)widget; (void)params; (void)num_params;
   Dimension wd, ht;
 
   /* make sure we're in a drawing mode first */

@@ -220,6 +220,9 @@ void put_selected_request(void)
 static void
 library_stop(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
+
      library_stop_request = True;
      XtSetSensitive(stop, False);
 }
@@ -234,6 +237,9 @@ library_dismiss(void)
 static void
 library_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
+
     /* unhighlight the selected item */
     if (appres.icon_view)
 	unsel_icon(cur_library_object);
@@ -291,6 +297,8 @@ library_cancel(Widget w, XButtonEvent *ev)
 static void
 load_library(Widget w, XtPointer new_library, XtPointer garbage)
 {
+	(void)w;
+	(void)garbage;
     struct lib_rec *librec = (struct lib_rec *) new_library;
     Dimension	    vwidth, vheight;
     Dimension	    vawidth, vaheight;
@@ -384,6 +392,8 @@ load_library(Widget w, XtPointer new_library, XtPointer garbage)
 static void
 put_object_sel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     int	    obj;
 
     /* if there is no library loaded, ignore select */
@@ -492,6 +502,8 @@ load_lib_obj(int obj)
 static void
 NewObjectSel(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
     int		    new_obj;
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
@@ -1172,6 +1184,8 @@ sel_view(Widget w, XtPointer client_data, XtPointer garbage)
 static void
 change_icon_size(Widget w, XtPointer menu_entry, XtPointer garbage)
 {
+	(void)w;
+	(void)garbage;
     char	   *new_size = (char*) icon_sizes[(intptr_t) menu_entry];
     int		    i;
 
@@ -1219,7 +1233,7 @@ erase_pixmap(Pixmap pixmap)
 static Boolean
 PutLibraryEntry(struct lib_rec *librec, char *path, char *lname, char *name)
 {
-    int i;
+    size_t i;
 
     /* strip any trailing whitespace */
     for (i=strlen(name)-1; i>0; i--) {
@@ -1774,6 +1788,7 @@ static	int	    old_item = -1;
 static void
 sel_item_icon(Widget w, XButtonEvent *ev)
 {
+	(void)ev;
     int		    i;
     F_compound	   *compound;
 

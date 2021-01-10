@@ -287,8 +287,8 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	XftFont		*xftfont;
 
 	/* sanitize fnum */
-	if (fnum < 0 || psflag && fnum >= NUM_FONTS ||
-			!psflag && fnum >= NUM_LATEX_FONTS) {
+	if (fnum < 0 || (psflag && fnum >= NUM_FONTS) ||
+			(!psflag && fnum >= NUM_LATEX_FONTS)) {
 		file_msg("Illegal font number, using default font.");
 		fnum = DEF_PS_FONT;
 	}

@@ -571,6 +571,8 @@ static void
 get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
 		Atom *type, XtPointer buf, unsigned long *length, int *format)
 {
+	(void)client_data;
+	(void)selection;
 	char		**tmp;
 	int		i, num_values, ret_status;
 	XTextProperty	prop;

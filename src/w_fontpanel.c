@@ -367,6 +367,8 @@ fontpane_popup(int *psfont_adr, int *latexfont_adr, int *psflag_adr, void (*show
 static void
 fontpane_select(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
     MenuItemRec	   *mi = (MenuItemRec *) closure;
     char	   *font_name = mi->label;
     ptr_int	data = {mi->info};

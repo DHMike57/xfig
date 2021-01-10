@@ -149,6 +149,8 @@ snap_polyline_endpoint_handler(l, x, y)
 void
 snap_polyline_focus_handler(F_line * l, int x, int y)
 {
+	(void)x;
+	(void)y;
   /* polyline (type 1): simple verts			*/
   /* box (type 2):					*/
   /* polygon (type 3)					*/
@@ -1107,12 +1109,9 @@ snap_ellipse_handler(e, x, y)
 }
 
 static void
-snap_handler(p, type, x, y, px, py)
-    void * p;
-    int type;
-    int x, y;
-    int px, py;
+snap_handler(void *p, int type, int x, int y, int px, int py)
 {
+	(void)px; (void)py;
   static void * intersect_object_1;
   static int intersect_type_1;
 
@@ -1192,31 +1191,26 @@ snap_process(px, py, state)
 }
 
 void
-snap_hold(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_hold(Widget w, XtPointer closure, XtPointer call_data)
 {
-  snap_held = True;
+	(void)w; (void)closure; (void)call_data;
+
+	snap_held = True;
 }
 
 void
-snap_release(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_release(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
   snap_held = False;
   snap_mode = SNAP_MODE_NONE;
   XtVaSetValues(snap_indicator_label, XtNlabel, "None     " , NULL);
 }
 
 void
-snap_endpoint(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_endpoint(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		polyline (incl box and polygon) vertices		-- done	*/
@@ -1230,11 +1224,9 @@ snap_endpoint(w, closure, call_data)
 }
 
 void
-snap_midpoint(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_midpoint(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		polyline (incl box and polygon) segment midpoints	-- done	*/
@@ -1248,11 +1240,9 @@ snap_midpoint(w, closure, call_data)
 }
 
 void
-snap_nearest(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_nearest(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		nearest object							*/
@@ -1262,31 +1252,29 @@ snap_nearest(w, closure, call_data)
 }
 
 void
-snap_focus(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_focus(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
-  /* snap to:									*/
-  /*		closed polyline (box and polygon) centroids		-- done	*/
-  /*		open polyline centroids (?)				-- done	*/
-  /*		ellipse foci and circle centerpoints			-- done	*/
-  /*		closed spline centroids					-- todo	*/
-  /*		open spline centroids (?)				-- ????	*/
-  /*		text bounding box centroids (?)				-- done	*/
-  /*		arc centroids (or origin ?)				-- done	*/
+	/*
+	 * snap to:
+	 *	closed polyline (box and polygon) centroids	-- done
+	 *	open polyline centroids (?)			-- done
+	 *	ellipse foci and circle centerpoints		-- done
+	 *	closed spline centroids				-- todo
+	 *	open spline centroids (?)			-- ????
+	 *	text bounding box centroids (?)			-- done
+	 *	arc centroids (or origin ?)			-- done
+	 */
 
-  XtVaSetValues(snap_indicator_label, XtNlabel, "Focus" , NULL);
-  snap_mode = SNAP_MODE_FOCUS;
+	XtVaSetValues(snap_indicator_label, XtNlabel, "Focus" , NULL);
+	snap_mode = SNAP_MODE_FOCUS;
 }
 
 void
-snap_diameter(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_diameter(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		closed polyline (box and polygon) point opp centroids	-- done	*/
@@ -1309,11 +1297,9 @@ snap_diameter(w, closure, call_data)
 }
 
 void
-snap_intersect(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_intersect(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to the intersection of the next two objects selected.			*/
 
@@ -1323,11 +1309,9 @@ snap_intersect(w, closure, call_data)
 }
 
 void
-snap_normal(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_normal(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* for current polyline, box, or polygon, snap to a point on the target	*/
   /* such that the segment defined by that point and the existing current	*/
@@ -1357,11 +1341,9 @@ snap_normal(w, closure, call_data)
 }
 
 void
-snap_tangent(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_tangent(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* for current polyline, box, or polygon, snap to a point on the target	*/
   /* such that the segment defined by that point and the existing current	*/

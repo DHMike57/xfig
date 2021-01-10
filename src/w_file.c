@@ -255,6 +255,8 @@ merge_request(Widget w, XButtonEvent *ev)
 static void
 do_merge(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     char	    path[PATH_MAX], fname[PATH_MAX];
     char	   *fval, *dval;
     int		    xoff, yoff;
@@ -324,6 +326,8 @@ load_request(Widget w, XButtonEvent *ev)
 static void
 do_load(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     char	    fname[PATH_MAX];
     char	   *fval, *dval;
     int		    xoff, yoff;
@@ -393,6 +397,8 @@ do_load(Widget w, XButtonEvent *ev)
 void
 new_xfig_request(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     pid_t pid;
     char *fval, fname[PATH_MAX];
     char **xxargv;
@@ -460,6 +466,8 @@ save_request(Widget w, XButtonEvent *ev)
 void
 do_save(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     char	   *fval, *dval, fname[PATH_MAX];
     int		    qresult;
 
@@ -607,6 +615,8 @@ cancel_request(Widget w, XButtonEvent *ev)
 static void
 file_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     if (user_colors_saved) {
 	restore_user_colors();
 	restore_nuser_colors();
@@ -746,6 +756,7 @@ popup_file_panel(int mode)
 static void
 file_xoff_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 {
+	(void)garbage;
     FirstArg(XtNlabel, XtName(w));
     SetValues(file_xoff_unit_panel);
     xoff_unit_setting = (intptr_t) new_unit;
@@ -754,6 +765,7 @@ file_xoff_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 static void
 file_yoff_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 {
+	(void)garbage;
     FirstArg(XtNlabel, XtName(w));
     SetValues(file_yoff_unit_panel);
     yoff_unit_setting = (intptr_t) new_unit;
@@ -1231,6 +1243,8 @@ clear_preview(void)
 static void
 file_preview_stop(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     /* set the cancel flag */
     cancel_preview = True;
     /* make the cancel button insensitive */

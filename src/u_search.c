@@ -308,6 +308,7 @@ next_spline_found(int x, int y, int tolerance, int *px, int *py, unsigned int sh
 Boolean
 next_text_found(int x, int y, int tolerance, int *px, int *py, unsigned int shift)
 {
+	(void)tolerance;
     int		    dum;
 
     if (!anytext_in_mask())

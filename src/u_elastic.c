@@ -429,6 +429,8 @@ scaling_line(int x, int y)
 void
 elastic_scale_curline(int x, int y)
 {
+	(void)x;
+	(void)y;
     elastic_scalepts(cur_l->points);
 }
 

@@ -209,65 +209,65 @@ Widget		abstoggle, multtoggle;
 /* indicator switch definitions */
 
 static choice_info anglegeom_choices[] = {
-    {L_UNCONSTRAINED, &unconstrained_ic,},
-    {L_LATEXLINE, &latexline_ic,},
-    {L_LATEXARROW, &latexarrow_ic,},
-    {L_MOUNTHATTAN, &mounthattan_ic,},
-    {L_MANHATTAN, &manhattan_ic,},
-    {L_MOUNTAIN, &mountain_ic,},
+    {L_UNCONSTRAINED, &unconstrained_ic, 0},
+    {L_LATEXLINE, &latexline_ic, 0},
+    {L_LATEXARROW, &latexarrow_ic, 0},
+    {L_MOUNTHATTAN, &mounthattan_ic, 0},
+    {L_MANHATTAN, &manhattan_ic, 0},
+    {L_MOUNTAIN, &mountain_ic, 0},
 };
 #define NUM_ANGLEGEOM_CHOICES (sizeof(anglegeom_choices)/sizeof(choice_info))
 
 static choice_info valign_choices[] = {
-    {ALIGN_NONE, &none_ic,},
-    {ALIGN_TOP, &valignt_ic,},
-    {ALIGN_CENTER, &valignc_ic,},
-    {ALIGN_BOTTOM, &valignb_ic,},
-    {ALIGN_DISTRIB_C, &valigndc_ic,},
-    {ALIGN_DISTRIB_E, &valignde_ic,},
-    {ALIGN_ABUT, &valigna_ic,},
+    {ALIGN_NONE, &none_ic, 0},
+    {ALIGN_TOP, &valignt_ic, 0},
+    {ALIGN_CENTER, &valignc_ic, 0},
+    {ALIGN_BOTTOM, &valignb_ic, 0},
+    {ALIGN_DISTRIB_C, &valigndc_ic, 0},
+    {ALIGN_DISTRIB_E, &valignde_ic, 0},
+    {ALIGN_ABUT, &valigna_ic, 0},
 };
 #define NUM_VALIGN_CHOICES (sizeof(valign_choices)/sizeof(choice_info))
 
 static choice_info halign_choices[] = {
-    {ALIGN_NONE, &none_ic,},
-    {ALIGN_LEFT, &halignl_ic,},
-    {ALIGN_CENTER, &halignc_ic,},
-    {ALIGN_RIGHT, &halignr_ic,},
-    {ALIGN_DISTRIB_C, &haligndc_ic,},
-    {ALIGN_DISTRIB_E, &halignde_ic,},
-    {ALIGN_ABUT, &haligna_ic,},
+    {ALIGN_NONE, &none_ic, 0},
+    {ALIGN_LEFT, &halignl_ic, 0},
+    {ALIGN_CENTER, &halignc_ic, 0},
+    {ALIGN_RIGHT, &halignr_ic, 0},
+    {ALIGN_DISTRIB_C, &haligndc_ic, 0},
+    {ALIGN_DISTRIB_E, &halignde_ic, 0},
+    {ALIGN_ABUT, &haligna_ic, 0},
 };
 #define NUM_HALIGN_CHOICES (sizeof(halign_choices)/sizeof(choice_info))
 
 static choice_info gridmode_choices[] = {
-    {GRID_0, &none_ic,},
-    {GRID_1, &grid1_ic,},
-    {GRID_2, &grid2_ic,},
-    {GRID_3, &grid3_ic,},
-    {GRID_4, &grid4_ic,},
-    {GRID_ISO_1, &grid_iso1_ic,},			// isometric grid
-    {GRID_ISO_2, &grid_iso2_ic,},
-    {GRID_ISO_3, &grid_iso3_ic,},
-    {GRID_ISO_4, &grid_iso4_ic,},
+    {GRID_0, &none_ic, 0},
+    {GRID_1, &grid1_ic, 0},
+    {GRID_2, &grid2_ic, 0},
+    {GRID_3, &grid3_ic, 0},
+    {GRID_4, &grid4_ic, 0},
+    {GRID_ISO_1, &grid_iso1_ic, 0},			// isometric grid
+    {GRID_ISO_2, &grid_iso2_ic, 0},
+    {GRID_ISO_3, &grid_iso3_ic, 0},
+    {GRID_ISO_4, &grid_iso4_ic, 0},
 };
 #define NUM_GRIDMODE_CHOICES (sizeof(gridmode_choices)/sizeof(choice_info))
 
 static choice_info pointposn_choices[] = {
-    {P_ANY, &any_ic,},
-    {P_MAGNET, &fine_grid_ic,},
-    {P_GRID1, &grid1_ic,},
-    {P_GRID2, &grid2_ic,},
-    {P_GRID3, &grid3_ic,},
-    {P_GRID4, &grid4_ic,},
+    {P_ANY, &any_ic, 0},
+    {P_MAGNET, &fine_grid_ic, 0},
+    {P_GRID1, &grid1_ic, 0},
+    {P_GRID2, &grid2_ic, 0},
+    {P_GRID3, &grid3_ic, 0},
+    {P_GRID4, &grid4_ic, 0},
 };
 #define NUM_POINTPOSN_CHOICES (sizeof(pointposn_choices)/sizeof(choice_info))
 
 static choice_info arrowmode_choices[] = {
-    {L_NOARROWS, &noarrows_ic,},
-    {L_FARROWS, &farrows_ic,},
-    {L_FBARROWS, &fbarrows_ic,},
-    {L_BARROWS, &barrows_ic,},
+    {L_NOARROWS, &noarrows_ic, 0},
+    {L_FARROWS, &farrows_ic, 0},
+    {L_FBARROWS, &fbarrows_ic, 0},
+    {L_BARROWS, &barrows_ic, 0},
 };
 #define NUM_ARROWMODE_CHOICES (sizeof(arrowmode_choices)/sizeof(choice_info))
 
@@ -275,37 +275,37 @@ static choice_info arrowmode_choices[] = {
 /* e_edit.c also uses these */
 
 choice_info dim_arrowtype_choices[] = {
-    {-1, &arrow0_ic,},
-    {0, &arrow0_ic,},
-    {1, &arrow1o_ic,},
-    {2, &arrow1f_ic,},
-    {3, &arrow2o_ic,},
-    {4, &arrow2f_ic,},
-    {5, &arrow3o_ic,},
-    {6, &arrow3f_ic,},
+    {-1, &arrow0_ic, 0},
+    {0, &arrow0_ic, 0},
+    {1, &arrow1o_ic, 0},
+    {2, &arrow1f_ic, 0},
+    {3, &arrow2o_ic, 0},
+    {4, &arrow2f_ic, 0},
+    {5, &arrow3o_ic, 0},
+    {6, &arrow3f_ic, 0},
 #ifdef ARROWS4TO14
-    {7, &arrow4o_ic,},
-    {8, &arrow4f_ic,},
-    {9, &arrow5o_ic,},
-    {10, &arrow5f_ic,},
-    {11, &arrow6o_ic,},
-    {12, &arrow6f_ic,},
-    {13, &arrow7o_ic,},
-    {14, &arrow7f_ic,},
-    {15, &arrow8o_ic,},
-    {16, &arrow8f_ic,},
-    {17, &arrow9a_ic,},
-    {18, &arrow9b_ic,},
-    {19, &arrow10o_ic,},
-    {20, &arrow10f_ic,},
-    {21, &arrow11o_ic,},
-    {22, &arrow11f_ic,},
-    {23, &arrow12o_ic,},
-    {24, &arrow12f_ic,},
-    {25, &arrow13a_ic,},
-    {26, &arrow13b_ic,},
-    {27, &arrow14a_ic,},
-    {28, &arrow14b_ic,},
+    {7, &arrow4o_ic, 0},
+    {8, &arrow4f_ic, 0},
+    {9, &arrow5o_ic, 0},
+    {10, &arrow5f_ic, 0},
+    {11, &arrow6o_ic, 0},
+    {12, &arrow6f_ic, 0},
+    {13, &arrow7o_ic, 0},
+    {14, &arrow7f_ic, 0},
+    {15, &arrow8o_ic, 0},
+    {16, &arrow8f_ic, 0},
+    {17, &arrow9a_ic, 0},
+    {18, &arrow9b_ic, 0},
+    {19, &arrow10o_ic, 0},
+    {20, &arrow10f_ic, 0},
+    {21, &arrow11o_ic, 0},
+    {22, &arrow11f_ic, 0},
+    {23, &arrow12o_ic, 0},
+    {24, &arrow12f_ic, 0},
+    {25, &arrow13a_ic, 0},
+    {26, &arrow13b_ic, 0},
+    {27, &arrow14a_ic, 0},
+    {28, &arrow14b_ic, 0},
 #endif /* ARROWS4TO14 */
 };
 #define NUM_DIM_ARROWTYPE_CHOICES (sizeof(dim_arrowtype_choices)/sizeof(choice_info))
@@ -313,78 +313,78 @@ choice_info dim_arrowtype_choices[] = {
 /* these are used only for the arrow type button on the ind panel */
 
 choice_info arrowtype_choices[] = {
-    {0, &arrow0_ic,},
-    {1, &arrow1o_ic,},
-    {2, &arrow1f_ic,},
-    {3, &arrow2o_ic,},
-    {4, &arrow2f_ic,},
-    {5, &arrow3o_ic,},
-    {6, &arrow3f_ic,},
+    {0, &arrow0_ic, 0},
+    {1, &arrow1o_ic, 0},
+    {2, &arrow1f_ic, 0},
+    {3, &arrow2o_ic, 0},
+    {4, &arrow2f_ic, 0},
+    {5, &arrow3o_ic, 0},
+    {6, &arrow3f_ic, 0},
 #ifdef ARROWS4TO14
-    {7, &arrow4o_ic,},
-    {8, &arrow4f_ic,},
-    {9, &arrow5o_ic,},
-    {10, &arrow5f_ic,},
-    {11, &arrow6o_ic,},
-    {12, &arrow6f_ic,},
-    {13, &arrow7o_ic,},
-    {14, &arrow7f_ic,},
-    {15, &arrow8o_ic,},
-    {16, &arrow8f_ic,},
-    {17, &arrow9a_ic,},
-    {18, &arrow9b_ic,},
-    {19, &arrow10o_ic,},
-    {20, &arrow10f_ic,},
-    {21, &arrow11o_ic,},
-    {22, &arrow11f_ic,},
-    {23, &arrow12o_ic,},
-    {24, &arrow12f_ic,},
-    {25, &arrow13a_ic,},
-    {26, &arrow13b_ic,},
-    {27, &arrow14a_ic,},
-    {28, &arrow14b_ic,},
+    {7, &arrow4o_ic, 0},
+    {8, &arrow4f_ic, 0},
+    {9, &arrow5o_ic, 0},
+    {10, &arrow5f_ic, 0},
+    {11, &arrow6o_ic, 0},
+    {12, &arrow6f_ic, 0},
+    {13, &arrow7o_ic, 0},
+    {14, &arrow7f_ic, 0},
+    {15, &arrow8o_ic, 0},
+    {16, &arrow8f_ic, 0},
+    {17, &arrow9a_ic, 0},
+    {18, &arrow9b_ic, 0},
+    {19, &arrow10o_ic, 0},
+    {20, &arrow10f_ic, 0},
+    {21, &arrow11o_ic, 0},
+    {22, &arrow11f_ic, 0},
+    {23, &arrow12o_ic, 0},
+    {24, &arrow12f_ic, 0},
+    {25, &arrow13a_ic, 0},
+    {26, &arrow13b_ic, 0},
+    {27, &arrow14a_ic, 0},
+    {28, &arrow14b_ic, 0},
 #endif /* ARROWS4TO14 */
 };
 #define NUM_ARROWTYPE_CHOICES (sizeof(arrowtype_choices)/sizeof(choice_info))
 
 static choice_info textjust_choices[] = {
-    {T_LEFT_JUSTIFIED, &textL_ic,},
-    {T_CENTER_JUSTIFIED, &textC_ic,},
-    {T_RIGHT_JUSTIFIED, &textR_ic,},
+    {T_LEFT_JUSTIFIED, &textL_ic, 0},
+    {T_CENTER_JUSTIFIED, &textC_ic, 0},
+    {T_RIGHT_JUSTIFIED, &textR_ic, 0},
 };
 #define NUM_TEXTJUST_CHOICES (sizeof(textjust_choices)/sizeof(choice_info))
 
 static choice_info arctype_choices[] = {
-    {T_OPEN_ARC, &open_arc_ic,},
-    {T_PIE_WEDGE_ARC, &pie_wedge_arc_ic,},
+    {T_OPEN_ARC, &open_arc_ic, 0},
+    {T_PIE_WEDGE_ARC, &pie_wedge_arc_ic, 0},
 };
 #define NUM_ARCTYPE_CHOICES (sizeof(arctype_choices)/sizeof(choice_info))
 
 choice_info linestyle_choices[] = {
-    {SOLID_LINE, &solidline_ic,},
-    {DASH_LINE, &dashline_ic,},
-    {DOTTED_LINE, &dottedline_ic,},
-    {DASH_DOT_LINE, &dashdotline_ic,},
-    {DASH_2_DOTS_LINE, &dash2dotsline_ic,},
-    {DASH_3_DOTS_LINE, &dash3dotsline_ic,},
+    {SOLID_LINE, &solidline_ic, 0},
+    {DASH_LINE, &dashline_ic, 0},
+    {DOTTED_LINE, &dottedline_ic, 0},
+    {DASH_DOT_LINE, &dashdotline_ic, 0},
+    {DASH_2_DOTS_LINE, &dash2dotsline_ic, 0},
+    {DASH_3_DOTS_LINE, &dash3dotsline_ic, 0},
 };
 
 choice_info joinstyle_choices[] = {
-    {JOIN_MITER, &joinmiter_ic,},
-    {JOIN_ROUND, &joinround_ic,},
-    {JOIN_BEVEL, &joinbevel_ic,},
+    {JOIN_MITER, &joinmiter_ic, 0},
+    {JOIN_ROUND, &joinround_ic, 0},
+    {JOIN_BEVEL, &joinbevel_ic, 0},
 };
 
 choice_info capstyle_choices[] = {
-    {CAP_BUTT,    &capbutt_ic,},
-    {CAP_ROUND,   &capround_ic,},
-    {CAP_PROJECT, &capproject_ic,},
+    {CAP_BUTT,    &capbutt_ic, 0},
+    {CAP_ROUND,   &capround_ic, 0},
+    {CAP_PROJECT, &capproject_ic, 0},
 };
 
 static choice_info linkmode_choices[] = {
-    {SMART_OFF, &smartoff_ic,},
-    {SMART_MOVE, &smartmove_ic,},
-    {SMART_SLIDE, &smartslide_ic,},
+    {SMART_OFF, &smartoff_ic, 0},
+    {SMART_MOVE, &smartmove_ic, 0},
+    {SMART_SLIDE, &smartslide_ic, 0},
 };
 #define NUM_LINKMODE_CHOICES (sizeof(linkmode_choices)/sizeof(choice_info))
 
@@ -399,96 +399,119 @@ ind_sw_info	*fill_style_sw;
 #define		show_action(z)	(z->show_func)(z)
 
 ind_sw_info	ind_switches[] = {
-    {I_FVAL, 0, "Zoom", "", NARROW_IND_SW_WD,		/* always show zoom button */
-	NULL, &display_zoomscale, inc_zoom_centered, dec_zoom_centered,
-	show_zoom, 0 /* MIN_ZOOM */, MAX_ZOOM, 1.0},
-    {I_CHOICE, 0, "Grid", "Mode", DEF_IND_SW_WD,	/* and grid button */			// isometric grid
+	{I_FVAL, 0, "Zoom", "", NARROW_IND_SW_WD,  /* always show zoom button */
+		NULL, &display_zoomscale, inc_zoom_centered, dec_zoom_centered,
+	 show_zoom, 0 /* MIN_ZOOM */, MAX_ZOOM, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
+    {I_CHOICE, 0, "Grid", "Mode", DEF_IND_SW_WD,  /* and grid button */
 	&cur_gridmode, NULL, inc_choice, dec_choice, show_gridmode, 0, 0, 0.0,
-	gridmode_choices, NUM_GRIDMODE_CHOICES, (NUM_GRIDMODE_CHOICES+1)/2},
+	gridmode_choices, NUM_GRIDMODE_CHOICES, (NUM_GRIDMODE_CHOICES+1)/2,
+	False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_POINTPOSN, "Point", "Posn", DEF_IND_SW_WD,
 	&cur_pointposn, NULL, inc_choice, dec_choice, show_pointposn, 0, 0, 0.0,
-	pointposn_choices, NUM_POINTPOSN_CHOICES, NUM_POINTPOSN_CHOICES},
+	pointposn_choices, NUM_POINTPOSN_CHOICES, NUM_POINTPOSN_CHOICES, False,
+    NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_DEPTH, "Depth", "", NARROW_IND_SW_WD,
-	&cur_depth, NULL, inc_depth, dec_depth, show_depth, MIN_DEPTH, MAX_DEPTH, 1.0},
+	&cur_depth, NULL, inc_depth, dec_depth, show_depth, MIN_DEPTH, MAX_DEPTH, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_FVAL, I_ROTNANGLE, "Rotn", "Angle", WIDE_IND_SW_WD,
-	NULL, &cur_rotnangle, inc_rotnangle, dec_rotnangle, show_rotnangle, -360.0, 360.0, 1.0},
+	NULL, &cur_rotnangle, inc_rotnangle, dec_rotnangle, show_rotnangle, -360.0, 360.0, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_NUMSIDES, "Num", "Sides", NARROW_IND_SW_WD,
 	&cur_numsides, NULL, inc_numsides, dec_numsides, show_numsides,
-	MIN_POLY_SIDES, MAX_POLY_SIDES, 1.0},
+	MIN_POLY_SIDES, MAX_POLY_SIDES, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_NUMCOPIES, "Num", "Copies", NARROW_IND_SW_WD,
-	&cur_numcopies, NULL, inc_numcopies, dec_numcopies, show_numcopies, 1, 99, 1.0},
+	&cur_numcopies, NULL, inc_numcopies, dec_numcopies, show_numcopies, 1, 99, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_NUMXCOPIES, "Num X", "Copies", NARROW_IND_SW_WD,
-	&cur_numxcopies, NULL, inc_numxcopies, dec_numxcopies, show_numxcopies, 1, 99, 1.0},
+	&cur_numxcopies, NULL, inc_numxcopies, dec_numxcopies, show_numxcopies, 1, 99, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_NUMYCOPIES, "Num Y", "Copies", NARROW_IND_SW_WD,
-	&cur_numycopies, NULL, inc_numycopies, dec_numycopies, show_numycopies, 1, 99, 1.0},
+	&cur_numycopies, NULL, inc_numycopies, dec_numycopies, show_numycopies, 1, 99, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_VALIGN, "Vert", "Align", DEF_IND_SW_WD,
 	&cur_valign, NULL, inc_choice, dec_choice, show_valign, 0, 0, 0.0,
-	valign_choices, NUM_VALIGN_CHOICES, NUM_VALIGN_CHOICES},
+	valign_choices, NUM_VALIGN_CHOICES, NUM_VALIGN_CHOICES, False, NULL,
+	NULL, NULL, 0, NULL},
     {I_CHOICE, I_HALIGN, "Horiz", "Align", DEF_IND_SW_WD,
 	&cur_halign, NULL, inc_choice, dec_choice, show_halign, 0, 0, 0.0,
-	halign_choices, NUM_HALIGN_CHOICES, NUM_HALIGN_CHOICES},
+	halign_choices, NUM_HALIGN_CHOICES, NUM_HALIGN_CHOICES, False, NULL,
+	NULL, NULL, 0, NULL},
     {I_CHOICE, I_ANGLEGEOM, "Angle", "Geom", DEF_IND_SW_WD,
 	&cur_anglegeom, NULL, inc_choice, dec_choice, show_anglegeom, 0, 0, 0.0,
-	anglegeom_choices, NUM_ANGLEGEOM_CHOICES, NUM_ANGLEGEOM_CHOICES},
+	anglegeom_choices, NUM_ANGLEGEOM_CHOICES, NUM_ANGLEGEOM_CHOICES, False,
+    NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_PEN_COLOR, "PenColor", "", XWIDE_IND_SW_WD,
 	(int *) &cur_pencolor, NULL, next_pencolor, prev_pencolor, show_pencolor, 0, 0, 0.0,
-	color_choices, NUM_STD_COLS + 1, 7},
+	color_choices, NUM_STD_COLS + 1, 7, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_FILL_COLOR, "FillColor", "", XWIDE_IND_SW_WD,
 	(int *) &cur_fillcolor, NULL, next_fillcolor, prev_fillcolor, show_fillcolor,0, 0, 0.0,
-	color_choices, NUM_STD_COLS + 1, 7},
+	color_choices, NUM_STD_COLS + 1, 7, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_FILLSTYLE, "Fill", "Style", DEF_IND_SW_WD,
 	&cur_fillstyle, NULL, darken_fill, lighten_fill, show_fillstyle,0, 0, 0.0,
-	fillstyle_choices, NUMFILLPATS + 1, 11},
+	fillstyle_choices, NUMFILLPATS + 1, 11, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_ARCTYPE, "Arc", "Type", DEF_IND_SW_WD,
 	&cur_arctype, NULL, inc_choice, dec_choice, show_arctype, 0, 0, 0.0,
-	arctype_choices, NUM_ARCTYPE_CHOICES, NUM_ARCTYPE_CHOICES},
+	arctype_choices, NUM_ARCTYPE_CHOICES, NUM_ARCTYPE_CHOICES, False, NULL,
+    NULL, NULL, 0, NULL},
     {I_CHOICE, I_LINKMODE, "Smart", "Links", DEF_IND_SW_WD,
 	&cur_linkmode, NULL, inc_choice, dec_choice, show_linkmode, 0, 0, 0.0,
-	linkmode_choices, NUM_LINKMODE_CHOICES, NUM_LINKMODE_CHOICES},
+	linkmode_choices, NUM_LINKMODE_CHOICES, NUM_LINKMODE_CHOICES, False,
+	NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_LINEWIDTH, "Line", "Width", DEF_IND_SW_WD,
 	&cur_linewidth, NULL, inc_linewidth, dec_linewidth, show_linewidth,
-	0, MAX_LINE_WIDTH, 1.0},
+	0, MAX_LINE_WIDTH, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_LINESTYLE, "Line", "Style", DEF_IND_SW_WD,
 	&cur_linestyle, NULL, inc_choice, dec_choice, show_linestyle, 0, 0, 0.0,
-	linestyle_choices, NUM_LINESTYLE_TYPES, NUM_LINESTYLE_TYPES},
+	linestyle_choices, NUM_LINESTYLE_TYPES, NUM_LINESTYLE_TYPES, False,
+	NULL, NULL, NULL, 0, NULL},
     {I_FVAL, I_TANGNORMLEN, "Tangent/Norm", "Length", WIDE_IND_SW_WD,
-	NULL, &cur_tangnormlen, inc_tangnormlen, dec_tangnormlen, show_tangnormlen, MIN_TANGNORMLEN, MAX_TANGNORMLEN, 0.2},
+	NULL, &cur_tangnormlen, inc_tangnormlen, dec_tangnormlen, show_tangnormlen, MIN_TANGNORMLEN, MAX_TANGNORMLEN, 0.2, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_JOINSTYLE, "Join", "Style", DEF_IND_SW_WD,
 	&cur_joinstyle, NULL, inc_choice, dec_choice, show_joinstyle, 0, 0, 0.0,
-	joinstyle_choices, NUM_JOINSTYLE_TYPES, NUM_JOINSTYLE_TYPES},
+	joinstyle_choices, NUM_JOINSTYLE_TYPES, NUM_JOINSTYLE_TYPES, False,
+	NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_CAPSTYLE, "Cap", "Style", DEF_IND_SW_WD,
 	&cur_capstyle, NULL, inc_choice, dec_choice, show_capstyle, 0, 0, 0.0,
-	capstyle_choices, NUM_CAPSTYLE_TYPES, NUM_CAPSTYLE_TYPES},
+	capstyle_choices, NUM_CAPSTYLE_TYPES, NUM_CAPSTYLE_TYPES, False, NULL,
+	NULL, NULL, 0, NULL},
     {I_CHOICE, I_ARROWMODE, "Arrow", "Mode", DEF_IND_SW_WD,
 	&cur_arrowmode, NULL, inc_choice, dec_choice, show_arrowmode, 0, 0, 0.0,
-	arrowmode_choices, NUM_ARROWMODE_CHOICES, NUM_ARROWMODE_CHOICES},
+	arrowmode_choices, NUM_ARROWMODE_CHOICES, NUM_ARROWMODE_CHOICES, False,
+    NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_ARROWTYPE, "Arrow", "Type", DEF_IND_SW_WD,
 	&cur_arrowtype, NULL, inc_choice, dec_choice, show_arrowtype, 0, 0, 0.0,
-	arrowtype_choices, NUM_ARROWTYPE_CHOICES, 9},
+	arrowtype_choices, NUM_ARROWTYPE_CHOICES, 9, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_ARROWSIZE, "Arrow Size", "", WIDE_IND_SW_WD,
-	NULL, NULL, inc_arrowsize, dec_arrowsize, show_arrowsize, 0, 0, 0.0},
+	NULL, NULL, inc_arrowsize, dec_arrowsize, show_arrowsize, 0, 0, 0.0,
+	NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_BOXRADIUS, "Box", "Curve", DEF_IND_SW_WD,
 	&cur_boxradius, NULL, inc_boxradius, dec_boxradius, show_boxradius,
-	MIN_BOX_RADIUS, MAX_BOX_RADIUS, 1.0},
+	MIN_BOX_RADIUS, MAX_BOX_RADIUS, 1.0, NULL, 0, 0, False, NULL, NULL,
+	NULL, 0, NULL},
     {I_DIMLINE, I_DIMLINE, "Dimension line", "", XWIDE_IND_SW_WD,
-	NULL, NULL, inc_dimline, dec_dimline, show_dimline, 0, 0, 0.0},
+	NULL, NULL, inc_dimline, dec_dimline, show_dimline, 0, 0, 0.0, NULL, 0,
+    0, False, NULL, NULL, NULL, 0, NULL},
     {I_CHOICE, I_TEXTJUST, "Text", "Just", DEF_IND_SW_WD,
 	&cur_textjust, NULL, inc_choice, dec_choice, show_textjust, 0, 0, 0.0,
-	textjust_choices, NUM_TEXTJUST_CHOICES, NUM_TEXTJUST_CHOICES},
+	textjust_choices, NUM_TEXTJUST_CHOICES, NUM_TEXTJUST_CHOICES, False,
+	NULL, NULL, NULL, 0, NULL},
     {I_FVAL, I_ELLTEXTANGLE, "Text/Ellipse", "Angle", XWIDE_IND_SW_WD,
 	NULL, &cur_elltextangle, inc_elltextangle, dec_elltextangle, show_elltextangle,
-	-360, 360, 1.0},
+	-360, 360, 1.0, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_TEXTFLAGS, "Text Flags", "", WIDE_IND_SW_WD,
-	&cur_textflags, NULL, inc_flags, dec_flags, show_flags, 0, 0, 0.0},
+	&cur_textflags, NULL, inc_flags, dec_flags, show_flags, 0, 0, 0.0, NULL,
+    0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_FONTSIZE, "Text", "Size", NARROW_IND_SW_WD,
 	&cur_fontsize, NULL, inc_fontsize, dec_fontsize, show_fontsize,
-	MIN_FONT_SIZE, MAX_FONT_SIZE, 1.0},
+	MIN_FONT_SIZE, MAX_FONT_SIZE, 1.0, NULL, 0, 0, False, NULL, NULL, NULL,
+    0, NULL},
     {I_FVAL, I_TEXTSTEP, "Text", "Step", NARROW_IND_SW_WD,
-	NULL, &cur_textstep, inc_textstep, dec_textstep, show_textstep, 0, 1000, 0.1},
+	NULL, &cur_textstep, inc_textstep, dec_textstep, show_textstep, 0, 1000,
+	0.1, NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
     {I_IVAL, I_FONT, "Text", "Font", FONT_IND_SW_WD,
-	&cur_ps_font, NULL, inc_font, dec_font, show_font, 0, 0, 0.0},
+	&cur_ps_font, NULL, inc_font, dec_font, show_font, 0, 0, 0.0,
+	NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL},
 };
 
+/* starting with "choices" */
+/*  choices ..  update
+    NULL, 0, 0, False, NULL, NULL, NULL, 0, NULL
+*/
 #define		NUM_IND_SW	(sizeof(ind_switches) / sizeof(ind_sw_info))
 
 
@@ -701,7 +724,7 @@ init_ind_panel(Widget tool)
 			       Args, ArgCount);
 
 
-    for (i = 0; i < NUM_IND_SW; ++i) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
 	sw = &ind_switches[i];
 	sw->panel = (Widget) NULL;	/* not created yet */
 
@@ -800,6 +823,8 @@ add_ind_actions(void)
 static void
 note_state(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
     ind_sw_info *sw = (ind_sw_info *) closure;
 
     /* toggle update status of this indicator */
@@ -815,10 +840,11 @@ note_state(Widget w, XtPointer closure, XtPointer call_data)
 static void
 tog_all_update(Widget w, XtPointer data, XEvent *event, Boolean *cont)
 {
+	(void)w; (void)data; (void)event; (void)cont;
     int i;
 
     cur_updatemask = ~cur_updatemask;	/* tuggle all */
-    for (i = 0; i < NUM_IND_SW; ++i) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
 	if (ind_switches[i].updbut == NULL)
 		continue;
 	ind_switches[i].update = !ind_switches[i].update;
@@ -832,10 +858,11 @@ tog_all_update(Widget w, XtPointer data, XEvent *event, Boolean *cont)
 static void
 set_all_update(Widget w, XtPointer data, XEvent *event, Boolean *cont)
 {
+	(void)w; (void)data; (void)event; (void)cont;
     int i;
 
     cur_updatemask = I_UPDATEMASK;	/* turn all on */
-    for (i = 0; i < NUM_IND_SW; ++i) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
 	if (ind_switches[i].updbut == NULL)
 		continue;
 	ind_switches[i].update = True;
@@ -849,9 +876,10 @@ set_all_update(Widget w, XtPointer data, XEvent *event, Boolean *cont)
 static void
 clr_all_update(Widget w, XtPointer data, XEvent *event, Boolean *cont)
 {
+	(void)w; (void)data; (void)event; (void)cont;
     int i;
 
-    for (i = 0; i < NUM_IND_SW; ++i) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
     cur_updatemask = 0;			/* turn all off */
 	if (ind_switches[i].updbut == NULL)
 		continue;
@@ -865,7 +893,7 @@ clr_all_update(Widget w, XtPointer data, XEvent *event, Boolean *cont)
 void manage_update_buts(void)
 {
     int		    i;
-    for (i = 0; i < NUM_IND_SW; ++i)
+    for (i = 0; i < (int)NUM_IND_SW; ++i)
 	if (ind_switches[i].func & I_UPDATEMASK)
 	    XtManageChild(ind_switches[i].updbut);
     update_buts_managed = True;
@@ -874,7 +902,7 @@ void manage_update_buts(void)
 void unmanage_update_buts(void)
 {
     int		    i;
-    for (i = 0; i < NUM_IND_SW; ++i)
+    for (i = 0; i < (int)NUM_IND_SW; ++i)
 	if (ind_switches[i].func & I_UPDATEMASK)
 	    XtUnmanageChild(ind_switches[i].updbut);
     update_buts_managed = False;
@@ -910,7 +938,7 @@ void setup_ind_panel(void)
     init_fill_pm();
     init_fill_gc();
 
-    for (i = 0; i < NUM_IND_SW; ++i) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
 	isw = &ind_switches[i];
 	/* keep track of a few switches */
 	if (ind_switches[i].func == I_FILLSTYLE)
@@ -947,8 +975,9 @@ void setup_ind_panel(void)
        and half full (toggle) */
     FirstArg(XtNforeground, &fg);
     NextArg(XtNbackground, &bg);
-    for (i = 0; i < NUM_IND_SW; ++i)		/* find one of the update buttons */
-	if (ind_switches[i].func & I_UPDATEMASK) { /* and get its fg and bg colors */
+    for (i = 0; i < (int)NUM_IND_SW; ++i)   /* find one of the update buttons */
+	if (ind_switches[i].func & I_UPDATEMASK) {
+					    /* and get its fg and bg colors */
 	    GetValues(ind_switches[i].updbut);
 	    break;
 	}
@@ -1116,7 +1145,7 @@ void update_indpanel(long unsigned int mask)
 	else
 	    XawTipDisable(tog_upd);
     }
-    for (isw = ind_switches, i = 0; i < NUM_IND_SW; isw++, i++) {
+    for (isw = ind_switches, i = 0; i < (int)NUM_IND_SW; ++isw, ++i) {
 	if (!isw->button)
 	    continue;
 	if (appres.showballoons) {
@@ -1138,7 +1167,7 @@ void update_indpanel(long unsigned int mask)
 
     cur_indmask = mask;
     XtUnmanageChild(ind_box);
-    for (isw = ind_switches, i = 0; i < NUM_IND_SW; isw++, i++) {
+    for (isw = ind_switches, i = 0; i < (int)NUM_IND_SW; ++isw, ++i) {
 	/* show buttons with func=0 (zoom and grid) */
 	if ((isw->func == 0) || (isw->func & cur_indmask)) {
 	    XtManageChild(isw->formw);
@@ -1162,6 +1191,8 @@ void update_indpanel(long unsigned int mask)
 static void
 sel_ind_but(Widget widget, XtPointer closure, XEvent *event, Boolean *continue_to_dispatch)
 {
+	(void)widget;
+	(void)continue_to_dispatch;
     XButtonEvent xbutton;
     ind_sw_info *isw = (ind_sw_info *) closure;
 
@@ -1269,6 +1300,8 @@ arrowsize_panel_dismiss(void)
 static void
 arrowsize_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     use_abs_arrowvals = save_use_abs;
     arrowsize_panel_dismiss();
 }
@@ -1276,6 +1309,8 @@ arrowsize_panel_cancel(Widget w, XButtonEvent *ev)
 static void
 arrowsize_panel_set(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     cur_arrowwidth = (float) atof(panel_get_value(arrow_width_w));
     if (cur_arrowwidth == 0.0)
 	    cur_arrowwidth = 1.0;
@@ -1301,6 +1336,8 @@ arrowsize_panel_set(Widget w, XButtonEvent *ev)
 static void
 set_arrow_size_state(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure;
+	(void)call_data;
     Boolean	    state;
     intptr_t	    which;
     Pixel	    bg1, bg2, fg1, fg2;
@@ -1621,12 +1658,16 @@ choice_panel_dismiss(void)
 static void
 choice_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     choice_panel_dismiss();
 }
 
 static void
 choice_panel_set(Widget w, choice_info *sel_choice, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     (*choice_i->i_varadr) = sel_choice->value;
     show_action(choice_i);
 
@@ -1928,12 +1969,16 @@ flags_panel_dismiss(void)
 static void
 flags_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     flags_panel_dismiss();
 }
 
 static void
 flags_panel_set(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     if (hidden_text_flag)
 	cur_textflags |= HIDDEN_TEXT;
     else
@@ -1953,6 +1998,7 @@ flags_panel_set(Widget w, XButtonEvent *ev)
 static void
 hidden_text_select(Widget w, XtPointer new_hidden_text, XtPointer call_data)
 {
+	(void)call_data;
     FirstArg(XtNlabel, XtName(w));
     SetValues(hidden_text_panel);
     hidden_text_flag = (intptr_t) new_hidden_text;
@@ -1965,6 +2011,7 @@ hidden_text_select(Widget w, XtPointer new_hidden_text, XtPointer call_data)
 static void
 rigid_text_select(Widget w, XtPointer new_rigid_text, XtPointer call_data)
 {
+	(void)call_data;
     FirstArg(XtNlabel, XtName(w));
     SetValues(rigid_text_panel);
     rigid_text_flag = (intptr_t) new_rigid_text;
@@ -1977,6 +2024,7 @@ rigid_text_select(Widget w, XtPointer new_rigid_text, XtPointer call_data)
 static void
 special_text_select(Widget w, XtPointer new_special_text, XtPointer call_data)
 {
+	(void)call_data;
     FirstArg(XtNlabel, XtName(w));
     SetValues(special_text_panel);
     special_text_flag = (intptr_t) new_special_text;
@@ -2167,6 +2215,7 @@ Widget zoomcheck;
 static void
 toggle_int_zoom(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
     integral_zoom = !integral_zoom;
     if ( integral_zoom ) {
 	FirstArg(XtNbitmap, check_pm);
@@ -2179,12 +2228,14 @@ toggle_int_zoom(Widget w, XtPointer closure, XtPointer call_data)
 static void
 nval_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     nval_panel_dismiss();
 }
 
 static void
 nval_panel_set(Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     int		    new_i_value;
     float	    new_f_value;
 
@@ -2902,6 +2953,8 @@ void popup_dimline_panel(ind_sw_info *isw)
 static void
 line_color_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	ptr_int	new_color = {client_data};
 
     dimline_color = (Color) new_color.val;
@@ -2915,6 +2968,8 @@ line_color_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 box_color_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	ptr_int	new_color = {client_data};
 
     dimline_boxcolor = (Color) new_color.val;
@@ -2928,6 +2983,8 @@ box_color_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 text_color_select(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	ptr_int	new_color = {client_data};
 
     dimline_textcolor = (Color) new_color.val;
@@ -2941,6 +2998,7 @@ text_color_select(Widget w, XtPointer client_data, XtPointer call_data)
 static void
 set_fixed_text(Widget w, XtPointer fixed, XtPointer dum)
 {
+	(void)dum;
     Boolean	   *fixed_text = (Boolean *) fixed;
 
     dimline_fixed = *fixed_text;
@@ -2956,6 +3014,7 @@ set_fixed_text(Widget w, XtPointer fixed, XtPointer dum)
 static void
 set_actual_text(Widget w, XtPointer actual, XtPointer dum)
 {
+	(void)dum;
     Boolean	   *actual_text = (Boolean *) actual;
 
     dimline_actual = *actual_text;
@@ -3036,6 +3095,8 @@ void draw_cur_dimline(void)
 static void
 dimline_style_select(Widget w, XtPointer new_style, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
     choice_info	    *choice;
 
     choice = (choice_info *) new_style;
@@ -3049,6 +3110,8 @@ dimline_style_select(Widget w, XtPointer new_style, XtPointer call_data)
 static void
 left_arrow_type_select(Widget w, XtPointer new_type, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
     choice_info	   *choice = (choice_info*) new_type;
 
     FirstArg(XtNbitmap, arrow_pixmaps[choice->value+1]);
@@ -3061,6 +3124,8 @@ left_arrow_type_select(Widget w, XtPointer new_type, XtPointer call_data)
 static void
 right_arrow_type_select(Widget w, XtPointer new_type, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
     choice_info	   *choice = (choice_info*) new_type;
 
     FirstArg(XtNbitmap, arrow_pixmaps[choice->value+1]);
@@ -3075,6 +3140,7 @@ right_arrow_type_select(Widget w, XtPointer new_type, XtPointer call_data)
 static void
 dimline_font_popup(Widget w, XtPointer user_data, XtPointer call_data)
 {
+	(void)w; (void)user_data; (void)call_data;
     fontpane_popup(&dim_ps_font, &dim_latex_font, &dimline_psflag,
 		   dimline_set_font_image, font_button);
 }
@@ -3095,6 +3161,7 @@ dimline_set_font_image(Widget widget)
 static void
 dimline_panel_preview(Widget w, XtPointer new_type, XtPointer call_data)
 {
+	(void)w; (void)new_type; (void)call_data;
     /* save current global settings */
     savecur_dimline_thick = cur_dimline_thick;
     savecur_dimline_style = cur_dimline_style;
@@ -3155,6 +3222,8 @@ dimline_panel_ok(Widget w, XButtonEvent *ev)
 static void
 dimline_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     XtDestroyWidget(choice_popup);
     line_color_panel = (Widget) 0;
     box_color_panel = (Widget) 0;
@@ -3196,7 +3265,7 @@ void update_current_settings(void)
     int		    i;
     ind_sw_info	   *isw;
 
-    for (i = 0; i < NUM_IND_SW; ++i) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
 	isw = &ind_switches[i];
 	show_action(isw);
     }
@@ -3908,8 +3977,9 @@ show_fillstyle(ind_sw_info *sw)
        colors.  In that case, there may be an illegal fill value (e.g. for black
        there are no "tints" */
     if (cur_fillcolor == COLOR_NONE ||
-	 (cur_fillcolor == BLACK || cur_fillcolor == DEFAULT || cur_fillcolor == WHITE) &&
-	    (cur_fillstyle >= NUMSHADEPATS && cur_fillstyle < NUMSHADEPATS+NUMTINTPATS))
+	 ((cur_fillcolor == BLACK || cur_fillcolor == DEFAULT ||
+	  cur_fillcolor == WHITE) && (cur_fillstyle >= NUMSHADEPATS &&
+		  cur_fillstyle < NUMSHADEPATS+NUMTINTPATS)))
 		cur_fillstyle = UNFILLED;  /* no fill color or no tints, set unfilled */
     XSetFillStyle(tool_d, ind_button_gc, FillTiled);
     if (cur_fillstyle == UNFILLED) {
@@ -4108,6 +4178,7 @@ popup_fonts(ind_sw_info *sw)
 static void
 show_font_return(Widget w)
 {
+	(void)w;
     if (psflag)
 	cur_textflags = cur_textflags | PSFONT_TEXT;
     else
@@ -4300,7 +4371,7 @@ set_and_show_rotnangle(float value)
     ind_sw_info	   *sw;
 
     cur_rotnangle = value;
-    for (i = 0; i < NUM_IND_SW; i++) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
       sw = ind_switches + i;
       if (sw->func == I_ROTNANGLE) {
         show_rotnangle_0(sw, 0);
@@ -4532,12 +4603,14 @@ zoom_focus(int x, int y, void(* zoom)())
 void
 inc_zoom_centered(ind_sw_info *sw)
 {
+	(void)sw;
 	zoom_focus(CANVAS_WD/2, CANVAS_HT/2, inc_zoom);
 }
 
 void
 dec_zoom_centered(ind_sw_info *sw)
 {
+	(void)sw;
 	zoom_focus(CANVAS_WD/2, CANVAS_HT/2, dec_zoom);
 }
 
@@ -4589,6 +4662,7 @@ wheel_dec_zoom()
 void
 fit_zoom(ind_sw_info *sw)
 {
+	(void)sw;
     int		width, height;
     double	zoomx, zoomy;
 
@@ -4792,6 +4866,8 @@ show_textstep(ind_sw_info *sw)
 static void
 zoom_to_fit(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
     ind_sw_info *sw = (ind_sw_info *) closure;
 
     fit_zoom(sw);
@@ -4813,7 +4889,7 @@ make_pulldown_menu_images(choice_info *entries, Cardinal nent, Pixmap *images, c
     pulldown_menu = XtCreatePopupShell("menu", simpleMenuWidgetClass, parent,
 				  NULL, ZERO);
 
-    for (i = 0; i < nent; i++) {
+    for (i = 0; i < (int)nent; ++i) {
 	FirstArg(XtNleftBitmap, images[i]);	/* image of object */
 	NextArg(XtNleftMargin, 32);
 	NextArg(XtNvertSpace, 80);		/* height 180% of font */
@@ -4832,7 +4908,7 @@ tog_selective_update(long unsigned int mask)
 {
     int i;
 
-    for (i = 0; i < NUM_IND_SW; ++i) {
+    for (i = 0; i < (int)NUM_IND_SW; ++i) {
 	if (ind_switches[i].updbut == NULL)
 		continue;
 

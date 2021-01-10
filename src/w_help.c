@@ -46,6 +46,7 @@ static void	launch_viewer (char *filename, char *message, char *viewer);
 void
 launch_refman(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 	char	filename[PATH_MAX];
 
 	/* first check if at least the index file is installed */
@@ -64,6 +65,7 @@ launch_refman(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_refpdf_en(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 	char	filename[PATH_MAX];
 
 	sprintf(filename,"%s/xfig_ref_en.pdf",XFIGDOCDIR);
@@ -73,6 +75,7 @@ launch_refpdf_en(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_refpdf_jp(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 	char	filename[PATH_MAX];
 
 	sprintf(filename,"%s/xfig_ref_jp.pdf",XFIGDOCDIR);
@@ -83,6 +86,7 @@ launch_refpdf_jp(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_howto(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 	char	filename[PATH_MAX];
 
 	sprintf(filename,"%s/xfig-howto.pdf",XFIGDOCDIR);
@@ -92,6 +96,7 @@ launch_howto(Widget w, XtPointer closure, XtPointer call_data)
 void
 launch_man(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 	char	filename[PATH_MAX];
 
 	sprintf(filename,"%s/xfig_man.html",XFIGDOCDIR);
@@ -135,12 +140,17 @@ static Widget    help_popup = (Widget) 0;
 void
 help_ok(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
 	XtPopdown(help_popup);
 }
 
 void
 launch_about(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure;
+	(void)call_data;
     DeclareArgs(10);
     Widget    form, icon, ok;
     Position  x, y;

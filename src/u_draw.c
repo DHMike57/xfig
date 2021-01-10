@@ -1496,6 +1496,8 @@ void compute_arcarrow_angle(float x1, float y1, int x2, int y2, int direction, F
 
 int tempXErrorHandler (Display *display, XErrorEvent *event)
 {
+	(void)display;
+	(void)event;
 	return 0;
 }
 

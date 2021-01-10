@@ -582,8 +582,6 @@ void undo_move(void)
 {
     int		    dx, dy;
     int		    xmin1, ymin1, xmax1, ymax1;
-    int		    xmin2, ymin2, xmax2, ymax2;
-    int		    dum;
 
     dx = last_position.x - new_position.x;
     dy = last_position.y - new_position.y;

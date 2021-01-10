@@ -65,35 +65,35 @@ char   *style_text[MAX_STYLE_FAMILY + 1];
 DeclareStaticArgs (20);
 
 Element style_reference[] = {
-    "depth", Tint, "", &cur_depth, I_DEPTH,
-    "text_step", Tfloat, NULL, &cur_textstep, I_TEXTSTEP,
-    "font_size", Tint, NULL, &cur_fontsize, I_FONTSIZE,
-    "font", Tint, NULL, &cur_latex_font, I_FONT,
-    "font_ps", Tint, NULL, &cur_ps_font, I_FONT,
-    "font_latex", Tint, NULL, &cur_latex_font, I_FONT,
-    "text_flags", Tint, NULL, &cur_textflags, I_FONT | I_TEXTFLAGS,
-    "text_just", Tint, NULL, &cur_textjust, I_TEXTJUST,
-    "line_width", Tint, NULL, &cur_linewidth, I_LINEWIDTH,
-    "line_style", Tint, NULL, &cur_linestyle, I_LINESTYLE,
-    "join_style", Tint, NULL, &cur_joinstyle, I_JOINSTYLE,
-    "cap_style", Tint, NULL, &cur_capstyle, I_CAPSTYLE,
-    "dash_length", Tfloat, NULL, &cur_dashlength, I_CAPSTYLE,
-    "dot_gap", Tfloat, NULL, &cur_dotgap, I_CAPSTYLE,
-    "pen_color", TColor, NULL, &cur_pencolor, I_PEN_COLOR,
-    "fill_color", TColor, NULL, &cur_fillcolor, I_FILL_COLOR,
-    "box_radius", Tint, NULL, &cur_boxradius, I_BOXRADIUS,
-    "fill_style", Tint, NULL, &cur_fillstyle, I_FILLSTYLE,
-    "arrow_mode", Tint, NULL, &cur_arrowmode, I_ARROWMODE,
-    "arrow_type", Tint, NULL, &cur_arrowtype, I_ARROWTYPE,
-    "arrow_width", Tfloat, NULL, &cur_arrowwidth, I_ARROWSIZE,
-    "arrow_height", Tfloat, NULL, &cur_arrowheight, I_ARROWSIZE,
-    "arrow_thick", Tfloat, NULL, &cur_arrowthick, I_ARROWSIZE,
-    "arrow_mult_width", Tfloat, NULL, &cur_arrow_multwidth, I_ARROWSIZE,
-    "arrow_mult_height", Tfloat, NULL, &cur_arrow_multheight, I_ARROWSIZE,
-    "arrow_mult_thick", Tfloat, NULL, &cur_arrow_multthick, I_ARROWSIZE,
-    "arc_type", Tint, NULL, &cur_arctype, I_ARCTYPE,
-    "ellipse_text_angle", Tfloat, NULL, &cur_elltextangle, I_ELLTEXTANGLE,
-    NULL, 0, NULL, NULL, 0
+    {"depth", Tint, "", &cur_depth, I_DEPTH},
+    {"text_step", Tfloat, NULL, &cur_textstep, I_TEXTSTEP},
+    {"font_size", Tint, NULL, &cur_fontsize, I_FONTSIZE},
+    {"font", Tint, NULL, &cur_latex_font, I_FONT},
+    {"font_ps", Tint, NULL, &cur_ps_font, I_FONT},
+    {"font_latex", Tint, NULL, &cur_latex_font, I_FONT},
+    {"text_flags", Tint, NULL, &cur_textflags, I_FONT | I_TEXTFLAGS},
+    {"text_just", Tint, NULL, &cur_textjust, I_TEXTJUST},
+    {"line_width", Tint, NULL, &cur_linewidth, I_LINEWIDTH},
+    {"line_style", Tint, NULL, &cur_linestyle, I_LINESTYLE},
+    {"join_style", Tint, NULL, &cur_joinstyle, I_JOINSTYLE},
+    {"cap_style", Tint, NULL, &cur_capstyle, I_CAPSTYLE},
+    {"dash_length", Tfloat, NULL, &cur_dashlength, I_CAPSTYLE},
+    {"dot_gap", Tfloat, NULL, &cur_dotgap, I_CAPSTYLE},
+    {"pen_color", TColor, NULL, &cur_pencolor, I_PEN_COLOR},
+    {"fill_color", TColor, NULL, &cur_fillcolor, I_FILL_COLOR},
+    {"box_radius", Tint, NULL, &cur_boxradius, I_BOXRADIUS},
+    {"fill_style", Tint, NULL, &cur_fillstyle, I_FILLSTYLE},
+    {"arrow_mode", Tint, NULL, &cur_arrowmode, I_ARROWMODE},
+    {"arrow_type", Tint, NULL, &cur_arrowtype, I_ARROWTYPE},
+    {"arrow_width", Tfloat, NULL, &cur_arrowwidth, I_ARROWSIZE},
+    {"arrow_height", Tfloat, NULL, &cur_arrowheight, I_ARROWSIZE},
+    {"arrow_thick", Tfloat, NULL, &cur_arrowthick, I_ARROWSIZE},
+    {"arrow_mult_width", Tfloat, NULL, &cur_arrow_multwidth, I_ARROWSIZE},
+    {"arrow_mult_height", Tfloat, NULL, &cur_arrow_multheight, I_ARROWSIZE},
+    {"arrow_mult_thick", Tfloat, NULL, &cur_arrow_multthick, I_ARROWSIZE},
+    {"arc_type", Tint, NULL, &cur_arctype, I_ARCTYPE},
+    {"ellipse_text_angle", Tfloat, NULL, &cur_elltextangle, I_ELLTEXTANGLE},
+    {NULL, 0, NULL, NULL, 0}
 };
 
 
@@ -587,6 +587,7 @@ style_update (void)
 static void
 family_select (Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure;
 
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
@@ -600,6 +601,7 @@ family_select (Widget w, XtPointer closure, XtPointer call_data)
 static void
 style_select (Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure;
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
     if (ret_struct == 0)
@@ -615,6 +617,7 @@ style_select (Widget w, XtPointer closure, XtPointer call_data)
 void
 add_family (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval;
 
     FirstArg (XtNstring, &fval);
@@ -629,6 +632,7 @@ add_family (Widget w, XButtonEvent *ev)
 void
 delete_family (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval;
 
     FirstArg (XtNstring, &fval);
@@ -644,6 +648,7 @@ delete_family (Widget w, XButtonEvent *ev)
 void
 add_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval, *sval, ftemp[256], stemp[256];
 
     FirstArg (XtNstring, &fval);
@@ -666,6 +671,7 @@ add_style (Widget w, XButtonEvent *ev)
 void
 delete_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval, *sval;
 
     FirstArg (XtNstring, &fval);
@@ -682,12 +688,16 @@ delete_style (Widget w, XButtonEvent *ev)
 void
 save_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
     save_family_set (current_family_set);
 }
 
 void
 load_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
     load_family_set (current_family_set);
     current_family = current_style = -1;
     style_update ();
@@ -710,6 +720,8 @@ confirm_close_style (void)
 void
 close_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
     if (confirm_close_style() == RESULT_CANCEL)
 	return;
     XtPopdown (style_popup);
@@ -735,14 +747,14 @@ static String style_translations = "<Message>WM_PROTOCOLS: CloseStyle()\n\
 	 <Key>Escape: CloseStyle()\n";
 
 static XtActionsRec style_actions[] = {
-    "ShowNamedStyles", (XtActionProc) popup_manage_style_panel,
-    "add_family", (XtActionProc) add_family,
-    "delete_family", (XtActionProc) delete_family,
-    "add_style", (XtActionProc) add_style,
-    "delete_style", (XtActionProc) delete_style,
-    "family_select", (XtActionProc) family_select,
-    "style_select", (XtActionProc) style_select,
-    "CloseStyle", (XtActionProc) close_style
+    {"ShowNamedStyles", (XtActionProc) popup_manage_style_panel},
+    {"add_family", (XtActionProc) add_family},
+    {"delete_family", (XtActionProc) delete_family},
+    {"add_style", (XtActionProc) add_style},
+    {"delete_style", (XtActionProc) delete_style},
+    {"family_select", (XtActionProc) family_select},
+    {"style_select", (XtActionProc) style_select},
+    {"CloseStyle", (XtActionProc) close_style}
 };
 
 /**********************************/

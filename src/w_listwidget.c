@@ -144,12 +144,17 @@ FigListClassRec figListClassRec = {
     /* callback_private		*/  NULL,
     /* tm_table			*/  defaultTranslations,
     /* query_geometry		*/  XtInheritQueryGeometry,
+    /* display_accelerator	*/  NULL,
+    /* extension		*/  NULL,
   },
 /* Simple class fields initialization */
 	{
 	/* change_sensitive	*/  XtInheritChangeSensitive
 	},
-
+/* ListClass part */
+	{
+		0
+	},
 /* FigList class part */
 	{
 	0,		/* dummy field */
@@ -176,6 +181,7 @@ void FigListFinishUp (Widget w, int item);
 static void
 SelectHome(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event; (void)params; (void)num_params;
     /* highlight and call any callbacks */
     FigListFinishUp(w, 0);
 }
@@ -185,6 +191,7 @@ SelectHome(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 SelectEnd(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event; (void)params; (void)num_params;
 
     FigListWidget  lw = (FigListWidget) w;
 
@@ -197,6 +204,7 @@ SelectEnd(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 SelectNext(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event; (void)params; (void)num_params;
 
     FigListWidget  lw = (FigListWidget) w;
     int		   item;
@@ -220,6 +228,7 @@ SelectNext(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 SelectPrev(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event; (void)params; (void)num_params;
     FigListWidget	lw = (FigListWidget) w;
     int		   item;
 
@@ -242,6 +251,7 @@ SelectPrev(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 SelectLeft(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event; (void)params; (void)num_params;
     FigListWidget	lw = (FigListWidget) w;
     int		   item;
 
@@ -264,6 +274,7 @@ SelectLeft(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 SelectRight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event; (void)params; (void)num_params;
     FigListWidget	lw = (FigListWidget) w;
     int		   item;
 

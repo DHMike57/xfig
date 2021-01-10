@@ -165,6 +165,7 @@ static Boolean compare_string(char *str, char *pattern)
 static void
 do_replace(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
   int cnt;
 
   if (found_text_cnt > 0) {
@@ -191,9 +192,8 @@ replace_text_in_compound(F_compound *com, char *pattern, char *dst)
 {
   F_compound	*c;
   F_text	*t;
-  PR_SIZE	 size;
   Boolean	 replaced, processed;
-  int		 pat_len, i, j;
+  size_t	 pat_len, i, j;
   char		 str[300];
 
   pat_len = strlen(pattern);
@@ -250,6 +250,8 @@ replace_text_in_compound(F_compound *com, char *pattern, char *dst)
 static void
 do_update(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
+
   if (found_text_cnt > 0) {
     search_text_in_compound(&objects,
             panel_get_value(search_text_widget), update_text);
@@ -339,6 +341,7 @@ show_text_object(F_text *t)
 static void
 search_and_replace_text(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
   char	*string;
 
   show_search_msg("Searching text...");
@@ -377,8 +380,9 @@ search_text_in_compound(F_compound *com, char *pattern, void (*proc) (/* ??? */)
   F_compound *c;
   F_text *t;
   Boolean match, processed;
-  int pat_len, i;
+  size_t pat_len, i;
   processed = False;
+
   for (c = com->compounds; c != NULL; c = c->next) {
     if (search_text_in_compound(c, pattern, proc))
 	processed = True;
@@ -409,6 +413,7 @@ search_text_in_compound(F_compound *com, char *pattern, void (*proc) (/* ??? */)
 static void
 search_panel_dismiss(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
   found_text_panel_dismiss();
   if (search_panel != None)
 	XtDestroyWidget(search_panel);
@@ -781,6 +786,8 @@ popup_spell_check_panel(char **list, int nitems)
 static void
 spell_panel_dismiss(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
+
   if (spell_check_panel != None)
 	XtDestroyWidget(spell_check_panel);
   spell_check_panel = None;
@@ -888,6 +895,7 @@ write_text_from_compound(FILE *fp, F_compound *com)
 static void
 spell_select_word(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure;
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
     /* make correct button and correction entry sensitive */
@@ -908,6 +916,7 @@ spell_select_word(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 spell_correct_word(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     char	   *corrected_word;
 
     /* get the correct word from the ascii widget */

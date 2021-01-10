@@ -352,6 +352,8 @@ draw_mousefun_unitbox(void)
 void
 draw_mousefun_topruler(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)w; (void)params; (void)num_params;
+
     if (event->type == KeyPress) {
 	KeySym	    key;
 	XKeyEvent  *xkey = (XKeyEvent *)event;
@@ -365,6 +367,8 @@ draw_mousefun_topruler(Widget w, XEvent *event, String *params, Cardinal *num_pa
 void
 draw_mousefun_sideruler(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)w; (void)params; (void)num_params;
+
     if (event->type == KeyPress) {
 	KeySym	    key;
 	XKeyEvent *xkey = (XKeyEvent *)event;

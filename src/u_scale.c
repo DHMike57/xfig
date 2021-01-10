@@ -25,11 +25,11 @@
 
 static void read_scale_arrow(F_arrow *arrow, float mul)
 {
-  if(!arrow)
-    return;
+	if(!arrow)
+		return;
 
-    arrow->wd  = arrow->wd * mul;
-    arrow->ht   = arrow->ht  * mul;
+	arrow->wd  = arrow->wd * mul;
+	arrow->ht   = arrow->ht  * mul;
 }
 
 void read_scale_ellipse(F_ellipse *ellipse, float mul, int offset)

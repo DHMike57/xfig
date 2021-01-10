@@ -96,14 +96,6 @@ static XRectangle clip[1];
 static Boolean	openwinfonts;
 static Boolean  font_scalable[NUM_FONTS];
 
-#define MAXNAMES 300
-
-static struct {
-    char	   *fn;
-    int		    s;
-}		flist[MAXNAMES];
-
-
 void rescale_pattern (int patnum);
 void zXFillPolygon (Display *d, Window w, GC gc, zXPoint *points, int n, int complex, int coordmode);
 void zXDrawLines (Display *d, Window w, GC gc, zXPoint *points, int n, int coordmode);
@@ -112,11 +104,6 @@ int SutherlandHodgmanPolygoClip (XPoint *inVertices, XPoint *outVertices, int in
 
 void init_font(void)
 {
-    struct xfont   *newfont, *nf;
-    int		    f, count, i, p, ss;
-    char	    template[300];
-    char	    backup_template[300];
-    char	  **fontlist, **fname;
     XftPattern	   *pattern;
     XftResult	    res;
     double	    dbl;
@@ -407,7 +394,7 @@ void
 pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 	float angle, char *string, Color color, Color background)
 {
-    int		xfg, xbg;
+    unsigned long	xfg, xbg;
 
     if (fstruct == NULL) {
 	fprintf(stderr,"Error, in pw_text, fstruct==NULL\n");
@@ -518,7 +505,6 @@ makegc(int op, Pixel fg, Pixel bg)
 void init_gc(void)
 {
     int		    i;
-    XColor	    tmp_color;
     XGCValues	    gcv;
 
     gccache[PAINT] = makegc(PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
@@ -919,28 +905,50 @@ static unsigned char vert_saw_bits[] = {
 
 /* patterns like bricks, etc */
 patrn_strct pattern_images[NUMPATTERNS] = {
-    {left30_width,            left30_height,            (char*)left30_bits},
-    {right30_width,           right30_height,           (char*)right30_bits},
-    {crosshatch30_width,      crosshatch30_height,      (char*)crosshatch30_bits},
-    {left45_width,            left45_height,            (char*)left45_bits},
-    {right45_width,           right45_height,           (char*)right45_bits},
-    {crosshatch45_width,      crosshatch45_height,      (char*)crosshatch45_bits},
-    {bricks_width,            bricks_height,            (char*)bricks_bits},
-    {vert_bricks_width,       vert_bricks_height,       (char*)vert_bricks_bits},
-    {horizontal_width,        horizontal_height,        (char*)horizontal_bits},
-    {vertical_width,          vertical_height,          (char*)vertical_bits},
-    {crosshatch_width,        crosshatch_height,        (char*)crosshatch_bits},
-    {leftshingle_width,       leftshingle_height,       (char*)leftshingle_bits},
-    {rightshingle_width,      rightshingle_height,      (char*)rightshingle_bits},
-    {vert_leftshingle_width,  vert_leftshingle_height,  (char*)vert_leftshingle_bits},
-    {vert_rightshingle_width, vert_rightshingle_height, (char*)vert_rightshingle_bits},
-    {fishscales_width,        fishscales_height,        (char*)fishscales_bits},
-    {small_fishscales_width,  small_fishscales_height,  (char*)small_fishscales_bits},
-    {circles_width,           circles_height,           (char*)circles_bits},
-    {hexagons_width,          hexagons_height,          (char*)hexagons_bits},
-    {octagons_width,          octagons_height,          (char*)octagons_bits},
-    {horiz_saw_width,         horiz_saw_height,         (char*)horiz_saw_bits},
-    {vert_saw_width,          vert_saw_height,          (char*)vert_saw_bits}
+    {left30_width,           left30_height,           (char*)left30_bits,
+     left30_width,           left30_height,           (char*)left30_bits},
+    {right30_width,          right30_height,          (char*)right30_bits,
+     right30_width,          right30_height,          (char*)right30_bits},
+    {crosshatch30_width,     crosshatch30_height,     (char*)crosshatch30_bits,
+     crosshatch30_width,     crosshatch30_height,     (char*)crosshatch30_bits},
+    {left45_width,           left45_height,           (char*)left45_bits,
+     left45_width,           left45_height,           (char*)left45_bits},
+    {right45_width,          right45_height,          (char*)right45_bits,
+     right45_width,          right45_height,          (char*)right45_bits},
+    {crosshatch45_width,     crosshatch45_height,     (char*)crosshatch45_bits,
+     crosshatch45_width,     crosshatch45_height,     (char*)crosshatch45_bits},
+    {bricks_width,           bricks_height,           (char*)bricks_bits,
+     bricks_width,           bricks_height,           (char*)bricks_bits},
+    {vert_bricks_width,      vert_bricks_height,      (char*)vert_bricks_bits,
+     vert_bricks_width,      vert_bricks_height,      (char*)vert_bricks_bits},
+    {horizontal_width,       horizontal_height,       (char*)horizontal_bits,
+     horizontal_width,       horizontal_height,       (char*)horizontal_bits},
+    {vertical_width,         vertical_height,         (char*)vertical_bits,
+     vertical_width,         vertical_height,         (char*)vertical_bits},
+    {crosshatch_width,       crosshatch_height,       (char*)crosshatch_bits,
+     crosshatch_width,       crosshatch_height,       (char*)crosshatch_bits},
+    {leftshingle_width,      leftshingle_height,      (char*)leftshingle_bits,
+     leftshingle_width,      leftshingle_height,      (char*)leftshingle_bits},
+    {rightshingle_width,     rightshingle_height,     (char*)rightshingle_bits,
+     rightshingle_width,     rightshingle_height,     (char*)rightshingle_bits},
+    {vert_leftshingle_width, vert_leftshingle_height, (char*)vert_leftshingle_bits,
+     vert_leftshingle_width, vert_leftshingle_height, (char*)vert_leftshingle_bits},
+    {vert_rightshingle_width, vert_rightshingle_height, (char*)vert_rightshingle_bits,
+     vert_rightshingle_width, vert_rightshingle_height, (char*)vert_rightshingle_bits},
+    {fishscales_width,       fishscales_height,       (char*)fishscales_bits,
+     fishscales_width,       fishscales_height,       (char*)fishscales_bits},
+    {small_fishscales_width, small_fishscales_height, (char*)small_fishscales_bits,
+     small_fishscales_width, small_fishscales_height, (char*)small_fishscales_bits},
+    {circles_width,          circles_height,          (char*)circles_bits,
+     circles_width,          circles_height,          (char*)circles_bits},
+    {hexagons_width,         hexagons_height,         (char*)hexagons_bits,
+     hexagons_width,         hexagons_height,         (char*)hexagons_bits},
+    {octagons_width,         octagons_height,         (char*)octagons_bits,
+     octagons_width,         octagons_height,         (char*)octagons_bits},
+    {horiz_saw_width,        horiz_saw_height,        (char*)horiz_saw_bits,
+     horiz_saw_width,        horiz_saw_height,        (char*)horiz_saw_bits},
+    {vert_saw_width,         vert_saw_height,         (char*)vert_saw_bits,
+     vert_saw_width,         vert_saw_height,         (char*)vert_saw_bits}
 };
 
 /* generate the fill pixmaps */
@@ -1723,6 +1731,8 @@ static void
 intersect(XPoint first, XPoint second, int x1, int y1, int x2, int y2,
                 XPoint *intersectPt)
 {
+	(void)x2;
+
   if (y1 == y2) {    /*horizontal*/
      intersectPt->y=y1;
      intersectPt->x=first.x +(y1-first.y)*

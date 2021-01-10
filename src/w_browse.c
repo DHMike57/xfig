@@ -114,6 +114,8 @@ browse_panel_dismiss(void)
 void
 got_browse(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     char	   *fval, *dval, *path;
 
     if (browse_popup) {
@@ -144,6 +146,8 @@ got_browse(Widget w, XButtonEvent *ev)
 static void
 browse_panel_close(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     browse_panel_dismiss();
 }
 

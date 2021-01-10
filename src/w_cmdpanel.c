@@ -245,46 +245,55 @@ menu_def help_menu_items[] = {
     };
 
 menu_def snap_menu_items[] = {
-  {"Hold",	0, snap_hold},		/* hol snap mode until released					*/
-  {"Release",	0, snap_release},	/* release hold							*/
-  {"-",		0, NULL},		/* make a dividing line						*/
-                                /* selections that always work						*/
-  {"Endpoint",	0, snap_endpoint},	/* snap to vertices or other endpoints				*/
-  {"Midpoint",	0, snap_midpoint},	/* snap to segment or other midpoints				*/
-  {"Nearest",	0, snap_nearest},	/* snap to nearest object					*/
-  {"Focus",	0, snap_focus},		/* snap to ellipse focus or circle centerpoint			*/
-  {"-",		0, NULL},		/* make a dividing line						*/
-                                /* selections that only work as a polyline vertex (other stuff?)	*/
-  {"Normal",	0, snap_normal},	/* snap to point that results in a seg normal to snapped-to obj	*/
-  {"Tangent",	0, snap_tangent},	/* snap to point that results in a seg tangent to obj		*/
-  {"Intersection", 0, snap_intersect},	/* snap to intersection of picked objs				*/
-  {"Diameter",	0, snap_diameter},	/* snap to ellipse or circle opposite diameter			*/
-  {"-",		0, NULL},		/* make a dividing line						*/
-  {NULL, 0, NULL},
+  {"Hold",	0, snap_hold, False},		/* hol snap mode until
+						   released	*/
+  {"Release",	0, snap_release, False},	/* release hold	*/
+  {"-",		0, NULL, False}, 		/* make a dividing line	*/
+/* selections that always work*/
+  {"Endpoint",	0, snap_endpoint, False},	/* snap to vertices or other
+						   endpoints*/
+  {"Midpoint",	0, snap_midpoint, False},	/* snap to segment or other
+						   midpoints */
+  {"Nearest",	0, snap_nearest, False},	/* snap to nearest object */
+  {"Focus",	0, snap_focus, False},		/* snap to ellipse focus or
+						   circle centerpoint */
+  {"-",		0, NULL, False},		/* make a dividing line */
+/* selections that only work as a polyline vertex (other stuff?) */
+  {"Normal",	0, snap_normal, False},		/* snap to point that results in
+						   a seg normal to snapped-to
+						   obj */
+  {"Tangent",	0, snap_tangent, False},	/* snap to point that results in
+						   a seg tangent to obj */
+  {"Intersection", 0, snap_intersect, False},	/* snap to intersection of
+						   picked objs */
+  {"Diameter",	0, snap_diameter, False},	/* snap to ellipse or circle
+						   opposite diameter */
+  {"-",		0, NULL, False},		/* make a dividing line */
+  {NULL, 0, NULL, False},
 };
 
 /* command panel of menus */
 
 main_menu_info main_menus[] = {
-    {"File", "filemenu", "File menu", file_menu_items},
-    {"Edit", "editmenu", "Edit menu", edit_menu_items},
-    {"View", "viewmenu", "View menu", view_menu_items},
-    {"Snap", "snapmenu", "Snap menu", snap_menu_items},
-    {"Help", "helpmenu", "Help menu", help_menu_items},
+    {"File", "filemenu", "File menu", file_menu_items, NULL, NULL},
+    {"Edit", "editmenu", "Edit menu", edit_menu_items, NULL, NULL},
+    {"View", "viewmenu", "View menu", view_menu_items, NULL, NULL},
+    {"Snap", "snapmenu", "Snap menu", snap_menu_items, NULL, NULL},
+    {"Help", "helpmenu", "Help menu", help_menu_items, NULL, NULL},
 };
 #define		NUM_CMD_MENUS  (sizeof(main_menus) / sizeof(main_menu_info))
 
 /* needed by setup_sizes() */
 
 
-void create_global_panel (Widget w);
-int locate_menu (String *params, Cardinal *nparams);
+static void	create_global_panel (Widget w);
+static size_t	locate_menu (String *params, Cardinal *nparams);
 
 
 int
 num_main_menus(void)
 {
-    return (NUM_CMD_MENUS);
+    return (int)(NUM_CMD_MENUS);
 }
 
 /* command panel */
@@ -306,7 +315,7 @@ init_main_menus(Widget tool, char *filename)
     NextArg(XtNbottom, XtChainTop);
     cmd_form = XtCreateWidget("commands", formWidgetClass, tool, Args, ArgCount);
 
-    for (i = 0; i < NUM_CMD_MENUS; ++i) {
+    for (i = 0; i < (int)NUM_CMD_MENUS; ++i) {
 	beside = create_main_menu(i, beside);
     }
 
@@ -473,7 +482,7 @@ setup_main_menus(void)
 
     XDefineCursor(tool_d, XtWindow(cmd_form), arrow_cursor);
 
-    for (i = 0; i < NUM_CMD_MENUS; ++i) {
+    for (i = 0; i < (int)NUM_CMD_MENUS; ++i) {
 	menu = &main_menus[i];
 	FirstArg(XtNfont, button_font); /* label font */
 	if ( menu->menu )
@@ -548,6 +557,9 @@ cmd_balloon(Widget w, XtPointer closure, XtPointer call_data)
 static void
 cmd_unballoon(Widget widget, XtPointer closure, XEvent *event, Boolean *continue_to_dispatch)
 {
+	(void)widget;
+	(void)event;
+	(void)continue_to_dispatch;
     if (balloon_id) {
 	XtRemoveTimeOut(balloon_id);
     }
@@ -562,6 +574,9 @@ cmd_unballoon(Widget widget, XtPointer closure, XEvent *event, Boolean *continue
 static void
 enter_cmd_but(Widget widget, XtPointer closure, XEvent *event, Boolean *continue_to_dispatch)
 {
+	(void)widget;
+	(void)event;
+	(void)continue_to_dispatch;
     main_menu_info *menu = (main_menu_info *) closure;
     draw_mousefun(menu->hint, "", "");
 }
@@ -571,6 +586,8 @@ static char	quit_msg[] = "The current figure is modified.\nDo you want to save i
 void
 quit(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure;
+	(void)call_data;
     /* turn off Compose key LED */
     setCompLED(0);
 
@@ -639,6 +656,9 @@ void goodbye(Boolean abortflag)
 void
 paste(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
 	fig_settings    settings;
 	int		x,y;
 	struct stat	file_status;
@@ -799,6 +819,9 @@ init_move_paste_object(int x, int y)
 static void
 place_object(int x, int y, unsigned int shift)
 {
+	(void)x;
+	(void)y;
+	(void)shift;
     clean_up();
     add_compound(new_c);
     set_modifiedflag();
@@ -811,6 +834,7 @@ place_object(int x, int y, unsigned int shift)
 static void
 place_object_orig_posn(int x, int y, unsigned int shift)
 {
+	(void)shift;
     int dx,dy;
 
     canvas_ref_proc = null_proc;
@@ -829,6 +853,9 @@ place_object_orig_posn(int x, int y, unsigned int shift)
 void
 new(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
     /* turn off Compose key LED */
     setCompLED(0);
 
@@ -854,6 +881,9 @@ new(Widget w, XtPointer closure, XtPointer call_data)
 void
 delete_all_cmd(Widget w, int closure, int call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
     /* turn off Compose key LED */
     setCompLED(0);
 
@@ -919,7 +949,7 @@ change_orient()
 	appres.landscape = !appres.landscape;
     }
     /* change the printer and export orientation labels */
-    FirstArg(XtNlabel, orient_items[appres.landscape]);
+    FirstArg(XtNlabel, orient_items[(int)appres.landscape]);
     if (print_orient_panel)
 	SetValues(print_orient_panel);
     if (export_orient_panel)
@@ -1013,8 +1043,10 @@ popup_global_panel(Widget w)
 	XtPopup(global_popup, XtGrabNonexclusive);
 }
 
-void create_global_panel(Widget w)
+static void
+create_global_panel(Widget w)
 {
+	(void)w;
 	DeclareArgs(10);
 	Widget		 beside, below, n_freehand, freehand, n_recent, recent;
 	Widget		 delay_form, delay_spinner;
@@ -1209,6 +1241,8 @@ CreateLabelledAscii(Widget *text_widg, char *label, char *widg_name, Widget pare
 static void
 global_panel_done(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
 	Boolean	    asp, gsp, adz, gdz;
 	int	    temp;
 	char	    buf[80];
@@ -1322,6 +1356,8 @@ global_panel_done(Widget w, XButtonEvent *ev)
 static void
 global_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
 	XtDestroyWidget(global_popup);
 	global_popup = (Widget) 0;
 }
@@ -1416,7 +1452,9 @@ void update_cur_filename(char *newname)
 static void
 popup_menu(Widget w, XEvent *event, String *params, Cardinal *nparams)
 {
-    int		which;
+	(void)w;
+	(void)event;
+    size_t	which;
 
     which = locate_menu(params, nparams);
     if (which < 0)
@@ -1427,9 +1465,11 @@ popup_menu(Widget w, XEvent *event, String *params, Cardinal *nparams)
 static void
 place_menu(Widget w, XEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w;
+	(void)event;
     Position	x, y;
     Dimension	height;
-    int		which;
+    size_t	which;
 
     which = locate_menu(params, nparams);
     if (which < 0)
@@ -1444,21 +1484,21 @@ place_menu(Widget w, XEvent *event, String *params, Cardinal *nparams)
     SetValues(main_menus[which].menuwidget);
 }
 
-int
+static size_t
 locate_menu(String *params, Cardinal *nparams)
 {
-    int		which;
+	size_t		which;
 
-    if (*nparams < 1)
-	return -1;
+	if (*nparams < 1)
+		return -1;
 
-    /* find which menu the user wants */
-    for (which=0; which<NUM_CMD_MENUS; which++)
-	if (strcmp(params[0],main_menus[which].menu_name)==0)
-	    break;
-    if (which >= NUM_CMD_MENUS)
-	return -1;
-    return which;
+	/* find which menu the user wants */
+	for (which = 0; which < NUM_CMD_MENUS; ++which)
+		if (strcmp(params[0], main_menus[which].menu_name) == 0)
+			break;
+	if (which >= NUM_CMD_MENUS)
+		return -1;
+	return which;
 }
 
 /* callback to load a recently used file (from the File menu) */
@@ -1466,6 +1506,8 @@ locate_menu(String *params, Cardinal *nparams)
 static void
 load_recent_file(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
     int		 which = atoi((char *) client_data);
     char	*filename;
     char	 dir[PATH_MAX], *c;
@@ -1495,6 +1537,8 @@ load_recent_file(Widget w, XtPointer client_data, XtPointer call_data)
 void
 acc_load_recent_file(Widget w, XEvent *event, String *params, Cardinal *nparams)
 {
+	(void)event;
+	(void)nparams;
     /* get file number from passed arg */
     int		which = atoi(*params);
 
@@ -1642,6 +1686,8 @@ popup_character_map(void)
 static void
 paste_char(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)call_data;
 	union	{
 		XtPointer	ptr;
 		unsigned char	val;
@@ -1712,13 +1758,13 @@ refresh_view_menu(void)
 #ifdef XAW3D1_5E
     if (appres.showballoons) {
 	XawTipEnable(name_panel, "Current filename");
-	for (i = 0; i < NUM_CMD_MENUS; ++i) {
+	for (i = 0; i < (int)NUM_CMD_MENUS; ++i) {
 	    menu = &main_menus[i];
 	    XawTipEnable(menu->widget, menu->hint);
 	}
     } else {
 	XawTipDisable(name_panel);
-	for (i = 0; i < NUM_CMD_MENUS; ++i) {
+	for (i = 0; i < (int)NUM_CMD_MENUS; ++i) {
 	    menu = &main_menus[i];
 	    XawTipDisable(menu->widget);
 	}

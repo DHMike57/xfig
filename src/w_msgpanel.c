@@ -492,12 +492,19 @@ length_msg2(int x1, int y1, int x2, int y2, int x3, int y3)
 	    dx1 = x3 - x1;
 	    dy1 = y3 - y1;
 	    len1 = (float)(sqrt(dx1*dx1 + dy1*dy1));
+    } else {
+	    dx1 = 0.0;
+	    dy1 = 0.0;
     }
     if (x2 != -999) {
 	    dx2 = x3 - x2;
 	    dy2 = y3 - y2;
 	    len2 = (float)(sqrt(dx2*dx2 + dy2*dy2));
+    } else {
+	    dx2 = 0.0;
+	    dy2 = 0.0;
     }
+
     make_dimension_string(len1, len1str, False);
     make_dimension_string(len2, len2str, False);
     make_dimension_string(dx1, dx1str, False);
@@ -621,6 +628,7 @@ file_msg(char *format,...)
 static void
 clear_file_message(Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     XawTextBlock	block;
     int			replcode;
 
@@ -654,6 +662,8 @@ clear_file_message(Widget w, XButtonEvent *ev)
 static void
 file_msg_panel_dismiss(Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
 	XtPopdown(file_msg_popup);
 	file_msg_is_popped=False;
 }

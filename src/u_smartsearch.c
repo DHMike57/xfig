@@ -387,6 +387,7 @@ smart_next_spline_found(int x, int y, int tolerance, int *px, int *py, int shift
 Boolean
 smart_next_text_found(int x, int y, int tolerance, int *px, int *py, int shift)
 {
+	(void)tolerance;
     int		    dum, tlength;
 
     if (!anytext_in_mask())

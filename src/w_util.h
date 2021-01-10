@@ -143,17 +143,30 @@ extern  void fix_converters(void);
 
 #define ArgCount	_ArgCount
 #define Args		_ArgList
+
+#ifdef NDEBUG
+#define DeclareArgs(n)		Arg Args[n]; int ArgCount
+#define DeclareStaticArgs(n)	static Arg Args[n]; static int ArgCount
+#define NextArg(name, val)						 \
+			do {	XtSetArg(Args[ArgCount], (name), (val)); \
+				++ArgCount;				 \
+			} while (0)
+#else /* NDEBUG */
+
 #define ArgCountMax	_ArgCountMax
+#define DeclareArgs(n)		Arg Args[n]; int ArgCountMax = n; int ArgCount
+#define DeclareStaticArgs(n)	static Arg Args[n]; static int ArgCountMax = n;\
+				static int ArgCount
+#define NextArg(name, val)						\
+			do {	assert(ArgCount < ArgCountMax);		\
+				XtSetArg(Args[ArgCount], (name), (val));\
+				ArgCount++;				\
+			} while (0)
 
-#define DeclareArgs(n)	Arg Args[n]; int ArgCountMax = n; int ArgCount
+#endif	/* NDEBUG */
 
-#define DeclareStaticArgs(n)  static Arg Args[n]; static int ArgCountMax = n; static int ArgCount
-
-#define FirstArg(name, val) \
+#define FirstArg(name, val)	\
 	do { XtSetArg(Args[0], (name), (val)); ArgCount=1;} while (0)
-#define NextArg(name, val) \
-	do { assert(ArgCount < ArgCountMax); \
-		XtSetArg(Args[ArgCount], (name), (val)); ArgCount++;} while (0)
 #define GetValues(n)	XtGetValues(n, Args, ArgCount)
 #define SetValues(n)	XtSetValues(n, Args, ArgCount)
 

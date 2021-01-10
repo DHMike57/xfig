@@ -312,6 +312,7 @@ alloc_or_store_colors(XftColor *restrict c, int ncolors)
 
 void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *isw)
 {
+	(void)label;
 	intptr_t	 i;
 	choice_info	*choice;
 	Pixel		 form_fg;
@@ -989,6 +990,9 @@ void set_mixed_name(int i, int col)
 static void
 cancel_color_popup(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
 	/* restore the mixed color panels */
 	restore_mixed_colors();
 }
@@ -998,6 +1002,9 @@ cancel_color_popup(Widget w, XtPointer closure, XtPointer call_data)
 static void
 add_color(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
 	/* allow user to delete unused colors */
 	XtSetSensitive(delunusedColors, True);
 	/* deselect any cell currently selected */
@@ -1016,6 +1023,9 @@ add_color(Widget w, XtPointer closure, XtPointer call_data)
 static void
 del_color(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
 	int save_mem, save_edit;
 	int i;
 	if (current_memory == -1 || num_usr_cols <= 0) {
@@ -1055,6 +1065,9 @@ del_color(Widget w, XtPointer closure, XtPointer call_data)
 static void
 undel_color(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
+	(void)call_data;
 	int	    indx;
 
 	XtSetSensitive(undelColor, False);
@@ -1468,6 +1481,9 @@ color_used(int color, F_compound *list)
 static void
 switch_edit(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	(void)w;
+	(void)client_data;
+	(void)call_data;
 	edit_fill = (intptr_t) XawToggleGetCurrent(mixedEdit[0]) - 1;
 	/* sometimes XawToggleGetCurrent() returns 0 if the
 	   toggle hasn't been set manually */
@@ -1509,6 +1525,7 @@ void set_slider_sensitivity(void)
 static void
 set_color_ok(Widget w, char *dum, XButtonEvent *ev, Boolean disp)
 {
+	(void)w; (void)dum; (void)ev; (void)disp;
 	/* has either the fill or pen color been modified? */
 	if (modified[0]) {
 	    cur_pencolor = mixed_color_indx[0];
@@ -1527,6 +1544,8 @@ set_color_ok(Widget w, char *dum, XButtonEvent *ev, Boolean disp)
 static void
 _set_std_color(Widget w, choice_info *sel_choice, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
 	set_std_color(sel_choice->value);
 }
 
@@ -1587,6 +1606,9 @@ set_std_color(int c)
 static void
 _pick_memory(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event;
+	(void)params;
+	(void)num_params;
 	int	i;
 
 	for (i = 0; i < num_usr_cols; i++)
@@ -1650,6 +1672,8 @@ file_msg("entered pick_memory(), colorFree[current_memory] == true.\n");
 static void
 lock_toggle(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)event;
+	(void)num_params;
 	Arg args[1];
 	int button = WhichButton(params[0]);
 
@@ -1785,6 +1809,7 @@ update_from_triple(Widget w, XEvent *event, String *params, Cardinal *num_params
 static void
 update_scrl_triple(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)w; (void)event; (void)params; (void)num_params;
 	if (current_memory >= 0)
 		update_triple();
 }
@@ -1818,6 +1843,9 @@ update_triple(void)
 static void
 move_scroll(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+	(void)w;
+	(void)params;
+	(void)num_params;
 #define ADJUST_CHANGE(color) if (change < 0) { \
 					if (color + change < 0) \
 						change = -color; \
@@ -2066,6 +2094,7 @@ void move_lock(void)
 void
 next_pencolor(ind_sw_info *sw)
 {
+	(void)sw;
     while ((++cur_pencolor < NUM_STD_COLS+num_usr_cols) &&
 	   (cur_pencolor >= NUM_STD_COLS && colorFree[cur_pencolor-NUM_STD_COLS]))
 		;
@@ -2077,6 +2106,7 @@ next_pencolor(ind_sw_info *sw)
 void
 prev_pencolor(ind_sw_info *sw)
 {
+	(void)sw;
     if (cur_pencolor <= DEFAULT)
 	cur_pencolor = NUM_STD_COLS+num_usr_cols;
     while ((--cur_pencolor >= NUM_STD_COLS) && colorFree[cur_pencolor-NUM_STD_COLS])
@@ -2093,7 +2123,7 @@ show_pencolor(void)
     char	    colorname[10];
 
     if (cur_pencolor < DEFAULT || cur_pencolor >= NUM_STD_COLS+num_usr_cols ||
-	cur_pencolor >= NUM_STD_COLS && colorFree[cur_pencolor-NUM_STD_COLS])
+	(cur_pencolor >= NUM_STD_COLS && colorFree[cur_pencolor-NUM_STD_COLS]))
 	    cur_pencolor = DEFAULT;
     if (cur_pencolor == DEFAULT)
 	color = getpixel(DEFAULT);
@@ -2138,6 +2168,7 @@ show_pencolor(void)
 void
 next_fillcolor(ind_sw_info *sw)
 {
+	(void)sw;
     while ((++cur_fillcolor < NUM_STD_COLS+num_usr_cols) &&
 	   (cur_fillcolor >= NUM_STD_COLS && colorFree[cur_fillcolor-NUM_STD_COLS]))
 		;
@@ -2149,6 +2180,7 @@ next_fillcolor(ind_sw_info *sw)
 void
 prev_fillcolor(ind_sw_info *sw)
 {
+	(void)sw;
     if (cur_fillcolor <= DEFAULT)
 	cur_fillcolor = NUM_STD_COLS+num_usr_cols;
     while ((--cur_fillcolor >= NUM_STD_COLS) && colorFree[cur_fillcolor-NUM_STD_COLS])
@@ -2165,7 +2197,7 @@ show_fillcolor(void)
     char	    colorname[10];
 
     if (cur_fillcolor < DEFAULT || cur_fillcolor >= NUM_STD_COLS+num_usr_cols ||
-	cur_fillcolor >= NUM_STD_COLS && colorFree[cur_fillcolor-NUM_STD_COLS])
+	(cur_fillcolor >= NUM_STD_COLS && colorFree[cur_fillcolor-NUM_STD_COLS]))
 	    cur_fillcolor = DEFAULT;
     if (cur_fillcolor == DEFAULT)
 	color = getpixel(DEFAULT);
@@ -2439,6 +2471,8 @@ typedef struct {
 static void
 doGrab(Widget w, int width, int height, int *x, int *y)
 {
+	(void)width;
+	(void)height;
     XtAppContext app = XtWidgetToApplicationContext(w);
     Window root = DefaultRootWindow(tool_d);
     XEvent event;

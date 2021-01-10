@@ -182,10 +182,11 @@ static XImage          *XRotMagnifyImage(Display *dpy, XImage *ximage);
 static char
 *my_strtok(char *str1, char *str2)
 {
-    char *ret;
-    int i, j, stop;
-    static int start, len;
-    static char *stext;
+    char		*ret;
+    int			stop;
+    size_t		i, j;
+    static size_t	start, len;
+    static char		*stext;
 
     if (str2==NULL)
 	return NULL;
@@ -561,7 +562,7 @@ static int
 XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *text, int align, int bg)
 {
     GC my_gc;
-    int nl=1, i;
+    size_t nl=1, i;
     int height;
     int xp, yp;
     char *str1, *str2, *str3;
@@ -824,7 +825,7 @@ static RotatedTextItem
     Pixmap canvas;
     GC font_gc;
     XImage *I_in;
-    register int i, j;
+    int i, j;
     char *str1, *str2, *str3;
     char *str2_a="\0", *str2_b="\n\0";
     int height;
@@ -848,7 +849,7 @@ static RotatedTextItem
     /* count number of sections in string */
     item->nl=1;
     if (align!=NONE)
-	for(i=0; i<strlen(text)-1; i++)
+	for(i = 0; i < (int)strlen(text)-1; ++i)
 	    if (text[i]=='\n')
 		item->nl++;
 

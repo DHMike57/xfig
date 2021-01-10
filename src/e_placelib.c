@@ -119,6 +119,7 @@ static void
 transform_lib_obj(unsigned char *c, int clen, KeySym keysym)
 {
 	(void)keysym;
+	(void)clen;
     int x,y;
 
     x = cur_x;
