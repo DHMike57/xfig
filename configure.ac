@@ -69,11 +69,7 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
-# Use ISO Standard C, currently C99.
-AC_PROG_CC_STDC
-AS_IF([test "x$ac_cv_prog_cc_stdc" = xno],dnl
-      [AC_C_CONST
-       AC_C_INLINE])
+AC_C_INLINE
 AC_PROG_FGREP
 AC_PROG_LN_S
 # Sets MKDIR_P - which is, however, set anyhow
