@@ -30,7 +30,12 @@ dist_applications_DATA = xfig.desktop
 
 dist_compkeydb_DATA = CompKeyDB
 
-EXTRA_DIST = CHANGES FIGAPPS HACKING app-defaults splash-image update-version_m4
+EXTRA_DIST = CHANGES FIGAPPS HACKING update-version_m4			\
+	app-defaults/Fig.in app-defaults/Fig-color.ad			\
+	app-defaults/Fig-color.bisque app-defaults/Fig-color.blue.ad	\
+	app-defaults/Fig-color.classic.ad splash-image/bluemarble.png	\
+	splash-image/NOTES splash-image/spl_bckgnd.fig.in		\
+	splash-image/xfig_splash_logo.png
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 config.h.in config.h.in~ configure
 

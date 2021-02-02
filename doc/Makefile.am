@@ -28,6 +28,8 @@ man1_MANS = xfig.man
 
 EXTRA_DIST  = html MAKEPS
 
+CLEANFILES = html/images/xfig-title.fig
+
 MAINTAINERCLEANFILES = Makefile.in
 
 $(srcdir)/html/images/xfig-title.png: $(srcdir)/html/images/xfig-title.fig.in \
