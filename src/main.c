@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -710,25 +710,12 @@ main(int argc, char **argv)
 	/* see if user just wants to update Fig files to current version */
 	/*****************************************************************/
 
+	update_figs = True;
+
 	/* if the fig file contains text objects,
 	   update_fig_files() depends on font information */
 	cnt = setup_visual(&argc, argv, args);
 	init_font();
-	/* v1.3 fig files query display_zoomscale in read_1_3_textobject()
-	   in f_readold.c */
-	display_zoomscale = 1.0f;
-	/* v1.3 fig files need some appres values in readfp_fig() in f_read.c */
-	appres.landscape = True;
-	appres.flushleft = False;
-	appres.INCHES = True;
-	appres.papersize = 0;
-	appres.magnification = 100.0f;
-	appres.multiple = False;
-	appres.transparent = -2;
-	/* and use scalable fonts, if available */
-	appres.scalablefonts = True;
-	/* but do not set correct_font_size; Originally, font sizes were given
-	   in pixel, and xfig displayed with 80 pixels to the inch. */
 
 	exit(update_fig_files(argc,argv));
 

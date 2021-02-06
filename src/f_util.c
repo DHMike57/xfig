@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -46,6 +46,7 @@
 #include "w_cursor.h"
 #include "w_msgpanel.h"
 #include "w_util.h"		/* popup_query(), panel_get_value() */
+#include "w_zoom.h"		/* display_zoomscale */
 #include "xfig_math.h"
 
 
@@ -1049,8 +1050,6 @@ update_fig_files(int argc, char **argv)
     /* overall status - if any one file can't be read, return status is 1 */
     allstat = 0;
 
-    update_figs = True;
-
     for (i=1; i<argc; i++) {
 	/* skip any other options the user may have given */
 	if (argv[i][0] == '-') {
@@ -1061,6 +1060,23 @@ update_fig_files(int argc, char **argv)
 	/* reset user colors */
 	for (col=0; col<MAX_USR_COLS; col++)
 	    n_colorFree[col] = True;
+
+	/* v1.3 fig files query display_zoomscale in read_1_3_textobject()
+	   in f_readold.c */
+	display_zoomscale = 1.0f;
+	/* v1.3 fig files need some appres values in readfp_fig() in f_read.c */
+	appres.landscape = True;
+	appres.flushleft = False;
+	appres.INCHES = True;
+	appres.papersize = 0;
+	appres.magnification = 100.0f;
+	appres.multiple = False;
+	appres.transparent = -2;
+	/* and use scalable fonts, if available */
+	appres.scalablefonts = True;
+	/* but do not set correct_font_size; Originally, font sizes were given
+	   in pixel, and xfig displayed with 80 pixels to the inch. */
+
 	/* read Fig file but don't import any images */
 	status = read_fig(file, &objects, DONT_MERGE, 0, 0, &settings);
 	if (status != 0) {
