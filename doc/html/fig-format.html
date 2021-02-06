@@ -21,7 +21,7 @@ in the <b>xfig 3.2.x</b> source distribution.
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2012 by Brian V. Smith
+ * Parts Copyright (c) 1989-2002 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
  *
@@ -58,11 +58,9 @@ that the converted curves are not exactly the same as the original ones.
 Though the translation usually provides almost identical curves, some
 hand-fitting may be needed in some pathological cases.
 
-</pre>
-<hr>
-<h2>Description of the Fig Format Follows</h2>
-<hr>
-<pre>
+-------------------------------------------------------------------------------
+Description of the Fig Format Follows
+-------------------------------------------------------------------------------
 
 (1) The very first line is a comment line containing the name and version:
 	#FIG 3.2
@@ -75,7 +73,6 @@ hand-fitting may be needed in some pathological cases.
     are associated.  In the case of the "whole figure comments" mentioned
     below, they immediately precede the (resolution,coord_system) line.
 
-<hr>
 (2) The first non-comment line consists of the following:
 
 	string	orientation		("Landscape" or "Portrait")
@@ -100,6 +97,14 @@ hand-fitting may be needed in some pathological cases.
     will scale the figure upon reading it in if its resolution is different
     from 1200ppi.  Pixels are assumed to be square.
 
+    Note about metric units:  To preserve a regular grid on the canvas the
+    centimeter is defined to be 450 Fig units and not 472.4 (1200/2.54).
+    For drawings done in metric units, fig2dev magnifies the output when
+    exporting or printing to compensate for the difference (472.4/450).
+    Also, if you make a drawing in one unit scale and switch to the other
+    units in xfig, the drawing will be rescaled on the screen by xfig to
+    remain consistent.
+
     Xfig will read the orientation string and change the canvas to match
     either the Landscape or Portrait mode of the figure file.
 
@@ -115,7 +120,6 @@ hand-fitting may be needed in some pathological cases.
     ** dash-lengths/dot-gaps are given in 80-ths of an inch.
 
 
-<hr>
 (3) The rest of the file contains various objects.  An object can be one
     of six classes (or types).
 
@@ -297,13 +301,11 @@ hand-fitting may be needed in some pathological cases.
 	 0 = Hollow (actually filled with white)
 	 1 = Filled with pen_color
 
-</pre>
-<hr>
-<h3>(3.0) Object Definitions</h3>
-<hr>
-<pre>
+(3.0) OBJECT DEFINITIONS:
 
+    ================================================
     (3.1) Color Pseudo-objects (user-defined colors)
+    ================================================
 	  This is used to define arbitrary colors beyond the 32 standard colors.
 	  The color objects must be defined before any other Fig objects.
 
@@ -312,11 +314,12 @@ hand-fitting may be needed in some pathological cases.
 	----	----			-------------------
 	int	object_code		(always 0)
 	int	color_number		(color number, from 32-543 (512 total))
-     hex string	rgb values		(hexadecimal string describing red,
+	hex string  rgb values		(hexadecimal string describing red,
 					 green and blue values (e.g. #330099) )
 
-<hr>
+    ============================================================================
     (3.2) ARC
+    =========
 
     First line:
 	type	name			(brief description)
@@ -324,14 +327,14 @@ hand-fitting may be needed in some pathological cases.
 	int	object_code		(always 5)
 	int	sub_type		(1: open ended arc
 					 2: pie-wedge (closed) )
-	int	line_style		(enumeration type)
+	int	line_style		(enumeration type, solid, dash, dotted, etc.)
 	int	line_thickness		(1/80 inch)
 	int	pen_color		(enumeration type, pen color)
 	int	fill_color		(enumeration type, fill color)
 	int	depth			(enumeration type)
 	int	pen_style		(pen style, not used)
 	int	area_fill		(enumeration type, -1 = no fill)
-	float	style_val		(1/80 inch)
+	float	style_val		(1/80 inch, specification for dash/dotted lines)
 	int	cap_style		(enumeration type)
 	int	direction		(0: clockwise, 1: counterclockwise)
 	int	forward_arrow		(0: no forward arrow, 1: on)
@@ -359,8 +362,9 @@ hand-fitting may be needed in some pathological cases.
 	float	arrow_width		(Fig units)
 	float	arrow_height		(Fig units)
 
-<hr>
+    ============================================================================
     (3.3) COMPOUND
+    ==============
 
     A line with object code 6 signifies the start of a compound.
     There are four more numbers on this line which indicate the
@@ -385,8 +389,9 @@ hand-fitting may be needed in some pathological cases.
     Last line:
 	-6
 
-<hr>
+    ============================================================================
     (3.4) ELLIPSE
+    =============
 
     First line:
 	type	name			(brief description)
@@ -396,14 +401,14 @@ hand-fitting may be needed in some pathological cases.
 					 2: ellipse defined by diameters
 					 3: circle defined by radius
 					 4: circle defined by diameter)
-	int	line_style		(enumeration type)
+	int	line_style		(enumeration type, solid, dash, dotted, etc.)
 	int	thickness		(1/80 inch)
 	int	pen_color		(enumeration type, pen color)
 	int	fill_color		(enumeration type, fill color)
 	int	depth			(enumeration type)
 	int	pen_style		(pen style, not used)
 	int	area_fill		(enumeration type, -1 = no fill)
-	float	style_val		(1/80 inch)
+	float	style_val		(1/80 inch, specification for dash/dotted lines)
 	int	direction		(always 1)
 	float	angle			(radians, the angle of the x-axis)
 	int	center_x, center_y	(Fig units)
@@ -411,8 +416,9 @@ hand-fitting may be needed in some pathological cases.
 	int	start_x, start_y	(Fig units; the 1st point entered)
 	int	end_x, end_y		(Fig units; the last point entered)
 
-<hr>
+    ============================================================================
     (3.5) POLYLINE
+    ==============
 
     First line:
 	type	name			(brief description)
@@ -423,14 +429,14 @@ hand-fitting may be needed in some pathological cases.
 					 3: polygon
 					 4: arc-box)
 					 5: imported-picture bounding-box)
-	int	line_style		(enumeration type)
+	int	line_style		(enumeration type, solid, dash, dotted, etc.)
 	int	thickness		(1/80 inch)
 	int	pen_color		(enumeration type, pen color)
 	int	fill_color		(enumeration type, fill color)
 	int	depth			(enumeration type)
 	int	pen_style		(pen style, not used)
 	int	area_fill		(enumeration type, -1 = no fill)
-	float	style_val		(1/80 inch)
+	float	style_val		(1/80 inch, specification for dash/dotted lines)
 	int	join_style		(enumeration type)
 	int	cap_style		(enumeration type, only used for POLYLINE)
 	int	radius			(1/80 inch, radius of arc-boxes)
@@ -443,6 +449,7 @@ hand-fitting may be needed in some pathological cases.
     Backward arrow line: same as ARC object
 
     For picture (type 5) the following line follows:
+
 	type	name			(brief description)
 	----	----			-------------------
 	boolean	flipped			orientation = normal (0) or flipped (1)
@@ -450,6 +457,7 @@ hand-fitting may be needed in some pathological cases.
 
     Points line(s).  The x,y coordinates follow, any number to a line, with
     as many lines as are necessary:
+
 	type	name			(brief description)
 	----	----			-------------------
 	int	x1, y1			(Fig units)
@@ -459,8 +467,9 @@ hand-fitting may be needed in some pathological cases.
 	int	xnpoints ynpoints	(this will be the same as the 1st
 					point for polygon and box)
 
-<hr>
+    ============================================================================
     (3.6) SPLINE
+    ============
 
     First line:
 	type	name			(brief description)
@@ -472,14 +481,14 @@ hand-fitting may be needed in some pathological cases.
 					     3: closed interpolated spline
 					     4: open   x-spline
 					     5: closed x-spline)
-	int	line_style		(See the end of this section)
+	int	line_style		(enumeration type, solid, dash, dotted, etc.)
 	int	thickness		(1/80 inch)
 	int	pen_color		(enumeration type, pen color)
 	int	fill_color		(enumeration type, fill color)
 	int	depth			(enumeration type)
 	int	pen_style		(pen style, not used)
 	int	area_fill		(enumeration type, -1 = no fill)
-	float	style_val		(1/80 inch)
+	float	style_val		(1/80 inch, specification for dash/dotted lines)
 	int	cap_style		(enumeration type, only used for open splines)
 	int	forward_arrow		(0: off, 1: on)
 	int	backward_arrow		(0: off, 1: on)
@@ -493,15 +502,23 @@ hand-fitting may be needed in some pathological cases.
 
     Control points line :
 
-    There is one shape factor for each point. The value of this factor
-    must be between -1 (which means that the spline is interpolated at
-    this point) and 1 (which means that the spline is approximated at
-    this point). The spline is always smooth in the neighbourhood of a
-    control point, except when the value of	the factor is 0 for which
-    there is a first-order discontinuity (i.e. angular point).
+    There is one shape factor for each point. For positive values of this
+    factor, the spline is approximated at this point, for negative values the
+    spline is interpolated at this point. The spline is always smooth in the
+    neighbourhood of a control point, except when the value of the factor is 0
+    for which there is a first-order discontinuity (i.e., an angular point).
+    Recommended values for this factor are 1.0 for an approximated spline, 0.0
+    for an angular point and -0.5 for interpolated splines.
+    The shape factor used here corresponds to the parameter s_k defined in
+    section 4.1 of Blanc & Schlick (1995) for values greater than 0, for values
+    smaller than 0 it corresponds to the negative of the parameter q defined in
+    section 5.1 of Blanc & Schlick (1995).
 
-<hr>
+
+    ============================================================================
     (3.7) TEXT
+    ==========
+
 	type	name			(brief description)
 	----	----			-------------------
 	int	object			(always 4)
