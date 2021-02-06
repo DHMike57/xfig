@@ -4,7 +4,7 @@
 # Copyright (c) 1985-1988 by Supoj Sutanthavibul
 # Parts Copyright (c) 1989-2015 by Brian V. Smith
 # Parts Copyright (c) 1991 by Paul King
-# Parts Copyright (c) 2016-2019 by Thomas Loimer
+# Parts Copyright (c) 2016-2021 by Thomas Loimer
 #
 # Any party obtaining a copy of these files is granted, free of charge, a
 # full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -17,7 +17,7 @@
 #
 #
 # Makefile.am
-# Author: Thomas Loimer, 2016-2017
+# Author: Thomas Loimer, 2016-2021
 
 
 SUBDIRS = src doc tests

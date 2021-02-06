@@ -4,7 +4,7 @@
 # Copyright (c) 1985-1988 by Supoj Sutanthavibul
 # Parts Copyright (c) 1989-2015 by Brian V. Smith
 # Parts Copyright (c) 1991 by Paul King
-# Parts Copyright (c) 2016-2019 by Thomas Loimer
+# Parts Copyright (c) 2016-2021 by Thomas Loimer
 #
 # Any party obtaining a copy of these files is granted, free of charge, a
 # full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -17,7 +17,7 @@
 #
 #
 # doc/Makefile.am
-# Author: Thomas Loimer, 2016
+# Author: Thomas Loimer, 2016, 2021
 
 dist_doc_DATA = FORMAT1.3 FORMAT1.4 FORMAT2.0 FORMAT2.1 FORMAT3.0 \
 	FORMAT3.1 FORMAT3.2 xfig-howto.pdf xfig_ref_en.pdf
@@ -32,39 +32,32 @@ CLEANFILES = html/images/xfig-title.fig
 
 MAINTAINERCLEANFILES = Makefile.in
 
-$(srcdir)/html/images/xfig-title.png: $(srcdir)/html/images/xfig-title.fig.in \
-					$(top_srcdir)/version.m4
-		fig2dev -L png -S4 $(srcdir)/html/images/xfig-title.fig >$@
-
 # Below, $< is not fully portable, see info autoconf "Portable Make",
 # use $? instead. man is sensitive to spaces after the options.
 # Probably, groff -Thtml -mman xfig.man > $@ is more portable?
 
-# Do not make xfig_man.html at build time, like so:
-#xfig_man.html: xfig.man
-#	man -Thtml -l $? >$@
-# but make xfig_man.html.in at distribution time.
-# Chicken and egg problem: To configure and make dist, the maintainer
-# must provide a xfig_man.html.in, which is then re-created at
-# make dist time. An empty file is sufficient, e.g.,
-# touch xfig_man.html.in. But see below, for the maintainer.
-dist-hook:
-	chmod u+w "$(distdir)" \
-	&& { test -f "$(distdir)/xfig_man.html.in" \
-		&& { test -w "$(distdir)/xfig_man.html.in" \
-			|| chmod u+w "$(distdir)/xfig_man.html.in"; } \
-		|| :; }
-	man -Thtml -l "$(srcdir)/xfig.man.in" > "$(distdir)/xfig_man.html.in"
+# Create the logo, xfig-title.png, which is included at the top of each html
+# page and which shows the version string, at distribution time.
+# Also create xfig_man.html.in at distribution time.
+# Users should be able to build xfig without fig2dev or man installed.
+dist-hook: $(srcdir)/html/images/xfig-title.fig.in $(top_srcdir)/version.m4 \
+		$(srcdir)/xfig.man.in
+	chmod u+w "$(distdir)" "$(distdir)/html" "$(distdir)/html/images"
+	-chmod u+w "$(distdir)/xfig_man.html.in"	\
+		"$(distdir)/html/images/xfig-title.png"
+	test -r html/images/xfig-title.fig || \
+		{ cd .. && $(MAKE) doc/html/images/xfig-title.fig; }
+	fig2dev -L png -S4 html/images/xfig-title.fig	\
+			>"$(distdir)/html/images/xfig-title.png"
+	rm -f $(distdir)/$(CLEANFILES)
+	man -Thtml -l "$(srcdir)/xfig.man.in" >"$(distdir)/xfig_man.html.in"
 
-# If the maintainer wants to compile, xfig.man.in needs to be present here
-# in the source tree. Create it manually and keep it. If xfig_man.html.in is
-# modified, xfig.man is instantiated automatically.
+# To build in the development tree, xfig_man.html.in is required, and already at
+# configuration time. Hence, a make rule comes too late. Anyway, a version of
+# xfig_man.html.in still lingers around. In addition, provide a rule for the
+# file. Unusually, this is a rule for a file in the source tree.
 $(srcdir)/xfig_man.html.in: $(srcdir)/xfig.man.in
-	man -Thtml -l xfig.man.in > xfig_man.html.in
-#	$(SHELL) $(top_builddir)/config.status --file=xfig_man.html
-
-$(srcdir)/xfig.man.in:
-	touch $@
+	man -Thtml -l "$(srcdir)/xfig.man.in" >"$(srcdir)/xfig_man.html.in"
 
 install-data-hook:
 	cp -Rp "$(srcdir)/html" "$(DESTDIR)$(htmldir)" \
