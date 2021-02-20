@@ -176,7 +176,7 @@ AC_CHECK_DECLS([S_IFDIR, S_IWRITE],[],[],[[#include <sys/stat.h>]])dnl
 AC_CHECK_DECL([REG_NOERROR],[],
 	[AC_DEFINE([REG_NOERROR], 0,dnl
 		[Define to 0 if not provided by regex.h.])],dnl
-	[[#include <regex.h>]])dnl
+	[[#include <regex.h>]])
 # The option --allow-multiple-definition is aquivalent to -z muldefs.
 # The latter would not error out, e.g., "-z NoTeXisting" does only
 # produce a warning, not an error, on gnu ld.
