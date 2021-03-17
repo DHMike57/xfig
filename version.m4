@@ -26,4 +26,4 @@ m4_define([XFIG_VERSION], [3.2.8a])
 
 dnl AC_INIT does not have access to shell variables.
 dnl Therefore, define RELEASEDATE as a macro.
-m4_define([RELEASEDATE], [Feb 2021])
+m4_define([RELEASEDATE], [Mar 2021])

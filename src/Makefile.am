@@ -31,6 +31,8 @@ AM_LDFLAGS = $(XLDFLAGS)
 xfig_LDADD = $(LIBOBJS) $(XLIBS)
 # xmkmf, in addition, sets the flag -DNEWARROWPROTO
 
+DISTCLEANFILES = splash.xbm splash.xpm version.xbm
+
 bin_PROGRAMS = xfig
 
 xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
