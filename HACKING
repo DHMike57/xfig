@@ -1,3 +1,6 @@
+Copyright notice
+----------------
+
 All files contain a copyright notice as below.
 Authors or contributors of a substantial portion of a file
 are listed below the copyright notice, cf. Makefile.am.
@@ -32,6 +35,12 @@ In the top source directory, do
   autoreconf -i
   # -i ... install missing files (depmod, install-sh, etc.)
   ./configure; make; make install
+
+To update the documentation, do
+  cd doc
+  make documentation
+This requires the programs fig2dev and htmldoc. make documentation re-creates
+doc/html/images/xfig-title.png and rebuilds xfig_ref_en.pdf from the html pages.
 
 Optionally, make check and, after installing, make install-check.
 Only very rudimentary tests are provided, thus not much is gained
