@@ -515,10 +515,13 @@ do_save(Widget w, XButtonEvent *ev)
 	}
     } else { /* !file_popup */
 	/*
-	 * !file_popup, so the file panel was never created and the user
-	 * never had the possibility to change directory.
-	 * Also, save_file_dir = "" (I believe)
+	 * !file_popup, so the file panel was never created and probably
+	 * save_file_dir not set.
 	 */
+	if (*save_file_dir == '\0') {
+		strcpy(save_file_dir, cur_file_dir);
+		change_directory(save_file_dir);
+	}
 	/* see if writable */
 	if (!ok_to_write(cur_filename, "SAVE"))
 	    return;
