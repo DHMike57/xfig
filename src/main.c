@@ -1285,11 +1285,11 @@ main(int argc, char **argv)
 
     /* save path if specified in filename */
     if ((dval = strrchr(cur_filename, '/'))) {
+	size_t	len = dval - cur_filename;
 	strcpy(cur_file_dir, cur_filename);
+	cur_file_dir[len] = '\0';
 	/* remove path from filename */
-	strcpy(cur_filename, dval+1);
-	if ((dval = strrchr(cur_file_dir, '/')))
-	    *dval = '\0';  /* terminate path at the last "/" */
+	strcpy(cur_filename, cur_file_dir + len + 1);
 	change_directory(cur_file_dir);		/* go there */
 	/* and get back the canonical (absolute) path */
 	get_directory(cur_file_dir);
