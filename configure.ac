@@ -6,7 +6,7 @@ AC_COPYRIGHT([FIG : Facility for Interactive Generation of figures
 Copyright (c) 1985-1988 by Supoj Sutanthavibul
 Parts Copyright (c) 1989-2015 by Brian V. Smith
 Parts Copyright (c) 1991 by Paul King
-Parts Copyright (c) 2016-2020 by Thomas Loimer
+Parts Copyright (c) 2016-2021 by Thomas Loimer
 
 Any party obtaining a copy of these files is granted, free of charge, a
 full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,7 +19,7 @@ and this permission notice remain intact.
 ])
 
 # configure.ac
-# Author: Thomas Loimer, 2016-2020
+# Author: Thomas Loimer, 2016-2021
 
 dnl The minimum autoconf version to process this file. In version 2.60,
 dnl the directory variables changed, see info autoconf, section 4.8.3.
@@ -126,21 +126,6 @@ AC_CHECK_HEADER([X11/X.h])
 # Check for libraries and header files
 dnl First search for the header, only then search for the libs. The other way
 dnl round, the found library would be prepended to LIBS, unnecessarily.
-AC_CHECK_HEADER([ghostscript/iapi.h],
-    [AC_SEARCH_LIBS([gsapi_revision], [gs],
-	[AC_DEFINE([HAVE_GSLIB], 1,
-	    [Define to 1 if you have the ghostscript library and header files.])])],
-    [], [AC_INCLUDES_DEFAULT])
-AS_IF([test $ac_cv_header_ghostscript_iapi_h = yes && \
-	test "x$ac_cv_search_gsapi_revision" != xno],
-    [gsman="This version of xfig links into the ghostscript library.
-The ghostscript executable is not needed, it is only called as a fallback-solution."],
-    [gsman="This is needed when importing PDF or Encapsulated
-PostScript files. To disable calling ghostscript, set to the empty string,
-.BR \"\-ghostscript \"\"\"\"\" ."])dnl
-AC_SUBST([gsman])
-AM_SUBST_NOTMAKE([gsman])
-
 AC_CHECK_HEADER([jpeglib.h],
     [AC_SEARCH_LIBS([jpeg_read_header], [jpeg],
 	[AC_DEFINE([HAVE_JPEG], 1,
@@ -164,6 +149,25 @@ AC_CHECK_HEADER([tiffio.h],
     [], [AC_INCLUDES_DEFAULT])
 AM_CONDITIONAL([HAVE_TIFF], [test $ac_cv_header_tiffio_h = yes && \
 	test "x$ac_cv_search_TIFFOpen" != xno])dnl
+
+# First check for jpeg, png and tiff-libraries, only then for ghostscript.
+# One report indicated that, on Darwin, the other way round "-ljpeg -lpng
+# -ltiff" was not added for the linker stage. See
+# https://sourceforge.net/p/mcj/discussion/general/thread/36ff8854e8/
+AC_CHECK_HEADER([ghostscript/iapi.h],
+    [AC_SEARCH_LIBS([gsapi_revision], [gs],
+	[AC_DEFINE([HAVE_GSLIB], 1,
+	    [Define to 1 if you have the ghostscript library and header files.])])],
+    [], [AC_INCLUDES_DEFAULT])
+AS_IF([test $ac_cv_header_ghostscript_iapi_h = yes && \
+	test "x$ac_cv_search_gsapi_revision" != xno],
+    [gsman="This version of xfig links into the ghostscript library.
+The ghostscript executable is not needed, it is only called as a fallback-solution."],
+    [gsman="This is needed when importing PDF or Encapsulated
+PostScript files. To disable calling ghostscript, set to the empty string,
+.BR \"\-ghostscript \"\"\"\"\" ."])dnl
+AC_SUBST([gsman])
+AM_SUBST_NOTMAKE([gsman])
 
 
 # Checks for typedefs, structures, and compiler characteristics.
