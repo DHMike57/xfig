@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -234,10 +234,13 @@ next_line_found(int x, int y, int tolerance, int *px, int *py, unsigned int shif
     else if (shift)
 	l = prev_line(objects.lines, l);
 
-    for (; l != NULL; l = (shift? prev_line(objects.lines, l): l->next), n++) {
-	if (!active_layer(l->depth))
+    for (; l != NULL; l = (shift? prev_line(objects.lines, l): l->next)) {
+	if (!active_layer(l->depth)) {
+	    ++n;
 	    continue;
+	}
 	if (validline_in_mask(l)) {
+	    ++n;
 	    point = l->points;
 	    x1 = point->x;
 	    y1 = point->y;
@@ -284,10 +287,13 @@ next_spline_found(int x, int y, int tolerance, int *px, int *py, unsigned int sh
 
     tol2 = (float) tolerance *tolerance;
 
-    for (; s != NULL; s = (shift? prev_spline(objects.splines, s): s->next), n++) {
-	if (!active_layer(s->depth))
+    for (; s != NULL; s = (shift? prev_spline(objects.splines, s): s->next)) {
+	if (!active_layer(s->depth)) {
+	    ++n;
 	    continue;
+	}
 	if (validspline_in_mask(s)) {
+	    ++n;
 	    point = s->points;
 	    x1 = point->x;
 	    y1 = point->y;
@@ -321,10 +327,13 @@ next_text_found(int x, int y, int tolerance, int *px, int *py, unsigned int shif
     else if (shift)
 	t = prev_text(objects.texts, t);
 
-    for (; t != NULL; t = (shift? prev_text(objects.texts, t): t->next), n++) {
-	if (!active_layer(t->depth))
+    for (; t != NULL; t = (shift? prev_text(objects.texts, t): t->next)) {
+	if (!active_layer(t->depth)) {
+	    ++n;
 	    continue;
+	}
 	if (validtext_in_mask(t)) {
+	    ++n;
 	    if (in_text_bound(t, x, y, &dum)) {
 		*px = x;
 		*py = y;

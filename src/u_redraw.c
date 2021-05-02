@@ -142,7 +142,8 @@ void redisplay_objects(F_compound *active_objects)
     clearcounts();
 
     /* if user wants gray inactive layers, draw them first */
-    if (gray_layers || draw_parent_gray) {
+    /* remove_depth() in u_list.c sets min_depth = -1 if there are no objects */
+    if ((gray_layers || draw_parent_gray) && min_depth > -1) {
 	for (depth = max_depth; depth >= min_depth; --depth) {
 	    if (!active_layer(depth) || draw_parent_gray) {
 		redisplay_arcobject(objects->arcs, depth);
@@ -163,14 +164,17 @@ void redisplay_objects(F_compound *active_objects)
     }
 
     /* now draw the active layers in their normal colors */
-    for (depth = max_depth; depth >= min_depth; --depth) {
-	if (active_layer(depth)) {
-	    redisplay_arcobject(objects->arcs, depth);
-	    redisplay_compoundobject(objects->compounds, depth);
-	    redisplay_ellipseobject(objects->ellipses, depth);
-	    redisplay_lineobject(objects->lines, depth);
-	    redisplay_splineobject(objects->splines, depth);
-	    redisplay_textobject(objects->texts, depth);
+    if (min_depth > -1) { /* if there are no objects, remove_depth() in
+			     u_list.c sets min_depth = -1 */
+	for (depth = max_depth; depth >= min_depth; --depth) {
+	    if (active_layer(depth)) {
+		redisplay_arcobject(objects->arcs, depth);
+		redisplay_compoundobject(objects->compounds, depth);
+		redisplay_ellipseobject(objects->ellipses, depth);
+		redisplay_lineobject(objects->lines, depth);
+		redisplay_splineobject(objects->splines, depth);
+		redisplay_textobject(objects->texts, depth);
+	    }
 	}
     }
 

@@ -2,6 +2,19 @@ Changes to Xfig
 =============================================================================
 Version 3.2
 =============================================================================
+Patchlevel ? (Xxx 2021)
+
+BUGS FIXED:
+	o Adding points to splines works if boxes are present in the figure.
+
+-----------------------------------
+Patchlevel 8a (Mar 2021)
+
+BUGS FIXED:
+	o Distribute a current pdf documentation.
+	  Thanks to Roland Rosenfeld for the script and pointing out the issue.
+
+-----------------------------------
 Patchlevel 8 (Dec 2020)
 
 USER INTERFACE CHANGES:
