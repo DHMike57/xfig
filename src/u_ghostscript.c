@@ -945,7 +945,13 @@ gslib_bitmap(char *file, F_pic *pic, int llx, int lly, int urx, int ury)
 		NULL,	/* display_update */
 		display_memalloc,
 		display_memfree,
-		NULL	/* display_separation */
+#if DISPLAY_VERSION_MAJOR > 1
+		NULL,	/* display_separation */
+#if DISPLAY_VERSION_MAJOR > 2
+		NULL,	/* display_adjust_band_height */
+		NULL	/* display_rectangle_request */ 
+#endif
+#endif
 	};
 
 
