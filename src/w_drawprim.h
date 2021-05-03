@@ -89,9 +89,9 @@ extern GC	    makegc(int op, Pixel fg, Pixel bg);
 
 /* patterns like bricks, etc */
 typedef struct _patrn_strct {
-	  unsigned int	 owidth,oheight;	/* original width/height */
+	  int	 owidth,oheight;		/* original width/height */
 	  char	*odata;				/* original bytes */
-	  unsigned int	 cwidth,cheight;	/* current width/height */
+	  int	 cwidth,cheight;		/* current width/height */
 	  char	*cdata;				/* bytes at current zoom */
     } patrn_strct;
 

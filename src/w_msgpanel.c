@@ -310,9 +310,9 @@ altlength_msg(int type, int fx, int fy)
   float		udx, udy;
   float		ang;
   int		sdx, sdy;
-  int		t1x, t1y, t2x, t2y, t3x, t3y;
+  int		t1x = 0, t1y = 0, t2x = 0, t2y = 0, t3x = 0, t3y = 0;
   PR_SIZE	sizex, sizey, sizehyp;
-  char		lenstr[80],dxstr[80],dystr[80];
+  char		lenstr[80], dxstr[80], dystr[80];
 
   dx = (cur_x - fx);
   dy = (cur_y - fy);

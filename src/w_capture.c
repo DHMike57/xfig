@@ -320,10 +320,10 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 
 	/* now map the pixel values to 0..numcolors */
 	x = 0;
-	for (i=0; i<image->bytes_per_line*height; i++, iptr++) {
+	for (i=0; (unsigned)i<image->bytes_per_line*height; i++, iptr++) {
 	    if (x >= image->bytes_per_line)
 		x=0;
-	    if (x < width) {
+	    if ((unsigned)x < width) {
 		colused[*iptr] = 1;	/* mark this color as used */
 		*dptr++ = *iptr;
 	    }
@@ -344,7 +344,7 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 	    }
 	}
 	/* remap the pixels */
-	for (i=0, dptr = data; i < width*height; i++, dptr++) {
+	for (i=0, dptr = data; (unsigned)i < width*height; i++, dptr++) {
 	    *dptr = mapcols[*dptr];
 	}
 	*nc = numcols;
@@ -353,12 +353,12 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
     } else {
 	int	bitp;
 	x = 0;
-	for (i=0; i<image->bytes_per_line*height; i++, iptr++) {
+	for (i=0; (unsigned)i<image->bytes_per_line*height; i++, iptr++) {
 	    if (x >= image->bytes_per_line*8)
 		x=0;
 	    if (image->bitmap_bit_order == LSBFirst) {
 		for (bitp=1; bitp<256; bitp<<=1) {
-		    if (x < width) {
+		    if ((unsigned)x < width) {
 			if (*iptr & bitp)
 			    *dptr = 1;
 			else
@@ -369,7 +369,7 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 		}
 	    } else {
 		for (bitp=128; bitp>0; bitp>>=1) {
-		    if (x < width) {
+		    if ((unsigned)x < width) {
 			if (*iptr & bitp)
 			    *dptr = 1;
 			else
@@ -443,11 +443,11 @@ selectedRootArea(int *x_r, int *y_r, unsigned int *w_r, unsigned int *h_r, Windo
 	/* make sure area is on screen */
 	if (*x_r < 0)
 	    *x_r = 0;
-	else if (*x_r + *w_r > WidthOfScreen(tool_s))
+	else if (*x_r + *w_r > (unsigned)WidthOfScreen(tool_s))
 	    *w_r = WidthOfScreen(tool_s)-*x_r;
 	if (*y_r < 0)
 	    *y_r = 0;
-	else if (*y_r + *h_r > HeightOfScreen(tool_s))
+	else if (*y_r + *h_r > (unsigned)HeightOfScreen(tool_s))
 	    *h_r = HeightOfScreen(tool_s)-*y_r;
 	*cw = child_r;
 	return True;

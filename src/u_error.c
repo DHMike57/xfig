@@ -128,7 +128,7 @@ my_quit(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	((event->xclient.data.l[0] != wm_protocols[0]) &&
 	 (event->xclient.data.l[0] != wm_protocols[1])))
 #else
-	(event->xclient.data.l[0] != wm_protocols[0]))
+	((Atom)event->xclient.data.l[0] != wm_protocols[0]))
 #endif /* WHEN_SAVE_YOURSELF_IS_FIXED */
     {
 	return;
