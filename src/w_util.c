@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -61,10 +61,12 @@
 
 /* EXPORTS */
 
-char	 *grid_inch_choices[] = { "None", "1/16", "1/8", "1/4", "1/2", "1", "2", "5", "10" };
+char	 *grid_inch_choices[] = {"None", "1/16", "1/8", "1/4", "1/2",
+					"1", "2", "5", "10"};
 int	  num_grid_inch_choices = sizeof(grid_inch_choices) / sizeof(char *);
 
-char	 *grid_tenth_inch_choices[] = { "None", "1/10", "1/5", "1/2", "1", "2", "5", "10" };
+char	 *grid_tenth_inch_choices[] = {"None", "1/10", "1/5", "1/2",
+					"1", "2", "5", "10"};
 int	  num_grid_tenth_inch_choices = sizeof(grid_tenth_inch_choices) / sizeof(char *);
 
 char	 *grid_cm_choices[] = { "None", "1 mm", "2 mm", "5 mm", "10 mm",
@@ -81,14 +83,13 @@ Pixmap	  menu_arrow, menu_cascade_arrow;
 Pixmap	  arrow_pixmaps[NUM_ARROW_TYPES+1];
 Pixmap	  diamond_pixmap;
 Pixmap	  linestyle_pixmaps[NUM_LINESTYLE_TYPES];
-Pixmap	  mouse_l=(Pixmap) 0,		/* mouse indicator bitmaps for the balloons */
+Pixmap	  mouse_l=(Pixmap) 0,	/* mouse indicator bitmaps for the balloons */
 	  mouse_r=(Pixmap) 0;
 
 /* LOCALS */
 
 DeclareStaticArgs(14);
 static void	_installscroll(Widget parent, Widget widget);
-static int	xallncol(char *name, XColor *color, XColor *exact);
 
 static Pixmap	spinup_bm=0;	/* pixmaps for spinners */
 static Pixmap	spindown_bm=0;
@@ -1477,37 +1478,6 @@ void XSyncOff(void)
 {
 	XSynchronize(tool_d, False);
 	XFlush(tool_d);
-}
-
-/*
- * This will parse the hexadecimal form of the named colors in the standard color
- * names.  Some servers can't parse the hex form for XAllocNamedColor()
- */
-
-static int
-xallncol(char *name, XColor *color, XColor *exact)
-{
-    unsigned	short r,g,b;
-    char	nam[30];
-
-    if (*name != '#')
-	return XAllocNamedColor(tool_d,tool_cm,name,color,exact);
-
-    /* gcc doesn't allow writing on constant strings without the -fwritable_strings
-       option, and apparently some versions of sscanf need to write a char back */
-    strcpy(nam,name);
-    if (sscanf(nam,"#%2hx%2hx%2hx",&r,&g,&b) != 3 || nam[7] != '\0') {
-	fprintf(stderr,
-	  "Malformed color specification %s in resources.c must be 6 hex digits",nam);
-	exit(1);
-    }
-
-    color->red   = r<<8;
-    color->green = g<<8;
-    color->blue  = b<<8;
-    color->flags = DoRed|DoGreen|DoBlue;
-    *exact = *color;
-    return XAllocColor(tool_d,tool_cm,color);
 }
 
 Widget
