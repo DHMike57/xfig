@@ -839,7 +839,7 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
     float	    save_rotnangle, save_rotn_dirn;
     int		    p1x, p1y, p2x, p2y, centerx, centery;
     int		    x1, x2, y1, y2, save;
-    int		    theight, tlen2, tht2;
+    int		    tlen2, tht2;
     char	    str[80], comment[100];
     F_point	   *pnt;
     Boolean	    fixed_text;
@@ -937,7 +937,7 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
     /* half the text length + a margin */
     tlen2 = text->length/2 + 60;
     /* half the height + a margin */
-    tht2 = theight/2 + 60;
+    tht2 = text->height/2 + 60;
 
     /* save global rotation angle and direction to use our own */
     save_rotnangle = act_rotnangle;
