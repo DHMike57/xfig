@@ -4,7 +4,7 @@
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1998 by Stephane Mancini
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -176,13 +176,19 @@ static Position xposn, yposn;
 /* comparison function for filename sorting using qsort() */
 
 
-static Boolean	MakeObjectLibrary(char *library_dir, char **objects_names, F_libobject **libobjects),MakeLibraryFileList(char *dir_name, char **obj_list);
+static Boolean	MakeObjectLibrary(char *library_dir, char **objects_names,
+				F_libobject **libobjects);
+static Boolean	MakeLibraryFileList(char *dir_name, char **obj_list);
 static int	MakeLibrary(void);
-static Boolean	ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path, char *longname, char *name, Boolean *figs_at_top, int *nentries);
-static Boolean	PutLibraryEntry(struct lib_rec *librec, char *path, char *lname, char *name);
+static Boolean	ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec,
+				char *path, char *longname,
+				Boolean *figs_at_top, int *nentries);
+static Boolean	PutLibraryEntry(struct lib_rec *librec, char *path, char *lname,
+			       char *name);
 static Boolean	lib_just_loaded, icons_made;
 static Boolean	load_lib_obj(int obj);
-static Widget	make_library_menu(Widget parent, char *name, struct lib_rec **librec, int num);
+static Widget	make_library_menu(Widget parent, char *name,
+				struct lib_rec **librec, int num);
 
 
 static int
@@ -1264,14 +1270,14 @@ PutLibraryEntry(struct lib_rec *librec, char *path, char *lname, char *name)
 	librec	- pointer to lib_rec record to put entry
 	path	- absolute path of library entry
 	longname - name with parents prepended (e.g. Electrical / Physical)
-	name	- name of library
    Outputs:
 	figs_at_top - whether or not there are Fig files in toplevel
 	nentries - number of directories found (including subdirectories)
 */
 
 static Boolean
-ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path, char *longname, char *name, Boolean *figs_at_top, int *nentries)
+ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path,
+			char *longname, Boolean *figs_at_top, int *nentries)
 {
     DIR		*dirp;
     DIRSTRUCT	*dp;
@@ -1347,7 +1353,7 @@ ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path, char *
 		    PutLibraryEntry(lp, path2, lname, dp->d_name);
 		    recnum++;
 		    /* and recurse */
-		    if (!ScanLibraryDirectory(False, lp->subdirs, path2, lname, dp->d_name,
+		    if (!ScanLibraryDirectory(False, lp->subdirs, path2, lname,
 				&lp->figs_at_top, &lp->nsubs)) {
 			/* close the directory */
 			closedir(dirp);
@@ -1399,7 +1405,7 @@ MakeLibrary(void)
 	return 0;
     } else if (S_ISDIR(st.st_mode)) {
 	/* if it is directory, scan the sub-directories and search libraries */
-	(void) ScanLibraryDirectory(True, library_rec, path, "", "", &dum, &numlibs);
+	(void) ScanLibraryDirectory(True, library_rec, path, "", &dum, &numlibs);
 	return numlibs;
     } else {
 	/* if it is a file, it must contain list of libraries */
@@ -1429,8 +1435,9 @@ MakeLibrary(void)
 		}
 		PutLibraryEntry(library_rec[numlibs], path2, name, name);
 		/* and attach its subdirectories */
-		(void) ScanLibraryDirectory(True, library_rec[numlibs]->subdirs, path2, name, "",
-					&library_rec[numlibs]->figs_at_top, &num);
+		(void) ScanLibraryDirectory(True, library_rec[numlibs]->subdirs,
+				path2, name, &library_rec[numlibs]->figs_at_top,
+				&num);
 		library_rec[numlibs]->nsubs = num;
 		numlibs++;
 	    }
