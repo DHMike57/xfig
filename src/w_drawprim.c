@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -905,49 +905,49 @@ static unsigned char vert_saw_bits[] = {
 /* patterns like bricks, etc */
 patrn_strct pattern_images[NUMPATTERNS] = {
     {left30_width,           left30_height,           (char*)left30_bits,
-     left30_width,           left30_height,           (char*)left30_bits},
+     left30_width,           left30_height,           NULL},
     {right30_width,          right30_height,          (char*)right30_bits,
-     right30_width,          right30_height,          (char*)right30_bits},
+     right30_width,          right30_height,          NULL},
     {crosshatch30_width,     crosshatch30_height,     (char*)crosshatch30_bits,
-     crosshatch30_width,     crosshatch30_height,     (char*)crosshatch30_bits},
+     crosshatch30_width,     crosshatch30_height,     NULL},
     {left45_width,           left45_height,           (char*)left45_bits,
-     left45_width,           left45_height,           (char*)left45_bits},
+     left45_width,           left45_height,           NULL},
     {right45_width,          right45_height,          (char*)right45_bits,
-     right45_width,          right45_height,          (char*)right45_bits},
+     right45_width,          right45_height,          NULL},
     {crosshatch45_width,     crosshatch45_height,     (char*)crosshatch45_bits,
-     crosshatch45_width,     crosshatch45_height,     (char*)crosshatch45_bits},
+     crosshatch45_width,     crosshatch45_height,     NULL},
     {bricks_width,           bricks_height,           (char*)bricks_bits,
-     bricks_width,           bricks_height,           (char*)bricks_bits},
+     bricks_width,           bricks_height,           NULL},
     {vert_bricks_width,      vert_bricks_height,      (char*)vert_bricks_bits,
-     vert_bricks_width,      vert_bricks_height,      (char*)vert_bricks_bits},
+     vert_bricks_width,      vert_bricks_height,      NULL},
     {horizontal_width,       horizontal_height,       (char*)horizontal_bits,
-     horizontal_width,       horizontal_height,       (char*)horizontal_bits},
+     horizontal_width,       horizontal_height,       NULL},
     {vertical_width,         vertical_height,         (char*)vertical_bits,
-     vertical_width,         vertical_height,         (char*)vertical_bits},
+     vertical_width,         vertical_height,         NULL},
     {crosshatch_width,       crosshatch_height,       (char*)crosshatch_bits,
-     crosshatch_width,       crosshatch_height,       (char*)crosshatch_bits},
+     crosshatch_width,       crosshatch_height,       NULL},
     {leftshingle_width,      leftshingle_height,      (char*)leftshingle_bits,
-     leftshingle_width,      leftshingle_height,      (char*)leftshingle_bits},
+     leftshingle_width,      leftshingle_height,      NULL},
     {rightshingle_width,     rightshingle_height,     (char*)rightshingle_bits,
-     rightshingle_width,     rightshingle_height,     (char*)rightshingle_bits},
+     rightshingle_width,     rightshingle_height,     NULL},
     {vert_leftshingle_width, vert_leftshingle_height, (char*)vert_leftshingle_bits,
-     vert_leftshingle_width, vert_leftshingle_height, (char*)vert_leftshingle_bits},
+     vert_leftshingle_width, vert_leftshingle_height, NULL},
     {vert_rightshingle_width, vert_rightshingle_height, (char*)vert_rightshingle_bits,
-     vert_rightshingle_width, vert_rightshingle_height, (char*)vert_rightshingle_bits},
+     vert_rightshingle_width, vert_rightshingle_height, NULL},
     {fishscales_width,       fishscales_height,       (char*)fishscales_bits,
-     fishscales_width,       fishscales_height,       (char*)fishscales_bits},
+     fishscales_width,       fishscales_height,       NULL},
     {small_fishscales_width, small_fishscales_height, (char*)small_fishscales_bits,
-     small_fishscales_width, small_fishscales_height, (char*)small_fishscales_bits},
+     small_fishscales_width, small_fishscales_height, NULL},
     {circles_width,          circles_height,          (char*)circles_bits,
-     circles_width,          circles_height,          (char*)circles_bits},
+     circles_width,          circles_height,          NULL},
     {hexagons_width,         hexagons_height,         (char*)hexagons_bits,
-     hexagons_width,         hexagons_height,         (char*)hexagons_bits},
+     hexagons_width,         hexagons_height,         NULL},
     {octagons_width,         octagons_height,         (char*)octagons_bits,
-     octagons_width,         octagons_height,         (char*)octagons_bits},
+     octagons_width,         octagons_height,         NULL},
     {horiz_saw_width,        horiz_saw_height,        (char*)horiz_saw_bits,
-     horiz_saw_width,        horiz_saw_height,        (char*)horiz_saw_bits},
+     horiz_saw_width,        horiz_saw_height,        NULL},
     {vert_saw_width,         vert_saw_height,         (char*)vert_saw_bits,
-     vert_saw_width,         vert_saw_height,         (char*)vert_saw_bits}
+     vert_saw_width,         vert_saw_height,         NULL}
 };
 
 /* generate the fill pixmaps */
@@ -995,9 +995,17 @@ void init_fill_pm(void)
     }
     /* Now do the remaining patterns (bricks, shingles, etc) */
     for (i = NUMSHADEPATS+NUMTINTPATS; i < NUMFILLPATS; i++) {
+	size_t	nbytes;
+	j = i-(NUMSHADEPATS+NUMTINTPATS);
+	/* allocate current pattern data for zoom = 1 */
+	nbytes = ((pattern_images[j].owidth + 7) / 8) *
+						pattern_images[j].oheight;
+	pattern_images[j].cdata = malloc(nbytes);
+	/* pattern_images[j].cwidth and .cheight is already initialized with
+	   owidth and oheight */
+	memcpy(pattern_images[j].cdata, pattern_images[j].odata, nbytes);
 	/* create pattern at this zoom */
 	rescale_pattern(i);
-	j = i-(NUMSHADEPATS+NUMTINTPATS);
 	/* save these patterns at zoom = 1 for the fill button panel */
 	fill_but_pm[j] = fill_pm[i];
 	fill_but_pm_zoom[j] = fill_pm_zoom[i];
