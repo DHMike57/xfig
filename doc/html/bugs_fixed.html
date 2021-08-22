@@ -10,18 +10,53 @@
 
 <h1>Bugs Fixed</h1>
 
-<hr>
 <h2>Current release:</h2>
-<h2>Bugs Fixed in <i>xfig 3.2.7a</i></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.8b</i></h2>
+	<img src="images/blueballdot.png">
+	Adding points to splines works if boxes are present in the figure.
+	<br><img src="images/blueballdot.png">
+	Stay in the working directory when browsing picture files.
+<br><br> <img src="images/blueramp.png" alt="-">
+
+<h2>Older releases of xfig:</h2>
+<h2>Bugs Fixed in <i>xfig 3.2.8</i></h2>
+	<img src="images/blueballdot.png">
+	Read version 1.3 fig files.
+	<br><img src="images/blueballdot.png">
+	The default resolution of embedded raster images is changed
+	  from 80 dpi to 72 dpi.
+	<br><img src="images/blueballdot.png">
+	Read compressed files, but do not silently uncompress them.
+	<br><img src="images/blueballdot.png">
+	Get correct bounding box (/MediaBox) of embedded pdf files.
+<hr>
+
+<h2>Bugs Fixed in <i>xfig 3.2.7b</i></h2>
 	Ticket numbers refer to https://sourceforge.net/p/mcj/tickets/#.
+	<br><img src="images/blueballdot.png">
+	Fix core dump when clicking File -&gt; Export. Ticket #45.
+	<br><img src="images/blueballdot.png">
+	When exiting, cleanly pull down all windows. Ticket #54.
+	<br><img src="images/blueballdot.png">
+	Adding and deleting arrows to arcs works, ticket #46.
+	<br><img src="images/blueballdot.png">
+	Allow more than 100 comment lines, ticket #47.
+	<br><img src="images/blueballdot.png">
+	Make <tt>xfig -update</tt> work again, would segfault.
+	<br><img src="images/blueballdot.png">
+	Correctly draw interpolated splines, ticket #35.
+	<br><img src="images/blueballdot.png">
+	Position points on grid, if appres.userspacing unequal 1. Ticket #31.
+<hr>
+
+<h2>Bugs Fixed in <i>xfig 3.2.7a</i></h2>
 	Debian bug numbers refer to https://bugs.debian.org/#.
 	<br><img src="images/blueballdot.png"> Really fix a bug that a figure
 	was saved in a second directory upon using the "Open.." dialog and
 	pressing "Cancel". Ticket #9, debian bug #270113.
+<hr>
 
-<br><br> <img src="images/blueramp.png" alt="-">
-<h2>Older releases of xfig:</h2>
-<h2><a name="bugsfixedd">Bugs Fixed in <i>xfig 3.2.7</i> </a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.7</i> </h2>
 	<br><img src="images/blueballdot.png"> Interpolated splines are now created with the recommended value of the
 	  shape factor of -0.5, not with -1.0. A description of the shape factor
 	  as used in xfig has been added in the file doc/FORMAT3.2
@@ -41,13 +76,13 @@
 	  This happened analogously for the "Export" dialog. Fixed, ticket #9.
 
 <hr>
-<h2><a name="bugsfixedb">Bugs Fixed in <i>xfig 3.2.6a</i></a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.6a</i></h2>
 	<img src="images/blueballdot.png"> Add compile-switch --enable-tablet for using an input tablet.
 	<br><img src="images/blueballdot.png"> Eventually, sorted out the xpm switches. Only use --enable-xpm-splash.
 	<br><img src="images/blueballdot.png"> Improve ./configure and add diagnostic output.
 
 <hr>
-<h2><a name="bugsfixedb">Bugs Fixed in <i>xfig 3.2.6</i></a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.6</i></h2>
 	<br><img src="images/blueballdot.png"> Update documentation to LaTeX and Xfig.
 	From Roland Rosenfeld <roland@spinnaker.de>:
 	<br><img src="images/blueballdot.png"> Update LaTeX documentation, use \documentclass instead of
@@ -58,12 +93,12 @@
 	  https://bugs.launchpad.net/ubuntu/+source/xfig/+bug/1045848 .
 
 <hr>
-<h2><a name="bugsfixedb">Bugs Fixed in <i>xfig 3.2.6-rc</i></a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.6-rc</i></h2>
 	<img src="images/blueballdot.png"> Should compile on Mac (Darwin) after installing dependencies using
 	  Macports, Fink or Homebrew.
 	<br><img src="images/blueballdot.png"> To compile on ancient systems, try make -DANCIENT.
 	<br><img src="images/blueballdot.png"> Report correct paths to installed files in the man page.
-	<br<br>><img src="images/blueballdot.png"> Add pathmax.h and dirstruct.h, to define DIRSTRUCT and PATH_MAX.
+	<br><img src="images/blueballdot.png"> Add pathmax.h and dirstruct.h, to define DIRSTRUCT and PATH_MAX.
 
 	<br><br>From Vladislav Zavjalov; Commit numbers refer to
 	http://git.altlinux.org/people/slazav/packages/?p=xfig.git;a=commit;h=#
@@ -95,7 +130,7 @@
 	<br><img src="images/blueballdot.png"> Moving arc point would segfault
 
 <hr>
-<h2><a name="bugsfixedb">Bugs Fixed in <i>xfig 3.2.6-beta</i></a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.6-beta</i></h2>
 
 	From Roland Rosenfeld. Bug numbers refer to https://bugs.debian.org/#.
 	In fact, most of the bugs below, also those from other sources, were
@@ -142,7 +177,7 @@
 	<br><img src="images/blueballdot.png"> Fix crash on exit. From Peter Volkov at gentoo
 
 <hr>
-<h2><a name="bugsfixedc">Bugs Fixed in <i>xfig 3.2.5c</i></a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.5c</i></h2>
 	<img src="images/blueballdot.png"> Increased default width of layer panel from 58 to 64 to accomodate scrollbar width
 	<br><img src="images/blueballdot.png"> missing comma in FIXED_JAPANESE_PDF #ifdef case in w_cmdpanel.c
 	<br><img src="images/blueballdot.png"> printer name enclosed in apostrophes when printing in case has spaces in name
@@ -189,14 +224,14 @@
 	<br><img src="images/blueballdot.png"> Warnings about different size of int and void * on 64-bit system.
 	  To fix this problem I changed int to intptr_t in some places.
 <hr>
-<h2><a name="bugsfixedb">Bugs Fixed in <i>xfig 3.2.5b</i></a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.5b</i></h2>
 	<img src="images/blueballdot.png"> Dimension line indicator incorrectly showed arrow length/width
 	<br><img src="images/blueballdot.png"> Several patches from Fedora xfig maintainer
 	<br><img src="images/blueballdot.png"> divide by 0 under certain circumstances in ruler code - From Libor Pechacek
 	<br><img src="images/blueballdot.png"> Segfault if PRINTER env variable was not defined
 
 <hr>
-<h2><a name="bugsfixeda">Bugs Fixed in <i>xfig 3.2.5a</i></a></h2>
+<h2>Bugs Fixed in <i>xfig 3.2.5a</i></h2>
 	<img src="images/blueballdot.png"> dimension line arrowhead width and length used %d instead of %f in
 	  dialog, always displaying 0
 	<br><img src="images/blueballdot.png"> leftover debugging printf(...color = ) in startup
