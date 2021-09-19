@@ -52,11 +52,15 @@ In addition to <b>xfig</b> and <b>fig2dev</b>, it is very useful to have
 </ul>
 
 <p>
-Xfig will call ghostscript to display postscript or pdf files embedded as a
-<a href="drawing.html#picture">picture</a>.
-Fig2dev will need ghostscript to be able to
-<a href="printing.html#export">export</a> to pdf and to a number of bitmap
-formats (gif, tiff, ppm, etc.).</p>
+<b>Xfig</b> will call <b>ghostscript</b> to display postscript or pdf files
+embedded as a <a href="drawing.html#picture">picture</a>.<br>
+<b>Fig2dev</b> will need <b>ghostscript</b> to be able to
+<a href="printing.html#export">export</a> to pdf and to the bitmap formats (gif,
+jpeg, tiff, png, etc.).
+For some bitmap formats, fig2dev will try to call programs from either the
+<b>netpbm</b>, <b>imagemagick</b> or <b>graphicsmagick</b> packages to produce
+smaller output files.
+</p>
 
 <hr>
 
