@@ -34,9 +34,15 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#ifdef XAW3D
 #include <X11/Xaw3d/Command.h>
 #include <X11/Xaw3d/Form.h>
 #include <X11/Xaw3d/Label.h>
+#else
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#endif /* XAW3D */
 
 #include "resources.h"
 #include "object.h"
