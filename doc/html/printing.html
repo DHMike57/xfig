@@ -13,21 +13,23 @@
 <h1>Printing and Exporting</h1>
 
 <ul>
-<li><a href="#print">Print</a>
-<li><a href="#export">Export</a>
-<li><a href="latex_and_xfig.html">LaTeX and Xfig</a>
+<li><a href="#print">Printing</a>
+<li><a href="#export">Exporting</a>
 <li><a href="#imagemap">Generating an HTML Image Map</a>
 </ul>
 
 <p>To export or print a <b>Fig</b> file,
-<b>xfig</b> calls <b>fig2dev</b>, the post-processor which converts the <b>Fig</b>
-file to the desired output language.  For printing, this is PostScript.
-For exporting, there are a dozen or so languages, including PostScript, EPS,
-LaTeX, MetaFont, and bitmap formats such as GIF, JPEG, PPM and several others.
-See the <a href="#language"><i>Language</i></a> description of the Exporting section.
-<br>This means that you must have <b>fig2dev</b> installed on your system along
-with <b>xfig</b>.
-<b>Fig2dev</b> is always available where you find <b>xfig</b>.
+<b>xfig</b> calls <b>fig2dev</b>, the post-processor which converts the
+<b>Fig</b> file to the desired output language.  For printing, this is
+PostScript.
+For exporting, there are a dozen or so languages, including PostScript, PDF,
+EPS, LaTeX, MetaFont, and bitmap formats such as GIF, JPEG, PPM and several
+others.
+See the <a href="#language"><i>Language</i></a> description of the
+<a href="#export">Exporting</a> section and the hints on
+<a href="latex_and_xfig.html">LaTeX and Xfig</a>.
+<br>Hence, to export or print, you must have <b>fig2dev</b> installed on your
+system along with <b>xfig</b>.
 See <a href="installation.html">Getting and Installing Xfig</a> for details.
 
 <p>
@@ -357,10 +359,16 @@ LaTeX box (figure boundary)
 LaTeX picture environment
 
 <DT><img src="images/blueballdot.png" align=bottom alt="-">
+TeX/LaTeX with pict2e macros
+
+<DT><img src="images/blueballdot.png" align=bottom alt="-">
 TeX/LaTeX with tikz macros
 
 <DT><img src="images/blueballdot.png" align=bottom alt="-">
 LaTeX with pstricks macros
+
+<DT><img src="images/blueballdot.png" align=bottom alt="-">
+LaTeX with epic / eepic / eepicemu macros
 
 <DT><img src="images/blueballdot.png" align=bottom alt="-">
 Combined PostScript/LaTeX
@@ -418,6 +426,12 @@ Tk (Tck/Tk toolkit canvas)
 <DT><img src="images/blueballdot.png" align=bottom alt="-">
 Perl/Tk
 
+<DT><img src="images/blueballdot.png" align=bottom alt="-">
+Shape (LaTeX \shapepar definition)
+
+<DT><img src="images/blueballdot.png" align=bottom alt="-">
+SVG (Scalable Vector Graphics)
+
 </DL>
 
 <P>Bitmap formats:
@@ -468,25 +482,25 @@ X11 Pixmap
 </DL>
 
 <P>
-As a variation of the LaTeX format, <I>epic</I>, <I>eepic</I> and <I>eepicemu</I>
-macros are also available. It is also possible to output the text part of the
-figure in LaTeX and the graphics part in PostScript using <I>Combined PostScript/LaTeX</I>.
-This is especially useful when complex numerical formulas are included in
-the figure (see also <A HREF="attributes.html#text-flags">TEXT FLAGS</A>).
+For combination with LaTeX, it is possible to either describe the entire figure
+with TeX/LaTeX macros, or to output the text part to LaTeX and the graphics part
+to PostScript and/or PDF using <I>Combined PostScript/LaTeX</I>,
+<I>Combined PDF/LaTeX</I> or <I>Combined PostScript/PDF/LaTeX</I>.
+See also <A HREF="attributes.html#text-flags">TEXT FLAGS</A> and
+<a href="latex_and_xfig.html">LaTeX and Xfig</a>.
 
 <P>Not all of the features in <B>xfig</B> are supported by all export languages.
 For example, <a href="drawing.html#picture">imported pictures</a>
 are not supported for IBMGL export.
-The PostScript export language supports all features
-of <B>xfig</B> and a fairly high quality output will be generated.
+The PostScript, PDF, Tex/LaTeX with tikz macros and SVG export languages support
+all features of <B>xfig</B> and a fairly high quality output will be generated.
 
-<P>The <b>fig2dev</b> program, part of the <b>Fig2dev</b> package available with <b>xfig</b>
-does the actual conversion from Fig to the output language.
+<P>The <b>fig2dev</b> program, part of the <b>Fig2dev</b> package available with
+<b>xfig</b>, does the actual conversion from Fig to the output language.
 
-<P>To export the figure in a bitmap format such as GIF or JPEG, you must have the
-<A HREF="installation.html#ghostscript">GhostScript</A> and
-<A HREF="installation.html#netpbm">netpbm</A>
-packages on your system.
+<P>To export the figure in a bitmap format such as GIF or JPEG, you must have
+<A HREF="installation.html#ghostscript">ghostscript</A>
+installed on your system.
 
 <DT><img src="images/redball.png" align=bottom alt="-">
 <I>Magnification</I>
