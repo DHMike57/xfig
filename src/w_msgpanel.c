@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -585,7 +585,6 @@ areameas_msg(char *msgtext, float area, float totarea, int flag)
 void
 file_msg(char *format,...)
 {
-    XawTextBlock block;
     va_list ap;
 
     if (!update_figs) {
@@ -606,6 +605,8 @@ file_msg(char *format,...)
     if (update_figs) {
        fprintf(stderr, "%s", tmpstr);
     } else {
+	XawTextBlock block;
+
 	/* append this message to the file message widget string */
 	block.firstPos = 0;
 	block.ptr = tmpstr;
@@ -615,8 +616,9 @@ file_msg(char *format,...)
 	FirstArg(XtNeditType, XawtextEdit);
 	SetValues(file_msg_win);
 	/* insert the new message after the end */
-	(void) XawTextReplace(file_msg_win,file_msg_length,file_msg_length,&block);
-	(void) XawTextSetInsertionPoint(file_msg_win,file_msg_length);
+	(void)XawTextReplace(file_msg_win, file_msg_length, file_msg_length,
+		&block);
+	(void)XawTextSetInsertionPoint(file_msg_win, file_msg_length);
 
 	/* make read-only again */
 	FirstArg(XtNeditType, XawtextRead);

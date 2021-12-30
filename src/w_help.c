@@ -54,7 +54,7 @@ launch_refman(Widget w, XtPointer closure, XtPointer call_data)
 #ifdef I18N
 	if (appres.international && getenv("LANG")) {
 	  /* check localized file ($XFIGDOCDIR/html/$LANG/index.html) first */
-	  sprintf(filename, "%s/html/%s/index.html", XFIGDOCDIR, getenv("LANG"));
+	  snprintf(filename, PATH_MAX, "%s/html/%s/index.html", XFIGDOCDIR, getenv("LANG"));
 	  if (!check_docfile(filename))
 	    sprintf(filename, "%s/html/index.html", XFIGDOCDIR);
 	}

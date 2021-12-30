@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -270,6 +270,8 @@ gsexe(FILE **out, bool *isnew, char *exenew, char *exeold)
 		 * the locale is already set to C in read_pdf. If this changes,
 		 * make sure to have here the C or POSIX locale. */
 		n = fscanf(fp, "%lf", &rev);
+		while (fgetc(fp) != EOF)
+			;
 		stat = pclose(fp);
 		if (n != 1 || stat != 0)
 			return failure;
@@ -391,6 +393,8 @@ gsexe_mediabox(char *file, int *llx, int *lly, int *urx, int *ury)
 
 	/* scan the output */
 	n = fscanf(gs_output, "[%lf %lf %lf %lf]", bb, bb+1, bb+2, bb+3);
+	while (fgetc(gs_output) != EOF)
+		;
 	stat = pclose(gs_output);
 	if (n != 4 || stat != 0) {
 		if (stat) {
