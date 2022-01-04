@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -99,23 +99,23 @@ extern	Pixmap	sm_check_pm, sm_null_check_pm;
 #define check_height 16
 #define sm_check_width 10
 #define sm_check_height 10
-extern	Pixmap	balloons_on_bitmap;
-extern	Pixmap	balloons_off_bitmap;
 extern	Pixmap	menu_arrow, menu_cascade_arrow;
 extern	Pixmap	arrow_pixmaps[NUM_ARROW_TYPES+1];
 extern	Pixmap	diamond_pixmap;
 extern	Pixmap	linestyle_pixmaps[NUM_LINESTYLE_TYPES];
 extern	char    *panel_get_value(Widget widg);
 extern	void	panel_set_value(Widget widg, char *val);
-extern	void	panel_set_int(Widget widg, int intval), panel_set_float(Widget widg, float floatval, char *format);
+extern	void	panel_set_int(Widget widg, int intval);
+extern	void	panel_set_float(Widget widg, float floatval, char *format);
 extern	void	update_wm_title(char *name);
 extern	void	get_pointer_win_xy(int *xposn, int *yposn);
 extern	void	get_pointer_root_xy(int *xposn, int *yposn);
-extern	void	spinner_up_down(Widget w, XButtonEvent *ev, String *params, Cardinal *num_params);
+extern	void	spinner_up_down(Widget w, XButtonEvent *ev, String *params,
+				Cardinal *num_params);
 extern	void	clear_splash(void);
 extern	void	InstallScroll(Widget widget);
 extern	void	InstallScrollParent(Widget widget);
-extern  void fix_converters(void);
+extern  void	fix_converters(void);
 
 
 /*

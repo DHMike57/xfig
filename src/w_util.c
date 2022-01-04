@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2021 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -77,14 +77,13 @@ char	**grid_choices;
 int	  n_grid_choices, grid_minor, grid_major;
 Pixmap	  check_pm, null_check_pm;
 Pixmap	  sm_check_pm, sm_null_check_pm;
-Pixmap	  balloons_on_bitmap=(Pixmap) 0;
-Pixmap	  balloons_off_bitmap=(Pixmap) 0;
 Pixmap	  menu_arrow, menu_cascade_arrow;
 Pixmap	  arrow_pixmaps[NUM_ARROW_TYPES+1];
 Pixmap	  diamond_pixmap;
 Pixmap	  linestyle_pixmaps[NUM_LINESTYLE_TYPES];
-Pixmap	  mouse_l=(Pixmap) 0,	/* mouse indicator bitmaps for the balloons */
-	  mouse_r=(Pixmap) 0;
+	  /* mouse indicator bitmaps for the balloons */
+Pixmap	  mouse_l=(Pixmap) 0;
+Pixmap	  mouse_r=(Pixmap) 0;
 
 /* LOCALS */
 
@@ -96,8 +95,12 @@ static Pixmap	spindown_bm=0;
 static void	validate_int(Widget w, XtPointer info, XtPointer dum);	/* validation for spinners */
 static void	convert_gridstr(Widget widget, float mult);
 
-/* for internal consumption only (use MakeIntSpinnerEntry or MakeFloatSpinnerEntry) */
-static Widget	MakeSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget beside, XtCallbackProc callback, char *string, int type, float min, float max, float inc, int width);
+/* for internal consumption only
+   (use MakeIntSpinnerEntry or MakeFloatSpinnerEntry) */
+static Widget	MakeSpinnerEntry(Widget parent, Widget *text, char *name,
+				Widget below, Widget beside,
+				XtCallbackProc callback, char *string, int type,
+				float min, float max, float inc, int width);
 
 /* bitmap for checkmark */
 static unsigned char check_bits[] = {
@@ -106,24 +109,11 @@ static unsigned char check_bits[] = {
    0x70, 0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* smaller checkmark */
-/* sm_check_width and _height are defined in w_util.c so w_layers.c can use them */
+/* sm_check_width and _height are defined in w_util.h so
+   w_layers.c can use them */
 static unsigned char sm_check_bits[] = {
    0x00, 0x00, 0x80, 0x01, 0xc0, 0x01, 0xe0, 0x01, 0x76, 0x00, 0x3e, 0x00,
    0x1c, 0x00, 0x18, 0x00, 0x08, 0x00, 0x00, 0x00};
-
-#define balloons_on_width 16
-#define balloons_on_height 15
-static unsigned char balloons_on_bits[] = {
-   0x00, 0x00, 0xfe, 0x7f, 0xfe, 0x67, 0xfe, 0x63, 0xfe, 0x71, 0xfe, 0x79,
-   0xfe, 0x7c, 0xe2, 0x7c, 0x46, 0x7e, 0x0e, 0x7e, 0x0e, 0x7f, 0x1e, 0x7f,
-   0x9e, 0x7f, 0xfe, 0x7f, 0x00, 0x00};
-
-#define balloons_off_width 16
-#define balloons_off_height 15
-static unsigned char balloons_off_bits[] = {
-   0xff, 0xff, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80,
-   0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80,
-   0x01, 0x80, 0x01, 0x80, 0xff, 0xff};
 
 /* spinner up/down icons */
 
@@ -1115,13 +1105,6 @@ void create_bitmaps(void)
 	sm_null_check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) sm_check_bits, sm_check_width, sm_check_height,
 		    getpixel(WHITE), getpixel(WHITE), tool_dpth);
-	/* create two bitmaps to show on/off state */
-	balloons_on_bitmap = XCreateBitmapFromData(tool_d, tool_w,
-				 (char *) balloons_on_bits,
-				 balloons_on_width, balloons_on_height);
-	balloons_off_bitmap = XCreateBitmapFromData(tool_d, tool_w,
-				 (char *) balloons_off_bits,
-				 balloons_off_width, balloons_off_height);
 	/* create the 1-plane bitmaps of the arrow images */
 	/* these will go in the "left bitmap" part of the menu */
 	/* they are used in e_edit.c and w_indpanel.c */

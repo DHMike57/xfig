@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -327,8 +328,9 @@ update_recent_list(char *file)
     /* first, push older entries down one slot */
     for (i=num_recent_files; i>0; i--) {
 	if (i >= max_recent_files) {
-	    /* pushing one off the end, free it's name */
+	    /* pushing superfluous off the end, free their name */
 	    free(recent_files[i-1].name);
+	    num_recent_files = max_recent_files;
 	    continue;
 	}
 	/* shift down */
@@ -340,7 +342,7 @@ update_recent_list(char *file)
 
     /* put new entry in first slot */
     /* prepend with file number (1) */
-    name = new_string(strlen(file)+4);
+    name = new_string(strlen(file)+3);
     sprintf(name,"1 %s",file);
     recent_files[0].name = name;
     if (num_recent_files < max_recent_files)
