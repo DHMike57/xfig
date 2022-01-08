@@ -6,7 +6,7 @@ AC_COPYRIGHT([FIG : Facility for Interactive Generation of figures
 Copyright (c) 1985-1988 by Supoj Sutanthavibul
 Parts Copyright (c) 1989-2015 by Brian V. Smith
 Parts Copyright (c) 1991 by Paul King
-Parts Copyright (c) 2016-2021 by Thomas Loimer
+Parts Copyright (c) 2016-2022 by Thomas Loimer
 
 Any party obtaining a copy of these files is granted, free of charge, a
 full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -176,10 +176,15 @@ AM_SUBST_NOTMAKE([gsman])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
+AC_C_CONST
 AC_C_INLINE
 AC_C_RESTRICT
+AC_TYPE_INTPTR_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINTPTR_T
 AC_CHECK_DECLS([S_IFDIR, S_IWRITE],[],[],[[#include <sys/stat.h>]])dnl
 AC_CHECK_DECL([REG_NOERROR],[],
 	[AC_DEFINE([REG_NOERROR], 0,dnl
