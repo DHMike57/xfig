@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Change function implemented by Frank Schmuck (schmuck@svax.cs.cornell.edu)
  * X version by Jon Tombs <jon@uk.ac.oxford.robots>
@@ -2002,6 +2002,9 @@ make_window_line(F_line *l)
 				below, percent_button,
 				(XtCallbackProc) 0, "100.0", 0.00001, 1000.0, 1.0, 45);
 	XtSetSensitive(percent, new_l->pic->hw_ratio ? True : False);
+	FirstArg(XtNtop, XtChainBottom);
+	NextArg(XtNbottom, XtChainBottom);
+	SetValues(percent);
 
 	break;
     }
