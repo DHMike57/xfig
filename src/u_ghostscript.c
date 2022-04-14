@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2021 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -71,7 +71,7 @@
 /*
  * callback data struct
  * A pointer to this struct can be passed to ghostscript, which
- * is then passed to the callback functions.
+ * is then passed to the stdio-callback functions.
  */
 struct _callback_data {
 	int	*bb;		/* for stdout_mediabox() callback function */
@@ -762,7 +762,7 @@ bitmap_stdout(void *data_handle, const char *str, int len)
 	return len;
 }
 
-/* Data provided to the callback functions */
+/* Data provided to the display callback functions */
 struct calldata {
 	int		width;
 	int		height;
@@ -890,13 +890,57 @@ display_close(void *handle, void *device)
 }
 
 /*
+ * All the display callback functions above are provided via a struct.
+ */
+static struct display_callback_s callback_functions = {
+	sizeof(struct display_callback_s),
+	DISPLAY_VERSION_MAJOR,
+	DISPLAY_VERSION_MINOR,
+	display_open,
+	display_preclose,
+	display_close,
+	display_presize,
+	display_size,
+	display_sync,
+	display_page,
+	NULL,		/* display_update */
+	display_memalloc,
+	display_memfree,
+#if DISPLAY_VERSION_MAJOR > 1
+	NULL,		/* display_separation */
+#if DISPLAY_VERSION_MAJOR > 2
+	NULL,		/* display_adjust_band_height */
+	NULL		/* display_rectangle_request */
+#endif
+#endif
+};
+
+#ifdef DISPLAY_CALLOUT_GET_CALLBACK
+static int
+callout_function(void *inst, void *callout_handle, const char *device,
+		int id, int size, void *data)
+{
+	(void)inst;
+	(void)size;
+	gs_display_get_callback_t	*cb;
+
+	if (device == NULL || strcmp(device, "display") ||
+			id != DISPLAY_CALLOUT_GET_CALLBACK)
+		return gs_error_unknownerror;
+
+	cb = (gs_display_get_callback_t *)data;
+	cb->callback = &callback_functions;
+	cb->caller_handle = callout_handle;
+	return gs_error_ok;
+}
+#endif
+
+/*
  * Link into the ghostscript library, writing to the display device.
  * Return 0 on success, -1 on failure, or GS_ERROR for a ghostscript error.
  * TODO: With a corrupt pdf, ghostscript will write messages to stdout and
  * return 0. A stdout callback should be used to catch these messages.
  * Warning messages seem to be directed to stderr.
- * TODO: After gs 9.52, ghostscript uses a callout function for registering the
- * callback functions. Implement that interface.
  */
 static int
 gslib_bitmap(char *file, F_pic *pic, int llx, int lly, int urx, int ury)
@@ -932,30 +976,6 @@ gslib_bitmap(char *file, F_pic *pic, int llx, int lly, int urx, int ury)
 		(size_t) 0,		/* outpos */
 		outbuf,
 		errbuf
-	};
-
-	/* callback structure for "display" device */
-	struct display_callback_s callback_functions = {
-		sizeof(struct display_callback_s),
-		DISPLAY_VERSION_MAJOR,
-		DISPLAY_VERSION_MINOR,
-		display_open,
-		display_preclose,
-		display_close,
-		display_presize,
-		display_size,
-		display_sync,
-		display_page,
-		NULL,	/* display_update */
-		display_memalloc,
-		display_memfree,
-#if DISPLAY_VERSION_MAJOR > 1
-		NULL,	/* display_separation */
-#if DISPLAY_VERSION_MAJOR > 2
-		NULL,	/* display_adjust_band_height */
-		NULL	/* display_rectangle_request */ 
-#endif
-#endif
 	};
 
 
@@ -1017,7 +1037,6 @@ gslib_bitmap(char *file, F_pic *pic, int llx, int lly, int urx, int ury)
 	arg[3] = "-dBATCH";
 	arg[4] = "-dNOPAUSE";
 	arg[5] = "-sDEVICE=display";
-	arg[6] = "-sDisplayHandle=16#%" PRIxPTR;
 	arg[7] = "-dDisplayFormat=%d";
 	arg[8] = "-r%d";	/* resolution */
 	arg[9] = "-g%dx%d";	/* width x height */
@@ -1026,8 +1045,14 @@ gslib_bitmap(char *file, F_pic *pic, int llx, int lly, int urx, int ury)
 	arg[12] = "-f";		/* terminate list of tokens for the -c switch */
 	arg[13] = file;
 
+#ifdef DISPLAY_CALLOUT_GET_CALLBACK
+	arg[6] = arg[1];	/* an empty argument ("") does not work */
+	(void)arg6;
+#else
+	arg[6] = "-sDisplayHandle=16#%" PRIxPTR;
 	sprintf(arg6, arg[6], (uintptr_t)&handle);
 	arg[6] = arg6;
+#endif
 	sprintf(arg7, arg[7], format);
 	arg[7] = arg7;
 	sprintf(arg8, arg[8], BITMAP_PPI);
@@ -1055,7 +1080,11 @@ gslib_bitmap(char *file, F_pic *pic, int llx, int lly, int urx, int ury)
 		return gsexe_bitmap(file, pic, llx, lly, urx, ury);
 
 	if (code == 0)
+#ifdef DISPLAY_CALLOUT_GET_CALLBACK
+		code = gsapi_register_callout(minst, callout_function, &handle);
+#else
 		code = gsapi_set_display_callback(minst, &callback_functions);
+#endif
 	if (code == 0)
 		code = gsapi_set_arg_encoding(minst, GS_ARG_ENCODING_UTF8);
 	if (code == 0)
