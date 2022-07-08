@@ -121,6 +121,7 @@ correct_boundingbox(int *llx, int *lly, int *urx, int *ury, const char *box) {
 int
 read_pdf(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
+	char	locale[64] = "C";
 	char	*savelocale;
 	/* prime with an invalid bounding box */
 	int	llx = 0, lly = 0, urx = 0, ury = 0;
@@ -137,16 +138,17 @@ read_pdf(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	 */
 #ifdef I18N
 	savelocale = setlocale(LC_NUMERIC, NULL);
-	if (strcmp(savelocale, "C") && strcmp(savelocale, "POSIX"))
+	if (strlen(savelocale) < sizeof locale)
+		strcpy(locale, savelocale);
+
+	if (locale && strcmp(locale, "C") && strcmp(locale, "POSIX"))
 		setlocale(LC_NUMERIC, "C");
-	else
-		savelocale = "";
 #endif
 	if (scan_mediabox(pic_stream->content, &llx, &lly, &urx, &ury))
 		gs_mediabox(pic_stream->content, &llx, &lly, &urx, &ury);
 #ifdef I18N
-	if (*savelocale)
-		setlocale(LC_NUMERIC, savelocale);
+	if (locale && strcmp(locale, "C") && strcmp(locale, "POSIX"))
+		setlocale(LC_NUMERIC, locale);
 #endif
 
 	/* provide A4 or Letter bounding box, if reading /MediaBox fails */
