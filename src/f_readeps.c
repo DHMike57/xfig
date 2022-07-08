@@ -141,13 +141,13 @@ read_pdf(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	if (strlen(savelocale) < sizeof locale)
 		strcpy(locale, savelocale);
 
-	if (locale && strcmp(locale, "C") && strcmp(locale, "POSIX"))
+	if (strcmp(locale, "C") && strcmp(locale, "POSIX"))
 		setlocale(LC_NUMERIC, "C");
 #endif
 	if (scan_mediabox(pic_stream->content, &llx, &lly, &urx, &ury))
 		gs_mediabox(pic_stream->content, &llx, &lly, &urx, &ury);
 #ifdef I18N
-	if (locale && strcmp(locale, "C") && strcmp(locale, "POSIX"))
+	if (strcmp(locale, "C") && strcmp(locale, "POSIX"))
 		setlocale(LC_NUMERIC, locale);
 #endif
 
