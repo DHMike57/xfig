@@ -2,7 +2,7 @@ AT_COPYRIGHT([FIG : Facility for Interactive Generation of figures
 Copyright (c) 1985-1988 by Supoj Sutanthavibul
 Parts Copyright (c) 1989-2015 by Brian V. Smith
 Parts Copyright (c) 1991 by Paul King
-Parts Copyright (c) 2016-2020 by Thomas Loimer
+Parts Copyright (c) 2016-2022 by Thomas Loimer
 
 Any party obtaining a copy of these files is granted, free of charge, a
 full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,7 +15,7 @@ and this permission notice remain intact.
 ])
 
 # testsuite.at
-# Author: Thomas Loimer, 2016
+# Author: Thomas Loimer, 2016-2022
 
 AT_INIT
 AT_COLOR_TESTS
@@ -97,4 +97,10 @@ AT_SETUP([Get the /MediaBox of pdf files])
 AT_KEYWORDS([u_ghostscript.c])
 AT_SKIP_IF([test ! -x "$abs_builddir/test3"])
 AT_CHECK("$abs_builddir/test3" "$srcdir/data/cross.pdf", 0)
+AT_CLEANUP
+
+AT_SETUP([Test point_spacing() returning 0])
+AT_KEYWORDS(w_canvas.c)
+AT_SKIP_IF([test ! -x "$abs_builddir/test4"])
+AT_CHECK("$abs_builddir"/test4, 0)
 AT_CLEANUP
