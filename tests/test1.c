@@ -44,8 +44,10 @@ round_coords(int *x, int *y)
 }
 
 int
-main(void)
+main(int argc, char *argv[])
 {
+	(void)	argc;
+	(void)	argv;
 	int errcode = 0;
 
 	cur_pointposn = 2;	/* == P_GRID1, see mode.h */

@@ -49,8 +49,10 @@ extern void round_coords(int *x, int *y);		/* w_canvas.h */
 
 
 int
-main(void)
+main(int argc, char *argv[])
 {
+	(void)	argc;
+	(void)	argv;
 	int	x = 1;
 	int	y = 1;
 	appres.userscale = 100.0f;

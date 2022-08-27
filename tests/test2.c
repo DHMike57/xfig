@@ -77,8 +77,10 @@ compare(int xc, int yc, int n, int pts[n][2])
 }
 
 int
-main(void)
+main(int argc, char *argv[])
 {
+	(void)	argc;
+	(void)	argv;
 	int x, y, yspacing, xc, yc, dist, xdist;
 	int error = 0;
 	int pts_square[2][2];
