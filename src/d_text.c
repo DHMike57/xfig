@@ -420,7 +420,6 @@ static void
 init_text_input(int x, int y)
 {
     int		    length, posn;
-    float	    lensin, lencos;
     int		    prev_work_font;
     int		cursor_len;
 
@@ -530,8 +529,6 @@ init_text_input(int x, int y)
 	base_x = cur_t->base_x;
 	base_y = cur_t->base_y;
 	length = cur_t->length;
-	lencos = length*cos_t;
-	lensin = length*sin_t;
 #ifdef I18N
 	save_base_x = base_x;
 	save_base_y = base_y;

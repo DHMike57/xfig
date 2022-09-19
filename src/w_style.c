@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * This file Copyright (c) 2002 Stephane Mancini
  *
@@ -324,13 +324,13 @@ parse_style (Style * style, FILE * file)
 int
 parse_family_style (Style_family * family, FILE * file)
 {
-    int     i = 0, r;
+    int     i = 0;
     char    name[256], string[256];
 
     if (get_nstyle_line (string, 256, file) == NULL)
 	return EOF;
 
-    r = sscanf (string, "%[^{^\n] {", name);
+    sscanf (string, "%[^{^\n] {", name);
     /* remove leading and trailing blanks */
     trim (name);
     family->name = strdup (name);

@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Change function implemented by Frank Schmuck (schmuck@svax.cs.cornell.edu)
  * X version by Jon Tombs <jon@uk.ac.oxford.robots>
@@ -5507,7 +5507,6 @@ image_edit_button(Widget panel_local, XtPointer closure, XtPointer call_data)
     char	cmd[PATH_MAX];
     char	s[PATH_MAX];
     struct stat	original_stat;
-    int		err;
     char	*cp;
 
     /* get the filename for the picture object */
@@ -5541,7 +5540,7 @@ image_edit_button(Widget panel_local, XtPointer closure, XtPointer call_data)
 
     pid = fork();
     if ( pid == 0 ) {
-	err = execvp(argv[0], argv);
+	execvp(argv[0], argv);
 	/* should only come here if an error in the execlp */
 	fprintf(stderr,"Error in exec'ing image editor (%s): %s\n",
 			argv[0], strerror(errno));

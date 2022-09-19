@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -284,8 +284,6 @@ cancel_boxscale_ellipse(void)
 static void
 fix_boxscale_ellipse(int x, int y)
 {
-    float	    dx, dy;
-
     if ((cur_e->type == T_CIRCLE_BY_DIA) ||
 	(cur_e->type == T_CIRCLE_BY_RAD))
 	elastic_cbd();
@@ -295,8 +293,8 @@ fix_boxscale_ellipse(int x, int y)
     new_e = copy_ellipse(cur_e);
     boxrelocate_ellipsepoint(new_e, cur_x, cur_y);
     /* find how much the radii changed */
-    dx = 1.0 * new_e->radiuses.x / cur_e->radiuses.x;
-    dy = 1.0 * new_e->radiuses.y / cur_e->radiuses.y;
+    /* dx = 1.0 * new_e->radiuses.x / cur_e->radiuses.x;
+       dy = 1.0 * new_e->radiuses.y / cur_e->radiuses.y; */
     change_ellipse(cur_e, new_e);
     wrapup_scale();
     /* redraw anything under the old ellipse */
@@ -695,7 +693,7 @@ cancel_boxscale_compound(void)
 static void
 fix_boxscale_compound(int x, int y)
 {
-    double	    scalex, scaley;
+    double	scalex, scaley;
 
     elastic_box(fix_x, fix_y, cur_x, cur_y);
     /* erase last lengths if appres.showlengths is true */
@@ -1265,7 +1263,6 @@ static void
 fix_boxscale_line(int x, int y)
 {
     int		owd,oht, nwd, nht;
-    float	scalex, scaley;
 
     elastic_box(fix_x, fix_y, cur_x, cur_y);
     /* erase last lengths if appres.showlengths is true */
@@ -1287,8 +1284,8 @@ fix_boxscale_line(int x, int y)
 	scale_radius(cur_l, new_l, owd, oht, nwd, nht);
     }
     change_line(cur_l, new_l);
-    scalex = 1.0 * nwd/owd;
-    scaley = 1.0 * nht/oht;
+    /* scalex = 1.0 * nwd/owd;
+       scaley = 1.0 * nht/oht; */
     wrapup_scale();
     /* redraw anything under the old line */
     redisplay_line(cur_l);

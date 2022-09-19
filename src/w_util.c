@@ -1179,7 +1179,7 @@ Widget
 CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, Widget beside, Boolean manage, Boolean large, Boolean *value, XtCallbackProc user_callback, Widget *togwidg)
 {
 	DeclareArgs(20);
-	Widget   form, toggle, labelw;
+	Widget   form, toggle;
 	unsigned int check_ht, udum;
 	int	 idum;
 	Window	 root;
@@ -1248,7 +1248,7 @@ CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, W
 	    NextArg(XtNinternalWidth, 2);
 	    NextArg(XtNinternalHeight, 1);
 	}
-	labelw = XtCreateManagedWidget("label", labelWidgetClass,
+	(void)XtCreateManagedWidget("label", labelWidgetClass,
 					form, Args, ArgCount);
 	if (manage)
 	    XtManageChild(form);

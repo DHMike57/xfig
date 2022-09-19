@@ -4,7 +4,7 @@
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -369,7 +369,6 @@ snap_ellipse_normal_ellipse_handler(e, x, y, cur_point_x, cur_point_y)
   double soli[4];
   double tf;
   double a, b, a2;
-  int nsol;
   int i;
   double dist;
   double mind = HUGE_VAL;
@@ -403,7 +402,7 @@ snap_ellipse_normal_ellipse_handler(e, x, y, cur_point_x, cur_point_y)
   c[1] = 2.0 * a2 * a2 * PX * tf;
   c[0] = -a2 * a2 * a2 * PX * PX;
 
-  nsol = quartic(c, solr, soli);
+  (void)quartic(c, solr, soli);
 
   for (i = 0; i < 4; i++) {
     ix[0] = ix[1] = solr[i];
@@ -631,7 +630,7 @@ snap_ellipse_tangent_ellipse_handler(e, x, y)
    *
    */
 
-  double A, B;
+  double B;
   double K, L, M;
   double P, Q, R;
 
@@ -649,7 +648,6 @@ snap_ellipse_tangent_ellipse_handler(e, x, y)
   snap_rotate_vector (&PX, &PY, PX, PY, (double)(e->angle));
   snap_rotate_vector (&X,  &Y,  X,  Y,  (double)(e->angle));
 
-  A = pow(a, 2.0);
   B = pow(b, 2.0);
 
   K = PY * a;

@@ -4,7 +4,7 @@
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
@@ -176,7 +176,7 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 
     int		i, j;
     int		numcols;
-    int		bytes_per_pixel, bit_order, byte_order;
+    int		bytes_per_pixel, byte_order;
     int		byte_inc;
     int		pix;
     unsigned char *iptr, *rowptr, *dptr;
@@ -224,8 +224,8 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
     }
 
     if (tool_vclass == TrueColor) {
-	byte_order = image->byte_order;			/* MSBFirst or LSBFirst */
-	bit_order = image->bitmap_bit_order;		/* MSBFirst or LSBFirst */
+	byte_order = image->byte_order;		/* MSBFirst or LSBFirst */
+	/* bit_order = image->bitmap_bit_order; */
 	red_mask = image->red_mask;
 	green_mask = image->green_mask;
 	blue_mask = image->blue_mask;

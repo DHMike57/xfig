@@ -1267,7 +1267,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
     Boolean	save_shownums;
     F_compound	*figure;
     int		xmin, xmax, ymin, ymax;
-    float	width, height, size;
+    float	width, height;
     int		pixwidth, pixheight;
     int		i, status;
     char	figsize[50];
@@ -1400,7 +1400,6 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	ymax = figure->secorner.y;
 	width = xmax - xmin;
 	height = ymax - ymin;
-	size = max2(width,height) / ZOOM_FACTOR;
 	/* calculate size in current units */
 	if (width < PIX_PER_INCH || height < PIX_PER_INCH) {
 	    /* for small figures, show more decimal places */

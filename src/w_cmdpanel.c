@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -1048,7 +1048,7 @@ create_global_panel(Widget w)
 {
 	(void)w;
 	DeclareArgs(10);
-	Widget		 beside, below, n_freehand, freehand, n_recent, recent;
+	Widget		 beside, below, freehand, recent;
 	Widget		 delay_form, delay_spinner;
 	Position	 xposn, yposn;
 	char		 buf[80];
@@ -1137,7 +1137,7 @@ create_global_panel(Widget w)
 	freehand = XtCreateManagedWidget("freehand_resolution", labelWidgetClass,
 					global_panel, Args, ArgCount);
 	sprintf(buf,"%d",appres.freehand_resolution);
-	n_freehand = MakeIntSpinnerEntry(global_panel, &n_freehand_resolution, "freehand_res",
+	(void)MakeIntSpinnerEntry(global_panel, &n_freehand_resolution, "freehand_res",
 			below, freehand, (XtCallbackProc) NULL, buf, 0, 100000, 10, 26);
 	below = freehand;
 
@@ -1151,7 +1151,7 @@ create_global_panel(Widget w)
 	recent = XtCreateManagedWidget("recent_file_entries", labelWidgetClass,
 					global_panel, Args, ArgCount);
 	sprintf(buf,"%d",max_recent_files);
-	n_recent = MakeIntSpinnerEntry(global_panel, &n_recent_files, "max_recent_files",
+	(void)MakeIntSpinnerEntry(global_panel, &n_recent_files, "max_recent_files",
 			below, recent, (XtCallbackProc) NULL, buf, 0, MAX_RECENT_FILES, 1, 26);
 	below = recent;
 

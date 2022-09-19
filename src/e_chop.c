@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -653,12 +653,12 @@ chop_arc(F_arc * a, int x, int y)
     for (i = 1; i < isect_cb.nr_isects; i++) {
 
       if ((rx * fabs(sin(s_points[i - 1].dist - s_points[i].dist))) > 5.0) {
-	double vmag, vpha;
+	double vmag;
 
 	vsumx = ((double)(s_points[i - 1].x + s_points[i].x)) - (2.0 * (double)(a->center.x));
 	vsumy = ((double)(s_points[i - 1].y + s_points[i].y)) - (2.0 * (double)(a->center.y));
 	vmag = hypot(vsumy, vsumx);
-	vpha = atan2(vsumy, vsumx);
+	/* vpha = atan2(vsumy, vsumx); */
 	vsumx *= rx/vmag;
 	vsumy *= rx/vmag;
 
@@ -763,7 +763,7 @@ chop_ellipse(F_ellipse * e, int x, int y)
     case T_CIRCLE_BY_RAD:
     case T_CIRCLE_BY_DIA:
       for (i = 0; i < isect_cb.nr_isects; i++) {
-	double vmag, vpha;
+	double vmag;
 	double vsumx, vsumy;
 	double rx = (double)(e->radiuses.x);
 
@@ -787,7 +787,7 @@ chop_ellipse(F_ellipse * e, int x, int y)
 	vsumx = ((double)(s_points[sp].x + s_points[ep].x)) - (2.0 * (double)(arc->center.x));
 	vsumy = ((double)(s_points[sp].y + s_points[ep].y)) - (2.0 * (double)(arc->center.y));
 	vmag = hypot(vsumy, vsumx);
-	vpha = atan2(vsumy, vsumx);
+	/* vpha = atan2(vsumy, vsumx); */
 	vsumx *= rx/vmag;
 	vsumy *= rx/vmag;
 

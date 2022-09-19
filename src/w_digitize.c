@@ -75,6 +75,7 @@ static	Boolean	digitize_append_save;
 void
 popup_digitize_panel(Widget w)
 {
+	(void)w;
 	DeclareArgs(2);
 	char	   *tmpstr;
 
@@ -396,6 +397,7 @@ digitize_panel_cancel(void)
 static void
 update_example(Widget w, XtPointer info, XtPointer dum)
 {
+    (void)w; (void)info; (void)dum;
     DeclareArgs(2);
     char	*prefix, *suffix;
     char	 example[100];
@@ -416,6 +418,7 @@ update_example(Widget w, XtPointer info, XtPointer dum)
 static void
 switch_file_mode(Widget w, XtPointer closure, XtPointer call_data)
 {
+    (void)closure; (void)call_data;
     DeclareArgs(5);
     Boolean	    state;
     intptr_t	    which;
