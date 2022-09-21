@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -437,13 +437,9 @@ void redisplay_curobj(void)
 	    }
 	    break;
 	case F_TEXT:
-	    /* if the user is editing an existing string, erase the original
-	       because redisplay_objects just re-drew it */
 	    /* FIXME - probably clear_text() with XftDrawRect(CANVAS_BG) */
-	    //if (cur_t)		/* DEBUG */
-		//draw_text(cur_t, INV_PAINT);
-	    /* now refresh the temporary edit string */
-	    //draw_char_string();
+	    if (cur_t)
+		draw_text(cur_t, PAINT);
 	    break;
       }
     } else {

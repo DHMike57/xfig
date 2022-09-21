@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -96,6 +96,7 @@ XFontStruct	*canvas_font;
 
 #define		BUF_SIZE	400
 
+static char	first_char_old_t;
 static char	prefix[BUF_SIZE];	/* part of string left of mouse click */
 static int	leng_prefix;
 static int	start_suffix;
@@ -191,26 +192,29 @@ text_drawing_selected(void)
 #endif  /* I18N */
     reset_action_on();
     clear_mousefun_kbd();
+
     set_cursor(text_cursor);
     is_newline = False;
 }
 
-/*
- * A textobject (cur_t) was already created in init_text_input() or
- * overlay_text_input(). Nothing to do if a string was input, but if the
- * string is empty, either because no text was input or the current text
- * deleted, then undo the last change.
- */
 static void
 commit_current_text(void)
 {
-	if (cur_t->cstring[0] == '\0') {
-		/* delete the previously added text, or restore the old text */
-		undo();
-		if (old_t)
-			/* now really delete the old text, for the records */
+	if (old_t) {
+		if (first_char_old_t) {
+			old_t->cstring[0] = first_char_old_t;
+			first_char_old_t = '\0';
+		}
+		if (cur_t->cstring[0] == '\0')
 			delete_text(old_t);
+		else
+			change_text(old_t, cur_t);
+		old_t = NULL;
+	} else { /* !old_t */
+		if (cur_t->cstring[0] != '\0')
+			add_text(cur_t);
 	}
+	cur_t = NULL;
 }
 
 static void
@@ -258,7 +262,6 @@ cancel_text_input(void)
     supersub = 0;
     terminate_char_handler();
     reset_action_on();
-    undo();
 
     text_drawing_selected();
     draw_mousefun_canvas();
@@ -354,7 +357,6 @@ new_text_up(void)
 static void
 overlay_text_input(int x, int y)
 {
-fputs("---overlay_text_input()---\n", stderr);
     cur_x = x;
     cur_y = y;
 
@@ -409,7 +411,6 @@ fputs("---overlay_text_input()---\n", stderr);
 	/* add new text */
 	cur_t = new_text(1, "");
 	start_suffix = 0;
-	add_text(cur_t);
 
     put_msg("Ready for text input (from keyboard)");
     initialize_char_handler(canvas_win, finish_text_input,
@@ -489,7 +490,6 @@ init_text_input(int x, int y)
 
 	cur_t = new_text(1, "");
 	start_suffix = 0;
-	add_text(cur_t);
 
     } else {
 
@@ -504,7 +504,9 @@ init_text_input(int x, int y)
 	}
 
 	cur_t = copy_text(old_t);
-	change_text(old_t, cur_t);	/* unlink old_t from the objects list */
+	/* make old_t "invisible" for redrawing */
+	first_char_old_t = old_t->cstring[0];
+	old_t->cstring[0] = '\0';
 
 	/* update the working text parameters */
 	work_textcolor = cur_t->color;
@@ -1316,7 +1318,6 @@ xim_initialize(Widget w)
   if ((modifier_list = XSetLocaleModifiers("@im=none")) == NULL || *modifier_list == '\0') {
 	printf("Warning: XSetLocaleModifiers() failed.\n");
   } else
-fprintf(stderr,"XSetLocaleModifiers should have succeeded.\n");
 
   xim_im = XOpenIM(XtDisplay(w), NULL, NULL, NULL);
   if (xim_im == NULL) {
