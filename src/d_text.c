@@ -48,6 +48,7 @@
 #include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
+#include "u_free.h"
 #include "u_list.h"
 #include "u_markers.h"
 #include "u_redraw.h"
@@ -255,6 +256,27 @@ finish_text_input(int x, int y, int shift)
 static void
 cancel_text_input(void)
 {
+	int	a,b,c,d, e,f,g,h;
+	/* erase the current text */
+	text_bound(cur_t, &a, &b, &c, &d);
+	/* Make current text invisible and redraw. This gave better results
+	   than erase_box(a,b,c,d); Also, a redisplay_region(e,f,g,h) below
+	   instead of redisplay_regions(..) was not sufficient. */
+	cur_t->cstring[0] = '\0';
+	redisplay_text(cur_t);
+	free_text(&cur_t);
+	cur_t = NULL;
+	/* old_t points to the text object in the objects list.
+	   Recover its text string which was made invisible for redrawing. */
+	if (old_t) {
+		if (first_char_old_t) {
+			old_t->cstring[0] = first_char_old_t;
+			first_char_old_t = '\0';
+		}
+		text_bound(old_t, &e, &f, &g, &h);
+		redisplay_regions(a,b,c,d, e,f,g,h);
+		old_t = NULL;
+	}
     /* reset text size after any super/subscripting */
     work_fontsize = cur_fontsize;
     work_float_fontsize = (float) work_fontsize;
