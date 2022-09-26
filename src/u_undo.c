@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
  *
@@ -50,6 +50,7 @@
 #include "w_file.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
+#include "w_util.h"
 
 
 extern void	swap_depths(void);	/* w_layers.c */
@@ -114,6 +115,10 @@ undo(void)
 {
     /* turn off Compose key LED */
     setCompLED(0);
+
+    /* finish text input or return if in the middle of an action */
+    if (check_action_on())
+	return;
 
     switch (last_action) {
       case F_ADD:
