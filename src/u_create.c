@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <X11/Xlib.h>		/* includes X11/X.h */
+#include <X11/Xft/Xft.h>
 
 #include "resources.h"
 #include "mode.h"
@@ -660,6 +661,8 @@ copy_text(F_text *t)
     /* copy static items first */
     *text = *t;
     text->next = NULL;
+    if (t->xftfont)
+	   text->xftfont = XftFontCopy(tool_d, t->xftfont);
 
     /* do comments next */
     copy_comments(&t->comments, &text->comments);
