@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -35,7 +35,6 @@
 #define NUM_LATEX_FONTS		6
 /* font number for the "nil" font (when user wants tiny text) */
 #define NILL_FONT NUM_FONTS
-#define SIZE_FLT		8	/* Float factor for font size */
 
 /* element of linked list for each font
    The head of list is for the different font NAMES,
@@ -68,7 +67,7 @@ extern int	psfontnum(char *font);
 extern int	latexfontnum(char *font);
 extern int	x_fontnum(int psflag, int fnum);
 extern void	closefont(XftFont *font);
-extern XftFont	*getfont(int psflag, int fnum, int size3, double angle);
+extern XftFont	*getfont(int psflag, int fnum, double size, double angle);
 extern void	textextents(F_text *t);
 extern int	textlength(XftFont *horfont, XftChar8 *string, int len);
 extern void	textmaxheight(int psflag, int font, int size, int *ascent,

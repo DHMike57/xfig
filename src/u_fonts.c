@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -270,8 +270,7 @@ closefont(XftFont *font)
 }
 
 XftFont *
-getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
-		double angle /* must be larger than 0! */)
+getfont(int psflag, int fnum, double size, double angle /* larger than zero! */)
 {
 	/*
 	 * The base pattern is the maximum common pattern for a given font.
@@ -285,6 +284,9 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	XftPattern	*want, *have;
 	XftResult	res;
 	XftFont		*xftfont;
+
+	/* only use such a resolution for font sizes */
+	size = (round(size * 8.)/8.);
 
 	/* sanitize fnum */
 	if (fnum < 0 || (psflag && fnum >= NUM_FONTS) ||
@@ -308,8 +310,8 @@ getfont(int psflag, int fnum, int size3, /* SIZE_FLT times the font size */
 	want = XftPatternDuplicate(xftbasepattern[fnum]);
 
 	/* add the actual pixel size and matrix transformation */
-	pixelsize = size3 * DISPLAY_PIX_PER_INCH /
-		(SIZE_FLT * (appres.correct_font_size ? 72.0 : 80.0));
+	pixelsize = size * DISPLAY_PIX_PER_INCH /
+				(appres.correct_font_size ? 72.0 : 80.0);
 	if (!XftPatternAddDouble(want, XFT_PIXEL_SIZE, pixelsize))
 		fprintf(stderr, "Error in getfont(): file %s, line %d.\n",
 				__FILE__, __LINE__);
@@ -337,7 +339,7 @@ fputs("Negative angle passed to getfont().\n", stderr); exit(1);
 
 	if (appres.DEBUG) {
 		char	buf[233];
-		XftNameUnparse(have, buf, 233);
+		XftNameUnparse(have, buf, sizeof buf);
 		fprintf(stderr, "Font request: %s\nresult: %s\n",
 				xft_name[fnum], buf);
 	}
@@ -353,7 +355,7 @@ fputs("Negative angle passed to getfont().\n", stderr); exit(1);
 		XftPatternDestroy(want);
 
 	} else if (fnum != DEF_PS_FONT)
-		xftfont = getfont(1 /*psflag*/, DEF_PS_FONT, size3, angle);
+		xftfont = getfont(1, DEF_PS_FONT, size, angle);
 	else {
 		/* why should this find a result, if XftFontMatch() fails? */
 		fprintf(stderr, "trying XftFontOpenPattern!\n");
@@ -403,8 +405,8 @@ textextents(F_text *t)
 	}
 
 	/* Get the font at native Fig resolution (often, 1200 ppi) */
-	rotfont = getfont(psfont_text(t), t->font,
-			t->size * SIZE_FLT * ZOOM_FACTOR, (double)t->angle);
+	rotfont = getfont(psfont_text(t), t->font, t->size * ZOOM_FACTOR,
+			(double)t->angle);
 	XftTextExtentsUtf8(tool_d, rotfont, (XftChar8 *)t->cstring, len,
 			&extents);
 	/* libxft keeps the last 16, closed fonts in cache.
@@ -493,7 +495,7 @@ textextents(F_text *t)
 		struct f_pos	tl, bl, tr, br;
 
 		horfont = getfont(psfont_text(t), t->font,
-					t->size * SIZE_FLT * ZOOM_FACTOR, 0.0);
+					t->size * ZOOM_FACTOR, 0.0);
 		XftTextExtentsUtf8(tool_d, horfont, (XftChar8 *)t->cstring, len,
 				&extents);
 		/* See above, libxft keeps a cache of 16 closed fonts. */
@@ -554,7 +556,7 @@ textmaxheight(int psflag, int font, int size, int *ascent, int *descent)
 	XftFont		*horfont;
 	XftChar8	max_height_str[] = "{(fgjOÜ";
 
-	horfont = getfont(psflag, font, size * SIZE_FLT * ZOOM_FACTOR, 0.0);
+	horfont = getfont(psflag, font, size * ZOOM_FACTOR, 0.0);
 	XftTextExtentsUtf8(tool_d, horfont, max_height_str,
 			(int)sizeof(max_height_str), &extents);
 	XftFontClose(tool_d, horfont);

@@ -421,8 +421,7 @@ overlay_text_input(int x, int y)
 	cos_t = cos((double)work_angle);
 
 	canvas_zoomed_xftfont = getfont(work_psflag, work_font,
-			(int)(work_fontsize * SIZE_FLT * display_zoomscale),
-			work_angle);
+			work_fontsize * display_zoomscale, work_angle);
 	work_xftfont = canvas_zoomed_xftfont;
     }
 
@@ -505,8 +504,7 @@ init_text_input(int x, int y)
 
 	    /* get the font for actually drawing on the canvas */
 	    canvas_zoomed_xftfont = getfont(work_psflag, work_font,
-			    (int)(work_fontsize * SIZE_FLT * display_zoomscale),
-			    work_angle);
+			    work_fontsize * display_zoomscale, work_angle);
 	    work_xftfont = canvas_zoomed_xftfont;
 	} /* (is_newline) */
 
@@ -603,8 +601,7 @@ new_text(int len, char *string)
     }
     text->type = work_textjust;
     text->font = work_font;	/* put in current font number */
-    text->fonts[0] = getfont(work_psflag, work_font,
-		    work_fontsize * SIZE_FLT * display_zoomscale, work_angle);
+    text->fonts[0] = canvas_zoomed_xftfont;
     text->zoom = zoomscale;
     text->size = work_fontsize;
     text->angle = work_angle;
@@ -662,8 +659,7 @@ split_at_cursor(F_text *t, int x, int y, int *cursor_len, int *start_suffix)
 	if (pos < 0)
 		pos = 0;
 
-	horfont = getfont(psfont_text(t), t->font,
-				t->size * SIZE_FLT * ZOOM_FACTOR, 0.);
+	horfont = getfont(psfont_text(t), t->font, t->size * ZOOM_FACTOR, 0.);
 
 	/* move to the first byte of a valid utf8 sequence */
 	if (pos > 0)
@@ -1235,9 +1231,8 @@ reload_text_fstruct(F_text *t)
     t->zoom = zoomscale;
     if (t->fonts[0])
 	closefont(t->fonts[0]);
-    t->fonts[0] = getfont(psfont_text(t), t->font, (int)(t->size
-			* SIZE_FLT * display_zoomscale), t->angle);
-}
+    t->fonts[0] = getfont(psfont_text(t), t->font, t->size * display_zoomscale,
+						    t->angle); }
 
 
 /****************************************************************/
