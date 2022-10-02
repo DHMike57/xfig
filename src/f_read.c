@@ -1516,7 +1516,7 @@ read_textobject(FILE *fp)
 
 	/* get the zoomed font */
 	t->zoom = zoomscale;
-	t->fonts[0] = getfont(psfont_text(t), t->font,
+	t->xftfont = getfont(psfont_text(t), t->font,
 				t->size * display_zoomscale, t->angle);
     }
 

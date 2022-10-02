@@ -350,7 +350,7 @@ fputs("Negative angle passed to getfont().\n", stderr); exit(1);
 		 * Do not destroy "have". The xft-tutorial says,
 		 * "The returned XftFont contains a reference to the passed
 		 * pattern, this pattern will be destroyed when the XftFont is
-		 * passed to XftFontClose."
+		 * passed to XftFontClose()."
 		 */
 		XftPatternDestroy(want);
 
@@ -411,7 +411,7 @@ textextents(F_text *t)
 			&extents);
 	/* libxft keeps the last 16, closed fonts in cache.
 	   Hence, no need to keep rotfont open, in our own cache. */
-	XftFontClose(tool_d, rotfont);
+	closefont(rotfont);
 
 	t->bb[0].x = 0 - extents.x;
 	t->bb[0].y = 0 - extents.y;
@@ -499,7 +499,7 @@ textextents(F_text *t)
 		XftTextExtentsUtf8(tool_d, horfont, (XftChar8 *)t->cstring, len,
 				&extents);
 		/* See above, libxft keeps a cache of 16 closed fonts. */
-		XftFontClose(tool_d, horfont);
+		closefont(horfont);
 
 		t->length = extents.width;
 		t->height = extents.height;
@@ -559,7 +559,7 @@ textmaxheight(int psflag, int font, int size, int *ascent, int *descent)
 	horfont = getfont(psflag, font, size * ZOOM_FACTOR, 0.0);
 	XftTextExtentsUtf8(tool_d, horfont, max_height_str,
 			(int)sizeof(max_height_str), &extents);
-	XftFontClose(tool_d, horfont);
+	closefont(horfont);
 	*ascent = extents.y;
 	*descent = extents.height - extents.y;
 }

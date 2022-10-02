@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -129,19 +129,10 @@ typedef struct f_arrow {
 } F_arrow;
 
 /*****************/
-/* Xft Font list */
+/* Xft Font      */
 /*****************/
 
-#define	FONTLIST_SIZE	1	/* otherwise, 6 */
-#if FONTLIST_SIZE > 2
-typedef struct _F_font {
-	int		pixelsize;	/* actually, 10 times pixelsize */
-	XftFont		*font;
-	struct _F_font	*next;
-} F_font;
-#else
 typedef XftFont	*F_font;
-#endif
 
 /******************/
 /* Ellipse object */
@@ -313,7 +304,7 @@ typedef struct f_text {
 	int base_x;		/* x-position of the baseline text marker */
 	int base_y;		/* y-position of the baseline text marker */
 	int pen_style;
-	F_font		fonts[FONTLIST_SIZE];
+	F_font xftfont;
 	struct f_pos top;	/* position of top text marker - unfortunately,
 				   not equal to rotbb[0] */
 	struct f_pos offset;	/* offset to glyph continuing cstring */

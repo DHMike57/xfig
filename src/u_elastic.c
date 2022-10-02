@@ -907,14 +907,14 @@ moving_text(int x, int y)
 			new_t->bb[1].x + new_basex, new_t->bb[1].y + new_basey);
 }
 
-/* use x1off, y1off so that the beginning of the text isn't
+/* use x1off, y1off so that the beginning of the text is not
    shifted under the cursor */
 
 void
 elastic_movetext(void)
 {
 	pw_xfttext(canvas_draw, cur_x + x1off, cur_y + y1off, MAX_DEPTH + 1,
-			new_t->fonts[0], new_t->cstring, new_t->color);
+			new_t->xftfont, new_t->cstring, new_t->color);
 }
 
 

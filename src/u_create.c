@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
  *
@@ -630,7 +630,7 @@ create_text(void)
 	return NULL;
     }
     t->tagged = 0;
-    t->fonts[0] = NULL;
+    t->xftfont = NULL;
     t->comments = NULL;
     t->cstring = NULL;
     t->next = NULL;

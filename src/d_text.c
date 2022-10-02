@@ -535,7 +535,7 @@ init_text_input(int x, int y)
 	/* font changed, refresh character map panel if it is up */
 	if (prev_work_font != work_font)
 	    refresh_character_panel();
-	work_xftfont = canvas_zoomed_xftfont = cur_t->fonts[0];
+	work_xftfont = canvas_zoomed_xftfont = cur_t->xftfont;
 	work_fontsize = cur_t->size;
 	work_psflag   = cur_t->flags & PSFONT_TEXT;
 	work_flags    = cur_t->flags;
@@ -601,7 +601,7 @@ new_text(int len, char *string)
     }
     text->type = work_textjust;
     text->font = work_font;	/* put in current font number */
-    text->fonts[0] = canvas_zoomed_xftfont;
+    text->xftfont = canvas_zoomed_xftfont;
     text->zoom = zoomscale;
     text->size = work_fontsize;
     text->angle = work_angle;
@@ -1229,9 +1229,9 @@ void
 reload_text_fstruct(F_text *t)
 {
     t->zoom = zoomscale;
-    if (t->fonts[0])
-	closefont(t->fonts[0]);
-    t->fonts[0] = getfont(psfont_text(t), t->font, t->size * display_zoomscale,
+    if (t->xftfont)
+	closefont(t->xftfont);
+    t->xftfont = getfont(psfont_text(t), t->font, t->size * display_zoomscale,
 						    t->angle); }
 
 

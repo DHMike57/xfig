@@ -1327,7 +1327,7 @@ void draw_text(F_text *text, int op)
     text_origin(&x, &y, text->base_x, text->base_y, text->type, text->offset);
 
     if (hidden_text(text)) {
-	    pw_xfttext(canvas_draw, x, y, text->depth, text->fonts[0],
+	    pw_xfttext(canvas_draw, x, y, text->depth, text->xftfont,
 			    hidden_text_string, text->color);
     } else {
 	/* if size is less than the displayable size,
@@ -1345,7 +1345,7 @@ void draw_text(F_text *text, int op)
 			c = text->color;
 		else
 			c = CANVAS_BG;
-		pw_xfttext(canvas_draw, x, y, text->depth, text->fonts[0],
+		pw_xfttext(canvas_draw, x, y, text->depth, text->xftfont,
 				text->cstring, c);
 	}
     }

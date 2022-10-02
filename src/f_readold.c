@@ -528,7 +528,7 @@ read_1_3_textobject(FILE *fp)
 		t->font, line_no);
 	t->font = DEFAULT;
     }
-    t->fonts[0] = getfont(psfont_text(t), t->font, t->size * display_zoomscale,
+    t->xftfont = getfont(psfont_text(t), t->font, t->size * display_zoomscale,
 			t->angle);
 
     /* now calculate the actual length and height of the string in fig units */

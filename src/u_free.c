@@ -22,7 +22,6 @@
 #include "u_free.h"
 
 #include <X11/Xlib.h>		/* includes X11/X.h */
-#include <X11/Xft/Xft.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,11 +108,11 @@ void free_text(F_text **list)
 	text = t;
 	t = t->next;
 	free(text->cstring);
-	if (text->fonts[0])
-		XftFontClose(tool_d, text->fonts[0]);
+	if (text->xftfont)
+		closefont(text->xftfont);
 	if (text->comments)
 	    free(text->comments);
-	free((char *) text);
+	free(text);
     }
     *list = NULL;
 }
