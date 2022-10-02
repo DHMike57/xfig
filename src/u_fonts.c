@@ -208,7 +208,7 @@ const char *const xft_name[NUM_FONTS] = {
 	"palatino",				/* Palatino-Roman */
 	"palatino:italic",			/* Palatino-Italic */
 	"palatino:bold",			/* Palatino-Bold */
-	"palatino.bold:italic",			/* Palatino-BoldItalic */
+	"palatino:bold:italic",			/* Palatino-BoldItalic */
 	"symbol",				/* Symbol */
 	"zapfchancery:medium:italic",		/* ZapfChancery-MediumItalic */
 	"zapfdingbats"				/* ZapfDingbats */
