@@ -563,7 +563,7 @@ static char *help_list[] = {
 	"[-landscape] ",
 	"[-latexfonts] ",
 	"[-left] ",
-	"[-library_dir <directory>] ",
+	"[-library_dir <directory|file>] ",
 	"[-library_icon_size <size>] ",
 	"[-list_view] ",
 	"[-magnification <print/export_mag>] ",
