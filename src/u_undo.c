@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
  *
@@ -27,6 +27,7 @@
 #include "paintop.h"
 #include "e_addpt.h"
 #include "e_arrow.h"
+#include "e_compound.h"
 #include "e_convert.h"
 #include "u_draw.h"
 #include "u_elastic.h"
@@ -132,6 +133,13 @@ undo(void)
 	break;
       case F_BREAK:
 	undo_break();
+	break;
+      case F_ENTER_COMP:
+	close_compound();
+	break;
+      case F_EXIT_COMP:
+	if (saved_objects.compounds)
+	  open_this_compound(saved_objects.compounds, False);
 	break;
       case F_LOAD:
 	undo_load();
@@ -821,7 +829,8 @@ void clean_up(void)
 	free_line(&saved_objects.lines);
 	free_spline(&saved_objects.splines);
 	free_text(&saved_objects.texts);
-    } else if (last_action == F_GLUE) {
+    } else if (last_action == F_GLUE || last_action == F_EXIT_COMP ||
+		last_action == F_EXIT_ALL_COMP) {
 	saved_objects.compounds = NULL;
     } else if (last_action == F_BREAK) {
 	free((char *) saved_objects.compounds);
