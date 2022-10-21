@@ -926,8 +926,8 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
     }
     /* recalculate text sizes */
     text->zoom = 1.0;
-    textextents(text);
     text->angle = angle;
+    textextents(text);
     /* the descent is not known any longer; it is approx. 0.2*height */
     text->base_x = centerx + round(-dy / length * text->height * (0.5 - 0.2));
     text->base_y = centery + round(dx / length * text->height * 0.3);
