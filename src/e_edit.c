@@ -813,6 +813,9 @@ void edit_item(void *p, int type, int x, int y)
 	make_window_spline((F_spline *) p);
 	break;
       case O_COMPOUND:
+	/* make compound_bound() get boundaries in the current point positioning
+	   mode, do not create a tight bounding box */
+	anypointposn = 0;
 	compound_bound((F_compound *) p, &llx, &lly, &urx, &ury);
 	/* turn on the point positioning indicator since it is used for editing compound */
 	update_indpanel(I_MIN2);
