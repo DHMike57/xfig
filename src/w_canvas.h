@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -37,7 +37,9 @@ extern void	toggle_show_balloons(void);
 extern void	toggle_show_lengths(void);
 extern void	toggle_show_vertexnums(void);
 extern void	toggle_show_borders(void);
-extern void	round_coords(int *x, int *y);		// isometric grid
+extern void	round_coords(int *restrict x, int *restrict y);
+extern void	floor_coords(int *restrict x, int *restrict y);
+extern void	ceil_coords(int *restrict x, int *restrict y);
 extern int	point_spacing(void);
 
 extern void	canvas_selected(Widget tool, XButtonEvent *event,

@@ -81,7 +81,7 @@ AT_BANNER([Unit tests])
 # Skip these tests, if the linker does not understand the
 # --allow-multiple-definition flag, hence the test programs are not built.
 
-AT_SETUP([Allow coordinates equal to INT_MIN])
+AT_SETUP([Allow coordinates equal to INT_MIN, INT_MAX])
 AT_KEYWORDS(u_bound.c)
 AT_SKIP_IF([test ! -x "$abs_builddir/test1"])
 AT_CHECK("$abs_builddir"/test1, 0)

@@ -1,9 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2017 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -296,10 +296,8 @@ void active_compound_bound(F_compound *compound, int *xmin, int *ymin, int *xmax
     }
 
     /* round the corners to the current positioning grid */
-    llx = floor_coords_x(llx, lly);
-    lly = floor_coords_y(lly, lly);
-    urx = ceil_coords_x(urx, ury);
-    ury = ceil_coords_y(ury, ury);
+    floor_coords(&llx, &lly);
+    ceil_coords(&urx, &ury);
     *xmin = llx;
     *ymin = lly;
     *xmax = urx;
@@ -694,113 +692,4 @@ void arrow_bound(int objtype, F_line *obj, int *xmin, int *ymin, int *xmax, int 
 	  pw_vector(canvas_win,bxmin,bymax,bxmin,bymin,PAINT,1,RUBBER_LINE,0.0,MAGENTA);
 	}
     }
-}
-
-/* rounds DOWN the coordinates depending on point positioning mode */		// isometric grid
-
-int
-floor_coords_x( x, y )
-int x, y;
-{
-    int x_old = x, y_old = y;
-    int i = 0;
-
-    /* no grid */
-    if( cur_pointposn == P_ANY || x == INT_MIN ) return x;
-
-    /* smaller than zero inverts problem */
-    if( x < 0 ) return -ceil_coords_x( -x, y );
-
-    /* adjust x coordinate to be on grid */
-    do {
-	x = x_old - i++;
-	y = y_old;
-	round_coords( &x, &y );
-    } while( x > x_old );
-
-    /* assign result */
-    return x;
-}
-
-int
-floor_coords_y( x, y )
-int x, y;
-{
-    int x_old = x, y_old = y;
-    int i = 0;
-
-    /* no grid */
-    if( cur_pointposn == P_ANY || y == INT_MIN ) return y;
-
-    /* smaller than zero inverts problem */
-    if( y < 0 ) return -ceil_coords_y( x, -y );
-
-    /* adjust y coordinate to be on grid */
-    do {
-	x = x_old;
-	y = y_old - i++;
-	round_coords( &x, &y );
-    } while( y > y_old );
-
-    /* assign result */
-    return y;
-}
-
-
-/* rounds UP the coordinates depending on point positioning mode */
-
-int
-ceil_coords_x( x, y )
-int x, y;
-{
-    int x_old = x, y_old = y;
-    int i = 0;
-
-    /* no grid */
-    if( cur_pointposn == P_ANY ) return x;
-
-    /* smaller than zero inverts problem */
-    if( x < 0 ) {
-	if (x == INT_MIN)
-		x = -INT_MAX;
-	return -floor_coords_x( -x, y );
-    }
-
-    /* adjust x coordinate to be on grid */
-    do {
-	x = x_old + i++;
-	y = y_old;
-	round_coords( &x, &y );
-    } while( x < x_old && x < INT_MAX);
-
-    /* assign result */
-    return x;
-}
-
-int
-ceil_coords_y( x, y )
-int x, y;
-{
-    int x_old = x, y_old = y;
-    int i = 0;
-
-    /* no grid */
-    if( cur_pointposn == P_ANY ) return y;
-
-    /* smaller than zero inverts problem */
-    if( y < 0 ) {
-	if (y == INT_MIN)
-		y = -INT_MAX;
-	return -floor_coords_y( x, -y );
-    }
-
-    /* adjust y coordinate to be on grid */
-    do {
-	x = x_old;
-	y = y_old + i++;
-	round_coords( &x, &y );
-    } while( y < y_old );
-
-    /* assign result */
-    return y;
 }

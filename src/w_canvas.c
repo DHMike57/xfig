@@ -1100,15 +1100,16 @@ point_spacing(void)
 	return spacing;
 }
 
-/* macro which rounds coordinates depending on point positioning mode */		// isometric grid
+/* macro which rounds coordinates depending on point positioning mode */
 void
-round_coords(int *x, int *y)
+round_coords(int *restrict x, int *restrict y)
 {
 	const int	spacing = point_spacing();
 	const int	half = spacing / 2;
 
+#define	ROUNDING_UNNECESSARY	cur_pointposn == P_ANY || anypointposn
 	/* make sure the cursor is on grid */
-	if (cur_pointposn == P_ANY || anypointposn || spacing < 2)
+	if (ROUNDING_UNNECESSARY || spacing < 2)
 		return;
 
 	if (cur_gridtype == GRID_ISO) {
@@ -1154,4 +1155,67 @@ round_coords(int *x, int *y)
 		round_square(x, spacing, half);
 		round_square(y, spacing, half);
 	}
+}
+
+void
+floor_coords(int *restrict x, int *restrict y)
+{
+	int	x_orig = *x;
+	int	y_orig = *y;
+	int	x_spacing;
+	int	y_spacing;
+
+	if (ROUNDING_UNNECESSARY)
+		return;
+
+	if (cur_gridtype == GRID_ISO) {
+		y_spacing = point_spacing();
+		x_spacing = y_spacing * sqrt(0.75);
+	} else {
+		x_spacing = y_spacing = point_spacing();
+	}
+
+	round_coords(x, y);
+
+	/* for isometric grid, first round in x-direction; depending on
+	   the phase, points in y-direction may change by half a spacing */
+	if (x_orig < *x && *x >= INT_MIN + x_spacing) {
+		*x -= x_spacing;
+		*y = y_orig;
+		round_coords(x, y);
+	}
+	if (y_orig < *y && *y >= INT_MIN + y_spacing)
+		*y -= y_spacing;
+}
+
+void
+ceil_coords(int *restrict x, int *restrict y)
+{
+	int	x_orig = *x;
+	int	y_orig = *y;
+	int	x_spacing;
+	int	y_spacing;
+
+	if (ROUNDING_UNNECESSARY)
+		return;
+#undef	ROUNDING_UNNECESSARY
+
+	if (cur_gridtype == GRID_ISO) {
+		y_spacing = point_spacing();
+		x_spacing = y_spacing * sqrt(0.75);
+	} else {
+		x_spacing = y_spacing = point_spacing();
+	}
+
+	round_coords(x, y);
+
+	/* for isometric grid, first round in x-direction; depending on
+	   the phase, points in y-direction may change by half a spacing */
+	if (x_orig > *x && *x <= INT_MAX - x_spacing) {
+		*x += x_spacing;
+		*y = y_orig;
+		round_coords(x, y);
+	}
+	if (y_orig > *y && *y <= INT_MAX - y_spacing)
+		*y += y_spacing;
 }
