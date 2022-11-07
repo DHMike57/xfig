@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Copyright (c) 1992 by Brian Boyter
  *
@@ -37,8 +37,9 @@
 #include <sys/types.h>		/* time_t */
 #include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
 
-#include "resources.h"		/* TMPDIR */
+#include "resources.h"		/* TMPDIR, PATH_MAX */
 #include "object.h"
+#include "mode.h"
 #include "f_readpcx.h"		/* read_pcx() */
 #include "f_util.h"		/* file_timestamp() */
 #include "u_create.h"		/* create_picture_entry() */
@@ -660,4 +661,343 @@ image_size(int *size_x, int *size_y, int pixels_x, int pixels_y,
 		*size_x = pixels_x * PIC_FACTOR + 0.5;
 		*size_y = pixels_y * PIC_FACTOR * res_x / res_y + 0.5;
 	}
+}
+
+/*
+ * File paths to images are displayed in the picture editing panel, widget
+ * pic_name_panel, and written to the .fig file as paths relative to
+ * cur_file_dir. If the user enters an absolute path, the absolute path is
+ * written to the .fig file. However, the file entry in the struct _pics
+ * pic_cache always contains an absolute path, because the absolute path is used
+ * to identify images and to not read the same image twice. Also, relative paths
+ * in picture objects would all have to be updated, if cur_file_dir changes.
+ *
+ * Prepend the absolute path in pic_cache->file with a second slash, if it
+ * should be displayed or written as absolute path. Prepend it with a tilde, if
+ * the relative path to the home directory should be used.
+ *
+ * Example, if cur_file_dir="/path/output/dir":
+ *	internal (pic_cache->file)	external (pic_name_panel, saved)
+ *	/path/picture_dir/tiger.png	../../picture_dir/tiger.png
+ *	//path/picture_dir/tiger.png	/path/picture_dir/tiger.png
+ *	~/home/user/pics/tiger.png	~/pics/tiger.png
+ */
+
+/*
+ * Given a path relative to cur_file_dir, relative to home or an absolute path,
+ * return a malloc()'d internal representation of that path. The internal
+ * representation is the absolute path for a path relative to cur_file_dir, the
+ * absolute path prepended with ~ for a path relative to home dir, or with a
+ * second slash prepended if the absolute path should be exported.
+ * If the file path does not exist or can not be accessed, return a guess.
+ */
+char *
+internal_path(const char *restrict rel_or_abs_path)
+{
+	size_t	rel_abs_len;
+	size_t	guessed_size;
+	size_t	offset;
+	char	first_char;
+	char	guessed_abs_path_buf[1024];
+	char	*guessed_abs_path = guessed_abs_path_buf;
+#ifdef PATH_MAX
+	char	resolved_buf[PATH_MAX];
+	char	*resolved = resolved_buf;
+#else
+	char	*resolved = NULL;
+#endif
+	char	*abs_path;
+	char	*result;
+
+	if (*rel_or_abs_path == '\0')
+		return NULL;
+
+	rel_abs_len = strlen(rel_or_abs_path);
+
+	/* construct the tentative absolute path,
+	   possibly with ~ or / appended	*/
+	if (*rel_or_abs_path == '/') {
+		guessed_size = rel_abs_len + 2;
+		if (guessed_size > sizeof guessed_abs_path_buf &&
+				!(guessed_abs_path = malloc(guessed_size)))
+			goto err_mem;
+		memcpy(guessed_abs_path + 1, rel_or_abs_path, rel_abs_len + 1);
+		guessed_abs_path[0] = first_char = '/';
+		offset = 1;
+	} else if (*rel_or_abs_path == '~') {
+		char	*home = getenv("HOME");
+		size_t	home_len = strlen(home);
+
+		/* correct ~some/path to ~/some/path: len + '/' + '\0' */
+		guessed_size = rel_abs_len + home_len + 2;
+		if (guessed_size > sizeof guessed_abs_path_buf &&
+				!(guessed_abs_path = malloc(guessed_size)))
+			goto err_mem;
+		memcpy(guessed_abs_path + 1, home, home_len);
+		if (rel_or_abs_path[1] != '/')
+			guessed_abs_path[1 + home_len++] = '/';
+		memcpy(guessed_abs_path + 1 + home_len, rel_or_abs_path + 1,
+							rel_abs_len);
+		guessed_abs_path[0] = first_char = '~';
+		offset = 1;
+	} else {
+		size_t	dir_len = strlen(cur_file_dir);
+
+		guessed_size = rel_abs_len + dir_len + 1;
+		if (guessed_size > sizeof guessed_abs_path_buf &&
+				!(guessed_abs_path = malloc(guessed_size)))
+			goto err_mem;
+		memcpy(guessed_abs_path, cur_file_dir, dir_len);
+		guessed_abs_path[dir_len] = '/';
+		memcpy(guessed_abs_path + dir_len, rel_or_abs_path,
+							rel_abs_len + 1);
+		offset = 0;
+	}
+
+	/* write the real absolute path to abs_path */
+	abs_path = realpath(guessed_abs_path + offset, resolved);
+#ifdef PATH_MAX
+	if (!abs_path && errno == ENAMETOOLONG)
+		abs_path = realpath(guessed_abs_path + offset, NULL);
+#endif
+	/* if realpath failed, return the guessed path */
+	if (!abs_path) {
+		int	err = errno;
+		file_msg("%s: %s", guessed_abs_path + offset, strerror(err));
+		if (guessed_abs_path != guessed_abs_path_buf) {
+			result = guessed_abs_path;
+		} else {
+			if (!(result = malloc(guessed_size)))
+				goto err_mem;
+			memcpy(result, guessed_abs_path, guessed_size);
+		}
+		return result;
+	}
+	if (guessed_abs_path != guessed_abs_path_buf)
+		free(guessed_abs_path);
+
+	/* finally, return the result */
+	if (offset || abs_path == resolved /* abs_path was not malloc'd */) {
+		size_t	len = strlen(abs_path);
+		if (!(result = malloc(len + offset + 1)))
+			goto err_mem;
+		memcpy(result + offset, abs_path, len + 1);
+		if (offset) {
+			result[0] = first_char;
+			if (abs_path != resolved)
+				free(abs_path);
+		}
+	} else {
+		/* no offset and abs_path was malloc'd */
+		result = abs_path;
+	}
+
+	return result;
+err_mem:
+	file_msg("Running out of memory.");
+	return NULL;
+}
+
+/*
+ * Return the path of target_file relative to source_dir. Both target_file and
+ * source_dir must be absolute path names returned by realpath().
+ * Write the result into size-sized buffer relname.
+ * Return the number of characters written.
+ * A return value of size or more means that the buffer pointed to by relname
+ * was too small.
+ */
+static int
+xf_relpath(const char *restrict source_dir, const char *restrict target_file,
+	char *relname, size_t size)
+{
+	int	i = 0;
+	size_t	required_size;
+	size_t	one = strlen("../");
+
+	/* the index of the first char not common to both s and t */
+	while (*source_dir && *target_file && *source_dir == *target_file) {
+		++source_dir;
+		++target_file;
+		++i;
+	}
+	/* source: /a/this, target: /a/that - rewind to the rightmost slash */
+	if (*source_dir != '/' && *source_dir != '\0') {
+		while (i > 0 && *--source_dir != '/') {
+			--target_file;
+			--i;
+		}
+		++source_dir;
+	}
+
+	/*
+	 * If the target_file is located below source_dir, the first char in
+	 * target_file is a slash, and source_dir points to '\0'. Otherwise, one
+	 * more than '/' present in source_dir times '../' must be written to
+	 * relname, and target_file appended.
+	 * /a/dir, /a/myfile	 -> dir, myfile: ../myfile.
+	 * /a/dir, /a/dir/myfile -> "", /myfile: myfile.
+	 * /a/this, /a/that	 -> this, that: ../that
+	 */
+
+	if (*source_dir) {
+		i = 1;
+		/* the first char cannot be '/' */
+		while ((source_dir = strchr(++source_dir, '/')))
+			++i;
+	} else { /* *source_dir == '\0', *target_file == '/' */
+		i = 0;
+		++target_file;
+	}
+	required_size = i * one + strlen(target_file);
+	if (required_size >= size) {
+		*relname = '\0';
+	} else {
+		for (; i > 0; --i) {
+			strcpy(relname, "../");
+			relname += one;
+		}
+		strcpy(relname, target_file);
+	}
+	return required_size;
+}
+
+/*
+ * Return the path of target_file relative to source_dir. The path of source_dir
+ * is canonicalized with realpath(), target_file must be an absolute path name
+ * returned by realpath(). Write the result into size-sized buffer relname.
+ * Return the number of characters written, or -1 if the path of source_dir
+ * cannot be found. A return value of size or more means that the buffer pointed
+ * to by relname was too small.
+ */
+static int
+relative_path(const char *restrict source_dir, const char *restrict target_file,
+		char *relname, size_t size)
+{
+	int	status;
+#ifdef PATH_MAX
+	char	resolved[PATH_MAX];
+#endif
+	char	*result;
+
+#ifdef PATH_MAX
+	result = realpath(source_dir, resolved);
+	if (!result && errno == ENAMETOOLONG)
+		result = realpath(source_dir, NULL);
+#else
+	result = realpath(source_dir, NULL);
+#endif
+	if (result) {
+		status = xf_relpath(result, target_file, relname, size);
+#ifdef PATH_MAX
+		if (result != resolved)
+#endif
+			free(result);
+	} else {
+		/* if source_dir cannot be found, return the absolute path */
+		*relname = '\0';
+		status = -1;
+	}
+	return status;
+}
+
+/*
+ * Given the file path stored in pic_cache->file, return a string of maxlength
+ * size - 1 in the buffer rel_or_abs_path which contains either a path relative
+ * to cur_file_dir, an absolute path, or a path relative to $HOME.
+ * Return the number of characters written or, if this number is larger or equal
+ * to size, the number of characters that would have been written to
+ * rel_or_abs_path, if it had been large enough. If a relative path is requested
+ * but the absolute path to cur_file_dir cannot be found, return an absolute
+ * path. Return -1 on error, unexpected internal path.
+ * See also above, internal_path().
+ */
+static int
+xf_external_path(char *rel_or_abs_path, size_t size, char *internal)
+{
+	size_t	len;
+
+	if (internal[0] == '/') {
+		size_t	offset;
+		if (internal[1] != '/') {
+			/* relative path: /abs/dir/file */
+			int	status = relative_path(cur_file_dir, internal,
+					rel_or_abs_path, size);
+			if (status >= 0)
+				return status;
+			/* fall through if the relative path cannot be
+			 * constructed, and return an absolute path.	*/
+			len = strlen(internal);
+			offset = 0;
+		} else {	/* internal[1] == '/' */
+			/* absolute path: //abs/dir/file */
+			len = strlen(internal) - 1;
+			offset = 1;
+		}		/* internal[1] == '/' || status < 0 */
+		/* absolute path, or fall through */
+		if (len + 1 > size) {
+			*rel_or_abs_path ='\0';
+			return (int)len;
+		}
+		memcpy(rel_or_abs_path, internal + offset, len + 1);
+		return (int)len;
+
+	} else if (internal[0] == '~') {
+		char	*home = getenv("HOME");
+		size_t	home_len = strlen(home);
+
+		if (!strncmp(home, internal + 1, home_len) &&
+				internal[1 + home_len] == '/') {
+			len = strlen(internal) - home_len;
+			if (len + 1 > size) {
+				*rel_or_abs_path ='\0';
+				return (int)len;
+			}
+			rel_or_abs_path[0] = '~';
+			memcpy(rel_or_abs_path + 1, internal + home_len + 1,
+							len);
+		} else {
+			/* return the absolute path, if $HOME is not found */
+			len = strlen(internal) - 1;
+			if (len + 1 > size) {
+				*rel_or_abs_path ='\0';
+				return (int)len;
+			}
+			memcpy(rel_or_abs_path, internal + 1, len + 1);
+		}
+		return (int)len;
+
+	} else {
+		file_msg("Error in xf_external_path(): "
+				"Unexpected internal path %s", internal);
+		*rel_or_abs_path ='\0';
+		return -1;
+	}
+}
+
+/*
+ * Given an internal representation of a picture file path in internal (see the
+ * comments above internal_path()), return the external representation of that
+ * path in *rel_or_abs_path. The buffer pointed to by rel_or_abs_path must have
+ * size size. If the buffer size is not sufficient, return a newly allocated
+ * string. In that case, the value returned by external_path is equal or larger
+ * than size.
+ * Usage:
+ *	char name_buf[SIZE];	char	*name = name_buf;
+ *	external_path(&name, sizeof name, internal);
+ *	if (name != name_buf)
+ *		free(name);
+ */
+int
+external_path(char **rel_or_abs_path, size_t size, char *internal)
+{
+	int	len = xf_external_path(*rel_or_abs_path, size, internal);
+
+	if (len < (int)size)	/* includes len < 0 */
+		return len;
+
+	if (!(*rel_or_abs_path = malloc(len + 1))) {
+		file_msg("Running out of memory.");
+		return -1;
+	}
+	return xf_external_path(*rel_or_abs_path, size, internal);
 }
