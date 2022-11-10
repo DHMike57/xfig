@@ -897,7 +897,6 @@ read_lineobject(FILE *fp)
     int		    type, style, radius_flag;
     float	    thickness, wd, ht;
     int		    ox, oy;
-    char	    picfile[PATH_MAX];
     Boolean	    dum;
 
     if ((l = create_line()) == NULL){
@@ -1004,19 +1003,16 @@ read_lineobject(FILE *fp)
 	    return NULL;
 	}
 
-	/* if path is relative convert it to absolute path */
-	if (s1[0] != '/')
-	    sprintf(picfile, "%s/%s", cur_file_dir, s1);
-	else
-	    strcpy(picfile, s1);
-
 	if (!update_figs) {
 	    /* only read in the image if update_figs is False */
+	    char	*picfile = internal_path(s1);
+fprintf(stderr, "internal path: %s\n", picfile);
 	    read_picobj(l->pic, picfile, l->pen_color, False, &dum);
+	    free(picfile);
 	} else {
 	    /* otherwise just make a pseudo entry with the filename */
 	    l->pic->pic_cache = create_picture_entry();
-	    l->pic->pic_cache->file = strdup(picfile);
+	    l->pic->pic_cache->file = internal_path(s1);
 	}
 	/* we've read in a pic object - merge_file uses this info to decide
 	   whether or not to remap any picture colors in first figure */

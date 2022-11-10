@@ -143,7 +143,7 @@ free_stream(struct xfig_stream *restrict xf_stream)
  *		free(found);
  */
 static int
-file_on_disk(char *restrict name, char *restrict *found, size_t len,
+file_on_disk(const char *restrict name, char *restrict *found, size_t len,
 		const char *restrict *uncompress)
 {
 	int		i;
@@ -251,16 +251,17 @@ file_on_disk(char *restrict name, char *restrict *found, size_t len,
  * Return FileInvalid, if "file" is not found, otherwise return 0.
  */
 static int
-get_picture_status(F_pic *pic, struct _pics *pics, char *file, bool force,
+get_picture_status(F_pic *pic, struct _pics *pics, bool force,
 		bool *reread, bool *existing)
 {
 	char		found_buf[256];
 	char		*found = found_buf;
 	const char	*uncompress;
+	const char	*file = ABSOLUTE_PATH(pics->file);
 	time_t		mtime;
 
 	/* get the name of the file on disk */
-	if (file_on_disk(pics->file, &found, sizeof found_buf, &uncompress)) {
+	if (file_on_disk(file, &found, sizeof found_buf, &uncompress)) {
 		if (found != found_buf)
 			free(found);
 		return FileInvalid;
@@ -317,6 +318,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 {
 	FILE		*fp;
 	int		i;
+	char		*abs_path = ABSOLUTE_PATH(file);
 	char		buf[16];
 	bool		reread;
 	struct _pics	*pics, *lastpic;
@@ -341,9 +343,9 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 	/* look in the repository for this filename */
 	lastpic = pictures;
 	for (pics = pictures; pics; pics = pics->next) {
-		if (strcmp(pics->file, file) == 0) {
+		if (!strcmp(ABSOLUTE_PATH(pics->file), abs_path)) {
 			/* check, whether picture exists, or must be re-read */
-			if (get_picture_status(pic, pics, file, force, &reread,
+			if (get_picture_status(pic, pics, force, &reread,
 						(bool *)existing) ==FileInvalid)
 				return;
 			if (!reread && *existing) {
@@ -391,8 +393,8 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 	init_stream(&pic_stream);
 
 	/* open the file and read a few bytes of the header to see what it is */
-	if ((fp = open_stream(file, &pic_stream)) == NULL) {
-		file_msg("No such picture file: %s", file);
+	if ((fp = open_stream(abs_path, &pic_stream)) == NULL) {
+		file_msg("No such picture file: %s", abs_path);
 		free_stream(&pic_stream);
 		return;
 	}
@@ -414,7 +416,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 
 	/* not found */
 	if (i == (int)(sizeof headers / sizeof(headers[0]))) {
-		file_msg("%s: Unknown image format", file);
+		file_msg("%s: Unknown image format", abs_path);
 		put_msg("Reading Picture object file...Failed");
 		app_flush();
 		close_stream(&pic_stream);
@@ -425,7 +427,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 	/* readfunc() expect an open file stream, positioned not at the
 	   start of the stream. The stream remains open after returning. */
 	if (headers[i].readfunc(pic, &pic_stream) != PicSuccess) {
-		file_msg("%s: Bad %s format", file, headers[i].type);
+		file_msg("%s: Bad %s format", abs_path, headers[i].type);
 	} else {
 		put_msg("Reading Picture object file...Done");
 	}
@@ -689,7 +691,9 @@ image_size(int *size_x, int *size_y, int pixels_x, int pixels_y,
  * representation is the absolute path for a path relative to cur_file_dir, the
  * absolute path prepended with ~ for a path relative to home dir, or with a
  * second slash prepended if the absolute path should be exported.
- * If the file path does not exist or can not be accessed, return a guess.
+ * Return value: A string to the internal path, or to a guess, if the file path
+ *		does not exist or cannot be accessed.
+ *		NULL if rel_or_abs_path is empty.
  */
 char *
 internal_path(const char *restrict rel_or_abs_path)
@@ -743,13 +747,13 @@ internal_path(const char *restrict rel_or_abs_path)
 	} else {
 		size_t	dir_len = strlen(cur_file_dir);
 
-		guessed_size = rel_abs_len + dir_len + 1;
+		guessed_size = rel_abs_len + dir_len + 2;
 		if (guessed_size > sizeof guessed_abs_path_buf &&
 				!(guessed_abs_path = malloc(guessed_size)))
 			goto err_mem;
 		memcpy(guessed_abs_path, cur_file_dir, dir_len);
 		guessed_abs_path[dir_len] = '/';
-		memcpy(guessed_abs_path + dir_len, rel_or_abs_path,
+		memcpy(guessed_abs_path + dir_len + 1, rel_or_abs_path,
 							rel_abs_len + 1);
 		offset = 0;
 	}
@@ -981,6 +985,8 @@ xf_external_path(char *rel_or_abs_path, size_t size, char *internal)
  * size size. If the buffer size is not sufficient, return a newly allocated
  * string. In that case, the value returned by external_path is equal or larger
  * than size.
+ * Return value: The number of chars written, or to be written.
+ *		 On error, return a value smaller than zero.
  * Usage:
  *	char name_buf[SIZE];	char	*name = name_buf;
  *	external_path(&name, sizeof name, internal);

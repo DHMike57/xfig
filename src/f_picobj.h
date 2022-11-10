@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -51,6 +51,12 @@ extern void	read_picobj(F_pic *pic, char *file, int color, Boolean force,
 				Boolean *existing);
 extern void	image_size(int *size_x, int *size_y, int pixels_x, int pixels_y,
 				char unit, float res_x, float res_y);
+
+extern char	*internal_path(const char *restrict rel_or_abs_path);
+extern int	external_path(char **rel_or_abs_path, size_t size,
+				char *internal);
+#define	ABSOLUTE_PATH(internal)	(*(internal) == '/' && *((internal)+1) == '/' \
+			|| *(internal) == '~' ? (internal) + 1 : (internal))
 
 extern FILE	*open_stream(char *restrict name,
 				struct xfig_stream *restrict xf_stream);

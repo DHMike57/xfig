@@ -892,9 +892,11 @@ reread_picfile(Widget panel_local, XtPointer closure, XtPointer call_data)
     list_delete_line(&objects.lines, new_l);
     redisplay_line(new_l);
     /* reread the file */
-    read_picobj(new_l->pic, new_l->pic->pic_cache->file, new_l->pen_color, True, &dum);
+    read_picobj(new_l->pic, new_l->pic->pic_cache->file,
+		    new_l->pen_color, True, &dum);
     /* calculate h/w ratio */
-    new_l->pic->hw_ratio = (float) new_l->pic->pic_cache->bit_size.y/new_l->pic->pic_cache->bit_size.x;
+    new_l->pic->hw_ratio = (float)new_l->pic->pic_cache->bit_size.y /
+					new_l->pic->pic_cache->bit_size.x;
     get_new_line_values();
     list_add_line(&objects.lines, new_l);
     redisplay_line(new_l);
@@ -1626,6 +1628,8 @@ make_window_line(F_line *l)
 		free((char *) new_l->back_arrow);
 	new_l->for_arrow = new_l->back_arrow = (F_arrow *) NULL;
     }
+      char	picname_buf[128];
+      char	*picname = picname_buf;
     switch (new_l->type) {
       case T_POLYLINE:
 	put_generic_arrows(new_l);
@@ -1669,15 +1673,21 @@ make_window_line(F_line *l)
 
 	(void) int_panel(new_l->depth, form, "     Depth", (Widget) 0, &depth_panel,
 				MIN_DEPTH, MAX_DEPTH, 1);
-	str_panel(new_l->pic->pic_cache? new_l->pic->pic_cache->file: "", "Picture filename",
-				&pic_name_panel, 290, False, False);
+	if (new_l->pic->pic_cache && new_l->pic->pic_cache->file)
+		(void)external_path(&picname, sizeof picname_buf,
+					new_l->pic->pic_cache->file);
+	str_panel(new_l->pic->pic_cache && new_l->pic->pic_cache->file ?
+								picname : "",
+			"Picture filename", &pic_name_panel, 290, False, False);
 
 	/* make a button to reread the picture file */
 	FirstArg(XtNfromVert, beside);
 	NextArg(XtNhorizDistance, 10);
 	NextArg(XtNlabel, "Reread");
-	NextArg(XtNsensitive,
-		(new_l->pic->pic_cache && new_l->pic->pic_cache->file[0])); /* only sensitive if there is a filename */
+				/* only sensitive if there is a filename */
+	NextArg(XtNsensitive, *picname);
+	if (picname != picname_buf)
+		free(picname);
 	NextArg(XtNtop, XtChainBottom);
 	NextArg(XtNbottom, XtChainBottom);
 	NextArg(XtNleft, XtChainLeft);
@@ -2017,8 +2027,7 @@ static void
 get_new_line_values(void)
 {
     struct f_point  p1, p2, *p;
-    char	   *string;
-    char	    longname[PATH_MAX];
+    char	   *picture_path; /* relative or absolute path, as displayed */
     int		    dx, dy, rotation;
     float	    ratio;
     unsigned	    i;
@@ -2075,25 +2084,21 @@ get_new_line_values(void)
 	sprintf(buf, "%1.1f", ratio);
 	FirstArg(XtNlabel, buf);
 	SetValues(hw_ratio_panel);
-	string = panel_get_value(pic_name_panel);
-	if (string[0] == '\0')
-	    string = EMPTY_PIC;
-	else if (string[0] == '~') {
-	    /* if user typed tilde, parse user path and put in string panel */
-	    parseuserpath(string,longname);
-	    panel_set_value(pic_name_panel, longname);
-	    string = longname;
-	} else if (string[0] != '/') {
-	    /* make absolute */
-	    sprintf(longname, "%s/%s", cur_file_dir, string);
-	    panel_set_value(pic_name_panel, longname);
-	    string = longname;
+	picture_path = internal_path(panel_get_value(pic_name_panel));
+	/* the string memory returned by pic_name_panel my be freed by
+	   XawAsciiSourceFreeString(pic_name_panel);	*/
+	if (!picture_path) {
+		picture_path = EMPTY_PIC;
+	} else if (picture_path[0] == '\0') {
+		free(picture_path);
+		picture_path = EMPTY_PIC;
 	}
 
 	file_changed = False;
 
 	/* if the filename changed, or this is a new picture */
-	if (!new_l->pic->pic_cache || strcmp(string, new_l->pic->pic_cache->file)) {
+	if (!new_l->pic->pic_cache ||
+			strcmp(picture_path, new_l->pic->pic_cache->file)) {
 	    reread_file = False;
 	    file_changed = True;
 	    if (new_l->pic->pic_cache) {
@@ -2102,18 +2107,20 @@ get_new_line_values(void)
 	    }
 	    new_l->pic->hw_ratio = 0.0;
 	    /* read the new picture file */
-	    if (strcmp(string, EMPTY_PIC)) {
-		read_picobj(new_l->pic, string, new_l->pen_color, reread_file, &existing);
+	    if (picture_path != EMPTY_PIC) {
+		read_picobj(new_l->pic, picture_path,
+				new_l->pen_color, reread_file, &existing);
 		/* calculate h/w ratio */
-		new_l->pic->hw_ratio = (float) new_l->pic->pic_cache->bit_size.y/new_l->pic->pic_cache->bit_size.x;
+		new_l->pic->hw_ratio = (float)new_l->pic->pic_cache->bit_size.y
+				/ new_l->pic->pic_cache->bit_size.x;
 	    }
 	    /* enable reread button now */
 	    XtSetSensitive(reread, True);
 	}
 	/* update bitmap size */
 	if (new_l->pic->pic_cache && new_l->pic->pic_cache->subtype != T_PIC_NONE) {
-	    sprintf(buf,"%d x %d",
-			new_l->pic->pic_cache->bit_size.x,new_l->pic->pic_cache->bit_size.y);
+	    sprintf(buf,"%d x %d", new_l->pic->pic_cache->bit_size.x,
+				    new_l->pic->pic_cache->bit_size.y);
 	    /* only the XBM (bitmap) type has a pen color */
 	    if (new_l->pic->pic_cache->subtype == T_PIC_XBM)
 		XtSetSensitive(pen_col_button, True);
@@ -2125,8 +2132,10 @@ get_new_line_values(void)
 	FirstArg(XtNlabel, buf);
 	SetValues(pic_size);
 	/* stop here if no picture file specified yet */
-	if (strcmp(string, EMPTY_PIC) == 0)
+	if (picture_path == EMPTY_PIC)
 	    break;
+	else
+		free(picture_path);
 
 	/* make box red indicating this type of picture file */
 	for (i=0; i<NUM_PIC_TYPES; i++) {

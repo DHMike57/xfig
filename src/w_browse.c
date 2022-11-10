@@ -107,9 +107,16 @@ browse_panel_dismiss(void)
 void
 got_browse(Widget w, XButtonEvent *ev)
 {
-    char	   *fval, *dval, *path;
+	char	abs_path_buf[128];
+	char	*abs_path = abs_path_buf;
+	char	path_buf[128];
+	char	*path = path_buf;
+	char	*fval, *dval;
+	size_t	dval_len, fval_len;
 
-    if (browse_popup) {
+	if (!browse_popup)
+		return;
+
 	FirstArg(XtNstring, &dval);
 	GetValues(browse_dir);
 	FirstArg(XtNstring, &fval);
@@ -122,16 +129,32 @@ got_browse(Widget w, XButtonEvent *ev)
 	if (emptyname_msg(fval, "Apply"))
 	    return;
 
-	path = new_string( strlen(dval) + 1 + strlen(fval) + 1);
-	if ( path ) {
-	    strcpy( path,dval );
-	    strcat( path, "/");
-	    strcat( path, fval );
-	    panel_set_value( pic_name_panel, path );
-	    free(path);
+	dval_len = strlen(dval);
+	fval_len = strlen(fval);
+	if (dval_len + 1 + fval_len + 1 >= sizeof abs_path)
+		/* new_string takes the string length as argument */
+		abs_path = new_string(dval_len + fval_len + 1);
+	if (abs_path) {
+		/*
+		 * The external representation of an absolute path is
+		 * a path relative to cur_file_dir.  Therefore, construct the
+		 * absolute path.
+		 */
+		memcpy(abs_path, dval, dval_len);
+		abs_path[dval_len] = '/';
+		memcpy(abs_path + dval_len + 1, fval, fval_len + 1);
+		/* TODO, check all code paths, empty string etc. */
+		if (external_path(&path, sizeof path_buf, abs_path) >= 0)
+			panel_set_value(pic_name_panel, path);
+		else
+			panel_set_value(pic_name_panel, ""); /* FIXME */
+		if (abs_path != abs_path_buf)
+			free(abs_path);
+		if (path != path_buf)
+			free(path);
 	}
+	/* inter alia, writes the path name to the picture object */
 	push_apply_button();  /* slightly iffy - assumes called from edit picture */
-    }
 }
 
 static void

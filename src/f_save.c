@@ -432,21 +432,17 @@ void write_line(FILE *fp, F_line *l)
 
 	/* handle picture stuff */
 	if (l->type == T_PICTURE) {
-	    char *s1;
-	    picfile = NULL;
-	    if (l->pic->pic_cache)
-	    picfile = l->pic->pic_cache->file;
-	    if (picfile == NULL || strlen(picfile) == 0) {
-		s1 = "<empty>";
-	    } else if (strncmp(picfile, cur_file_dir, strlen(cur_file_dir))==0 &&
-		strlen(picfile) > strlen(cur_file_dir) && picfile[strlen(cur_file_dir)] == '/') {
-		/* use relative path if the file is under current directory */
-		    s1 = &picfile[strlen(cur_file_dir)+1];
-	    } else {
-		/* use full path */
-		s1 = picfile;
-	    }
-	    fprintf(fp, "\t%d %s\n", l->pic->flipped, s1);
+	    char	picfile_buf[128];
+	    char	*picfile = picfile_buf;
+	    if (l->pic->pic_cache && l->pic->pic_cache->file)
+		    external_path(&picfile, sizeof picfile_buf,
+				    l->pic->pic_cache->file);
+	    if (picfile[0] == '\0')
+		    strcpy(picfile, EMPTY_PIC);
+
+	    fprintf(fp, "\t%d %s\n", l->pic->flipped, picfile);
+	    if (picfile != picfile_buf)
+		    free(picfile);
 	}
 
 	fprintf(fp, "\t");
