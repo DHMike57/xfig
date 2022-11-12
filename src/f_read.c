@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -23,7 +23,6 @@
 
 #include <ctype.h>		/* isdigit() */
 #include <errno.h>
-#include <limits.h>		/* PATH_MAX */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -984,7 +983,7 @@ read_lineobject(FILE *fp)
 	l->back_arrow = new_arrow(type, style, thickness, wd, ht);
     }
     if (l->type == T_PICTURE) {
-	char s1[PATH_MAX];
+	char	*s1;
 
 	if (read_line(fp) == -1) {
 	    free((char *) l);
@@ -996,8 +995,9 @@ read_lineobject(FILE *fp)
 	    numcom=0;
 	    return NULL;
 	}
-	if (sscanf(buf, "%d %[^\n]", &l->pic->flipped, s1) != 2) {
+	if (sscanf(buf, "%d %m[^\n]", &l->pic->flipped, &s1) != 2) {
 	    file_msg(Err_incomp, "Picture Object", save_line);
+	    free(s1);
 	    free((char *) l);
 	    numcom=0;
 	    return NULL;
@@ -1005,15 +1005,13 @@ read_lineobject(FILE *fp)
 
 	if (!update_figs) {
 	    /* only read in the image if update_figs is False */
-	    char	*picfile = internal_path(s1);
-fprintf(stderr, "internal path: %s\n", picfile);
-	    read_picobj(l->pic, picfile, l->pen_color, False, &dum);
-	    free(picfile);
+	    read_picobj(l->pic, internal_path(s1), l->pen_color, False, &dum);
 	} else {
 	    /* otherwise just make a pseudo entry with the filename */
 	    l->pic->pic_cache = create_picture_entry();
 	    l->pic->pic_cache->file = internal_path(s1);
 	}
+	free(s1);
 	/* we've read in a pic object - merge_file uses this info to decide
 	   whether or not to remap any picture colors in first figure */
 	pic_obj_read = True;

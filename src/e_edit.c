@@ -2134,8 +2134,6 @@ get_new_line_values(void)
 	/* stop here if no picture file specified yet */
 	if (picture_path == EMPTY_PIC)
 	    break;
-	else
-		free(picture_path);
 
 	/* make box red indicating this type of picture file */
 	for (i=0; i<NUM_PIC_TYPES; i++) {

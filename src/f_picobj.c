@@ -312,6 +312,8 @@ get_picture_status(F_pic *pic, struct _pics *pics, bool force,
  * If not, read the file via the relevant reader and add to the repository
  * and set "existing" to False.
  * If "force" is true, read the file unconditionally.
+ * The string "file" must have been allocated by the caller and not be freed
+ * after a call to read_picobj().
  */
 void
 read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
@@ -371,7 +373,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 			/* first one */
 			pictures = pics;
 		}
-		pics->file = strdup(file);
+		pics->file = file;
 		pics->refcount = 1;
 		pics->bitmap = NULL;
 		pics->subtype = T_PIC_NONE;
