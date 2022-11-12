@@ -2,6 +2,20 @@ Changes to Xfig
 =============================================================================
 Version 3.2
 =============================================================================
+Patchlevel 9 (Nov 2022)
+
+NEW FEATURES:
+	o Text objects are rendered using the xft library.
+	o Relative, not absolute paths to embedded picture files are written
+	  to .fig files. This makes it easier to move and share .fig files.
+
+BUGS FIXED:
+	Ticket numbers refer to https://sourceforge.net/p/mcj/tickets/#.
+	o Compounds keep their their size after editing or updating, ticket #51.
+	o Avoid crashing for large scaling, e.g., xfig -userscale 100, #144.
+	o Fix crashing when embedding a pdf as the first picture, ticket #143.
+
+-----------------------------------
 Patchlevel 8b (Aug 2021)
 
 BUGS FIXED:
