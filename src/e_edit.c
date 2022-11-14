@@ -5532,7 +5532,6 @@ image_edit_button(Widget panel_local, XtPointer closure, XtPointer call_data)
     char	cmd[PATH_MAX];
     char	s[PATH_MAX];
     struct stat	original_stat;
-    int		err;
     char	*cp;
 
     /* get the filename for the picture object */
@@ -5566,7 +5565,7 @@ image_edit_button(Widget panel_local, XtPointer closure, XtPointer call_data)
 
     pid = fork();
     if ( pid == 0 ) {
-	err = execvp(argv[0], argv);
+	execvp(argv[0], argv);
 	/* should only come here if an error in the execlp */
 	fprintf(stderr,"Error in exec'ing image editor (%s): %s\n",
 			argv[0], strerror(errno));

@@ -1,7 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
- * Parts Copyright (c) 1995-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -20,6 +23,7 @@
 #include "object.h"
 #include "mode.h"
 #include "e_edit.h"
+#include "f_picobj.h"
 #include "u_create.h"
 #include "w_drawprim.h"
 #include "w_dir.h"

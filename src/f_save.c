@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -35,6 +36,7 @@
 
 #include "e_compound.h"
 #include "f_load.h"
+#include "f_picobj.h"
 #include "f_read.h"
 #include "f_util.h"
 #include "u_bound.h"
@@ -385,7 +387,6 @@ void write_line(FILE *fp, F_line *l)
 {
     F_point	   *p;
     int		    npts;
-    char	   *picfile;
 
     if (l->points == NULL)
 	return;
