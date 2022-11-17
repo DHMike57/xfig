@@ -769,7 +769,6 @@ internal_path(const char *restrict rel_or_abs_path)
 	/* if realpath failed, return the guessed path */
 	if (!abs_path) {
 		int	err = errno;
-		file_msg("%s: %s", guessed_abs_path + offset, strerror(err));
 		if (guessed_abs_path != guessed_abs_path_buf) {
 			result = guessed_abs_path;
 		} else {
