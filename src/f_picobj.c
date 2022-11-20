@@ -37,7 +37,7 @@
 #include <sys/types.h>		/* time_t */
 #include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
 
-#include "resources.h"		/* TMPDIR, PATH_MAX */
+#include "resources.h"		/* TMPDIR */
 #include "object.h"
 #include "mode.h"
 #include "f_readpcx.h"		/* read_pcx() */
@@ -706,12 +706,6 @@ internal_path(const char *restrict rel_or_abs_path)
 	char	first_char;
 	char	guessed_abs_path_buf[1024];
 	char	*guessed_abs_path = guessed_abs_path_buf;
-#ifdef PATH_MAX
-	char	resolved_buf[PATH_MAX];
-	char	*resolved = resolved_buf;
-#else
-	char	*resolved = NULL;
-#endif
 	char	*abs_path;
 	char	*result;
 
@@ -761,11 +755,8 @@ internal_path(const char *restrict rel_or_abs_path)
 	}
 
 	/* write the real absolute path to abs_path */
-	abs_path = realpath(guessed_abs_path + offset, resolved);
-#ifdef PATH_MAX
-	if (!abs_path && errno == ENAMETOOLONG)
-		abs_path = realpath(guessed_abs_path + offset, NULL);
-#endif
+	abs_path = realpath(guessed_abs_path + offset, NULL);
+
 	/* if realpath failed, return the guessed path */
 	if (!abs_path) {
 		int	err = errno;
@@ -782,18 +773,14 @@ internal_path(const char *restrict rel_or_abs_path)
 		free(guessed_abs_path);
 
 	/* finally, return the result */
-	if (offset || abs_path == resolved /* abs_path was not malloc'd */) {
+	if (offset) {
 		size_t	len = strlen(abs_path);
 		if (!(result = malloc(len + offset + 1)))
 			goto err_mem;
 		memcpy(result + offset, abs_path, len + 1);
-		if (offset) {
-			result[0] = first_char;
-			if (abs_path != resolved)
-				free(abs_path);
-		}
+		result[0] = first_char;
+		free(abs_path);
 	} else {
-		/* no offset and abs_path was malloc'd */
 		result = abs_path;
 	}
 
@@ -879,24 +866,11 @@ relative_path(const char *restrict source_dir, const char *restrict target_file,
 		char *relname, size_t size)
 {
 	int	status;
-#ifdef PATH_MAX
-	char	resolved[PATH_MAX];
-#endif
 	char	*result;
 
-#ifdef PATH_MAX
-	result = realpath(source_dir, resolved);
-	if (!result && errno == ENAMETOOLONG)
-		result = realpath(source_dir, NULL);
-#else
-	result = realpath(source_dir, NULL);
-#endif
-	if (result) {
+	if ((result = realpath(source_dir, NULL))) {
 		status = xf_relpath(result, target_file, relname, size);
-#ifdef PATH_MAX
-		if (result != resolved)
-#endif
-			free(result);
+		free(result);
 	} else {
 		/* if source_dir cannot be found, return the absolute path */
 		*relname = '\0';
