@@ -1,9 +1,11 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1990 by Digital Equipment Corporation. All Rights Reserved.
- * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1990 by Digital Equipment Corporation
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -13,6 +15,7 @@
  * the Software, and to permit persons who receive copies from any such
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
+ *
  *
  * Original xdir code:
  *
@@ -45,7 +48,6 @@
  * documentation, and that the name of Digital Equipment Corporation not be
  * used in advertising or publicity pertaining to distribution of the
  * software without specific, written prior permission.
- *
  *
  */
 
@@ -89,6 +91,8 @@ static void	CallbackRescan(Widget widget, XtPointer closure,
 				XtPointer call_data);
 static Boolean	MakeFileList(char *dir_name, char *mask, char ***_dirs,
 				char ***files);
+static void	parseuserpath(const char *restrict path,
+				char *restrict longpath);
 
 /* Static variables */
 
@@ -215,6 +219,7 @@ GoHome(Widget w, XtPointer client_data, XtPointer ret_val)
 void
 SetDir(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
+    char	longdir[PATH_MAX];
     char	   *ndir;
 
     /* get the string from the widget */
@@ -231,42 +236,27 @@ SetDir(Widget widget, XEvent *event, String *params, Cardinal *num_params)
     }
     /* if there is a ~ in the directory, parse the username */
     if (ndir[0]=='~') {
-	char longdir[PATH_MAX];
 	parseuserpath(ndir,longdir);
 	ndir=longdir;
     }
     DoChangeDir(ndir);
 }
 
-/* make the full path from ~/partialpath */
-void parseuserpath(char *path, char *longpath)
+/*
+ * make the full path from ~/partialpath
+ * Parse ~somewhere as ~/somewhere, do not go to other user's home directories.
+ */
+static void
+parseuserpath(const char *restrict path, char *restrict longpath)
 {
-    char	  *p;
-    struct passwd *who;
-
-    /* this user's home */
-    if (strlen(path)==1 || path[1]=='/') {
-	strcpy(longpath,getenv("HOME"));
-	if (strlen(path)==1)		/* nothing after the ~, we have the full path */
-		return;
-	strcat(longpath,&path[1]);	/* append the rest of the path */
+	/* parseuserpath is called with  path[0] == '~' */
+	strcpy(longpath, getenv("HOME"));
+	if (strlen(path) == 1)
+		return;		/* nothing after the ~, we have the full path */
+	if (path[1] != '/')
+		strcat(longpath, "/");
+	strcat(longpath, &path[1]);	/* append the rest of the path */
 	return;
-    }
-    /* another user name after ~ */
-    strcpy(longpath,&path[1]);
-    p=strchr(longpath,'/');
-    if (p)
-	    *p='\0';
-    who = getpwnam(longpath);
-    if (!who) {
-	file_msg("No such user: %s",longpath);
-	strcpy(longpath,path);
-    } else {
-	strcpy(longpath,who->pw_dir);
-	p=strchr(path,'/');
-	if (p)
-		strcat(longpath,p);	/* attach stuff after the / */
-    }
 }
 
 
@@ -673,8 +663,8 @@ DoChangeDir(char *dir)
 	    if (*ndir == '\0')
 		return;			/* no current directory, */
 					/* can't do anything unless absolute path */
-	    p = strrchr(ndir, '/');
-	    *p = EOS;
+	    if (p = strrchr(ndir, '/'))
+		    *p = EOS;
 	    if (ndir[0] == EOS)
 		strcpy(ndir, "/");
 	} else if (strcmp(dir, ".")!=0) {
