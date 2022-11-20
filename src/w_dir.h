@@ -58,8 +58,6 @@
 
 /* Useful constants. */
 
-#define EOS	'\0'		/* End-of-string. */
-
 #define NENTRIES	100	/* chunk size for allocating filename space */
 #define F_FILE_WIDTH	413	/* width of filename, etc widgets for FILE panel */
 #define E_FILE_WIDTH	360	/* width of filename, etc widgets for EXPORT panel */

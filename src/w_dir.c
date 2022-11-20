@@ -645,65 +645,53 @@ ParentDir(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void
 DoChangeDir(char *dir)
 {
-    char	   *p;
-    char	    ndir[PATH_MAX];
+	char	*abs_path = NULL;
 
-
-    if (browse_up) {
-	strcpy(ndir, cur_browse_dir);
-    } else if (file_up) {
-	strcpy(ndir, cur_file_dir);
-    } else if (export_up) {
-	strcpy(ndir, cur_export_dir);
-    }
-    if (dir != NULL && dir[0] != '/') { /* relative path, prepend current dir */
-	if (dir[strlen(dir) - 1] == '/')
-	    dir[strlen(dir) - 1] = '\0';
-	if (strcmp(dir, "..")==0) {	/* Parent directory. */
-	    if (*ndir == '\0')
-		return;			/* no current directory, */
-					/* can't do anything unless absolute path */
-	    if (p = strrchr(ndir, '/'))
-		    *p = EOS;
-	    if (ndir[0] == EOS)
-		strcpy(ndir, "/");
-	} else if (strcmp(dir, ".")!=0) {
-	    if (strcmp(ndir, "/"))	/* At the root already */
-		strcat(ndir, "/");
-	    strcat(ndir, dir);
+	/* resolve the path given in dir to abs_path */
+	if (!(abs_path = realpath(dir && *dir ? dir : ".", NULL))) {
+		/* realpath knows about the current directory and
+		   correctly resolves relative paths. */
+		file_msg("Cannot infer absolute path for %s: %s",
+				dir, strerror(errno));
+		return;
 	}
-    } else {
-	strcpy(ndir, dir);		/* abs path copy to ndir */
-    }
-    if (change_directory(ndir) != 0 ) {
-	return;				/* some problem, return */
-    } else if (MakeFileList(ndir, dirmask, &dirlist, &filelist) == False) {
-	file_msg("Unable to list directory %s", ndir);
-	return;
-    }
 
-    FirstArg(XtNstring, ndir);
-    /* update the current directory and file/dir list widgets */
-    if (browse_up) {
-	SetValues(browse_dir);
-	strcpy(cur_browse_dir,ndir);	/* update global var */
-	XawTextSetInsertionPoint(browse_dir, strlen(ndir));
-	NewList(browse_flist, filelist);
-	NewList(browse_dlist, dirlist);
-    } else if (file_up) {
-	SetValues(file_dir);
-	update_file_export_dir(ndir);
-	XawTextSetInsertionPoint(file_dir, strlen(ndir));
-	NewList(file_flist,filelist);
-	NewList(file_dlist,dirlist);
-    } else if (export_up) {
-	SetValues(exp_dir);
-	strcpy(cur_export_dir,ndir);	/* update global var */
-	XawTextSetInsertionPoint(exp_dir, strlen(ndir));
-	NewList(exp_flist, filelist);
-	NewList(exp_dlist, dirlist);
-    }
-    CurrentSelectionName[0] = '\0';
+	/* change to abs_path */
+	if (abs_path && change_directory(abs_path)) {
+		free(abs_path);
+		/* change_directory already delivered an error message */
+		return;
+	}
+
+	if (MakeFileList(abs_path, dirmask, &dirlist, &filelist) == False) {
+		file_msg("Unable to list directory %s", abs_path);
+		free(abs_path);
+		return;
+	}
+
+	/* update the current directory and file/dir list widgets */
+	FirstArg(XtNstring, abs_path);
+	if (browse_up) {
+		SetValues(browse_dir);
+		strcpy(cur_browse_dir, abs_path);	/* update global var */
+		XawTextSetInsertionPoint(browse_dir, strlen(abs_path));
+		NewList(browse_flist, filelist);
+		NewList(browse_dlist, dirlist);
+	} else if (file_up) {
+		SetValues(file_dir);
+		update_file_export_dir(abs_path);
+		XawTextSetInsertionPoint(file_dir, strlen(abs_path));
+		NewList(file_flist, filelist);
+		NewList(file_dlist, dirlist);
+	} else if (export_up) {
+		SetValues(exp_dir);
+		strcpy(cur_export_dir, abs_path);	/* update global var */
+		XawTextSetInsertionPoint(exp_dir, strlen(abs_path));
+		NewList(exp_flist, filelist);
+		NewList(exp_dlist, dirlist);
+	}
+	free(abs_path);
+	CurrentSelectionName[0] = '\0';
 }
 
 void
