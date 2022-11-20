@@ -64,7 +64,7 @@ static String	file_list_translations =
 static String	file_name_translations =
 	"<Key>Return: ApplyBrowseAndClose()\n";
 static void	browse_panel_close(Widget w, XButtonEvent *ev);
-void		got_browse(Widget w, XButtonEvent *ev);
+static void	got_browse(Widget w, XButtonEvent *ev);
 
 static XtActionsRec	file_name_actions[] =
 {
@@ -142,16 +142,15 @@ got_browse(Widget w, XButtonEvent *ev)
 		/*
 		 * The external representation of an absolute path is
 		 * a path relative to cur_file_dir.  Therefore, construct the
-		 * absolute path.
+		 * relative path.
 		 */
 		memcpy(abs_path, dval, dval_len);
 		abs_path[dval_len] = '/';
 		memcpy(abs_path + dval_len + 1, fval, fval_len + 1);
-		/* TODO, check all code paths, empty string etc. */
 		if (external_path(&path, sizeof path_buf, abs_path) >= 0)
 			panel_set_value(pic_name_panel, path);
 		else
-			panel_set_value(pic_name_panel, ""); /* FIXME */
+			panel_set_value(pic_name_panel, "");
 		if (abs_path != abs_path_buf)
 			free(abs_path);
 		if (path != path_buf)
@@ -195,6 +194,8 @@ void popup_browse_panel(Widget w)
       strcpy(browse_filename, fval+1);
       local_dir[strlen(pval) - strlen(fval)] = '\0';
       (void) change_directory(local_dir);
+      /* and get the canonical path */
+      get_directory(local_dir);
     }
 
     if (!browse_popup) {
