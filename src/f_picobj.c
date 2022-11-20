@@ -167,10 +167,8 @@ file_on_disk(const char *restrict name, char *restrict *found, size_t len,
 
 	name_len = strlen(name);
 	if (name_len >= len &&
-			(*found = malloc(name_len + FILEONDISK_ADD)) == NULL) {
-		file_msg("Out of memory.");
+			!(*found = new_string(name_len + FILEONDISK_ADD - 1)))
 		return FileInvalid;
-	}
 
 	strcpy(*found, name);
 
@@ -186,10 +184,9 @@ file_on_disk(const char *restrict name, char *restrict *found, size_t len,
 		/* File not found. Now try, whether a file with one of
 		   the known suffices appended exists. */
 		if (len < name_len + FILEONDISK_ADD && (*found =
-				malloc(name_len + FILEONDISK_ADD)) == NULL) {
-			file_msg("Out of memory.");
+				new_string(name_len + FILEONDISK_ADD - 1)))
 			return FileInvalid;
-		}
+
 		suffix = *found + name_len;
 		for (i = 0; i < filetypes_len; ++i) {
 			strcpy(suffix, filetypes[i][0]);
@@ -451,10 +448,8 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 		/* strcpy (xf_stream->name, name) */
 		len = strlen(name);
 		if (len >= sizeof xf_stream->name_buf) {
-			if ((xf_stream->name = malloc(len + 1)) == NULL) {
-				file_msg("Out of memory.");
+			if (!(xf_stream->name = new_string(len)))
 				return NULL;
-			}
 		}
 		memcpy(xf_stream->name, name, len + 1);
 	}
@@ -475,10 +470,8 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 		len = strlen(xf_stream->name_on_disk) +
 					strlen(xf_stream->uncompress) + 2;
 		if (len > sizeof command_buf) {
-			if ((command = malloc(len)) == NULL) {
-				file_msg("Out of memory.");
+			if (!(command = new_string(len - 1)))
 				return NULL;
-			}
 		}
 		sprintf(command, "%s '%s'",
 				xf_stream->uncompress, xf_stream->name_on_disk);
@@ -569,10 +562,8 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 	len = snprintf(xf_stream->content, sizeof xf_stream->content_buf,
 			content_fmt, TMPDIR);
 	if (len >= (int)(sizeof xf_stream->content_buf)) {
-		if ((xf_stream->content = malloc(len + 1)) == NULL) {
-			file_msg("Out of memory.");
+		if (!(xf_stream->content = new_string(len)))
 			return ret;
-		}
 		len = sprintf(xf_stream->content, content_fmt, TMPDIR);
 	}
 	if (len < 0) {
@@ -599,8 +590,7 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 	len = snprintf(command, sizeof command_buf, command_fmt,
 			xf_stream->uncompress, xf_stream->name_on_disk, fd);
 	if (len >= (int)(sizeof command_buf)) {
-		if ((command = malloc(len + 1)) == NULL) {
-			file_msg("Out of memory.");
+		if (!(command = new_string(len))) {
 			close(fd);
 			return ret;
 		}
@@ -719,8 +709,8 @@ internal_path(const char *restrict rel_or_abs_path)
 	if (*rel_or_abs_path == '/') {
 		guessed_size = rel_abs_len + 2;
 		if (guessed_size > sizeof guessed_abs_path_buf &&
-				!(guessed_abs_path = malloc(guessed_size)))
-			goto err_mem;
+				!(guessed_abs_path =new_string(guessed_size-1)))
+			return NULL;
 		memcpy(guessed_abs_path + 1, rel_or_abs_path, rel_abs_len + 1);
 		guessed_abs_path[0] = first_char = '/';
 		offset = 1;
@@ -731,8 +721,8 @@ internal_path(const char *restrict rel_or_abs_path)
 		/* correct ~some/path to ~/some/path: len + '/' + '\0' */
 		guessed_size = rel_abs_len + home_len + 2;
 		if (guessed_size > sizeof guessed_abs_path_buf &&
-				!(guessed_abs_path = malloc(guessed_size)))
-			goto err_mem;
+				!(guessed_abs_path =new_string(guessed_size-1)))
+			return NULL;
 		memcpy(guessed_abs_path + 1, home, home_len);
 		if (rel_or_abs_path[1] != '/')
 			guessed_abs_path[1 + home_len++] = '/';
@@ -745,8 +735,8 @@ internal_path(const char *restrict rel_or_abs_path)
 
 		guessed_size = rel_abs_len + dir_len + 2;
 		if (guessed_size > sizeof guessed_abs_path_buf &&
-				!(guessed_abs_path = malloc(guessed_size)))
-			goto err_mem;
+				!(guessed_abs_path =new_string(guessed_size-1)))
+			return NULL;
 		memcpy(guessed_abs_path, cur_file_dir, dir_len);
 		guessed_abs_path[dir_len] = '/';
 		memcpy(guessed_abs_path + dir_len + 1, rel_or_abs_path,
@@ -763,8 +753,8 @@ internal_path(const char *restrict rel_or_abs_path)
 		if (guessed_abs_path != guessed_abs_path_buf) {
 			result = guessed_abs_path;
 		} else {
-			if (!(result = malloc(guessed_size)))
-				goto err_mem;
+			if (!(result = new_string(guessed_size - 1)))
+				return NULL;
 			memcpy(result, guessed_abs_path, guessed_size);
 		}
 		return result;
@@ -775,8 +765,8 @@ internal_path(const char *restrict rel_or_abs_path)
 	/* finally, return the result */
 	if (offset) {
 		size_t	len = strlen(abs_path);
-		if (!(result = malloc(len + offset + 1)))
-			goto err_mem;
+		if (!(result = new_string(len + offset)))
+			return NULL;
 		memcpy(result + offset, abs_path, len + 1);
 		result[0] = first_char;
 		free(abs_path);
@@ -785,9 +775,6 @@ internal_path(const char *restrict rel_or_abs_path)
 	}
 
 	return result;
-err_mem:
-	file_msg("Running out of memory.");
-	return NULL;
 }
 
 /*
