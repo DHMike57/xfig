@@ -111,12 +111,8 @@ browse_panel_dismiss(void)
 void
 got_browse(Widget w, XButtonEvent *ev)
 {
-	char	abs_path_buf[128];
-	char	*abs_path = abs_path_buf;
-	char	path_buf[128];
-	char	*path = path_buf;
+	char	*abs_path = NULL;
 	char	*fval, *dval;
-	size_t	dval_len, fval_len;
 
 	if (!browse_popup)
 		return;
@@ -133,26 +129,35 @@ got_browse(Widget w, XButtonEvent *ev)
 	if (emptyname_msg(fval, "Apply"))
 	    return;
 
-	dval_len = strlen(dval);
-	fval_len = strlen(fval);
-	if (dval_len + 1 + fval_len + 1 >= sizeof abs_path)
-		/* new_string takes the string length as argument */
-		abs_path = new_string(dval_len + fval_len + 1);
+	if (fval[0] == '/' || fval[0] == '~') {
+		/* the user entered an absolute path, or relative to $HOME */
+		abs_path = internal_path(fval);
+	} else {
+		char	full_path_buf[128];
+		char	*full_path = full_path_buf;
+		size_t	dval_len, fval_len;
+		dval_len = strlen(dval);
+		fval_len = strlen(fval);
+		if (dval_len + 1 + fval_len + 1 >= sizeof full_path_buf)
+			full_path = new_string(dval_len + fval_len + 1);
+		if (full_path) {
+			/* Create an absolute file name.. */
+			memcpy(full_path, dval, dval_len);
+			full_path[dval_len] = '/';
+			memcpy(full_path + dval_len + 1, fval, fval_len + 1);
+			abs_path = realpath(full_path, NULL);
+		}
+		if (full_path != full_path_buf)
+			free(full_path);
+	}
 	if (abs_path) {
-		/*
-		 * The external representation of an absolute path is
-		 * a path relative to cur_file_dir.  Therefore, construct the
-		 * relative path.
-		 */
-		memcpy(abs_path, dval, dval_len);
-		abs_path[dval_len] = '/';
-		memcpy(abs_path + dval_len + 1, fval, fval_len + 1);
+		char	path_buf[128];
+		char	*path = path_buf;
 		if (external_path(&path, sizeof path_buf, abs_path) >= 0)
 			panel_set_value(pic_name_panel, path);
 		else
 			panel_set_value(pic_name_panel, "");
-		if (abs_path != abs_path_buf)
-			free(abs_path);
+		free(abs_path);
 		if (path != path_buf)
 			free(path);
 	}
