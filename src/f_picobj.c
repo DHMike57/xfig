@@ -678,14 +678,19 @@ image_size(int *size_x, int *size_y, int pixels_x, int pixels_y,
  */
 
 /*
- * Given a path relative to cur_file_dir, relative to home or an absolute path,
- * return a malloc()'d internal representation of that path. The internal
- * representation is the absolute path for a path relative to cur_file_dir, the
- * absolute path prepended with ~ for a path relative to home dir, or with a
- * second slash prepended if the absolute path should be exported.
- * Return value: A string to the internal path, or to a guess, if the file path
- *		does not exist or cannot be accessed.
- *		NULL if rel_or_abs_path is empty.
+ * Input:
+ *    rel_or_abs_path	A path relative to cur_file_dir (not starting with a
+ *    			slash), relative to home (starting with ~), or
+ *			an absolute path
+ * Return value:
+ *    A malloc'd string containing the internal representation of
+ *    rel_or_abs_path, or a guess of the path if the file cannot be found.
+ *    NULL if rel_or_abs_path is empty.
+ *    The internal representation is the absolute path for a path relative to
+ *    cur_file_dir, the absolute path prepended with ~ for a path relative to
+ *    home dir, or with a second slash prepended for an absolute path.
+ *    A path relative to cur_file_dir is internally represented by the absolute
+ *    path
  */
 char *
 internal_path(const char *restrict rel_or_abs_path)
@@ -749,7 +754,6 @@ internal_path(const char *restrict rel_or_abs_path)
 
 	/* if realpath failed, return the guessed path */
 	if (!abs_path) {
-		int	err = errno;
 		if (guessed_abs_path != guessed_abs_path_buf) {
 			result = guessed_abs_path;
 		} else {
@@ -867,15 +871,17 @@ relative_path(const char *restrict source_dir, const char *restrict target_file,
 }
 
 /*
- * Given the file path stored in pic_cache->file, return a string of maxlength
- * size - 1 in the buffer rel_or_abs_path which contains either a path relative
- * to cur_file_dir, an absolute path, or a path relative to $HOME.
- * Return the number of characters written or, if this number is larger or equal
- * to size, the number of characters that would have been written to
- * rel_or_abs_path, if it had been large enough. If a relative path is requested
- * but the absolute path to cur_file_dir cannot be found, return an absolute
- * path. Return -1 on error, unexpected internal path.
- * See also above, internal_path().
+ * Inputs:
+ *	internal	an internal path //abs/path, ~/home/user/rel, /rel/path
+ *	size		the size of the buffer passed in rel_or_abs_path
+ * Output:
+ *	rel_or_abs_path	  external representation: /abs/path, ~/rel, ../path
+ *			  or an absolute path, if cur_file_dir cannot be found
+ * Return value:
+ *	The number of characters written or, if this number is larger or equal
+ *	to size, the number of characters that would have been written to
+ *	rel_or_abs_path.
+ *	-1 on error, unexpected internal path
  */
 static int
 xf_external_path(char *rel_or_abs_path, size_t size, char *internal)
@@ -941,16 +947,23 @@ xf_external_path(char *rel_or_abs_path, size_t size, char *internal)
 }
 
 /*
- * Given an internal representation of a picture file path in internal (see the
- * comments above internal_path()), return the external representation of that
- * path in *rel_or_abs_path. The buffer pointed to by rel_or_abs_path must have
- * size size. If the buffer size is not sufficient, return a newly allocated
- * string. In that case, the value returned by external_path is equal or larger
- * than size.
- * Return value: The number of chars written, or to be written.
- *		 On error, return a value smaller than zero.
- * Usage:
- *	char name_buf[SIZE];	char	*name = name_buf;
+ * Inputs:
+ *    internal	an internal representation of a picture file path,
+ *		see the comments above internal_path
+ *    size	the size of the buffer passed in rel_or_abs_path
+ * Output:
+ *    rel_or_abs_path	the external representation of internal. if
+ *			cur_file_dir cannot be found, return an absolute path
+ * Return value:
+ *    The number of chars written, or to be written.
+ *    On error, return a value smaller than zero.
+ * If the buffer passed in rel_or_abs_path is of insufficient size, return a
+ * newly allocated string. In that case, the value returned by external_path is
+ * equal or larger than size.
+ *
+ * Usage example:
+ *	char	name_buf[SIZE];
+ *	char	*name = name_buf;
  *	external_path(&name, sizeof name, internal);
  *	if (name != name_buf)
  *		free(name);
@@ -963,9 +976,8 @@ external_path(char **rel_or_abs_path, size_t size, char *internal)
 	if (len < (int)size)	/* includes len < 0 */
 		return len;
 
-	if (!(*rel_or_abs_path = malloc(len + 1))) {
-		file_msg("Running out of memory.");
+	if (!(*rel_or_abs_path = new_string(len)))
 		return -1;
-	}
+
 	return xf_external_path(*rel_or_abs_path, size, internal);
 }
