@@ -260,13 +260,11 @@ static void
 align_text(void)
 {
     F_text	   *t;
-    int		    dum;
 
     for (t = cur_c->texts; t != NULL; t = t->next) {
 	if (!active_layer(t->depth))
 	    continue;
-	text_bound(t, &llx, &lly, &urx, &ury,
-		   &dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound(t, &llx, &lly, &urx, &ury);
 	get_dx_dy();
 	translate_text(t, dx, dy);
     }
@@ -477,10 +475,9 @@ pos_spline (F_spline *s, int *min, int *size, int dir)
 static Boolean
 pos_text (F_text *t, int *min, int *size, int dir)
 {
-  int center, dum;
+  int center;
 
-  text_bound (t, &llx, &lly, &urx, &ury,
-	      &dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+  text_bound (t, &llx, &lly, &urx, &ury);
   if (dir == 0) {
     if (cur_halign == ALIGN_DISTRIB_C)
       center = (urx + llx)/2;
@@ -627,11 +624,9 @@ init_distrib_centres (int *min, int *max, int dir)
   }
 
   for (t = cur_c->texts; t != NULL; t = t->next) {
-    int   dum;
     num_objects++;
     t->distrib = 0;
-    text_bound (t, &llx, &lly, &urx, &ury,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+    text_bound (t, &llx, &lly, &urx, &ury);
     if (dir == 0)
       MIN_MAX_CENTRE(llx, urx, *min, *max)
     else
@@ -744,11 +739,9 @@ init_distrib_edges (int *min, int *max, int *sum, int dir)
   }
 
   for (t = cur_c->texts; t != NULL; t = t->next) {
-    int   dum;
     num_objects++;
     t->distrib = 0;
-    text_bound (t, &llx, &lly, &urx, &ury,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+    text_bound (t, &llx, &lly, &urx, &ury);
     if (dir == 0) {
       *sum += abs(urx - llx);
       if (llx < *min) *min = llx;

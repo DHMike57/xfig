@@ -1,7 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1997 by T. Sato
- * Parts Copyright (c) 1997-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 1997 by T. Sato
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -40,30 +43,38 @@ There is currently no way to undo replace/update operations.
 
 ****************************************************************/
 
-#include "fig.h"
+#include "w_srchrepl.h"
+
+#include <errno.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <unistd.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>    /* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "figx.h"
 #include "resources.h"
 #include "object.h"
-#include "d_text.h"
+#include "mode.h"
 #include "e_update.h"
 #include "f_util.h"
-#include "w_drawprim.h"
-#include "w_indpanel.h"
-#include "w_listwidget.h"
-#include "w_msgpanel.h"
-#include "w_srchrepl.h"
-#include "w_setup.h"
-#include "w_util.h"
-#include "u_create.h"
-
-#include "mode.h"
 #include "u_bound.h"
+#include "u_create.h"
 #include "u_fonts.h"
 #include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_color.h"
+#include "w_listwidget.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
 
-#include <stdarg.h>
 
 #define MAX_MISSPELLED_WORDS	200
 #define	SEARCH_WIDTH		496	/* width of search message and results */
@@ -154,6 +165,7 @@ static Boolean compare_string(char *str, char *pattern)
 static void
 do_replace(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
   int cnt;
 
   if (found_text_cnt > 0) {
@@ -180,9 +192,8 @@ replace_text_in_compound(F_compound *com, char *pattern, char *dst)
 {
   F_compound	*c;
   F_text	*t;
-  PR_SIZE	 size;
   Boolean	 replaced, processed;
-  int		 pat_len, i, j;
+  size_t	 pat_len, i, j;
   char		 str[300];
 
   pat_len = strlen(pattern);
@@ -225,11 +236,7 @@ replace_text_in_compound(F_compound *com, char *pattern, char *dst)
           t->cstring = new_string(strlen(str));
         }
         strcpy(t->cstring, str);
-        size = textsize(lookfont(x_fontnum(psfont_text(t), t->font),
-				t->size), strlen(t->cstring), t->cstring);
-        t->ascent = size.ascent;
-        t->descent = size.descent;
-        t->length = size.length;
+	textextents(t);
         processed = True;
       }
     }
@@ -243,6 +250,8 @@ replace_text_in_compound(F_compound *com, char *pattern, char *dst)
 static void
 do_update(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
+
   if (found_text_cnt > 0) {
     search_text_in_compound(&objects,
             panel_get_value(search_text_widget), update_text);
@@ -332,6 +341,7 @@ show_text_object(F_text *t)
 static void
 search_and_replace_text(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
   char	*string;
 
   show_search_msg("Searching text...");
@@ -370,8 +380,9 @@ search_text_in_compound(F_compound *com, char *pattern, void (*proc) (/* ??? */)
   F_compound *c;
   F_text *t;
   Boolean match, processed;
-  int pat_len, i;
+  size_t pat_len, i;
   processed = False;
+
   for (c = com->compounds; c != NULL; c = c->next) {
     if (search_text_in_compound(c, pattern, proc))
 	processed = True;
@@ -402,6 +413,7 @@ search_text_in_compound(F_compound *com, char *pattern, void (*proc) (/* ??? */)
 static void
 search_panel_dismiss(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
   found_text_panel_dismiss();
   if (search_panel != None)
 	XtDestroyWidget(search_panel);
@@ -774,6 +786,8 @@ popup_spell_check_panel(char **list, int nitems)
 static void
 spell_panel_dismiss(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
+
   if (spell_check_panel != None)
 	XtDestroyWidget(spell_check_panel);
   spell_check_panel = None;
@@ -881,6 +895,7 @@ write_text_from_compound(FILE *fp, F_compound *com)
 static void
 spell_select_word(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure;
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
     /* make correct button and correction entry sensitive */
@@ -901,6 +916,7 @@ spell_select_word(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 spell_correct_word(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     char	   *corrected_word;
 
     /* get the correct word from the ascii widget */

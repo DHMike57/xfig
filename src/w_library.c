@@ -1,7 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1998 by Stephane Mancini
- * Parts Copyright (c) 1999-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 1998 by Stephane Mancini
+ * Parts Copyright (c) 2016-2021 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,44 +19,60 @@
 
 /* This is where the library popup is created */
 
-#include "fig.h"
-#include "figx.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_library.h"
+
+#include <dirent.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <sys/stat.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xft/Xft.h>
+
+#include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
-#include "e_placelib.h"
+#include "paintop.h"
+#include "dirstruct.h"
 #include "e_placelib.h"
 #include "f_read.h"
-#include "u_create.h"
-#include "u_redraw.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"		/* for max_char_height */
-#include "w_dir.h"
-#include "w_file.h"
-#include "w_indpanel.h"
-#include "w_library.h"
-#include "w_listwidget.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_util.h"
-#include "w_setup.h"
-#include "w_icons.h"
-#include "w_zoom.h"
-
 #include "f_util.h"
+#include "u_colors.h"
+#include "u_create.h"
 #include "u_free.h"
 #include "u_list.h"
 #include "u_markers.h"
+#include "u_redraw.h"
 #include "u_translate.h"
+#include "w_canvas.h"
 #include "w_color.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"		/* for max_char_height */
+#include "w_dir.h"
+#include "w_file.h"
+#include "w_listwidget.h"
+#include "w_layers.h"
 #include "w_mousefun.h"
-#include "dirstruct.h"
-
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
 #ifndef XAW3D1_5E
 #include "SmeCascade.h"
 #endif /* XAW3D1_5E */
+
 
 #define N_LIB_MAX	  100		/* max number of libraries */
 #define N_LIB_OBJECT_MAX  400		/* max number of objects in a library */
@@ -157,13 +176,19 @@ static Position xposn, yposn;
 /* comparison function for filename sorting using qsort() */
 
 
-static Boolean	MakeObjectLibrary(char *library_dir, char **objects_names, F_libobject **libobjects),MakeLibraryFileList(char *dir_name, char **obj_list);
+static Boolean	MakeObjectLibrary(char *library_dir, char **objects_names,
+				F_libobject **libobjects);
+static Boolean	MakeLibraryFileList(char *dir_name, char **obj_list);
 static int	MakeLibrary(void);
-static Boolean	ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path, char *longname, char *name, Boolean *figs_at_top, int *nentries);
-static Boolean	PutLibraryEntry(struct lib_rec *librec, char *path, char *lname, char *name);
+static Boolean	ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec,
+				char *path, char *longname,
+				Boolean *figs_at_top, int *nentries);
+static Boolean	PutLibraryEntry(struct lib_rec *librec, char *path, char *lname,
+			       char *name);
 static Boolean	lib_just_loaded, icons_made;
 static Boolean	load_lib_obj(int obj);
-static Widget	make_library_menu(Widget parent, char *name, struct lib_rec **librec, int num);
+static Widget	make_library_menu(Widget parent, char *name,
+				struct lib_rec **librec, int num);
 
 
 static int
@@ -201,6 +226,9 @@ void put_selected_request(void)
 static void
 library_stop(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
+
      library_stop_request = True;
      XtSetSensitive(stop, False);
 }
@@ -215,6 +243,9 @@ library_dismiss(void)
 static void
 library_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
+
     /* unhighlight the selected item */
     if (appres.icon_view)
 	unsel_icon(cur_library_object);
@@ -272,6 +303,8 @@ library_cancel(Widget w, XButtonEvent *ev)
 static void
 load_library(Widget w, XtPointer new_library, XtPointer garbage)
 {
+	(void)w;
+	(void)garbage;
     struct lib_rec *librec = (struct lib_rec *) new_library;
     Dimension	    vwidth, vheight;
     Dimension	    vawidth, vaheight;
@@ -365,6 +398,8 @@ load_library(Widget w, XtPointer new_library, XtPointer garbage)
 static void
 put_object_sel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     int	    obj;
 
     /* if there is no library loaded, ignore select */
@@ -473,6 +508,8 @@ load_lib_obj(int obj)
 static void
 NewObjectSel(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w;
+	(void)closure;
     int		    new_obj;
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
@@ -530,7 +567,7 @@ popup_library_panel(void)
     FirstArg(XtNbackground, &unsel_color);
     GetValues(icon_box);
     /* use black for "selected" border color */
-    sel_color = x_color(BLACK);
+    sel_color = getpixel(BLACK);
 
     /* if the file message window is up add it to the grab */
     file_msg_add_grab();
@@ -1153,6 +1190,8 @@ sel_view(Widget w, XtPointer client_data, XtPointer garbage)
 static void
 change_icon_size(Widget w, XtPointer menu_entry, XtPointer garbage)
 {
+	(void)w;
+	(void)garbage;
     char	   *new_size = (char*) icon_sizes[(intptr_t) menu_entry];
     int		    i;
 
@@ -1200,7 +1239,7 @@ erase_pixmap(Pixmap pixmap)
 static Boolean
 PutLibraryEntry(struct lib_rec *librec, char *path, char *lname, char *name)
 {
-    int i;
+    size_t i;
 
     /* strip any trailing whitespace */
     for (i=strlen(name)-1; i>0; i--) {
@@ -1231,14 +1270,14 @@ PutLibraryEntry(struct lib_rec *librec, char *path, char *lname, char *name)
 	librec	- pointer to lib_rec record to put entry
 	path	- absolute path of library entry
 	longname - name with parents prepended (e.g. Electrical / Physical)
-	name	- name of library
    Outputs:
 	figs_at_top - whether or not there are Fig files in toplevel
 	nentries - number of directories found (including subdirectories)
 */
 
 static Boolean
-ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path, char *longname, char *name, Boolean *figs_at_top, int *nentries)
+ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path,
+			char *longname, Boolean *figs_at_top, int *nentries)
 {
     DIR		*dirp;
     DIRSTRUCT	*dp;
@@ -1314,7 +1353,7 @@ ScanLibraryDirectory(Boolean at_top, struct lib_rec **librec, char *path, char *
 		    PutLibraryEntry(lp, path2, lname, dp->d_name);
 		    recnum++;
 		    /* and recurse */
-		    if (!ScanLibraryDirectory(False, lp->subdirs, path2, lname, dp->d_name,
+		    if (!ScanLibraryDirectory(False, lp->subdirs, path2, lname,
 				&lp->figs_at_top, &lp->nsubs)) {
 			/* close the directory */
 			closedir(dirp);
@@ -1366,7 +1405,7 @@ MakeLibrary(void)
 	return 0;
     } else if (S_ISDIR(st.st_mode)) {
 	/* if it is directory, scan the sub-directories and search libraries */
-	(void) ScanLibraryDirectory(True, library_rec, path, "", "", &dum, &numlibs);
+	(void) ScanLibraryDirectory(True, library_rec, path, "", &dum, &numlibs);
 	return numlibs;
     } else {
 	/* if it is a file, it must contain list of libraries */
@@ -1382,7 +1421,7 @@ MakeLibrary(void)
 			strcpy(name, strrchr(path2, '/') + 1);
 		    else {
 			/* use the last dir in the path for the name */
-			if (c=strrchr(path2,'/'))
+			if ((c=strrchr(path2,'/')))
 			    strcpy(name,c);
 			else
 			    strcpy(name, path2);
@@ -1396,8 +1435,9 @@ MakeLibrary(void)
 		}
 		PutLibraryEntry(library_rec[numlibs], path2, name, name);
 		/* and attach its subdirectories */
-		(void) ScanLibraryDirectory(True, library_rec[numlibs]->subdirs, path2, name, "",
-					&library_rec[numlibs]->figs_at_top, &num);
+		(void) ScanLibraryDirectory(True, library_rec[numlibs]->subdirs,
+				path2, name, &library_rec[numlibs]->figs_at_top,
+				&num);
 		library_rec[numlibs]->nsubs = num;
 		numlibs++;
 	    }
@@ -1648,6 +1688,7 @@ preview_libobj(int objnum, Pixmap pixmap, int pixsize, int margin)
 
     /* now switch the drawing canvas to our pixmap */
     canvas_win = (Window) pixmap;
+    XftDrawChange(canvas_draw, pixmap);
 
     /* make wait cursor */
     XDefineCursor(tool_d, XtWindow(library_form), wait_cursor);
@@ -1690,6 +1731,7 @@ preview_libobj(int objnum, Pixmap pixmap, int pixsize, int margin)
 
     /* switch canvas back */
     canvas_win = main_canvas;
+    XftDrawChange(canvas_draw, main_canvas);
 
     /* restore active layer array */
     restore_active_layers();
@@ -1753,6 +1795,7 @@ static	int	    old_item = -1;
 static void
 sel_item_icon(Widget w, XButtonEvent *ev)
 {
+	(void)ev;
     int		    i;
     F_compound	   *compound;
 

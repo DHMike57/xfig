@@ -17,24 +17,23 @@
  *
  */
 
-#include <X11/keysym.h>
-#include "fig.h"
+#include "w_zoom.h"
+
+#include <stdlib.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
-#include "object.h"
-#include "paintop.h"
-#include "u_create.h"
 #include "u_elastic.h"
 #include "u_pan.h"
 #include "w_canvas.h"
+#include "w_cursor.h"
 #include "w_file.h"
 #include "w_indpanel.h"
-#include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"
-#include "w_zoom.h"
+#include "xfig_math.h"
 
-#include "w_cursor.h"
 
 /* global for w_canvas.c */
 

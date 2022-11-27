@@ -16,13 +16,22 @@
  *
  */
 
-
 /* This is for the message window below the command panel */
 /* The popup message window is handled in the second part of this file */
 
-#include "fig.h"
-#include "figx.h"
+#include "w_msgpanel.h"
+
+#include <math.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>
+
+#include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
@@ -30,18 +39,17 @@
 #include "f_read.h"
 #include "f_util.h"
 #include "paintop.h"
+#include "u_colors.h"
 #include "u_elastic.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"
-#include "w_file.h"
-#include "w_indpanel.h"
-#include "w_msgpanel.h"
-#include "w_util.h"
-#include "w_setup.h"
-#include "w_zoom.h"
-
 #include "u_geom.h"
+#include "w_canvas.h"
 #include "w_color.h"
+#include "w_drawprim.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
+
 
 /********************* EXPORTS *******************/
 
@@ -302,9 +310,9 @@ altlength_msg(int type, int fx, int fy)
   float		udx, udy;
   float		ang;
   int		sdx, sdy;
-  int		t1x, t1y, t2x, t2y, t3x, t3y;
+  int		t1x = 0, t1y = 0, t2x = 0, t2y = 0, t3x = 0, t3y = 0;
   PR_SIZE	sizex, sizey, sizehyp;
-  char		lenstr[80],dxstr[80],dystr[80];
+  char		lenstr[80], dxstr[80], dystr[80];
 
   dx = (cur_x - fx);
   dy = (cur_y - fy);
@@ -484,12 +492,19 @@ length_msg2(int x1, int y1, int x2, int y2, int x3, int y3)
 	    dx1 = x3 - x1;
 	    dy1 = y3 - y1;
 	    len1 = (float)(sqrt(dx1*dx1 + dy1*dy1));
+    } else {
+	    dx1 = 0.0;
+	    dy1 = 0.0;
     }
     if (x2 != -999) {
 	    dx2 = x3 - x2;
 	    dy2 = y3 - y2;
 	    len2 = (float)(sqrt(dx2*dx2 + dy2*dy2));
+    } else {
+	    dx2 = 0.0;
+	    dy2 = 0.0;
     }
+
     make_dimension_string(len1, len1str, False);
     make_dimension_string(len2, len2str, False);
     make_dimension_string(dx1, dx1str, False);
@@ -615,6 +630,7 @@ file_msg(char *format,...)
 static void
 clear_file_message(Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     XawTextBlock	block;
     int			replcode;
 
@@ -648,6 +664,8 @@ clear_file_message(Widget w, XButtonEvent *ev)
 static void
 file_msg_panel_dismiss(Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
 	XtPopdown(file_msg_popup);
 	file_msg_is_popped=False;
 }

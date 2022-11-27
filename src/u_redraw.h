@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,6 +15,14 @@
  * and this permission notice remain intact.
  *
  */
+
+#ifndef U_REDRAW_H
+#define U_REDRAW_H
+
+#include <X11/Intrinsic.h>
+
+#include "object.h"
+
 
 extern void	redisplay_canvas(void);
 extern Boolean	request_redraw;		/* set in redisplay_region if called when
@@ -66,4 +75,7 @@ extern void redisplay_zoomed_region (int xmin, int ymin, int xmax, int ymax);
 extern void update_pageborder (void);
 
 extern void redisplay_region (int xmin, int ymin, int xmax, int ymax);
-extern void redisplay_regions (int xmin1, int ymin1, int xmax1, int ymax1, int xmin2, int ymin2, int xmax2, int ymax2);
+extern void redisplay_regions (int xmin1, int ymin1, int xmax1, int ymax1,
+				int xmin2, int ymin2, int xmax2, int ymax2);
+
+#endif

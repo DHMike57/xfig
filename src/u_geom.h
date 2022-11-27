@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,7 +16,12 @@
  *
  */
 
-extern double	compute_angle(double dx, double dy);	/* compute the angle between 0 to 2PI  */
+#ifndef U_GEOM_H
+#define U_GEOM_H
+
+#include "object.h"
+
+extern double	compute_angle(double dx, double dy);
 extern int close_to_arc (F_arc *a, int xp, int yp, int d, float *px, float *py);
 extern int close_to_ellipse (F_ellipse *e, int xp, int yp, int d, float *ex, float *ey, float *vx, float *vy);
 extern int close_to_polyline (F_line *l, int xp, int yp, int d, int sd, int *px, int *py, int *lx1, int *ly1, int *lx2, int *ly2);
@@ -35,3 +41,4 @@ extern int compute_poly_length (F_line *l, float *lp);
 extern void latex_endpoint (int x1, int y1, int x2, int y2, int *xout, int *yout, int arrow, int magnet);
 extern void compute_poly_area (F_line *l, float *ap);
 
+#endif

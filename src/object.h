@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,23 +19,10 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#if defined HAVE_CONFIG_H && !defined VERSION
-#include "config.h"
-#endif
-
 #include <sys/types.h>
-#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
-#include "resources.h"
-
-/* values to signify color used for transparent GIF color */
-
-#define CANVAS_BG		-7	/* use canvas background color */
-#define DARK_GRAY		-6	/* pseudo color to Greek small text */
-#define MED_GRAY		-5	/* pseudo colors to gray out inactive layers */
-#define LT_GRAY			-4
-#define TRANSP_BACKGROUND	-3	/* use background of figure as transp color */
-#define TRANSP_NONE		-2	/* no transp color */
-#define COLOR_NONE		-2	/* no background color (exporting) */
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xft/Xft.h>
+#include "u_colors.h"			/* Color, struct Cmap */
 
 /* DEFAULT is used for many things - font, color etc */
 
@@ -50,16 +37,6 @@
 
 #define RUBBER_LINE		11
 #define PANEL_LINE		12
-
-#define BLACK			0
-#define BLUE			1
-#define GREEN			2
-#define CYAN			3
-#define RED			4
-#define MAGENTA			5
-#define YELLOW			6
-#define WHITE			7
-#define GREEN4			12
 
 /* defaults for line attributes */
 
@@ -151,6 +128,11 @@ typedef struct f_arrow {
 	float ht;
 } F_arrow;
 
+/*****************/
+/* Xft Font      */
+/*****************/
+
+typedef XftFont	*F_font;
 
 /******************/
 /* Ellipse object */
@@ -304,7 +286,6 @@ typedef struct f_text {
 #define T_CENTER_JUSTIFIED	1
 #define T_RIGHT_JUSTIFIED	2
 	int font;
-	XFontStruct *fontstruct;
 	float zoom;		/* to keep track of when it needs rescaling */
 	int size;		/* point size */
 	Color color;
@@ -319,9 +300,16 @@ typedef struct f_text {
 	int ascent;		/* Fig units */
 	int length;		/* Fig units */
 	int descent;		/* from XTextExtents(), not in file */
-	int base_x;
-	int base_y;
+	int height;
+	int base_x;		/* x-position of the baseline text marker */
+	int base_y;		/* y-position of the baseline text marker */
 	int pen_style;
+	F_font xftfont;
+	struct f_pos top;	/* position of top text marker - unfortunately,
+				   not equal to rotbb[0] */
+	struct f_pos offset;	/* offset to glyph continuing cstring */
+	struct f_pos bb[2];	/* Bounding box */
+	struct f_pos rotbb[4];	/* Possibly rotated bounding rectangle*/
 	char *cstring;
 	char *comments;
 	struct f_text *next;

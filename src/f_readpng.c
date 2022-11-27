@@ -24,12 +24,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/X.h>		/* TrueColor, None */
-#include <X11/Xlib.h>		/* XColor */
 
 #include "resources.h"
 #include "object.h"
 #include "f_picobj.h"
 #include "f_util.h"		/* map_to_mono(), map_to_palette() */
+#include "u_colors.h"
 #include "w_msgpanel.h"		/* file_msg() */
 #include "w_setup.h"		/* PIX_PER_INCH */
 
@@ -151,9 +151,9 @@ read_png(F_pic *pic, struct xfig_stream *restrict pic_stream)
 					PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
 		} else {
 			/* blend the canvas background using the alpha channel*/
-			background.red   = x_bg_color.red >> 8;
-			background.green = x_bg_color.green >> 8;
-			background.blue  = x_bg_color.blue >> 8;
+			background.red   = getred(CANVAS_BG) >> 8;
+			background.green = getgreen(CANVAS_BG) >> 8;
+			background.blue  = getblue(CANVAS_BG) >> 8;
 			background.gray  = 0;
 			png_set_background(png_ptr, &background,
 					PNG_BACKGROUND_GAMMA_SCREEN, 0, 2.2);

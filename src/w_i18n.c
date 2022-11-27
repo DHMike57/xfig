@@ -20,11 +20,19 @@
  * Copyright (c) 1995-2002 by T. Sato
  */
 
-#include "fig.h"
-#include "figx.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_i18n.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "resources.h"
 #include "u_fonts.h"
-#include "object.h"  /* for spell_canvas() */
+#include "xfig_math.h"
+
 
 /* replacement of Times_Roman_bits etc, for Japanese */
 unsigned char Japanese_Times_Roman_bits[] = {
@@ -525,11 +533,11 @@ static void ScaleUp(from_image, to_image, width, height, scale)
       for (y2 = 0; y2 < ht; y2++) {
 	y1 = y2 / scale;
 	if (y1 != j) {
-	  if (scale_buf[y2] = XGetPixel(from_image, x1, y1))
+	  if ((scale_buf[y2] = XGetPixel(from_image, x1, y1)))
 	    XPutPixel(to_image, x2, y2, 1);
 	  j = y1;
 	} else {
-	  if (scale_buf[y2] = scale_buf[y2 - 1])
+	  if ((scale_buf[y2] = scale_buf[y2 - 1]))
 	    XPutPixel(to_image, x2, y2, 1);
 	}
       }

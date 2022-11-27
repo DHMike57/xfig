@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,17 +16,18 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
+#include "u_translate.h"
+
+#include <stddef.h>
 #include "object.h"
 
 
-void translate_lines (F_line *lines, int dx, int dy);
-void translate_splines (F_spline *splines, int dx, int dy);
-void translate_ellipses (F_ellipse *ellipses, int dx, int dy);
-void translate_arcs (F_arc *arcs, int dx, int dy);
-void translate_texts (F_text *texts, int dx, int dy);
-void translate_compounds (F_compound *compounds, int dx, int dy);
+static void translate_lines (F_line *lines, int dx, int dy);
+static void translate_splines (F_spline *splines, int dx, int dy);
+static void translate_ellipses (F_ellipse *ellipses, int dx, int dy);
+static void translate_arcs (F_arc *arcs, int dx, int dy);
+static void translate_texts (F_text *texts, int dx, int dy);
+static void translate_compounds (F_compound *compounds, int dx, int dy);
 
 void translate_ellipse(F_ellipse *ellipse, int dx, int dy)
 {
@@ -91,7 +93,8 @@ void translate_compound(F_compound *compound, int dx, int dy)
     translate_compounds(compound->compounds, dx, dy);
 }
 
-void translate_arcs(F_arc *arcs, int dx, int dy)
+static void
+translate_arcs(F_arc *arcs, int dx, int dy)
 {
     F_arc	   *a;
 
@@ -99,7 +102,8 @@ void translate_arcs(F_arc *arcs, int dx, int dy)
 	translate_arc(a, dx, dy);
 }
 
-void translate_compounds(F_compound *compounds, int dx, int dy)
+static void
+translate_compounds(F_compound *compounds, int dx, int dy)
 {
     F_compound	   *c;
 
@@ -107,7 +111,8 @@ void translate_compounds(F_compound *compounds, int dx, int dy)
 	translate_compound(c, dx, dy);
 }
 
-void translate_ellipses(F_ellipse *ellipses, int dx, int dy)
+static void
+translate_ellipses(F_ellipse *ellipses, int dx, int dy)
 {
     F_ellipse	   *e;
 
@@ -115,7 +120,8 @@ void translate_ellipses(F_ellipse *ellipses, int dx, int dy)
 	translate_ellipse(e, dx, dy);
 }
 
-void translate_lines(F_line *lines, int dx, int dy)
+static void
+translate_lines(F_line *lines, int dx, int dy)
 {
     F_line	   *l;
 
@@ -123,7 +129,8 @@ void translate_lines(F_line *lines, int dx, int dy)
 	translate_line(l, dx, dy);
 }
 
-void translate_splines(F_spline *splines, int dx, int dy)
+static void
+translate_splines(F_spline *splines, int dx, int dy)
 {
     F_spline	   *s;
 
@@ -131,7 +138,8 @@ void translate_splines(F_spline *splines, int dx, int dy)
 	translate_spline(s, dx, dy);
 }
 
-void translate_texts(F_text *texts, int dx, int dy)
+static void
+translate_texts(F_text *texts, int dx, int dy)
 {
     F_text	   *t;
 

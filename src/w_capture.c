@@ -3,9 +3,9 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
- * Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -23,14 +23,25 @@
   and write a png file of the contents of that area.
 */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_capture.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <X11/X.h>
+#include <X11/Xutil.h>
+
 #include "resources.h"
-#include "object.h"
+#include "u_colors.h"
 #include "w_capture.h"
 #include "w_msgpanel.h"
 #include "f_util.h"
-#include "w_drawprim.h"
 #include "w_util.h"
+#include "xfig_math.h"
+
 
 #ifdef HAVE_PNG
 extern Boolean write_png(FILE *file, unsigned char *data, int type,
@@ -165,7 +176,7 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 
     int		i, j;
     int		numcols;
-    int		bytes_per_pixel, bit_order, byte_order;
+    int		bytes_per_pixel, byte_order;
     int		byte_inc;
     int		pix;
     unsigned char *iptr, *rowptr, *dptr;
@@ -213,8 +224,8 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
     }
 
     if (tool_vclass == TrueColor) {
-	byte_order = image->byte_order;			/* MSBFirst or LSBFirst */
-	bit_order = image->bitmap_bit_order;		/* MSBFirst or LSBFirst */
+	byte_order = image->byte_order;		/* MSBFirst or LSBFirst */
+	/* bit_order = image->bitmap_bit_order; */
 	red_mask = image->red_mask;
 	green_mask = image->green_mask;
 	blue_mask = image->blue_mask;
@@ -309,10 +320,10 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 
 	/* now map the pixel values to 0..numcolors */
 	x = 0;
-	for (i=0; i<image->bytes_per_line*height; i++, iptr++) {
+	for (i=0; (unsigned)i<image->bytes_per_line*height; i++, iptr++) {
 	    if (x >= image->bytes_per_line)
 		x=0;
-	    if (x < width) {
+	    if ((unsigned)x < width) {
 		colused[*iptr] = 1;	/* mark this color as used */
 		*dptr++ = *iptr;
 	    }
@@ -333,7 +344,7 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 	    }
 	}
 	/* remap the pixels */
-	for (i=0, dptr = data; i < width*height; i++, dptr++) {
+	for (i=0, dptr = data; (unsigned)i < width*height; i++, dptr++) {
 	    *dptr = mapcols[*dptr];
 	}
 	*nc = numcols;
@@ -342,12 +353,12 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
     } else {
 	int	bitp;
 	x = 0;
-	for (i=0; i<image->bytes_per_line*height; i++, iptr++) {
+	for (i=0; (unsigned)i<image->bytes_per_line*height; i++, iptr++) {
 	    if (x >= image->bytes_per_line*8)
 		x=0;
 	    if (image->bitmap_bit_order == LSBFirst) {
 		for (bitp=1; bitp<256; bitp<<=1) {
-		    if (x < width) {
+		    if ((unsigned)x < width) {
 			if (*iptr & bitp)
 			    *dptr = 1;
 			else
@@ -358,7 +369,7 @@ getImageData(unsigned int *w, unsigned int *h, int *type, int *nc,
 		}
 	    } else {
 		for (bitp=128; bitp>0; bitp>>=1) {
-		    if (x < width) {
+		    if ((unsigned)x < width) {
 			if (*iptr & bitp)
 			    *dptr = 1;
 			else
@@ -432,11 +443,11 @@ selectedRootArea(int *x_r, int *y_r, unsigned int *w_r, unsigned int *h_r, Windo
 	/* make sure area is on screen */
 	if (*x_r < 0)
 	    *x_r = 0;
-	else if (*x_r + *w_r > WidthOfScreen(tool_s))
+	else if (*x_r + *w_r > (unsigned)WidthOfScreen(tool_s))
 	    *w_r = WidthOfScreen(tool_s)-*x_r;
 	if (*y_r < 0)
 	    *y_r = 0;
-	else if (*y_r + *h_r > HeightOfScreen(tool_s))
+	else if (*y_r + *h_r > (unsigned)HeightOfScreen(tool_s))
 	    *h_r = HeightOfScreen(tool_s)-*y_r;
 	*cw = child_r;
 	return True;
@@ -461,8 +472,8 @@ selectedRootArea(int *x_r, int *y_r, unsigned int *w_r, unsigned int *h_r, Windo
     height = 0;
 
     /* Nobble our GC to let us draw a box over everything */
-    gcv.foreground = x_color(BLACK) ^ x_color(WHITE);
-    gcv.background = x_color(WHITE);
+    gcv.foreground = getpixel(BLACK) ^ getpixel(WHITE);
+    gcv.background = getpixel(WHITE);
     gcv.function = GXxor;
     gcmask = GCFunction | GCForeground | GCBackground;
     rectGC = XCreateGC(tool_d, XtWindow(canvas_sw), gcmask, &gcv);

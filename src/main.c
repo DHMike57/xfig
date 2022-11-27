@@ -22,7 +22,6 @@
 #include "main.h"
 
 #include <errno.h>
-#include <limits.h>
 #include <locale.h>
 #include <signal.h>
 #include <stdio.h>
@@ -35,7 +34,6 @@
 #include <sys/types.h>
 
 #include <X11/IntrinsicP.h>
-#include <X11/CoreP.h>		/* requires X11/IntrinsicP.h */
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Xlib.h>
@@ -55,6 +53,7 @@
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
 #endif /* XAW3D */
+#include <X11/Xft/Xft.h>
 
 #include "resources.h"
 #include "object.h"
@@ -64,6 +63,7 @@
 #include "f_load.h"
 #include "f_read.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "u_error.h"
 #include "u_redraw.h"
 #include "u_undo.h"
@@ -97,18 +97,28 @@
 
 /* EXPORTS */
 
-Boolean	geomspec;
-char	*arg_filename = NULL;
-Atom	wm_protocols[2];
-int	xargc;		/* keeps copies of the command-line arguments */
-char	**xargv;
+char		*arg_filename = NULL;
+Boolean		geomspec;
+Atom		wm_protocols[2];
+int		xargc;		/* keep copies of the command line arguments */
+char		**xargv;
 
 /* LOCALS */
 
 static int	cnt;
 static int	screen_res;
-static int	xpm_icon_status; /* status from reading the xpm icon */
+static int	xpm_icon_status;
 static Arg	args[10];
+static void	make_cut_buf_name(void);
+static void	check_resource_ranges(void);
+static void	set_icon_geom(void);
+static void	set_max_image_colors(void);
+static void	parse_canvas_colors(void);
+static void	set_xpm_icon(void);
+static void	resize_canvas(void);
+static void	check_refresh(XtPointer client_data, XtIntervalId *id);
+
+/************** FIG options ******************/
 
 DeclareStaticArgs(10);
 
@@ -657,7 +667,6 @@ main(int argc, char **argv)
     int		    init_canv_wd, init_canv_ht;
     XWMHints	   *wmhints;
     int		    i,j;
-    XColor	    dumcolor;
     char	   *dval;
     char	    tmpstr[PATH_MAX];
 
@@ -948,14 +957,6 @@ main(int argc, char **argv)
     /* set maximum number of colors for imported images */
     set_max_image_colors();
 
-    /* allocate black and white in case we aren't using the default colormap */
-    /* (in which case we could have just used BlackPixelOfScreen...) */
-
-    XAllocNamedColor(tool_d, tool_cm, (String) "white", &dumcolor, &dumcolor);
-    white_color = dumcolor;
-    XAllocNamedColor(tool_d, tool_cm, (String) "black", &dumcolor, &dumcolor);
-    black_color = dumcolor;
-
     /* copy initial appres settings to current variables */
     init_settings();
 
@@ -1098,6 +1099,7 @@ main(int argc, char **argv)
      */
     check_colors();
 
+
     /*
      * parse any canvas background or foreground color the user wants
      */
@@ -1144,6 +1146,20 @@ main(int argc, char **argv)
     /* keep main_canvas for the case when we set a temporary cursor and
        the canvas_win is set the figure preview (when loading figures) */
     main_canvas = canvas_win = XtWindow(canvas_sw);
+
+    /* XftFonts need to be displayed on a XftDraw. */
+    main_draw = XftDrawCreate(tool_d, main_canvas, tool_v, tool_cm);
+    canvas_draw = main_draw;
+
+    /*
+     * It seems, that a given font is linearly scaled to different sizes:
+     * size 6 and dpi 192 is the same as size 12 and dpi 96, see
+     * https://graphicdesign.stackexchange.com/questions/\
+     *	5850/ttf-and-other-modern-font-systems-and-font-size-differences
+     * Optical sizes come with different font names (see, e.g., TU Text, TU
+     * Headline, or also https://www.typenetwork.com/news/article/\
+     *	inside-the-fonts-optical-sizes
+     */
 
     /* create some global bitmaps like arrows, etc */
     create_bitmaps();
@@ -1819,6 +1835,7 @@ static void
 parse_canvas_colors(void)
 {
     Pixel	pix;
+    XColor	x_bg_color, x_fg_color;
 
     /* we had to wait until the canvas was created to get any color the
        user set through resources */
@@ -1849,6 +1866,10 @@ parse_canvas_colors(void)
 	/* get the rgb values for it */
 	XQueryColor(tool_d, tool_cm, &x_fg_color);
     }
+    /* write the colors to the xftcolor array */
+    setcolor_fromXColor(CANVAS_BG, &x_bg_color);
+    setcolor_fromXColor(DEFAULT, &x_fg_color);
+
     /* now set the canvas to the user's choice, if any */
     FirstArg(XtNbackground, x_bg_color.pixel);
     NextArg(XtNforeground, x_fg_color.pixel);
@@ -1875,7 +1896,7 @@ set_xpm_icon(void)
 	/*  make a window for the icon */
 	iconWindow = XCreateSimpleWindow(tool_d, DefaultRootWindow(tool_d),
 					 0, 0, 1, 1, 0,
-					black_color.pixel, black_color.pixel);
+					getpixel(BLACK), getpixel(BLACK));
 	xfig_icon_attr.valuemask = XpmReturnPixels;
 	xfig_icon_attr.colormap = tool_cm;
 	/* use full color icon if TrueColor display */
@@ -2003,7 +2024,7 @@ set_autorefresh(void)
 	    FirstArg(XtNlabel, "Autorefresh Mode");
 	    NextArg(XtNfromVert, cmd_form);
 	    NextArg(XtNborderWidth, 0);
-	    NextArg(XtNbackground, x_color(RED));
+	    NextArg(XtNbackground, getpixel(RED));
 	    refresh_indicator = XtCreateWidget("autorefresh", labelWidgetClass,
 				    tool_form, Args, ArgCount);
 	}
@@ -2062,6 +2083,8 @@ toggle_refresh_mode(void)
 static void
 check_refresh(XtPointer client_data, XtIntervalId *id)
 {
+	(void)client_data;
+	(void)id;
 	time_t	    cur_timestamp;
 
 	/* get current timestamp and reload if newer */

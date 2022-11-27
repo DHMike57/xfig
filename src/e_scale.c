@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -52,7 +52,6 @@
 #include "u_undo.h"
 #include "w_canvas.h"
 #include "w_cursor.h"
-#include "w_drawprim.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
 #include "xfig_math.h"
@@ -285,8 +284,6 @@ cancel_boxscale_ellipse(void)
 static void
 fix_boxscale_ellipse(int x, int y)
 {
-    float	    dx, dy;
-
     if ((cur_e->type == T_CIRCLE_BY_DIA) ||
 	(cur_e->type == T_CIRCLE_BY_RAD))
 	elastic_cbd();
@@ -296,8 +293,8 @@ fix_boxscale_ellipse(int x, int y)
     new_e = copy_ellipse(cur_e);
     boxrelocate_ellipsepoint(new_e, cur_x, cur_y);
     /* find how much the radii changed */
-    dx = 1.0 * new_e->radiuses.x / cur_e->radiuses.x;
-    dy = 1.0 * new_e->radiuses.y / cur_e->radiuses.y;
+    /* dx = 1.0 * new_e->radiuses.x / cur_e->radiuses.x;
+       dy = 1.0 * new_e->radiuses.y / cur_e->radiuses.y; */
     change_ellipse(cur_e, new_e);
     wrapup_scale();
     /* redraw anything under the old ellipse */
@@ -696,7 +693,7 @@ cancel_boxscale_compound(void)
 static void
 fix_boxscale_compound(int x, int y)
 {
-    double	    scalex, scaley;
+    double	scalex, scaley;
 
     elastic_box(fix_x, fix_y, cur_x, cur_y);
     /* erase last lengths if appres.showlengths is true */
@@ -840,8 +837,7 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
     float	    save_rotnangle, save_rotn_dirn;
     int		    p1x, p1y, p2x, p2y, centerx, centery;
     int		    x1, x2, y1, y2, save;
-    int		    theight, tlen2, tht2;
-    PR_SIZE	    tsize;
+    int		    tlen2, tht2;
     char	    str[80], comment[100];
     F_point	   *pnt;
     Boolean	    fixed_text;
@@ -917,6 +913,8 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
     centery = (p1y+p2y)/2;
     /* angle of the line */
     angle = -atan2(dy, dx);
+    while (angle < 0.0)
+	    angle += M_2PI;
 
     /* recompute the text, text angle and text box */
     /* new string, but only if comment doesn't say "fixed text" */
@@ -927,21 +925,17 @@ rescale_dimension_line(F_compound *dimline, float scalex, float scaley, int refx
 	 text->cstring = strdup(str);
     }
     /* recalculate text sizes */
-    text->fontstruct = lookfont(x_fontnum(text->flags, text->font), text->size);
     text->zoom = 1.0;
-    tsize = textsize(text->fontstruct, strlen(text->cstring), text->cstring);
-    text->ascent  = tsize.ascent;
-    text->descent = tsize.descent;
-    text->length  = tsize.length;
-    theight = tsize.ascent + tsize.descent;
     text->angle = angle;
-    text->base_x = centerx + sin(angle)*round(theight/2.0 - tsize.descent);
-    text->base_y = centery + cos(angle)*round(theight/2.0 - tsize.descent);
+    textextents(text);
+    /* the descent is not known any longer; it is approx. 0.2*height */
+    text->base_x = centerx + round(-dy / length * text->height * (0.5 - 0.2));
+    text->base_y = centery + round(dx / length * text->height * 0.3);
 
     /* half the text length + a margin */
     tlen2 = text->length/2 + 60;
     /* half the height + a margin */
-    tht2 = theight/2 + 60;
+    tht2 = text->height/2 + 60;
 
     /* save global rotation angle and direction to use our own */
     save_rotnangle = act_rotnangle;
@@ -1147,12 +1141,10 @@ scale_text(F_text *t, float sx, float sy, int refx, int refy)
 	else if (MAX_FONT_SIZE < newsize)
 	    sx = (float) MAX_FONT_SIZE / t->size;
 	t->size = round(t->size * sx);
-	t->ascent = round(t->ascent * sx);
-	t->descent = round(t->descent * sx);
-	t->length = round(t->length * sx);
+	textextents(t);
+	/* rescale font */
+	reload_text_fstruct(t);
     }
-    /* rescale font */
-    reload_text_fstruct(t);
 }
 
 
@@ -1271,7 +1263,6 @@ static void
 fix_boxscale_line(int x, int y)
 {
     int		owd,oht, nwd, nht;
-    float	scalex, scaley;
 
     elastic_box(fix_x, fix_y, cur_x, cur_y);
     /* erase last lengths if appres.showlengths is true */
@@ -1293,8 +1284,8 @@ fix_boxscale_line(int x, int y)
 	scale_radius(cur_l, new_l, owd, oht, nwd, nht);
     }
     change_line(cur_l, new_l);
-    scalex = 1.0 * nwd/owd;
-    scaley = 1.0 * nht/oht;
+    /* scalex = 1.0 * nwd/owd;
+       scaley = 1.0 * nht/oht; */
     wrapup_scale();
     /* redraw anything under the old line */
     redisplay_line(cur_l);

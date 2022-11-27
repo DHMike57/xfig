@@ -28,51 +28,68 @@
  * SHADING
  */
 
-/* IMPORTS */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_drawprim.h"
 
-#include "fig.h"
-#include "figx.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>	/* XFT DEBUG */
+
 #include "resources.h"
 #include "paintop.h"
 #include "mode.h"
 #include "object.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "w_canvas.h"
-#include "w_drawprim.h"
+#include "w_cursor.h"
+#include "w_file.h"
+#include "w_icons.h"
 #include "w_indpanel.h"
 #include "w_layers.h"
 #include "w_msgpanel.h"
-#include "w_setup.h"
-#include "w_util.h"
-
-#include "u_create.h"
-#include "w_cursor.h"
-#include "w_file.h"
 #include "w_rottext.h"
+#include "w_setup.h"
+
+
+#define zXDrawArc(disp,win,gc,x,y,d1,d2,a1,a2)\
+    XDrawArc(disp,win,gc,ZOOMX(x),ZOOMY(y), \
+	     (short)round(zoomscale*(d1)),(short)round(zoomscale*(d2)),\
+	     a1,a2)
+
+#define zXFillArc(disp,win,gc,x,y,d1,d2,a1,a2)\
+    XFillArc(disp,win,gc,ZOOMX(x),ZOOMY(y), \
+	     (short)round(zoomscale*(d1)),(short)round(zoomscale*(d2)),\
+	     a1,a2)
+
+#define zXRotDrawString(disp,font,ang,win,gc,x,y,s)\
+    XRotDrawString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
+
+#define zXRotDrawImageString(disp,font,ang,win,gc,x,y,s)\
+    XRotDrawImageString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
+
+#define zXFillRectangle(disp,win,gc,x,y,w,h)\
+    XFillRectangle(disp,win,gc,ZOOMX(x),ZOOMY(y),\
+		(short)round(zoomscale*(w)),(short)round(zoomscale*(h)))
 
 /* EXPORTS */
 
 XFontStruct	*bold_font;
 XFontStruct	*roman_font;
 XFontStruct	*button_font;
-XFontStruct	*canvas_font;
+XftFont		*mono_font;
 
 /* LOCAL */
 
 static Pixel	gc_color[NUMOPS], gc_background[NUMOPS];
 static XRectangle clip[1];
-static int	parsesize(char *name);
 static Boolean	openwinfonts;
 static Boolean  font_scalable[NUM_FONTS];
-
-#define MAXNAMES 300
-
-static struct {
-    char	   *fn;
-    int		    s;
-}		flist[MAXNAMES];
-
 
 static void	scale_pattern (int indx);
 static void	rescale_pattern (int patnum);
@@ -81,13 +98,12 @@ static void	zXFillPolygon(Display *d, Window w, GC gc, zXPoint *points,
 static void	zXDrawLines(Display *d, Window w, GC gc, zXPoint *points,
 				int n, int coordmode);
 
+
 void init_font(void)
 {
-    struct xfont   *newfont, *nf;
-    int		    f, count, i, p, ss;
-    char	    template[300];
-    char	    backup_template[300];
-    char	  **fontlist, **fname;
+    XftPattern	   *pattern;
+    XftResult	    res;
+    double	    dbl;
 
     if (appres.boldFont == NULL || *appres.boldFont == '\0')
 	appres.boldFont = BOLD_FONT;
@@ -95,6 +111,26 @@ void init_font(void)
 	appres.normalFont = NORMAL_FONT;
     if (appres.buttonFont == NULL || *appres.buttonFont == '\0')
 	appres.buttonFont = BUTTON_FONT;
+
+    /* Get the mono font. Similar to getfont() in u_fonts.c. */
+
+    pattern = XftNameParse(MONO_FONT);
+    XftPatternAddBool(pattern, XFT_ANTIALIAS, False);
+    /* Re-compute the pixelsize, since XFT_DPI is ignored. */
+    if (XftResultMatch != XftPatternGetDouble(pattern, XFT_SIZE, 0, &dbl)) {
+	fprintf(stderr, "could not find mono font size!");
+	dbl = 10.;
+    }
+    /* pixelsize; pixelsize overrides font size */
+    dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
+    XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
+
+    /* I printed the pattern before and after the match, and it worked to use
+       the same pointer as request and result pattern. */
+    pattern = XftFontMatch(tool_d, tool_sn, pattern, &res);
+
+    mono_font = XftFontOpenPattern(tool_d, pattern);
+
 
     while ((roman_font = XLoadQueryFont(tool_d, appres.normalFont)) == 0) {
 	if (strcmp(appres.normalFont,"fixed") == 0) {
@@ -116,140 +152,19 @@ void init_font(void)
 		appres.buttonFont, appres.normalFont);
 	button_font = XLoadQueryFont(tool_d, appres.normalFont);
     }
-    /*
-     * Now initialize the font structure for the X fonts corresponding to the
-     * Postscript fonts for the canvas.	 OpenWindows can use any LaserWriter
-     * fonts at any size, so we don't need to load anything if we are using
-     * it.
-     */
 
-    /* if the user hasn't disallowed scalable fonts, check that the
-       server really has them by checking for font of 0-0 size */
-    openwinfonts = False;
-    if (appres.scalablefonts) {
-	/* first look for OpenWindow style font names (e.g. times-roman) */
-	if ((fontlist = XListFonts(tool_d, ps_fontinfo[1].name, 1, &count))!=0) {
-            openwinfonts = True; /* yes, use them */
-            for (f=0; f<NUM_FONTS; f++) { /* copy the OpenWindow font names */
-                x_fontinfo[f].template = ps_fontinfo[f+1].name;
-                font_scalable[f] = True;
-            }
-            XFreeFontNames(fontlist);
-	} else {
-            for (f = 0; f < NUM_FONTS; f++) {
-                strcpy(template,x_fontinfo[f].template);  /* nope, check for font size 0 */
-                strcat(template,"0-0-*-*-*-*-");
-                /* add ISO8859 (if not Symbol font or ZapfDingbats) to font name in non-international mode*/
-                if (
-#ifdef I18N
-                    !appres.international &&
-#endif
-                    strstr(template,"ymbol") == NULL &&
-                    strstr(template,"ingbats") == NULL)
-                        strcat(template,"ISO8859-*");
-                else
-                    strcat(template,"*-*");
-
-                if ((fontlist = XListFonts(tool_d, template, 1, &count)))
-                    font_scalable[f] = True;
-                else
-                    font_scalable[f] = False;
-
-                XFreeFontNames(fontlist);
-            }
-	}
+    if (appres.DEBUG) {
+	char	buf[230];
+	fprintf(stderr, "button_font: %s, fid: %lu\n", appres.buttonFont,
+		    button_font->fid);
+	fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
+		    roman_font->fid);
+	fprintf(stderr, "bold_font: %s, fid: %lu\n", appres.boldFont,
+		    bold_font->fid);
+	XftNameUnparse(pattern, buf, 230);
+	fprintf(stderr, "mono_font: %s\n", buf);
     }
 
-    /* no scalable fonts - query the server for all the font
-       names and sizes and build a list of them */
-
-    for (f = 0; f < NUM_FONTS; f++) {
-        if (!font_scalable[f]) {
-	    nf = NULL;
-	    strcpy(template,x_fontinfo[f].template);
-	    strcat(template,"*-*-*-*-*-*-");
-	    strcpy(backup_template,x_backup_fontinfo[f].template);
-	    strcat(backup_template,"*-*-*-*-*-*-");
-	    /* add ISO8859 (if not Symbol font or ZapfDingbats) to font name in non-international mode*/
-	    if (
-#ifdef I18N
-		!appres.international &&
-#endif
-		strstr(template,"ymbol") == NULL &&
-		strstr(template,"ingbats") == NULL) {
-		    strcat(template,"ISO8859-*");
-		    strcat(backup_template,"ISO8859-*");
-	    } else {
-		strcat(template,"*-*");
-		strcat(backup_template,"*-*");
-            }
-	    /* don't free the Fontlist because we keep pointers into it */
-	    p = 0;
-
-	    if ((fontlist = XListFonts(tool_d, template, MAXNAMES, &count))==0)
-	        fontlist = XListFonts(tool_d, backup_template, MAXNAMES, &count);
-
-            if (fontlist == 0) {
-		/* no fonts by that name found, substitute the -normal font name */
-		flist[p].fn = appres.normalFont;
-		flist[p++].s = 12;	/* just set the size to 12 */
-	    } else {
-		fname = fontlist; /* go through the list finding point
-				   * sizes */
-		while (count--) {
-		ss = parsesize(*fname);	/* get the point size from
-					 * the name */
-		flist[p].fn = *fname++;	/* save name of this size
-					 * font */
-		flist[p++].s = ss;	/* and save size */
-		}
-	    }
-	    /* start at size 4 and go to 50 */
-	    for (ss = 4; ss <= 50; ss++) {
-		for (i = 0; i < p; i++)
-			if (flist[i].s == ss)	/* found size */
-			    break;
-		/* if found size, allocate the font */
-		if (i < p && flist[i].s == ss) {
-			newfont = (struct xfont *) malloc(sizeof(struct xfont));
-			if (nf == NULL)
-			    x_fontinfo[f].xfontlist = newfont;
-			else
-			    nf->next = newfont;
-			nf = newfont;	/* keep current ptr */
-			nf->size = ss;	/* store the size here */
-			if (appres.DEBUG)
-			    fprintf(stderr,"Font: %s\n",flist[i].fn);
-			nf->fname = flist[i].fn;	/* keep actual name */
-			nf->fstruct = NULL;
-		        nf->fset = NULL;
-			nf->next = NULL;
-		    }
-	    } /* next size */
-        } /* !font_scalable[f] */
-    } /* next font, f */
-}
-
-/* parse the point size of font 'name' */
-/* e.g. -adobe-courier-bold-o-normal--10-100-75-75-m-60-ISO8859-1 */
-
-static int
-parsesize(char *name)
-{
-    int		    s;
-    char	   *np;
-
-    for (np = name; *(np + 1); np++) {
-        /* look for "--" */
-	if (strncmp(np, "--", 2) == 0)
-	    return atoi(np + 2);
-        /* For "-b&h-lucida-*-normal-sans-<point-size>-*" */
-        if (strncmp(np, "-normal-sans-", 13) == 0)
-	    return atoi(np + 13);
-    }
-
-    fprintf(stderr, "Can't parse '%s'\n", name);
-    return 0;
 }
 
 /*
@@ -439,16 +354,44 @@ lookfont(int fnum, int size)
 	return (nf->fstruct);
 }
 
+void
+pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
+		char *s, Color c)
+{
+	int	zy = ZOOMY(y);
+	int	zx = ZOOMX(x);
+	/* XGlyphInfo	extents; */
+
+	if (*s == '\0')
+		return;
+	if (font == NULL) {
+		file_msg("Error in pw_xfttext, font == NULL.\n");
+		return;
+	}
+	/* if this depth is inactive, draw the text in gray */
+	/* if depth == MAX_DEPTH+1 then the caller wants the original color
+	   no matter what */
+	if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth)))
+		c = MED_GRAY;
+
+	/* Check for preview cancel here.  The text call may take some time if
+	   a large font has to be rotated. */
+	if (check_cancel())
+		return;
+
+	XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy, (XftChar8 *)s,
+			(int)strlen(s));
+}
+
 /* print "string" in window "w" using font specified in fstruct at angle
 	"angle" (radians) at (x,y)
    If background is != COLOR_NONE, draw background color ala DrawImageString
 */
-
 void
 pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 	float angle, char *string, Color color, Color background)
 {
-    int		xfg, xbg;
+    unsigned long	xfg, xbg;
 
     if (fstruct == NULL) {
 	fprintf(stderr,"Error, in pw_text, fstruct==NULL\n");
@@ -461,8 +404,8 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 	color = MED_GRAY;
 
     /* get the X colors */
-    xfg = x_color(color);
-    xbg = x_color(background);
+    xfg = getpixel(color);
+    xbg = getpixel(background);
     if ((xfg != gc_color[op]) ||
 	(background != COLOR_NONE && (xbg != gc_background[op]))) {
 	    /* don't change the colors for ERASE */
@@ -470,7 +413,7 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 		if (op == PAINT)
 		    set_x_fg_color(gccache[op], color);
 		else
-		    XSetForeground(tool_d,gccache[op], xfg ^ x_bg_color.pixel);
+		    XSetForeground(tool_d,gccache[op], xfg ^ getpixel(CANVAS_BG));
 		gc_color[op] = xfg;
 		if (background != COLOR_NONE) {
 		    set_x_bg_color(gccache[op], background);
@@ -482,7 +425,7 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
     /* check for preview cancel here.  The text call may take some time if
        a large font has to be rotated. */
     if (check_cancel())
-	return ;
+	return;
 
     if (background != COLOR_NONE) {
 	zXRotDrawImageString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
@@ -559,22 +502,12 @@ makegc(int op, Pixel fg, Pixel bg)
 void init_gc(void)
 {
     int		    i;
-    XColor	    tmp_color;
     XGCValues	    gcv;
 
-    gccache[PAINT] = makegc(PAINT, x_fg_color.pixel, x_bg_color.pixel);
-    gccache[ERASE] = makegc(ERASE, x_fg_color.pixel, x_bg_color.pixel);
-    gccache[INV_PAINT] = makegc(INV_PAINT, x_fg_color.pixel, x_bg_color.pixel);
-    /* parse any grid color spec */
-    XParseColor(tool_d, tool_cm, appres.grid_color, &tmp_color);
-    if (XAllocColor(tool_d, tool_cm, &tmp_color)==0) {
-	fprintf(stderr,"Can't allocate color for grid \n");
-        grid_color = x_fg_color.pixel;
-	grid_gc = makegc(PAINT, grid_color, x_bg_color.pixel);
-    } else {
-        grid_color = tmp_color.pixel;
-	grid_gc = makegc(PAINT, grid_color, x_bg_color.pixel);
-    }
+    gccache[PAINT] = makegc(PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
+    gccache[ERASE] = makegc(ERASE, getpixel(DEFAULT), getpixel(CANVAS_BG));
+    gccache[INV_PAINT] = makegc(INV_PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
+    grid_gc = makegc(PAINT, grid_color, getpixel(CANVAS_BG));
 
     for (i = 0; i < NUMOPS; i++) {
 	gc_color[i] = -1;
@@ -613,7 +546,7 @@ void init_fill_gc(void)
     gcv.fill_rule = EvenOddRule /* WindingRule */ ;
     for (i = 0; i < NUMFILLPATS; i++) {
 	/* all the bits are recolored in set_fill_gc() */
-	fill_gc[i] = makegc(PAINT, x_fg_color.pixel, x_color(BLACK));
+	fill_gc[i] = makegc(PAINT, getpixel(DEFAULT), getpixel(BLACK));
 	mask = GCFillStyle | GCFillRule | GCArcMode;
 	if (fill_pm[i]) {
 	    gcv.stipple = fill_pm[i];
@@ -969,28 +902,50 @@ static unsigned char vert_saw_bits[] = {
 
 /* patterns like bricks, etc */
 patrn_strct pattern_images[NUMPATTERNS] = {
-    {left30_width,            left30_height,            (char*)left30_bits},
-    {right30_width,           right30_height,           (char*)right30_bits},
-    {crosshatch30_width,      crosshatch30_height,      (char*)crosshatch30_bits},
-    {left45_width,            left45_height,            (char*)left45_bits},
-    {right45_width,           right45_height,           (char*)right45_bits},
-    {crosshatch45_width,      crosshatch45_height,      (char*)crosshatch45_bits},
-    {bricks_width,            bricks_height,            (char*)bricks_bits},
-    {vert_bricks_width,       vert_bricks_height,       (char*)vert_bricks_bits},
-    {horizontal_width,        horizontal_height,        (char*)horizontal_bits},
-    {vertical_width,          vertical_height,          (char*)vertical_bits},
-    {crosshatch_width,        crosshatch_height,        (char*)crosshatch_bits},
-    {leftshingle_width,       leftshingle_height,       (char*)leftshingle_bits},
-    {rightshingle_width,      rightshingle_height,      (char*)rightshingle_bits},
-    {vert_leftshingle_width,  vert_leftshingle_height,  (char*)vert_leftshingle_bits},
-    {vert_rightshingle_width, vert_rightshingle_height, (char*)vert_rightshingle_bits},
-    {fishscales_width,        fishscales_height,        (char*)fishscales_bits},
-    {small_fishscales_width,  small_fishscales_height,  (char*)small_fishscales_bits},
-    {circles_width,           circles_height,           (char*)circles_bits},
-    {hexagons_width,          hexagons_height,          (char*)hexagons_bits},
-    {octagons_width,          octagons_height,          (char*)octagons_bits},
-    {horiz_saw_width,         horiz_saw_height,         (char*)horiz_saw_bits},
-    {vert_saw_width,          vert_saw_height,          (char*)vert_saw_bits}
+    {left30_width,           left30_height,           (char*)left30_bits,
+     left30_width,           left30_height,           NULL},
+    {right30_width,          right30_height,          (char*)right30_bits,
+     right30_width,          right30_height,          NULL},
+    {crosshatch30_width,     crosshatch30_height,     (char*)crosshatch30_bits,
+     crosshatch30_width,     crosshatch30_height,     NULL},
+    {left45_width,           left45_height,           (char*)left45_bits,
+     left45_width,           left45_height,           NULL},
+    {right45_width,          right45_height,          (char*)right45_bits,
+     right45_width,          right45_height,          NULL},
+    {crosshatch45_width,     crosshatch45_height,     (char*)crosshatch45_bits,
+     crosshatch45_width,     crosshatch45_height,     NULL},
+    {bricks_width,           bricks_height,           (char*)bricks_bits,
+     bricks_width,           bricks_height,           NULL},
+    {vert_bricks_width,      vert_bricks_height,      (char*)vert_bricks_bits,
+     vert_bricks_width,      vert_bricks_height,      NULL},
+    {horizontal_width,       horizontal_height,       (char*)horizontal_bits,
+     horizontal_width,       horizontal_height,       NULL},
+    {vertical_width,         vertical_height,         (char*)vertical_bits,
+     vertical_width,         vertical_height,         NULL},
+    {crosshatch_width,       crosshatch_height,       (char*)crosshatch_bits,
+     crosshatch_width,       crosshatch_height,       NULL},
+    {leftshingle_width,      leftshingle_height,      (char*)leftshingle_bits,
+     leftshingle_width,      leftshingle_height,      NULL},
+    {rightshingle_width,     rightshingle_height,     (char*)rightshingle_bits,
+     rightshingle_width,     rightshingle_height,     NULL},
+    {vert_leftshingle_width, vert_leftshingle_height, (char*)vert_leftshingle_bits,
+     vert_leftshingle_width, vert_leftshingle_height, NULL},
+    {vert_rightshingle_width, vert_rightshingle_height, (char*)vert_rightshingle_bits,
+     vert_rightshingle_width, vert_rightshingle_height, NULL},
+    {fishscales_width,       fishscales_height,       (char*)fishscales_bits,
+     fishscales_width,       fishscales_height,       NULL},
+    {small_fishscales_width, small_fishscales_height, (char*)small_fishscales_bits,
+     small_fishscales_width, small_fishscales_height, NULL},
+    {circles_width,          circles_height,          (char*)circles_bits,
+     circles_width,          circles_height,          NULL},
+    {hexagons_width,         hexagons_height,         (char*)hexagons_bits,
+     hexagons_width,         hexagons_height,         NULL},
+    {octagons_width,         octagons_height,         (char*)octagons_bits,
+     octagons_width,         octagons_height,         NULL},
+    {horiz_saw_width,        horiz_saw_height,        (char*)horiz_saw_bits,
+     horiz_saw_width,        horiz_saw_height,        NULL},
+    {vert_saw_width,         vert_saw_height,         (char*)vert_saw_bits,
+     vert_saw_width,         vert_saw_height,         NULL}
 };
 
 /* generate the fill pixmaps */
@@ -1011,7 +966,7 @@ void init_fill_pm(void)
     /* use same colors for "NONE" indicator for black and color */
     fillstyle_choices[0].pixmap = XCreatePixmapFromBitmapData(tool_d,
 			tool_w, none_ic.bits, none_ic.width,
-			none_ic.height, x_fg_color.pixel, x_bg_color.pixel,
+			none_ic.height, getpixel(DEFAULT), getpixel(CANVAS_BG),
 			tool_dpth);
 
     /* Shade patterns go from full black to full saturation of the color */
@@ -1022,7 +977,7 @@ void init_fill_pm(void)
 	/* The actual colors of fg/bg will be reset in recolor_fillstyles */
 	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
 		 tool_w, (char*)shade_images[i], SHADE_IM_SIZE, SHADE_IM_SIZE,
-		 x_fg_color.pixel,x_bg_color.pixel,tool_dpth);
+		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
     }
     /* Tint patterns go from full saturation of the color to full white */
     /* Note that there are no fillstyle_choices for tints for black */
@@ -1034,13 +989,21 @@ void init_fill_pm(void)
 	/* The actual colors of fg/bg will be reset in recolor_fillstyles */
 	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
 		 tool_w, (char*)shade_images[j], SHADE_IM_SIZE, SHADE_IM_SIZE,
-		 x_fg_color.pixel,x_bg_color.pixel,tool_dpth);
+		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
     }
     /* Now do the remaining patterns (bricks, shingles, etc) */
     for (i = NUMSHADEPATS+NUMTINTPATS; i < NUMFILLPATS; i++) {
+	size_t	nbytes;
+	j = i-(NUMSHADEPATS+NUMTINTPATS);
+	/* allocate current pattern data for zoom = 1 */
+	nbytes = ((pattern_images[j].owidth + 7) / 8) *
+						pattern_images[j].oheight;
+	pattern_images[j].cdata = malloc(nbytes);
+	/* pattern_images[j].cwidth and .cheight is already initialized with
+	   owidth and oheight */
+	memcpy(pattern_images[j].cdata, pattern_images[j].odata, nbytes);
 	/* create pattern at this zoom */
 	rescale_pattern(i);
-	j = i-(NUMSHADEPATS+NUMTINTPATS);
 	/* save these patterns at zoom = 1 for the fill button panel */
 	fill_but_pm[j] = fill_pm[i];
 	fill_but_pm_zoom[j] = fill_pm_zoom[i];
@@ -1053,7 +1016,7 @@ void init_fill_pm(void)
 	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
 		 tool_w, pattern_images[j].odata,
 		 pattern_images[j].owidth, pattern_images[j].oheight,
-		 x_fg_color.pixel,x_bg_color.pixel,tool_dpth);
+		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
     }
 }
 
@@ -1256,6 +1219,13 @@ pw_lines(Window w, zXPoint *points, int npoints, int op, int depth,
     }
 }
 
+void
+erase_box(int xmin, int ymin, int xmax, int ymax)
+{
+	zXFillRectangle(tool_d, canvas_win, gccache[ERASE], xmin, ymin,
+			xmax - xmin, ymax - ymin);
+}
+
 void set_clip_window(int xmin, int ymin, int xmax, int ymax)
 {
     clip_xmin = clip[0].x = xmin;
@@ -1294,23 +1264,24 @@ void set_fill_gc(int fill_style, int op, int pencolor, int fillcolor, int xorg, 
     if (op != ERASE) {
 	/* if a pattern, color the lines in the pen color and the field in fill color */
 	if (fill_style >= NUMSHADEPATS+NUMTINTPATS) {
-	    fg = x_color(pencolor);
-	    bg = x_color(fillcolor);
+	    fg = getpixel(pencolor);
+	    bg = getpixel(fillcolor);
 	} else {
 	    if (fillcolor == BLACK) {
-		fg = x_color(BLACK);
-		bg = x_color(WHITE);
+		fg = getpixel(BLACK);
+		bg = getpixel(WHITE);
 	    } else if (fillcolor == DEFAULT) {
-		fg = x_fg_color.pixel;
-		bg = x_bg_color.pixel;
+		fg = getpixel(DEFAULT);
+		bg = getpixel(CANVAS_BG);
 	    } else {
-		fg = x_color(fillcolor);
-		bg = (fill_style < NUMSHADEPATS? x_color(BLACK): x_color(WHITE));
+		fg = getpixel(fillcolor);
+		bg = (fill_style < NUMSHADEPATS ?
+				getpixel(BLACK) : getpixel(WHITE));
 	    }
 	}
     } else {
-	fg = x_bg_color.pixel;   /* un-fill */
-	bg = x_bg_color.pixel;
+	fg = getpixel(CANVAS_BG);   /* un-fill */
+	bg = getpixel(CANVAS_BG);
     }
     XSetForeground(tool_d,fillgc,fg);
     XSetBackground(tool_d,fillgc,bg);
@@ -1381,7 +1352,7 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
     if (width == gc_thickness[op] && style == gc_line_style[op] &&
 	join_style == gc_join_style[op] &&
 	cap_style == gc_cap_style[op] &&
-	(x_color(color) == gc_color[op]) &&
+	(getpixel(color) == gc_color[op]) &&
 	((style != DASH_LINE && style != DOTTED_LINE &&
           style != DASH_DOT_LINE && style != DASH_2_DOTS_LINE &&
           style != DASH_3_DOTS_LINE) ||
@@ -1391,10 +1362,10 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
     gcv.line_width = width;
     mask = GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle;
     if (op == PAINT) {
-	gcv.foreground = x_color(color);
+	gcv.foreground = getpixel(color);
 	mask |= GCForeground;
     } else if (op == INV_PAINT) {
-	gcv.foreground = x_color(color) ^ x_bg_color.pixel;
+	gcv.foreground = getpixel(color) ^ getpixel(CANVAS_BG);
 	mask |= GCForeground;
     }
     gcv.join_style = join_styles[join_style];
@@ -1456,42 +1427,7 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
     gc_line_style[op] = style;
     gc_join_style[op] = join_style;
     gc_cap_style[op] = cap_style;
-    gc_color[op] = x_color(color);
-}
-
-int
-x_color(int col)
-{
-	int	pix;
-	if (!all_colors_available) {
-		pix = colors[BLACK];
-	} else if (col == LT_GRAY) {
-		pix = lt_gray_color;
-	} else if (col == DARK_GRAY) {
-		pix = dark_gray_color;
-	} else if (col == MED_GRAY) {
-		pix = med_gray_color;
-	} else if (col == TRANSP_BACKGROUND) {
-		pix = med_gray_color;
-	} else if (col == COLOR_NONE) {
-		pix = colors[WHITE];
-	} else if (col==WHITE) {
-		pix = colors[WHITE];
-	} else if (col==BLACK) {
-		pix = colors[BLACK];
-	} else if (col==DEFAULT) {
-		pix = x_fg_color.pixel;
-	} else if (col==CANVAS_BG) {
-		pix = x_bg_color.pixel;
-	} else {
-	   if (col < 0)
-		col = BLACK;
-	   if (col >= NUM_STD_COLS+num_usr_cols)
-	       pix = x_fg_color.pixel;
-	   else
-	       pix = colors[col];
-	}
-	return pix;
+    gc_color[op] = getpixel(color);
 }
 
 /* resize the fill patterns for the current display_zoomscale */

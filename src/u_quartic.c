@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,10 +17,12 @@
  *
  */
 
+#include "u_quartic.h"
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
-#include "fig.h"
+
+#include "xfig_math.h"
 
 
 static int

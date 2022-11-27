@@ -16,37 +16,50 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* intptr_t */
+#endif
+#include "w_file.h"
+
+#include <errno.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Xft/Xft.h>
+
 #include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
-#include "e_edit.h"
-#include "f_read.h"
-#include "f_util.h"
-#include "u_create.h"
-#include "u_redraw.h"
-#include "w_drawprim.h"		/* for max_char_height */
-#include "w_dir.h"
-#include "w_export.h"
-#include "w_file.h"
-#include "w_indpanel.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_util.h"
-#include "w_setup.h"
-#include "w_icons.h"
-#include "w_zoom.h"
-
+#include "paintop.h"
 #include "e_compound.h"
 #include "f_load.h"
+#include "f_read.h"
 #include "f_save.h"
+#include "f_util.h"
+#include "u_colors.h"
+#include "u_create.h"
 #include "u_free.h"
 #include "u_list.h"
+#include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_cmdpanel.h"
 #include "w_color.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"		/* for max_char_height */
+#include "w_dir.h"
+#include "w_export.h"
+#include "w_layers.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
 
 #define	FILE_WID	157	/* width of Current file etc to show preview to the right */
 #define FILE_ALT_WID	260	/* width of file alternatives panel */
@@ -76,30 +89,45 @@ Boolean		colors_are_swapped = False;
 Widget		preview_size, preview_widget, preview_widget_form, preview_name;
 Widget		preview_stop, preview_label, dummy_label;
 Widget		comments_widget;
-Pixmap		preview_land_pixmap, preview_port_pixmap;
 Boolean		cancel_preview = False;
 Boolean		preview_in_progress = False;
-void		load_request(Widget w, XButtonEvent *ev);		/* this is needed by main() */
+void		load_request(Widget w, XButtonEvent *ev); /* needed by main() */
 
 /* LOCALS */
 
-static void	file_preview_stop(Widget w, XButtonEvent *ev);
 static Boolean	file_cancel_request = False;
 static Boolean	file_load_request = False;
 static Boolean	file_save_request = False;
 static Boolean	file_merge_request = False;
 static char	save_file_dir[PATH_MAX];
 
-/* these are in fig units */
+static Boolean	user_colors_saved = False;
+static XftColor	saved_user_colors[MAX_USR_COLS];
+static Boolean	saved_userFree[MAX_USR_COLS];
+static int	saved_user_num;
 
-static float	offset_unit_conv[] = { (float)PIX_PER_INCH, (float)PIX_PER_CM, 1.0 };
+static Boolean	nuser_colors_saved = False;
+static XftColor	saved_nuser_colors[MAX_USR_COLS];
+static Boolean	saved_nuserFree[MAX_USR_COLS];
+static int	saved_nuser_num;
+static Pixmap	preview_land_pixmap, preview_port_pixmap;
+
+
+static void	file_preview_stop(Widget w, XButtonEvent *ev);
+
+/* these are in fig units */
+static float	offset_unit_conv[] = {
+	(float)PIX_PER_INCH,
+	(float)PIX_PER_CM,
+	1.0
+};
 
 static char	*load_msg = "The current figure is modified.\nDo you want to discard it and load the new file?";
 static char	buf[40];
 
 /* to save image colors when doing a figure preview */
 
-static XColor	save_image_cells[MAX_COLORMAP_SIZE];
+static XftColor	save_image_cells[MAX_COLORMAP_SIZE];
 static int	save_avail_image_cols;
 static Boolean	image_colors_are_saved = False;
 
@@ -164,7 +192,7 @@ static XtActionsRec	file_actions[] =
 
 
 int renamefile (char *file);
-void create_file_panel (void);
+static void create_file_panel (void);
 
 void
 file_panel_dismiss(void)
@@ -181,12 +209,11 @@ file_panel_dismiss(void)
 	/* restore image colors on canvas */
 	avail_image_cols = save_avail_image_cols;
 	for (i=0; i<avail_image_cols; i++) {
-	    image_cells[i].red   = save_image_cells[i].red;
-	    image_cells[i].green = save_image_cells[i].green;
-	    image_cells[i].blue  = save_image_cells[i].blue;
-	    image_cells[i].flags  = DoRed|DoGreen|DoBlue;
+	    image_cells[i].color.red   = save_image_cells[i].color.red;
+	    image_cells[i].color.green = save_image_cells[i].color.green;
+	    image_cells[i].color.blue  = save_image_cells[i].color.blue;
         }
-	YStoreColors(tool_cm, image_cells, avail_image_cols);
+	alloc_or_store_colors(image_cells, avail_image_cols);
 	image_colors_are_saved = False;
     }
     FirstArg(XtNstring, "\0");
@@ -231,6 +258,8 @@ merge_request(Widget w, XButtonEvent *ev)
 static void
 do_merge(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     char	    path[PATH_MAX], fname[PATH_MAX];
     char	   *fval, *dval;
     int		    xoff, yoff;
@@ -300,6 +329,8 @@ load_request(Widget w, XButtonEvent *ev)
 static void
 do_load(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     char	    fname[PATH_MAX];
     char	   *fval, *dval;
     int		    xoff, yoff;
@@ -369,6 +400,8 @@ do_load(Widget w, XButtonEvent *ev)
 void
 new_xfig_request(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     pid_t pid;
     char *fval, fname[PATH_MAX];
     char **xxargv;
@@ -490,6 +523,8 @@ warning:
 void
 do_save(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     char	   *fval, *dval, fname[PATH_MAX];
     int		    qresult;
 
@@ -673,6 +708,8 @@ cancel_request(Widget w, XButtonEvent *ev)
 static void
 file_panel_cancel(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     if (user_colors_saved) {
 	restore_user_colors();
 	restore_nuser_colors();
@@ -812,6 +849,7 @@ popup_file_panel(int mode)
 static void
 file_xoff_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 {
+	(void)garbage;
     FirstArg(XtNlabel, XtName(w));
     SetValues(file_xoff_unit_panel);
     xoff_unit_setting = (intptr_t) new_unit;
@@ -820,6 +858,7 @@ file_xoff_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 static void
 file_yoff_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 {
+	(void)garbage;
     FirstArg(XtNlabel, XtName(w));
     SetValues(file_yoff_unit_panel);
     yoff_unit_setting = (intptr_t) new_unit;
@@ -1281,7 +1320,7 @@ clear_preview(void)
     SetValues(preview_size);
 
     /* clear both port and land pixmap */
-    XSetForeground(tool_d, gccache[ERASE], x_bg_color.pixel);
+    XSetForeground(tool_d, gccache[ERASE], getpixel(CANVAS_BG));
     XFillRectangle(tool_d, preview_land_pixmap, gccache[ERASE], 0, 0,
 		   PREVIEW_CANVAS_W, PREVIEW_CANVAS_H);
     XFillRectangle(tool_d, preview_port_pixmap, gccache[ERASE], 0, 0,
@@ -1297,6 +1336,8 @@ clear_preview(void)
 static void
 file_preview_stop(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     /* set the cancel flag */
     cancel_preview = True;
     /* make the cancel button insensitive */
@@ -1304,7 +1345,7 @@ file_preview_stop(Widget w, XButtonEvent *ev)
     process_pending();
 }
 
-void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_widget, Pixmap port_pixmap, Pixmap land_pixmap)
+void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_widget)
 {
     fig_settings    settings;
     int		save_objmask;
@@ -1313,7 +1354,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
     Boolean	save_shownums;
     F_compound	*figure;
     int		xmin, xmax, ymin, ymax;
-    float	width, height, size;
+    float	width, height;
     int		pixwidth, pixheight;
     int		i, status;
     char	figsize[50];
@@ -1363,7 +1404,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
     FirstArg(XtNbackground, &pb);
     GetValues(preview_label);
     /* set it to red while previewing */
-    FirstArg(XtNbackground, x_color(YELLOW));
+    FirstArg(XtNbackground, getpixel(YELLOW));
     SetValues(preview_label);
 
     /* give filename a chance to appear in the Filename field */
@@ -1394,9 +1435,9 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	image_colors_are_saved = True;
 	/* save current canvas image colors */
 	for (i=0; i<avail_image_cols; i++) {
-	    save_image_cells[i].red   = image_cells[i].red;
-	    save_image_cells[i].green = image_cells[i].green;
-	    save_image_cells[i].blue  = image_cells[i].blue;
+	    save_image_cells[i].color.red   = image_cells[i].color.red;
+	    save_image_cells[i].color.green = image_cells[i].color.green;
+	    save_image_cells[i].color.blue  = image_cells[i].color.blue;
 	}
 	save_avail_image_cols = avail_image_cols;
     }
@@ -1446,7 +1487,6 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	ymax = figure->secorner.y;
 	width = xmax - xmin;
 	height = ymax - ymin;
-	size = max2(width,height) / ZOOM_FACTOR;
 	/* calculate size in current units */
 	if (width < PIX_PER_INCH || height < PIX_PER_INCH) {
 	    /* for small figures, show more decimal places */
@@ -1470,14 +1510,15 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 
 	/* now switch the drawing canvas to our preview window and set width/height */
 	if (settings.landscape) {
-	    canvas_win = (Window) land_pixmap;
+	    canvas_win = (Window) preview_land_pixmap;
 	    pixwidth = PREVIEW_CANVAS_W;
 	    pixheight = PREVIEW_CANVAS_H;
 	} else {
-	    canvas_win = (Window) port_pixmap;
+	    canvas_win = (Window) preview_port_pixmap;
 	    pixwidth = PREVIEW_CANVAS_H;
 	    pixheight = PREVIEW_CANVAS_W;
 	}
+	XftDrawChange(canvas_draw, canvas_win);
 
 	/* scale to fit the preview canvas */
 	display_zoomscale =
@@ -1501,7 +1542,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	cur_objmask = 0;
 
 	/* clear the pixmap with the canvas background color */
-	XSetForeground(tool_d, gccache[ERASE], x_bg_color.pixel);
+	XSetForeground(tool_d, gccache[ERASE], getpixel(CANVAS_BG));
 	XFillRectangle(tool_d, canvas_win, gccache[ERASE], 0, 0, pixwidth, pixheight);
 
 	/* if he pressed "cancel preview" while reading file, skip displaying figure */
@@ -1533,6 +1574,7 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 
     /* switch canvas back */
     canvas_win = main_canvas;
+    XftDrawChange(canvas_draw, main_canvas);
 
     /* restore active layer array */
     restore_active_layers();
@@ -1599,3 +1641,127 @@ void preview_figure(char *filename, Widget parent, Widget canvas, Widget size_wi
 	request_redraw = False;
     }
 }
+
+/* save user colors into temp vars */
+void save_user_colors(void)
+{
+	int	i;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Saving user colors. Before: bool user_colors_saved = %d\n",
+		user_colors_saved);
+
+	user_colors_saved = True;
+
+	/* first save the current colors because del_color_cell destroys them */
+	for (i = 0; i < num_usr_cols; ++i) {
+		saved_user_colors[i] = user_color[i];
+		/* and save Free entries */
+		saved_userFree[i] = colorFree[i];
+		/* now free any previously defined user colors */
+		del_color_cell(i);	/* remove widget and colormap entry */
+	}
+
+	saved_user_num = num_usr_cols;
+}
+
+/* save n_user colors into temp vars */
+void save_nuser_colors(void)
+{
+	int		i;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Saving n_user colors. Before: bool nuser_colors_saved = %d\n",
+			user_colors_saved);
+
+	nuser_colors_saved = True;
+
+	/* first save the current colors because del_color_cell destroys them */
+	for (i = 0; i < n_num_usr_cols; ++i) {
+		saved_nuser_colors[i] = n_user_colors[i];
+		/* and save Free entries */
+		saved_nuserFree[i] = n_colorFree[i];
+	}
+	saved_nuser_num = n_num_usr_cols;
+}
+
+/* restore user colors from temp vars */
+void restore_user_colors(void)
+{
+	int	i, num;
+
+	if (!user_colors_saved)
+		return;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Restoring user colors. Before: bool user_colors_saved = %d\n",
+			user_colors_saved);
+
+	user_colors_saved = False;
+
+	/* first free any previously defined user colors */
+	for (i = 0; i < num_usr_cols; ++i) {
+		del_color_cell(i);	/* remove widget and colormap entry */
+	}
+
+	num_usr_cols = saved_user_num;
+
+	/* now restore the orig user colors */
+	for (i = 0; i < num_usr_cols; ++i) {
+		user_color[i] = saved_user_colors[i];
+		/* and Free entries */
+		colorFree[i] = saved_userFree[i];
+	}
+
+	/* now try to allocate those colors */
+	if (num_usr_cols > 0) {
+		num = num_usr_cols;
+		num_usr_cols = 0;
+		/* fill the colormap and the color memories */
+		for (i = 0; i < num; ++i) {
+			if (colorFree[i]) {
+				colorUsed[i] = False;
+				continue;
+			}
+			/* and add a widget and colormap entry */
+			if (add_color_cell(USE_EXISTING_COLOR, i,
+						user_color[i].color.red/256,
+						user_color[i].color.green/256,
+						user_color[i].color.blue/256)
+					== -1) {
+				file_msg("Can't allocate more than %d user colors, not enough colormap entries",
+						num_usr_cols);
+				return;
+			}
+			colorUsed[i] = True;
+		}
+	}
+}
+
+/* Restore user colors from temp vars into n_user_...  */
+void restore_nuser_colors(void)
+{
+	int	i;
+
+	if (!nuser_colors_saved)
+		return;
+
+	if (appres.DEBUG)
+		fprintf(stderr,
+			"** Restoring user colors into n_user colors\n");
+
+	nuser_colors_saved = False;
+
+	n_num_usr_cols = saved_nuser_num;
+
+	/* now restore the orig user colors */
+	for (i = 0; i < n_num_usr_cols; ++i) {
+		n_user_colors[i] = saved_nuser_colors[i];
+		/* and Free entries */
+		n_colorFree[i] = saved_nuserFree[i];
+	}
+}
+

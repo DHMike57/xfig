@@ -20,6 +20,8 @@
 #ifndef W_ZOOM_H
 #define W_ZOOM_H
 
+#include <X11/Intrinsic.h>
+
 extern float	zoomscale;
 extern float	display_zoomscale;
 extern int	zoomxoff;

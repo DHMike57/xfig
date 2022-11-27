@@ -18,12 +18,15 @@
 
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"		/* restrict */
+#include "config.h"		/* restrict, uint32_t, uint16_t */
 #endif
 
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <tiffio.h>
+#include <X11/X.h>
 
 #include "resources.h"
 #include "object.h"
@@ -48,8 +51,8 @@ int
 read_tif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
 	int		stat = FileInvalid;
-	uint16		unit;
-	uint32		w, h;
+	uint16_t	unit;
+	uint32_t	w, h;
 	float		res_x, res_y;
 	TIFF		*tif;
 
@@ -79,7 +82,7 @@ read_tif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	}
 
 	/* allocate memory for image data */
-	if ((pic->pic_cache->bitmap = malloc(w * h * sizeof(uint32))) == NULL) {
+	if ((pic->pic_cache->bitmap = malloc(w * h * sizeof w)) == NULL) {
 		file_msg("Out of memory");
 		TIFFClose(tif);
 		return stat;
@@ -113,7 +116,8 @@ read_tif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 
 	/* read the image */
 	stat = TIFFReadRGBAImageOriented(tif, w, h,
-		      (uint32 *)pic->pic_cache->bitmap, ORIENTATION_TOPLEFT, 0);
+					(uint32_t *)pic->pic_cache->bitmap,
+					ORIENTATION_TOPLEFT, 0);
 	TIFFClose(tif);
 	if (stat == 0) {
 		if (pic->pic_cache->bitmap)
@@ -131,19 +135,19 @@ read_tif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 		/* as long as the alpha channel is not used, the fastest would
 		   be to read the image with an offset of one */
 		p = pic->pic_cache->bitmap;
-		while (p < pic->pic_cache->bitmap + w * h * sizeof(uint32)) {
+		while (p < pic->pic_cache->bitmap + w * h * sizeof w) {
 			/* tmp = *(p + 3); alpha channel not used */
 			*(p + 3) = *(p + 2);
 			*(p + 2) = *(p + 1);
 			*(p + 1) = *p;
-			p += sizeof(uint32);	/* must be 4 */
+			p += sizeof w;	/* must be 4 */
 		}
 #else
 		/* swap RGBA to BGRA */
 		p = pic->pic_cache->bitmap;
-		while (p < pic->pic_cache->bitmap + w * h * sizeof(uint32)) {
+		while (p < pic->pic_cache->bitmap + w * h * sizeof w) {
 			tmp = *p;  *p = *(p + 2);  *(p + 2) = tmp;
-			p += sizeof(uint32);	/* must be 4 */
+			p += sizeof w;	/* must be 4 */
 		}
 #endif
 		/* indicate, that this is a TrueColor pixmap */
@@ -167,12 +171,12 @@ read_tif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 		*dst++ = *(src + 2);
 		*dst++ = *(src + 1);
 		*dst++ = tmp;
-		src += 4;		/* sizeof(uint32) */
-		while (src < pic->pic_cache->bitmap + w * h * sizeof(uint32)) {
+		src += 4;		/* sizeof(uint32_t) */
+		while (src < pic->pic_cache->bitmap + w * h * sizeof w) {
 			*dst++ = *(src + 2);
 			*dst++ = *(src + 1);
 			*dst++ = *src;
-			src += 4;	/* sizeof(uint32) */
+			src += 4;	/* sizeof(uint32_t) */
 		}
 		pic->pic_cache->bitmap = realloc(pic->pic_cache->bitmap,
 						w * h * 3 * sizeof(char));

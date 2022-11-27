@@ -15,12 +15,10 @@
 
 /* This subclasses the SmeBSB object to make a cascade menu */
 
-#include "fig.h"
-#include "figx.h"
-#include <X11/Intrinsic.h>
+#include <stddef.h>
 #include <X11/IntrinsicP.h>
-
-#include <X11/Xmu/Drawing.h>
+#include <X11/ShellP.h>
+#include <X11/StringDefs.h>
 
 #ifdef XAW3D
 #include <X11/Xaw3d/XawInit.h>
@@ -28,9 +26,10 @@
 #include <X11/Xaw/XawInit.h>
 #endif /* XAW3D */
 
+#include "figx.h"
+#include "SmeBSBP.h"
 #include "SmeCascadeP.h"
 
-#include <X11/ShellP.h>
 
 #define offset(field) XtOffset(SmeCascadeObject, sme_cascade.field)
 

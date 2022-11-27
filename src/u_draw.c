@@ -20,30 +20,35 @@
  *
  */
 
+#include "u_draw.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <X11/Intrinsic.h> /* includes X11/Xlib.h */	/* Boolean */
 #include <X11/ImUtil.h>	/* must first include X11/Xlib.h */
 			/* _XInitImageFuncPtrs() */
+#include <X11/Xft/Xft.h>
 
 #include "resources.h"
-#include "mode.h"
 #include "object.h"
+#include "paintop.h"
 #include "d_text.h"		/* reload_text_fstruct() */
 #include "f_util.h"		/* xf_basename() */
 #include "f_picobj.h"		/* ABSOLUTE_PATHNAME */
 #include "u_bound.h"		/* <obj>_bound(), overlapping() */
-#include "u_draw.h"
-#include "u_geom.h"		/* compute_angle() */
 #include "u_error.h"		/* X_error_handler() */
+#include "u_fonts.h"
+#include "u_geom.h"		/* compute_angle() */
+#include "u_redraw.h"		/* redisplay_line() */
 #include "w_canvas.h"		/* clip_xmax, clip_xmin */
+#include "w_cursor.h"		/* reset_cursor() */
 #include "w_file.h"		/* check_cancel() */
 #include "w_layers.h"		/* active_layer() */
 #include "w_msgpanel.h"		/* put_msg() */
 #include "w_util.h"		/* NUM_ARROW_TYPES */
-#include "u_redraw.h"		/* redisplay_line() */
-#include "w_cursor.h"		/* reset_cursor() */
+#include "w_zoom.h"
 #include "xfig_math.h"
 
 static Boolean add_point(int x, int y);
@@ -608,14 +613,17 @@ void newpoint(float xp, float yp)
 
 /*********************** LINE ***************************/
 
+#define XFIG_NAME_MAX	40	/* soft limit on the filename length */
+
 void draw_line(F_line *line, int op)
 {
+    static XGlyphInfo	extents;
+    static char		oldstring[XFIG_NAME_MAX];
     F_point	   *point;
     int		    i, x, y;
     int		    xmin, ymin, xmax, ymax;
     char	   *string;
     F_point	   *p0, *p1, *p2;
-    PR_SIZE	    txt;
 
     line_bound(line, &xmin, &ymin, &xmax, &ymax);
     if (!overlapping(ZOOMX(xmin), ZOOMY(ymin), ZOOMX(xmax), ZOOMY(ymax),
@@ -660,31 +668,58 @@ void draw_line(F_line *line, int op)
 	ymin = min3(p0->y, p1->y, p2->y);
 	xmax = max3(p0->x, p1->x, p2->x);
 	ymax = max3(p0->y, p1->y, p2->y);
-	canvas_font = lookfont(0, 12);	/* get a size 12 font */
-	txt = textsize(canvas_font, strlen(string), string);
-	/* if the box is large enough, put the filename in the four corners */
-	if (xmax - xmin > 2.5*txt.length) {
-	    int u,d,marg;
-	    u = txt.ascent;
-	    d = txt.descent;
-	    marg = 6 * ZOOM_FACTOR;	/* margin space around text */
 
-	    pw_text(canvas_win, xmin+marg, ymin+u+marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
-	    pw_text(canvas_win, xmax-txt.length-marg, ymin+u+marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
+	/* compute the text extents, but only if necessary */
+	if (strlen(string) >= XFIG_NAME_MAX || strcmp(string, oldstring)) {
+		if (strlen(string) < XFIG_NAME_MAX)
+			strcpy(oldstring, string);
+		XftTextExtentsUtf8(tool_d, mono_font, (unsigned char *)string,
+				(int)strlen(string), &extents);
+	}
+
+	/*
+	 *	From the Xft tutorial:
+	 * top = y - extents.y;
+	 * left = x - extents.x;
+	 * bottom = top + extents.height;
+	 * right = left + extents.width;
+	 * * and the location of the next glyph is given by
+	 * x = x + extents.xOff;
+	 * y = y + extents.yOff;
+	 */
+	/* if the box is large enough, put the filename in the four corners */
+	if (xmax - xmin > 2.5 * extents.xOff / zoomscale) {
+	    int	left = extents.x / zoomscale;		/* distance from left */
+	    int	top = extents.y / zoomscale;		/* distance from top */
+	    int	right = extents.xOff / zoomscale;	/* distance from right*/
+	    int bottom = (extents.height - extents.y) / zoomscale;
+	    int	marg = 6 * ZOOM_FACTOR;		/* margin space around text */
+
+	    pw_xfttext(canvas_draw,
+			    xmin + marg + left,
+			    ymin + marg + top,
+			    line->depth, mono_font, string, GREEN4);
+	    pw_xfttext(canvas_draw,
+			    xmax - marg - right,
+			    ymin + marg + top,
+			    line->depth, mono_font, string, GREEN4);
 	    /* do bottom two corners if tall enough */
-	    if (ymax - ymin > 3*(u+d)) {
-		pw_text(canvas_win, xmin+marg, ymax-d-marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
-		pw_text(canvas_win, xmax-txt.length-marg, ymax-d-marg, op, line->depth,
-			canvas_font, 0.0, string, DEFAULT, GREEN);
+	    if (ymax - ymin > 3. * extents.height / zoomscale) {
+		    pw_xfttext(canvas_draw,
+				    xmin + marg + left,
+				    ymax - marg - bottom,
+				    line->depth, mono_font, string, GREEN4);
+		    pw_xfttext(canvas_draw,
+				    xmax - marg - right,
+				    ymax - marg - bottom,
+				    line->depth, mono_font, string, GREEN4);
 	    }
 	} else {
 	    /* only room for one label - center it */
-	    x = (xmin + xmax) / 2 - txt.length/display_zoomscale / 2;
-	    y = (ymin + ymax) / 2;
-	    pw_text(canvas_win, x, y, op, line->depth, canvas_font, 0.0, string, DEFAULT, GREEN);
+	    x = (xmin + xmax) / 2 - extents.xOff / (2. * zoomscale);
+	    y = (ymin + ymax) / 2 - (0.5*extents.height - extents.y)/zoomscale;
+	    pw_xfttext(canvas_draw, x, y, line->depth, mono_font, string,
+			    GREEN4);
 	}
     }
     /* get first point and coordinates */
@@ -1005,15 +1040,14 @@ void create_pic_pixmap(F_line *box, int rotation, int width, int height, int fli
 	    }
 
 	    if (box->pic->pic_cache->subtype == T_PIC_XBM) {
-		fg = x_color(box->pen_color);		/* xbm, use object pen color */
-		bg = x_bg_color.pixel;
-	    } else if (box->pic->pic_cache->subtype == T_PIC_EPS ||
-			box->pic->pic_cache->subtype == T_PIC_PDF) {
-		fg = black_color.pixel;			/* pbm from gs is inverted */
-		bg = white_color.pixel;
+		fg = getpixel(box->pen_color);	/* xbm, use object pen color */
+		bg = getpixel(CANVAS_BG);
+	    } else if (box->pic->pic_cache->subtype == T_PIC_EPS) {
+		fg = getpixel(BLACK);		/* pbm from gs is inverted */
+		bg = getpixel(WHITE);
 	    } else {
-		fg = white_color.pixel;			/* gif, xpm after map_to_mono */
-		bg = black_color.pixel;
+		fg = getpixel(WHITE);		/* gif, xpm after map_to_mono */
+		bg = getpixel(BLACK);
 	    }
 
 	    box->pic->pixmap = XCreatePixmapFromBitmapData(tool_d, canvas_win,
@@ -1268,15 +1302,13 @@ static char    *hidden_text_string = "<<>>";
 
 void draw_text(F_text *text, int op)
 {
-    PR_SIZE	    size;
     int		    x,y;
     int		    xmin, ymin, xmax, ymax;
     int		    x1,y1, x2,y2, x3,y3, x4,y4;
-    double	    cost, sint;
 
-    if (text->zoom != zoomscale || text->fontstruct == (XFontStruct*) 0)
+    if (text->zoom != zoomscale)
 	reload_text_fstruct(text);
-    text_bound(text, &xmin, &ymin, &xmax, &ymax,
+    text_rotbound(text, &xmin, &ymin, &xmax, &ymax,
 	       &x1,&y1, &x2,&y2, &x3,&y3, &x4,&y4);
 
     if (!overlapping(ZOOMX(xmin), ZOOMY(ymin), ZOOMX(xmax), ZOOMY(ymax),
@@ -1289,29 +1321,24 @@ void draw_text(F_text *text, int op)
 	pw_vector(canvas_win, x2, y2, x3, y3, op, 1, RUBBER_LINE, 0.0, RED);
 	pw_vector(canvas_win, x3, y3, x4, y4, op, 1, RUBBER_LINE, 0.0, RED);
 	pw_vector(canvas_win, x4, y4, x1, y1, op, 1, RUBBER_LINE, 0.0, RED);
+	pw_vector(canvas_win, xmin, ymin, xmax, ymin, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
+	pw_vector(canvas_win, xmax, ymin, xmax, ymax, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
+	pw_vector(canvas_win, xmax, ymax, xmin, ymax, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
+	pw_vector(canvas_win, xmin, ymax, xmin, ymin, op, 1, RUBBER_LINE, 0.0,
+			GREEN);
     }
 
-    x = text->base_x;
-    y = text->base_y;
-    cost = cos(text->angle);
-    sint = sin(text->angle);
-    if (text->type == T_CENTER_JUSTIFIED || text->type == T_RIGHT_JUSTIFIED) {
-	size = textsize(text->fontstruct, strlen(text->cstring),
-			    text->cstring);
-	size.length = size.length/display_zoomscale;
-	if (text->type == T_CENTER_JUSTIFIED) {
-	    x = round(x-cost*size.length/2);
-	    y = round(y+sint*size.length/2);
-	} else {	/* T_RIGHT_JUSTIFIED */
-	    x = round(x-cost*size.length);
-	    y = round(y+sint*size.length);
-	}
-    }
+    text_origin(&x, &y, text->base_x, text->base_y, text->type, text->offset);
+
     if (hidden_text(text)) {
-	pw_text(canvas_win, x, y, op, text->depth, lookfont(0,12),
-		text->angle, hidden_text_string, DEFAULT, COLOR_NONE);
+	    pw_xfttext(canvas_draw, x, y, text->depth, text->xftfont,
+			    hidden_text_string, text->color);
     } else {
-	/* if size is less than the displayable size, Greek it by drawing a DARK gray line,
+	/* if size is less than the displayable size,
+	   Greek it by drawing a DARK gray line,
 	   UNLESS the depth is inactive in which case draw it in MED_GRAY */
 	if (text->size*display_zoomscale < MIN_X_FONT_SIZE) {
 	    x1 = (x1+x4)/2;
@@ -1320,9 +1347,13 @@ void draw_text(F_text *text, int op)
 	    y2 = (y2+y3)/2;
 	    greek_text(text, x1, y1, x2, y2);
 	} else {
-	    /* Otherwise, draw the text normally */
-	    pw_text(canvas_win, x, y, op, text->depth, text->fontstruct,
-		text->angle, text->cstring, text->color, COLOR_NONE);
+		Color c;
+		if (op == PAINT)
+			c = text->color;
+		else
+			c = CANVAS_BG;
+		pw_xfttext(canvas_draw, x, y, text->depth, text->xftfont,
+				text->cstring, c);
 	}
     }
 
@@ -1472,6 +1503,8 @@ void compute_arcarrow_angle(float x1, float y1, int x2, int y2, int direction, F
 
 int tempXErrorHandler (Display *display, XErrorEvent *event)
 {
+	(void)display;
+	(void)event;
 	return 0;
 }
 

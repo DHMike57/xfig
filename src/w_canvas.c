@@ -21,7 +21,7 @@
 #endif
 #include "w_canvas.h"
 
-#include <limits.h>
+#include <limits.h>		/* INT_MIN, INT_MAX */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,42 +34,34 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
-#ifdef XAW3D
-#include <X11/Xaw3d/Command.h>
-#include <X11/Xaw3d/Form.h>
-#include <X11/Xaw3d/Label.h>
-#else
-#include <X11/Xaw/Command.h>
-#include <X11/Xaw/Form.h>
-#include <X11/Xaw/Label.h>
-#endif /* XAW3D */
 
+#include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "main.h"
 #include "mode.h"
 #include "paintop.h"
-
 #include "d_text.h"
 #include "e_edit.h"
-#include "u_pan.h"
+#include "u_colors.h"
 #include "u_create.h"
+#include "u_pan.h"
 #include "u_redraw.h"
 #include "u_search.h"
-#include "w_canvas.h"
 #include "w_cmdpanel.h"
 #include "w_cursor.h"
+#include "w_drawprim.h"
 #include "w_grid.h"
+#include "w_icons.h"
+#include "w_keyboard.h"
 #include "w_layers.h"
 #include "w_modepanel.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
 #include "w_rulers.h"
 #include "w_setup.h"
-#include "w_util.h"
-#include "w_drawprim.h"
-#include "w_keyboard.h"
 #include "w_snap.h"
+#include "w_util.h"
 #include "w_zoom.h"
 
 
@@ -90,9 +82,6 @@ int		cur_x, cur_y;
 int		fix_x, fix_y;
 int		last_x, last_y;		/* last position of mouse */
 int		shift;			/* global state of shift key */
-#ifdef SEL_TEXT
-int		pointer_click = 0;	/* for counting multiple clicks */
-#endif /* SEL_TEXT */
 int		ignore_exp_cnt = 1;	/* we get 2 expose events at startup */
 String		local_translations = "";
 
@@ -100,30 +89,22 @@ String		local_translations = "";
 /*********************** LOCAL ************************/
 
 #ifndef NO_COMPKEYDB
-typedef struct _CompKey CompKey;
-
+typedef struct _CompKey	CompKey;
 struct _CompKey {
     unsigned char   key;
     unsigned char   first;
     unsigned char   second;
     CompKey	   *next;
 };
-
-static CompKey *allCompKey = NULL;
-static unsigned char	getComposeKey(char *buf);
+static CompKey		*allCompKey = NULL;
 static void		readComposeKey(void);
 #endif /* NO_COMPKEYDB */
 
-#ifdef SEL_TEXT
-/* for multiple click timer */
-static XtIntervalId  click_id = (XtIntervalId) 0;
-static void          reset_click_counter();
-#endif /* SEL_TEXT */
+static void		canvas_paste(Widget w, XKeyEvent *paste_event);
+static void		popup_mode_panel(Widget widget, XButtonEvent *event,
+					String *params, Cardinal *num_params);
+static void		popdown_mode_panel(void);
 
-static void	canvas_paste(Widget w, XKeyEvent *paste_event);
-static void	popup_mode_panel(Widget widget, XButtonEvent *event,
-				String *params, Cardinal *num_params);
-static void	popdown_mode_panel(void);
 
 void
 null_proc(void)
@@ -251,23 +232,12 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 
     KeySym	    key;
     static int	    sx = -10000, sy = -10000;
-    char	    buf[1];
     XButtonPressedEvent *be = (XButtonPressedEvent *) event;
     XKeyPressedEvent *kpe = (XKeyPressedEvent *) event;
     Window	    rw, cw;
     int		    rx, ry, cx, cy;
     unsigned int    mask;
     int    x, y;
-
-
-    static char	    compose_buf[2];
-#ifdef NO_COMPKEYDB
-    static XComposeStatus compstat;
-#define compose_key compstat.chars_matched
-#else
-    static char	    compose_key = 0;
-#endif /* NO_COMPKEYDB */
-    unsigned char   c;
 
     /* key on event type */
     switch (event->type) {
@@ -332,33 +302,10 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
       /*****************/
       case ButtonRelease:
 
-#ifdef SEL_TEXT
-	/* user was selecting text, and has released pointer button */
-	if (action_on && cur_mode == F_TEXT) {
-	    /* clear text selection flag since user released pointer button */
-	    text_selection_active = False;
-	    /* own the selection */
-	    XtOwnSelection(tool, XA_PRIMARY, event->time, ConvertSelection,
-			LoseSelection, TransferSelectionDone);
-	}
-#endif /* SEL_TEXT */
 	break;
 
       /***************/
       case ButtonPress:
-
-#ifdef SEL_TEXT
-	/* increment click counter in case we're looking for double/triple click on text */
-	pointer_click++;
-	if (pointer_click > 2)
-	    pointer_click = 1;
-	/* add timer to reset the counter after n milliseconds */
-	/* after first removing any previous timer */
-	if (click_id)
-	    XtRemoveTimeOut(click_id);
-	click_id = XtAppAddTimeOut(tool_app, 300,
-			(XtTimerCallbackProc) reset_click_counter, (XtPointer) NULL);
-#endif /* SEL_TEXT */
 
 	/* translate from zoomed coords to object coords */
 	x = BACKX(event->x);
@@ -512,7 +459,7 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 	}
 
 	if (event->type == KeyPress) {
-	  if (key == XK_Up ||
+	  if (key == XK_Up ||		/* pan the canvas */
 	    key == XK_Down ||
 	    ((key == XK_Left ||    /* don't process the following if in text input mode */
 	      key == XK_Right ||
@@ -534,100 +481,54 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 			pan_origin();
 			break;
 		} /* switch (key) */
-	  } else if
-#ifdef NO_COMPKEYDB
-	     (key == XK_Multi_key && action_on && cur_mode == F_TEXT &&
-		!XLookupString(kpe, buf, sizeof(buf), NULL, &compstat) &&
-		compose_key) {
-#else
-	     ((key == XK_Multi_key || /* process the following *only* if in text input mode */
-	      key == XK_Meta_L ||
-	      key == XK_Meta_R ||
-	      key == XK_Alt_L ||
-	      key == XK_Alt_R ) && action_on && cur_mode == F_TEXT) {
-			compose_key = 1;
-#endif /* NO_COMPKEYDB */
-			setCompLED(1);
-			break;
-	  } else {
-	    if (canvas_kbd_proc != null_proc ) {
-		if (key == XK_Left || key == XK_Right || key == XK_Home || key == XK_End) {
-		    if (compose_key)
-			setCompLED(0);
-		    (*canvas_kbd_proc) (kpe, (unsigned char) 0, key);
-		    compose_key = 0;	/* in case Meta was followed with cursor movement */
-		} else {
-#ifdef NO_COMPKEYDB
-		    int oldstat = compose_key;
-		    if (XLookupString(kpe, &compose_buf[0], 1, NULL, &compstat) > 0) {
-			if (oldstat)
-			    setCompLED(0);
-			(*canvas_kbd_proc) (kpe, compose_buf[0], (KeySym) 0);
-			compose_key = 0;
-		    }
-#else /* NO_COMPKEYDB */
-		    switch (compose_key) {
-			case 0:
-#ifdef I18N
-			    if (xim_ic != NULL) {
-			      static int lbuf_size = 0;
-			      static char *lbuf = NULL;
-			      KeySym key_sym;
-			      Status status;
-			      int i, len;
+	  } else {		/* pan the canvas */
+		if (canvas_kbd_proc != null_proc ) {
+			int		len;
+			static int	buf_size = 8;
+			static char	storage[8];
+			static char	*buf = storage;
+			KeySym		key_sym;
 
-			       if (lbuf == NULL) {
-				 lbuf_size = 100;
-				 lbuf = new_string(lbuf_size);
-			       }
-			       len = XmbLookupString(xim_ic, kpe, lbuf, lbuf_size,
-						     &key_sym, &status);
-			       if (status == XBufferOverflow) {
-				 lbuf_size = len;
-				 lbuf = realloc(lbuf, lbuf_size + 1);
-				 len = XmbLookupString(xim_ic, kpe, lbuf, lbuf_size,
-						       &key_sym, &status);
-			       }
-			       if (status == XBufferOverflow) {
-				 fprintf(stderr, "xfig: buffer overflow (XmbLookupString)\n");
-			       }
-			       lbuf[len] = '\0';
-			       if (0 < len) {
-				 if (2 <= len && canvas_kbd_proc == (void (*)())char_handler) {
-				   i18n_char_handler((unsigned char *)lbuf);
-				 } else {
-				   for (i = 0; i < len; i++) {
-				     (*canvas_kbd_proc) (kpe, lbuf[i], (KeySym) 0);
-				   }
-				 }
-			       }
-			    } else
-#endif  /* I18N */
-			    if (XLookupString(kpe, buf, sizeof(buf), NULL, NULL) > 0)
-				(*canvas_kbd_proc) (kpe, buf[0], (KeySym) 0);
-			    break;
-			/* first char of multi-key sequence has been typed here */
-			case 1:
-			    if (XLookupString(kpe, &compose_buf[0], 1, NULL, NULL) > 0)
-				compose_key = 2;	/* got first char, on to state 2 */
-			    break;
-			/* last char of multi-key sequence has been typed here */
-			case 2:
-			    if (XLookupString(kpe, &compose_buf[1], 1, NULL, NULL) > 0) {
-				if ((c = getComposeKey(compose_buf)) != '\0') {
-				    (*canvas_kbd_proc) (kpe, c, (KeySym) 0);
-				} else {
-				    (*canvas_kbd_proc) (kpe, compose_buf[0], (KeySym) 0);
-				    (*canvas_kbd_proc) (kpe, compose_buf[1], (KeySym) 0);
+			if (key == XK_Left || key == XK_Right ||
+					key == XK_Home || key == XK_End) {
+				canvas_kbd_proc(buf, 0, key);
+
+			} else if (xim_ic != NULL) {
+				Status		status;
+
+				len = Xutf8LookupString(xim_ic, kpe, buf,
+						buf_size, &key_sym, &status);
+				if (status == XBufferOverflow) {
+					buf_size = len;
+					buf = realloc(buf, (size_t)(len + 1));
+					len = Xutf8LookupString(xim_ic, kpe,
+							buf, buf_size, &key_sym,
+							&status);
 				}
-				setCompLED(0);	/* turn off the compose LED */
-				compose_key = 0;	/* back to state 0 */
-			    }
-			    break;
-		    } /* switch */
-#endif /* NO_COMPKEYDB */
-		}
-	    } else {
+				switch (status) {
+				case XLookupChars:
+					canvas_kbd_proc(buf, len, (KeySym)0);
+					break;
+				case XLookupKeySym:
+				case XLookupBoth:
+					canvas_kbd_proc(buf, len, key_sym);
+					break;
+				case XBufferOverflow:
+					file_msg("xfig: buffer overflow, file %s, line %d.",
+							__FILE__, __LINE__);
+				case XLookupNone:
+				default:
+					break;
+				}
+
+			} else {	/* xim_ic == NULL */
+				static XComposeStatus	compose;
+				len = XLookupString(kpe, buf, buf_size,
+						&key_sym, &compose);
+				if (len > 0)
+					canvas_kbd_proc(buf, len, (KeySym)0);
+			}
+	    } else {		/* canvas_kbd_proc != null_proc */
 		/* Be cheeky... we aren't going to do anything, so pass the
 		 * key on to the mode_panel window by rescheduling the event
 		 * The message window might treat it as a hotkey!
@@ -636,27 +537,11 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 		kpe->subwindow = 0;
 		XPutBackEvent(kpe->display,(XEvent *)kpe);
 	    }
-	  }
+	  }		/* end pan the canvas */
 	  break;
 	} /* event-type == KeyPress */
     } /* switch(event->type) */
 }
-
-#ifdef SEL_TEXT
-/* come here if user doesn't press the pointer button within the click-time */
-
-static void
-reset_click_counter(widget, closure, event, continue_to_dispatch)
-    Widget          widget;
-    XtPointer	    closure;
-    XEvent*	    event;
-    Boolean*	    continue_to_dispatch;
-{
-    if (click_id)
-	XtRemoveTimeOut(click_id);
-    pointer_click = 0;
-}
-#endif /* SEL_TEXT */
 
 /* clear the canvas - this can't be called to clear a pixmap, only a window */
 
@@ -688,46 +573,29 @@ get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
 {
 	(void)client_data;
 	(void)selection;
+	char		**tmp;
+	int		i, num_values, ret_status;
+	XTextProperty	prop;
+	Atom		atom_utf8_string;
 
-	char *c;
-	int i;
-#ifdef I18N
-	if (appres.international) {
-	  Atom atom_compound_text = XInternAtom(XtDisplay(w), "COMPOUND_TEXT", False);
-	  char **tmp;
-	  XTextProperty prop;
-	  int num_values;
-	  int ret_status;
+	atom_utf8_string = XInternAtom(XtDisplay(w), "UTF8_STRING", False);
 
-	  if (*type == atom_compound_text) {
-	    prop.value = buf;
-	    prop.encoding = *type;
-	    prop.format = *format;
-	    prop.nitems = *length;
-	    num_values = 0;
-	    ret_status = XmbTextPropertyToTextList(XtDisplay(w), &prop,
-				(char***) &tmp, &num_values);
-	    if (ret_status == Success || 0 < num_values) {
-	      for (i = 0; i < num_values; i++) {
-		for (c = tmp[i]; *c; c++) {
-		  if (canvas_kbd_proc == (void (*)())char_handler && ' ' <= *c && *(c + 1)) {
-		    prefix_append_char(*c);
-		  } else {
-		    canvas_kbd_proc((XKeyEvent *) 0, *c, (KeySym) 0);
-		  }
+	if (*type == atom_utf8_string) {
+		prop.value = buf;
+		prop.encoding = *type;
+		prop.format = *format;
+		prop.nitems = *length;
+		num_values = 0;
+		ret_status = Xutf8TextPropertyToTextList(XtDisplay(w), &prop,
+				&tmp, &num_values);
+		if (ret_status == Success || 0 < num_values) {
+			for (i = 0; i < num_values; ++i) {
+				canvas_kbd_proc((unsigned char *)tmp[i],
+						(int)strlen(tmp[i]), (KeySym)0);
+			}
 		}
-	      }
-	      XtFree(buf);
-	      return;
-	    }
-	  }
-	}
-#endif  /* I18N */
-
-	c = (char *)buf;
-	for (i = 0; (unsigned long)i < *length; ++i) {
-           canvas_kbd_proc((XKeyEvent *)0, *c, (KeySym)0);
-           ++c;
+	} else {
+		canvas_kbd_proc((unsigned char *)buf, (int)(*length),(KeySym)0);
 	}
 	XtFree(buf);
 }
@@ -747,6 +615,7 @@ static void
 canvas_paste(Widget w, XKeyEvent *paste_event)
 {
 	Time event_time;
+	Atom	atom_utf8_string;
 
 	if (canvas_kbd_proc != (void (*)())char_handler)
 		return;
@@ -756,37 +625,16 @@ canvas_paste(Widget w, XKeyEvent *paste_event)
 	else
 		event_time = CurrentTime;
 
-#ifdef I18N
-	if (appres.international) {
-	  Atom atom_compound_text = XInternAtom(XtDisplay(w), "COMPOUND_TEXT", False);
-	  if (atom_compound_text) {
-	    XtGetSelectionValue(w, XA_PRIMARY, atom_compound_text,
+	atom_utf8_string = XInternAtom(XtDisplay(w), "UTF8_STRING", False);
+	if (atom_utf8_string)
+		XtGetSelectionValue(w, XA_PRIMARY, atom_utf8_string,
 				get_canvas_clipboard, NULL, event_time);
-	    return;
-	  }
-	}
-#endif  /* I18N */
-
-	XtGetSelectionValue(w, XA_PRIMARY,
-		XA_STRING, get_canvas_clipboard, NULL, event_time);
+	else
+		XtGetSelectionValue(w, XA_PRIMARY, XA_STRING,
+				get_canvas_clipboard, NULL, event_time);
 }
 
 #ifndef NO_COMPKEYDB
-static unsigned char
-getComposeKey(char *buf)
-{
-    CompKey	   *compKeyPtr = allCompKey;
-
-    while (compKeyPtr != NULL) {
-	if (compKeyPtr->first == (unsigned char) (buf[0]) &&
-	    compKeyPtr->second == (unsigned char) (buf[1]))
-	    return (compKeyPtr->key);
-	else
-	    compKeyPtr = compKeyPtr->next;
-    }
-    return ('\0');
-}
-
 static void
 readComposeKey(void)
 {

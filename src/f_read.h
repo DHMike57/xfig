@@ -19,7 +19,7 @@
 #include <X11/Intrinsic.h>	/* Boolean */
 #include <X11/Xlib.h>		/* True, False*/
 
-#include "object.h"
+#include <object.h>
 
 /* errors from read_figc in addition to those in errno.h (e.g. ENOENT) */
 #define	BAD_FORMAT		-1

@@ -36,6 +36,7 @@
 #include "e_scale.h"
 #include "f_util.h"
 #include "u_bound.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_draw.h"
 #include "u_fonts.h"
@@ -45,7 +46,6 @@
 #include "u_search.h"
 #include "w_canvas.h"
 #include "w_cursor.h"
-#include "w_drawprim.h"
 #include "w_indpanel.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
@@ -387,10 +387,8 @@ init_update_object(F_line *p, int type, int x, int y, int px, int py)
 	new_t = copy_text(cur_t);
 	update_text(new_t);
 	change_text(cur_t, new_t);
-	/* redraw anything near the old text */
-	redisplay_text(cur_t);
-	/* draw the new text */
-	redisplay_text(new_t);
+	/* redraw anything within the old and new texts */
+	redisplay_texts(cur_t, new_t);
 	break;
       case O_ELLIPSE:
 	set_temp_cursor(wait_cursor);
@@ -508,10 +506,8 @@ void update_line(F_line *line)
 
 void update_text(F_text *text)
 {
-    PR_SIZE	    size;
     int		old_psfont_flag, new_psfont_flag;
 
-    draw_text(text, ERASE);
     up_part(text->type, cur_textjust, I_TEXTJUST);
     up_part(text->font, using_ps ? cur_ps_font : cur_latex_font, I_FONT);
     old_psfont_flag = (text->flags & PSFONT_TEXT);
@@ -528,15 +524,19 @@ void update_text(F_text *text)
     else
 	text->flags |= old_psfont_flag;
     up_part(text->size, cur_fontsize, I_FONTSIZE);
-    up_part(text->angle, cur_elltextangle*M_PI/180.0, I_ELLTEXTANGLE);
+    /* up_part(text->angle, cur_elltextangle*M_PI/180.0, I_ELLTEXTANGLE); */
+    if (cur_updatemask & I_ELLTEXTANGLE) {
+	    text->angle = cur_elltextangle;
+	    while (text->angle < 0.)
+		    text->angle += 360;
+	    while (text->angle > 360.)
+		    text->angle -= 360.;
+	    text->angle *= M_PI / 180.;
+    }
     up_part(text->color, cur_pencolor, I_PEN_COLOR);
     up_depth_part(text->depth, cur_depth);
-    size = textsize(lookfont(x_fontnum(psfont_text(text), text->font),
-			text->size), strlen(text->cstring), text->cstring);
-    text->ascent = size.ascent;
-    text->descent = size.descent;
-    text->length = size.length;
-    reload_text_fstruct(text);	/* make sure fontstruct is current */
+    textextents(text);
+    reload_text_fstruct(text);	/* make sure font is current */
     /* updated object will be redisplayed by init_update_xxx() */
 }
 

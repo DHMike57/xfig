@@ -41,11 +41,13 @@ in this Software without prior written authorization from the X Consortium.
  *          kit@expo.lcs.mit.edu
  */
 
-#include "fig.h"
-#include "figx.h"
-#include <X11/Intrinsic.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
-#include <X11/Xos.h>
+#include <X11/Xutil.h>
 
 /* needed for abs() */
 #ifdef X_NOT_STDC_ENV
@@ -62,8 +64,8 @@ in this Software without prior written authorization from the X Consortium.
 #endif /* XAW3D */
 
 #include "SmeBSBP.h"
+#include "figx.h"
 
-#include <stdio.h>
 
 #define ONE_HUNDRED 100
 

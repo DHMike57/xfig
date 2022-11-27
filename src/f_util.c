@@ -19,6 +19,7 @@
 #if defined HAVE_CONFIG_H && !defined VERSION
 #include "config.h"
 #endif
+#include "f_util.h"
 
 #include <errno.h>
 #include <time.h>
@@ -30,15 +31,16 @@
 #endif
 #include <sys/stat.h>
 #include <unistd.h>
-#include <X11/Xlib.h>
+#include <X11/Xlib.h>		/* includes X11/X.h */
+#include <X11/Xft/Xft.h>
 
-#include "resources.h"
+#include "resources.h"		/* PATH_MAX */
 #include "object.h"
 #include "mode.h"
 #include "f_neuclrtab.h"
 #include "f_read.h"
 #include "f_save.h"		/* write_file() */
-#include "f_util.h"
+#include "u_colors.h"
 #include "u_create.h"		/* new_string() */
 #include "u_fonts.h"		/* psfontnum() */
 #include "w_file.h"		/* renamefile() */
@@ -50,24 +52,26 @@
 #include "xfig_math.h"
 
 
+XftColor	image_cells[MAX_COLORMAP_SIZE];
+
 /* LOCALS */
 
-int	count_colors(void);
-int	count_pixels(void);
+static int	count_colors(void);
+static int	count_pixels(void);
 
 
 /* PROCEDURES */
 
 void beep (void);
-void alloc_imagecolors (int num);
-void add_all_pixels (void);
-void remap_image_colormap (void);
-void extract_cmap (void);
-void readjust_cmap (void);
-void free_pixmaps (F_compound *obj);
-void add_recent_file (char *file);
-int strain_out (char *name);
-void finish_update_xfigrc (void);
+static void alloc_imagecolors (int num);
+static void add_all_pixels (void);
+static void remap_image_colormap (void);
+static void extract_cmap (void);
+static void readjust_cmap (void);
+static void free_pixmaps (F_compound *obj);
+static void add_recent_file (char *file);
+static int strain_out (char *name);
+static void finish_update_xfigrc (void);
 
 int
 emptyname(char *name)
@@ -340,11 +344,11 @@ void remap_imagecolors(void)
 	/* now change the color cells with the new colors */
 	/* clrtab[][] is the colormap produced by neu_clrtab */
 	for (i=0; i<avail_image_cols; i++) {
-	    image_cells[i].red   = (unsigned short) clrtab[i][N_RED] << 8;
-	    image_cells[i].green = (unsigned short) clrtab[i][N_GRN] << 8;
-	    image_cells[i].blue  = (unsigned short) clrtab[i][N_BLU] << 8;
+	    image_cells[i].color.red   = (unsigned short) clrtab[i][N_RED] << 8;
+	    image_cells[i].color.green = (unsigned short) clrtab[i][N_GRN] << 8;
+	    image_cells[i].color.blue  = (unsigned short) clrtab[i][N_BLU] << 8;
 	}
-	YStoreColors(tool_cm, image_cells, avail_image_cols);
+	alloc_or_store_colors(image_cells, avail_image_cols);
 	reset_cursor();
 
 	/* check if user pressed cancel button */
@@ -361,10 +365,7 @@ void remap_imagecolors(void)
 	scol = 0;	/* global color counter */
 	set_temp_cursor(wait_cursor);
 	extract_cmap();
-	for (i=0; i<scol; i++) {
-	    image_cells[i].flags = DoRed|DoGreen|DoBlue;
-	}
-	YStoreColors(tool_cm, image_cells, scol);
+	alloc_or_store_colors(image_cells, scol);
 	scol = 0;	/* global color counter */
 	readjust_cmap();
 	if (appres.DEBUG)
@@ -384,7 +385,6 @@ void alloc_imagecolors(int num)
     /* see if we can get all user wants */
     avail_image_cols = num;
     for (i=0; i<avail_image_cols; i++) {
-	image_cells[i].flags = DoRed|DoGreen|DoBlue;
 	if (!alloc_color_cells(&image_cells[i].pixel, 1)) {
 	    break;
 	}
@@ -470,19 +470,19 @@ extract_cmap(void)
 	struct _pics	*pics;
 	int		i;
 
-	/* extract the colormaps in the repository */
-	for (pics = pictures; pics; pics = pics->next)
-		if (pics->bitmap != NULL && pics->numcols > 0) {
-			for (i = 0; i < pics->numcols; ++i) {
-				image_cells[scol].red = pics->cmap[i].red << 8;
-				image_cells[scol].green=pics->cmap[i].green <<8;
-				image_cells[scol].blue = pics->cmap[i].blue <<8;
-				pics->cmap[i].pixel = scol;
-				++scol;
-			}
-		}
-	/* now free up the pixmaps */
-	free_pixmaps(&objects);
+    /* extract the colormaps in the repository */
+    for (pics = pictures; pics; pics = pics->next)
+	if (pics->bitmap != NULL && pics->numcols > 0) {
+	    for (i=0; i<pics->numcols; i++) {
+		image_cells[scol].color.red   = pics->cmap[i].red << 8;
+		image_cells[scol].color.green = pics->cmap[i].green << 8;
+		image_cells[scol].color.blue  = pics->cmap[i].blue << 8;
+		pics->cmap[i].pixel = scol;
+		scol++;
+	    }
+	}
+    /* now free up the pixmaps */
+    free_pixmaps(&objects);
 }
 
 void add_all_pixels(void)
@@ -1098,9 +1098,9 @@ update_fig_files(int argc, char **argv)
 	    /* copy user colors */
 	    for (col=0; col<MAX_USR_COLS; col++) {
 		colorUsed[col] = !n_colorFree[col];
-		user_colors[col].red = n_user_colors[col].red;
-		user_colors[col].green = n_user_colors[col].green;
-		user_colors[col].blue = n_user_colors[col].blue;
+		user_color[col].color.red = n_user_colors[col].color.red;
+		user_color[col].color.green = n_user_colors[col].color.green;
+		user_color[col].color.blue = n_user_colors[col].color.blue;
 	    }
 	    /* now write out the new one */
 	    num_usr_cols = MAX_USR_COLS;

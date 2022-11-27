@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,18 +16,21 @@
  *
  */
 
-#include "fig.h"
-#include "figx.h"
+#include "w_grid.h"
+
+#include <X11/StringDefs.h>
+#include <X11/Xlib.h>
+#include <math.h>
+
 #include "resources.h"
 #include "mode.h"
-#include "paintop.h"
-#include "object.h"
-#include "w_indpanel.h"
+#include "u_colors.h"
+#include "u_redraw.h"
 #include "w_setup.h"
 #include "w_util.h"
 #include "w_zoom.h"
+#include "xfig_math.h"
 
-#include "u_redraw.h"
 
 #define null_width 32
 #define null_height 32

@@ -19,7 +19,11 @@
 #ifndef W_UTIL_H
 #define W_UTIL_H
 
+#include <assert.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "w_indpanel.h"
+
 
 /* constant values used for popup_query */
 
@@ -78,12 +82,11 @@ extern	void	reset_grid_menus(Boolean inches);
 
 extern	Boolean	check_action_on(void);
 extern	void	check_for_resize(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams);
-extern	void	check_colors(void);
 
 extern	Widget	make_pulldown_menu(char **entries, Cardinal nent, int divide_line, char *divide_message, Widget parent, XtCallbackProc callback);
 extern	Widget	make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolean include_transp, Boolean include_backg);
 extern	void	set_color_name(int color, char *buf);
-extern	void	set_but_col(Widget widget, Pixel color);
+extern	void	set_but_col(Widget widget, int color);
 extern	Widget	MakeIntSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget beside, XtCallbackProc callback, char *string, int min, int max, int inc, int width);
 extern	Widget	MakeFloatSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget beside, XtCallbackProc callback, char *string, float min, float max, float inc, int width);
 extern	Widget	CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, Widget beside, Boolean manage, Boolean large, Boolean *value, XtCallbackProc user_callback, Widget *togwidg);
@@ -114,8 +117,6 @@ extern	void	InstallScroll(Widget widget);
 extern	void	InstallScrollParent(Widget widget);
 extern  void	fix_converters(void);
 
-extern	Boolean	user_colors_saved;
-extern	Boolean	nuser_colors_saved;
 
 /*
  * Author:	Doyle C. Davidson
@@ -139,21 +140,33 @@ extern	Boolean	nuser_colors_saved;
  *	}
  */
 
-#include <assert.h>
 
 #define ArgCount	_ArgCount
 #define Args		_ArgList
+
+#ifdef NDEBUG
+#define DeclareArgs(n)		Arg Args[n]; int ArgCount
+#define DeclareStaticArgs(n)	static Arg Args[n]; static int ArgCount
+#define NextArg(name, val)						 \
+			do {	XtSetArg(Args[ArgCount], (name), (val)); \
+				++ArgCount;				 \
+			} while (0)
+#else /* NDEBUG */
+
 #define ArgCountMax	_ArgCountMax
+#define DeclareArgs(n)		Arg Args[n]; int ArgCountMax = n; int ArgCount
+#define DeclareStaticArgs(n)	static Arg Args[n]; static int ArgCountMax = n;\
+				static int ArgCount
+#define NextArg(name, val)						\
+			do {	assert(ArgCount < ArgCountMax);		\
+				XtSetArg(Args[ArgCount], (name), (val));\
+				ArgCount++;				\
+			} while (0)
 
-#define DeclareArgs(n)	Arg Args[n]; int ArgCountMax = n; int ArgCount
+#endif	/* NDEBUG */
 
-#define DeclareStaticArgs(n)  static Arg Args[n]; static int ArgCountMax = n; static int ArgCount
-
-#define FirstArg(name, val) \
+#define FirstArg(name, val)	\
 	do { XtSetArg(Args[0], (name), (val)); ArgCount=1;} while (0)
-#define NextArg(name, val) \
-	do { assert(ArgCount < ArgCountMax); \
-		XtSetArg(Args[ArgCount], (name), (val)); ArgCount++;} while (0)
 #define GetValues(n)	XtGetValues(n, Args, ArgCount)
 #define SetValues(n)	XtSetValues(n, Args, ArgCount)
 
@@ -182,6 +195,5 @@ extern void save_user_colors (void);
 extern int popup_query(int query_type, char *message);
 extern void create_bitmaps(void);
 extern void splash_screen(void);
-extern int xallncol(char *name, XColor *color, XColor *exact);
 
 #endif /* W_UTIL_H */

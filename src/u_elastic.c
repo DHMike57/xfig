@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,22 +16,29 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"		/* intptr_t */
+#endif
+#include "u_elastic.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
-#include "u_elastic.h"
+#include "d_arc.h"
+#include "u_draw.h"
 #include "u_geom.h"
+#include "u_redraw.h"
 #include "w_canvas.h"
 #include "w_drawprim.h"
-#include "w_setup.h"
-#include "w_zoom.h"
-#include "d_arc.h"
-
-#include "u_draw.h"
 #include "w_cursor.h"
 #include "w_msgpanel.h"
+#include "xfig_math.h"
+
 
 /********************** EXPORTS **************/
 
@@ -256,15 +264,17 @@ constrainedangle_line(int x, int y)
 static void
 angle0_line(int x, int y)
 {
-    cur_x = x;
-    cur_y = fix_y;
+	(void)y;
+	cur_x = x;
+	cur_y = fix_y;
 }
 
 static void
 angle90_line(int x, int y)
 {
-    cur_y = y;
-    cur_x = fix_x;
+	(void)x;
+	cur_y = y;
+	cur_x = fix_x;
 }
 
 static void
@@ -368,6 +378,8 @@ elastic_moveline(F_point *pts)
 static void
 elastic_links(int dx, int dy, float sx, float sy)
 {
+	(void)sx;
+	(void)sy;
     F_linkinfo	   *k;
 
     if (cur_linkmode == SMART_OFF)
@@ -408,6 +420,8 @@ elastic_links(int dx, int dy, float sx, float sy)
 void
 scaling_line(int x, int y)
 {
+	(void)x;
+	(void)y;
     elastic_scalepts(cur_l->points);
     adjust_box_pos(x, y, fix_x, fix_y, &cur_x, &cur_y);
     if (cur_l->type == T_BOX || cur_l->type == T_ARCBOX || cur_l->type == T_PICTURE)
@@ -418,6 +432,8 @@ scaling_line(int x, int y)
 void
 elastic_scale_curline(int x, int y)
 {
+	(void)x;
+	(void)y;
     elastic_scalepts(cur_l->points);
 }
 
@@ -737,6 +753,7 @@ elastic_scale_curellipse(void)
 void
 arc_point(int x, int y, int numpoint)
 {
+	(void)numpoint;
     elastic_line();
     cur_x = x;
     cur_y = y;
@@ -866,21 +883,38 @@ elastic_scalearc(F_arc *a)
 void
 moving_text(int x, int y)
 {
-    elastic_movetext();
-    adjust_pos(x, y, fix_x, fix_y, &cur_x, &cur_y);
-    length_msg(MSG_DIST);
-    elastic_movetext();
+	int	old_basex, old_basey;
+	int	new_basex, new_basey;
+
+	/*
+	 * The position used by elastic_movetext() as drawing origin is
+	 * (cur_x + x1off, cur_y + y1off).
+	 * The globals x1off, y1off correct for text alignment and were computed
+	 * by text_origin() in init_textdragging(). These can be re-used and the
+	 * bounding box need not be re-computed by invoking text_origin() here.
+	 */
+	old_basex = cur_x + x1off;
+	old_basey = cur_y + y1off;
+	adjust_pos(x, y, fix_x, fix_y, &cur_x, &cur_y);
+	new_basex = cur_x + x1off;
+	new_basey = cur_y + y1off;
+
+	length_msg(MSG_DIST);
+	elastic_movetext();
+	redisplay_regions(new_t->bb[0].x + old_basex,new_t->bb[0].y + old_basey,
+			new_t->bb[1].x + old_basex, new_t->bb[1].y + old_basey,
+			new_t->bb[0].x + new_basex, new_t->bb[0].y + new_basey,
+			new_t->bb[1].x + new_basex, new_t->bb[1].y + new_basey);
 }
 
-/* use x1off, y1off so that the beginning of the text isn't
+/* use x1off, y1off so that the beginning of the text is not
    shifted under the cursor */
 
 void
 elastic_movetext(void)
 {
-    pw_text(canvas_win, cur_x + x1off, cur_y + y1off, INV_PAINT, MAX_DEPTH+1,
-	    new_t->fontstruct, new_t->angle,
-	    new_t->cstring, new_t->color, COLOR_NONE);
+	pw_xfttext(canvas_draw, cur_x + x1off, cur_y + y1off, MAX_DEPTH + 1,
+			new_t->xftfont, new_t->cstring, new_t->color);
 }
 
 

@@ -16,20 +16,25 @@
  *
  */
 
-#include "fig.h"
+#include "u_bound.h"
+
+#include <limits.h>		/* INT_MIN, INT_MAX */
+#include <math.h>
+#include <stdlib.h>
+
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
 #include "paintop.h"
-#include "u_bound.h"
+#include "u_colors.h"
+#include "u_draw.h"
+#include "u_fonts.h"
 #include "w_canvas.h"		/* round_coords() */
 #include "w_drawprim.h"
 #include "w_file.h"
 #include "w_layers.h"
-#include "w_setup.h"
-#include "w_zoom.h"
+#include "xfig_math.h"
 
-#include "u_draw.h"
 
 #define		Ninety_deg		M_PI_2
 #define		One_eighty_deg		M_PI
@@ -276,11 +281,9 @@ void active_compound_bound(F_compound *compound, int *xmin, int *ymin, int *xmax
     }
 
     for (t = compound->texts; t != NULL; t = t->next) {
-	int    dum;
 	if (active_only && !active_layer(t->depth))
 	    continue;
-	text_bound(t, &sx, &sy, &bx, &by,
-		  &dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound(t, &sx, &sy, &bx, &by);
 	if (first) {
 	    first = 0;
 	    llx = sx;
@@ -516,59 +519,51 @@ approx_spline_bound(F_spline *s, int *xmin, int *ymin, int *xmax, int *ymax)
       }
 }
 
-/* This procedure calculates the bounding box for text.  It returns
-   the min/max x and y coords of the enclosing HORIZONTAL rectangle.
-   The actual corners of the rectangle are returned in (rx1,ry1)...(rx4,ry4)
- */
-
-void text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1, int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
+/* Compute the bounding box for text */
+void
+text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax)
 {
-    int		    h, l;
-    int		    x1,y1, x2,y2, x3,y3, x4,y4;
-    double	    cost, sint;
-    double	    dcost, dsint, lcost, lsint, hcost, hsint;
+	/* there is a copy below */
+	int	draw_x, draw_y;
 
-    cost = cos((double)t->angle);
-    sint = sin((double)t->angle);
-    l = text_length(t);
-    h = t->ascent+t->descent;
-    lcost = round(l*cost);
-    lsint = round(l*sint);
-    hcost = round(h*cost);
-    hsint = round(h*sint);
-    dcost = round(t->descent*cost);
-    dsint = round(t->descent*sint);
-    x1 = t->base_x+dsint;
-    y1 = t->base_y+dcost;
-    if (t->type == T_CENTER_JUSTIFIED) {
-	x1 = t->base_x+dsint - round((l/2)*cost);
-	y1 = t->base_y+dcost + round((l/2)*sint);
-	x2 = x1 + lcost;
-	y2 = y1 - lsint;
-    }
-    else if (t->type == T_RIGHT_JUSTIFIED) {
-	x1 = t->base_x+dsint - lcost;
-	y1 = t->base_y+dcost + lsint;
-	x2 = t->base_x+dsint;
-	y2 = t->base_y+dcost;
-    }
-    else {
-	x2 = x1 + lcost;
-	y2 = y1 - lsint;
-    }
-    x4 = x1 - hsint;
-    y4 = y1 - hcost;
-    x3 = x2 - hsint;
-    y3 = y2 - hcost;
+	text_origin(&draw_x, &draw_y, t->base_x, t->base_y, t->type, t->offset);
 
-    *xmin = min2(x1,min2(x2,min2(x3,x4)));
-    *xmax = max2(x1,max2(x2,max2(x3,x4)));
-    *ymin = min2(y1,min2(y2,min2(y3,y4)));
-    *ymax = max2(y1,max2(y2,max2(y3,y4)));
-    *rx1=x1; *ry1=y1;
-    *rx2=x2; *ry2=y2;
-    *rx3=x3; *ry3=y3;
-    *rx4=x4; *ry4=y4;
+	*xmin = t->bb[0].x + draw_x;
+	*ymin = t->bb[0].y + draw_y;
+	*xmax = t->bb[1].x + draw_x;
+	*ymax = t->bb[1].y + draw_y;
+}
+
+/*
+ * Compute the horizontal and the rotated bounding box for text.
+ * Return the min/max x and y coords of the enclosing HORIZONTAL rectangle.
+ * The actual corners of the rotated rectangle are returned in
+ * (rx1,ry1)...(rx4,ry4). (rx1,ry1) is the bottom left, (rx2,ry2) the bottom
+ * right corner with respect to the text.
+ */
+void
+text_rotbound(F_text *t,
+		int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1,
+		int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4)
+{
+	/* there is a copy above */
+	int	draw_x, draw_y;
+
+	text_origin(&draw_x, &draw_y, t->base_x, t->base_y, t->type, t->offset);
+
+	*xmin = t->bb[0].x + draw_x;
+	*ymin = t->bb[0].y + draw_y;
+	*xmax = t->bb[1].x + draw_x;
+	*ymax = t->bb[1].y + draw_y;
+
+	*rx1 = t->rotbb[1].x + draw_x;
+	*ry1 = t->rotbb[1].y + draw_y;
+	*rx2 = t->rotbb[2].x + draw_x;
+	*ry2 = t->rotbb[2].y + draw_y;
+	*rx3 = t->rotbb[3].x + draw_x;
+	*ry3 = t->rotbb[3].y + draw_y;
+	*rx4 = t->rotbb[0].x + draw_x;
+	*ry4 = t->rotbb[0].y + draw_y;
 }
 
 static void

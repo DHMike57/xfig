@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,29 +16,26 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
-#include "object.h"
-#include "paintop.h"
-#include "e_copy.h"
 #include "u_drag.h"
-#include "u_draw.h"
-#include "u_elastic.h"
-#include "u_list.h"
-#include "u_create.h"
-#include "u_undo.h"
-#include "mode.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"
-#include "w_zoom.h"
 
+#include "object.h"
+#include "mode.h"
+
+#include "e_copy.h"
 #include "u_bound.h"
+#include "u_create.h"
+#include "u_elastic.h"
+#include "u_fonts.h"		/* text_origin() */
 #include "u_free.h"
+#include "u_list.h"
 #include "u_markers.h"
 #include "u_redraw.h"
 #include "u_translate.h"
+#include "u_undo.h"
+#include "w_canvas.h"
 #include "w_mousefun.h"
 #include "w_msgpanel.h"
+
 
 static void array_place_line(int x, int y),     place_line(int x, int y),     place_line_x(int x, int y),     cancel_line(void);
 static void array_place_arc(int x, int y),      place_arc(int x, int y),      place_arc_x(int x, int y),      cancel_drag_arc(void);
@@ -450,12 +448,9 @@ place_line_x(int x, int y)
 
 /************************  text section	 **************************/
 
-static PR_SIZE	txsize;
-
 void
 init_textdragging(F_text *t, int x, int y)
 {
-    float	   cw,cw2;
     int		   x1, y1;
 
     new_t = t;
@@ -469,18 +464,11 @@ init_textdragging(F_text *t, int x, int y)
     fix_y += new_t->base_y - y1;
     x1off = x1-x; /*new_t->base_x - x;*/
     y1off = y1-y; /*new_t->base_y - y;*/
-    if (t->type == T_CENTER_JUSTIFIED || t->type == T_RIGHT_JUSTIFIED) {
-	txsize = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-	if (t->type == T_CENTER_JUSTIFIED) {
-	    cw2 = txsize.length/2.0/display_zoomscale;
-	    x1off = round(x1off - cos((double)t->angle)*cw2);
-	    y1off = round(y1off + sin((double)t->angle)*cw2);
-	} else { /* T_RIGHT_JUSTIFIED */
-	    cw = 1.0*txsize.length/display_zoomscale;
-	    x1off = round(x1off - cos((double)t->angle)*cw);
-	    y1off = round(y1off + sin((double)t->angle)*cw);
-	}
-    }
+
+	/* return the drawing origin, given the marker location;
+	   differs for centered or right-aligned text */
+	text_origin(&x1off, &y1off, x1off, y1off, t->type, t->offset);
+
     canvas_locmove_proc = moving_text;
     canvas_ref_proc = elastic_movetext;
     canvas_leftbut_proc = place_text;
@@ -548,7 +536,9 @@ static void
 cancel_text(void)
 {
     canvas_ref_proc = canvas_locmove_proc = null_proc;
-    elastic_movetext();
+    /* move the text back to the original position,
+       to clear the text at the last position it was dragged to */
+    moving_text(new_t->base_x + x1off, new_t->base_y + y1off);
     /* erase last lengths if appres.showlengths is true */
     erase_lengths();
     if (return_proc == copy_selected) {

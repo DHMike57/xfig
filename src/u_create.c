@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
  *
@@ -19,14 +19,22 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
+#include "u_create.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Xlib.h>		/* includes X11/X.h */
+#include <X11/Xft/Xft.h>
+
+#include "resources.h"
 #include "mode.h"
 #include "object.h"
+#include "paintop.h"
+
 #include "e_edit.h"
 #include "e_scale.h"
-#include "u_create.h"
+#include "u_colors.h"
 #include "u_free.h"
 #include "u_list.h"
 #include "w_cursor.h"
@@ -465,7 +473,7 @@ create_picture_entry(void)
     picture->refcount = 0;
     picture->prev = picture->next = NULL;
     if (appres.DEBUG)
-	fprintf(stderr,"create picture entry %p\n", picture);
+	fprintf(stderr, "create picture entry %p\n", (void *)picture);
     return picture;
 }
 
@@ -623,7 +631,7 @@ create_text(void)
 	return NULL;
     }
     t->tagged = 0;
-    t->fontstruct = 0;
+    t->xftfont = NULL;
     t->comments = NULL;
     t->cstring = NULL;
     t->next = NULL;
@@ -653,6 +661,8 @@ copy_text(F_text *t)
     /* copy static items first */
     *text = *t;
     text->next = NULL;
+    if (t->xftfont)
+	   text->xftfont = XftFontCopy(tool_d, t->xftfont);
 
     /* do comments next */
     copy_comments(&t->comments, &text->comments);

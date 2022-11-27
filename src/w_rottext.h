@@ -1,3 +1,21 @@
+/*
+ * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ *
+ * Any party obtaining a copy of these files is granted, free of charge, a
+ * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
+ * nonexclusive right and license to deal in this software and documentation
+ * files (the "Software"), including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense and/or sell copies of
+ * the Software, and to permit persons who receive copies from any such
+ * party to do so, with the only requirement being that the above copyright
+ * and this permission notice remain intact.
+ *
+ */
+
 /* ************************************************************************ */
 
 /* Header file for the `xvertext 5.0' routines.
@@ -13,6 +31,7 @@
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
  *
+ *
  */
 
 /* ************************************************************************ */
@@ -20,13 +39,12 @@
 #ifndef W_ROTTEXT_H
 #define W_ROTTEXT_H
 
-#ifndef _XVERTEXT_INCLUDED_
-#define _XVERTEXT_INCLUDED_
+#include <X11/Xlib.h>	/* includes X11/X.h */
 
-
+/*
 #define XV_VERSION      5.0
-#define XV_COPYRIGHT \
-      "xvertext routines Copyright (c) 1993 Alan Richardson"
+#define XV_COPYRIGHT	"xvertext routines Copyright (c) 1993 Alan Richardson"
+*/
 
 
 /* ---------------------------------------------------------------------- */
@@ -48,44 +66,14 @@
 
 /* ---------------------------------------------------------------------- */
 
-/* this shoulf be C++ compliant, thanks to
-     vlp@latina.inesc.pt (Vasco Lopes Paulo) */
-
-#if defined(__cplusplus) || defined(c_plusplus)
-
-extern "C" {
-float   XRotVersion(char*, int);
-void    XRotSetMagnification(float);
-void    XRotSetBoundingBoxPad(int);
-int     XRotDrawString(Display*, XFontStruct*, float,
-                       Drawable, GC, int, int, char*);
-int     XRotDrawImageString(Display*, XFontStruct*, float,
-                            Drawable, GC, int, int, char*);
-int     XRotDrawAlignedString(Display*, XFontStruct*, float,
-                              Drawable, GC, int, int, char*, int);
-int     XRotDrawAlignedImageString(Display*, XFontStruct*, float,
-                                   Drawable, GC, int, int, char*, int);
-XPoint *XRotTextExtents(XFontStruct*, float,
-			int, int, char*, int);
-}
-
-#else
-
-extern float   XRotVersion(char *str, int n);
 extern void    XRotSetMagnification(float m);
 extern void    XRotSetBoundingBoxPad(int p);
-extern int     XRotDrawString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *str);
-extern int     XRotDrawImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *str);
-extern int     XRotDrawAlignedString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align);
-extern int     XRotDrawAlignedImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align);
-extern XPoint *XRotTextExtents(XFontStruct *font, float angle, int x, int y, char *text, int align);
-
-#endif /* __cplusplus */
+extern int     XRotDrawString(Display *dpy, XFontStruct *font, float angle,
+			Drawable drawable, GC gc, int x, int y, char *str);
+extern int     XRotDrawImageString(Display *dpy, XFontStruct *font, float angle,
+			Drawable drawable, GC gc, int x, int y, char *str);
 
 /* ---------------------------------------------------------------------- */
-
-
-#endif /* _XVERTEXT_INCLUDED_ */
 
 
 #endif /* W_ROTTEXT_H */

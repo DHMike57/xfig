@@ -1,5 +1,22 @@
 /*
  * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ *
+ * Any party obtaining a copy of these files is granted, free of charge, a
+ * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
+ * nonexclusive right and license to deal in this software and documentation
+ * files (the "Software"), including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense and/or sell copies of
+ * the Software, and to permit persons who receive copies from any such
+ * party to do so, with the only requirement being that the above copyright
+ * and this permission notice remain intact.
+ *
+ */
+
+/*
  *
  * xvertext 5.0, Copyright (c) 1993 Alan Richardson (mppa3@uk.ac.sussex.syma)
  *
@@ -11,6 +28,7 @@
  * the Software, and to permit persons who receive copies from any such
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
+ *
  *
  */
 
@@ -24,18 +42,31 @@
 
 /* ********************************************************************** */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_rottext.h"
 
-#include "fig.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "resources.h"
 #include <X11/Xatom.h>
-#include "w_rottext.h"
+#include <X11/Xutil.h>
 
 #ifdef I18N
 #include "w_i18n.h"
+#endif
+#include "xfig_math.h"
+
+
+#ifdef I18N
 #define XDrawString		i18n_draw_string
 #define XDrawImageString	i18n_draw_image_string
 #define XTextExtents		i18n_text_extents
 #endif  /* I18N */
+
 
 /* ---------------------------------------------------------------------- */
 
@@ -125,14 +156,10 @@ static struct style_template {
 
 static char            *my_strtok(char *str1, char *str2);
 
-float                   XRotVersion(char *str, int n);
 void                    XRotSetMagnification(float m);
 void                    XRotSetBoundingBoxPad(int p);
 int                     XRotDrawString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *str);
 int                     XRotDrawImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *str);
-int                     XRotDrawAlignedString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align);
-int                     XRotDrawAlignedImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align);
-XPoint                 *XRotTextExtents(XFontStruct *font, float angle, int x, int y, char *text, int align);
 
 static XImage          *MakeXImage(Display *dpy, int w, int h);
 static int              XRotPaintAlignedString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align, int bg);
@@ -155,10 +182,11 @@ static XImage          *XRotMagnifyImage(Display *dpy, XImage *ximage);
 static char
 *my_strtok(char *str1, char *str2)
 {
-    char *ret;
-    int i, j, stop;
-    static int start, len;
-    static char *stext;
+    char		*ret;
+    int			stop;
+    size_t		i, j;
+    static size_t	start, len;
+    static char		*stext;
 
     if (str2==NULL)
 	return NULL;
@@ -193,22 +221,6 @@ static char
     start=i+1;
 
     return ret;
-}
-
-
-/* ---------------------------------------------------------------------- */
-
-
-/**************************************************************************/
-/* Return version/copyright information                                   */
-/**************************************************************************/
-
-float
-XRotVersion(char *str, int n)
-{
-    if (str!=NULL)
-	strncpy(str, XV_COPYRIGHT, n);
-    return XV_VERSION;
 }
 
 
@@ -299,38 +311,6 @@ XRotDrawImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawa
 {
     return(XRotPaintAlignedString(dpy, font, angle, drawable, gc,
 				  x, y, str, NONE, 1));
-}
-
-
-/* ---------------------------------------------------------------------- */
-
-
-/**************************************************************************/
-/*  A front end to XRotPaintAlignedString:                                */
-/*      -does alignment, no background                                    */
-/**************************************************************************/
-
-int
-XRotDrawAlignedString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align)
-{
-    return(XRotPaintAlignedString(dpy, font, angle, drawable, gc,
-				  x, y, text, align, 0));
-}
-
-
-/* ---------------------------------------------------------------------- */
-
-
-/**************************************************************************/
-/*  A front end to XRotPaintAlignedString:                                */
-/*      -does alignment, paints background                                */
-/**************************************************************************/
-
-int
-XRotDrawAlignedImageString(Display *dpy, XFontStruct *font, float angle, Drawable drawable, GC gc, int x, int y, char *text, int align)
-{
-    return(XRotPaintAlignedString(dpy, font, angle, drawable, gc,
-				  x, y, text, align, 1));
 }
 
 
@@ -582,7 +562,7 @@ static int
 XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *text, int align, int bg)
 {
     GC my_gc;
-    int nl=1, i;
+    size_t nl=1, i;
     int height;
     int xp, yp;
     char *str1, *str2, *str3;
@@ -845,7 +825,7 @@ static RotatedTextItem
     Pixmap canvas;
     GC font_gc;
     XImage *I_in;
-    register int i, j;
+    int i, j;
     char *str1, *str2, *str3;
     char *str2_a="\0", *str2_b="\n\0";
     int height;
@@ -869,7 +849,7 @@ static RotatedTextItem
     /* count number of sections in string */
     item->nl=1;
     if (align!=NONE)
-	for(i=0; i<strlen(text)-1; i++)
+	for(i = 0; i < (int)strlen(text)-1; ++i)
 	    if (text[i]=='\n')
 		item->nl++;
 
@@ -1396,139 +1376,8 @@ static XImage
 
 /**************************************************************************/
 /* Calculate the bounding box some text will have when painted            */
+/* XPoint                                                                 */
+/* *XRotTextExtents(XFontStruct *font, float angle, int x, int y,         */
+/*                  char *text, int align)                                */
+/*     -- intentionally deleted (Thomas Loimer, 2018-09-18) --            */
 /**************************************************************************/
-
-XPoint
-*XRotTextExtents(XFontStruct *font, float angle, int x, int y, char *text, int align)
-{
-    register int i;
-    char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
-    int height;
-    float sin_angle, cos_angle;
-    int nl, max_width;
-    int cols_in, rows_in;
-    float hot_x, hot_y;
-    XPoint *xp_in, *xp_out;
-    int dir, asc, desc;
-    XCharStruct overall;
-
-    /* manipulate angle to 0<=angle<2*PI radians */
-    while(angle<0.0)
-        angle+=M_2PI;
-
-    while(angle>=M_2PI)
-        angle-=M_2PI;
-
-    /* count number of sections in string */
-    nl=1;
-    if (align!=NONE)
-	for(i=0; i<strlen(text)-1; i++)
-	    if (text[i]=='\n')
-		nl++;
-
-    /* ignore newline characters if not doing alignment */
-    if (align==NONE)
-	str2=str2_a;
-    else
-	str2=str2_b;
-
-    /* find width of longest section */
-    str1=strdup(text);
-    if (str1==NULL)
-	return NULL;
-
-    str3=my_strtok(str1, str2);
-
-    XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc,
-		 &overall);
-
-    max_width=overall.rbearing;
-
-    /* loop through each section */
-    do {
-	str3=my_strtok((char *)NULL, str2);
-
-	if (str3!=NULL) {
-	    XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc,
-			 &overall);
-
-	    if (overall.rbearing>max_width)
-		max_width=overall.rbearing;
-	}
-    }
-    while(str3!=NULL);
-
-    free(str1);
-
-    /* overall font height */
-#ifdef I18N
-    if (is_i18n_font(font))
-      height=overall.ascent+overall.descent;
-    else
-#endif  /* I18N */
-    height=font->ascent+font->descent;
-
-    /* dimensions horizontal text will have */
-    cols_in=max_width;
-    rows_in=nl*height;
-
-    /* pre-calculate sin and cos */
-    sin_angle = (float) round(sin((double) angle)*1000.0) / 1000.0;
-    cos_angle = (float) round(cos((double) angle)*1000.0) / 1000.0;
-
-    /* y position */
-    if (align==TLEFT || align==TCENTRE || align==TRIGHT)
-        hot_y=(float)rows_in/2*style.magnify;
-    else if (align==MLEFT || align==MCENTRE || align==MRIGHT)
-	hot_y=0;
-    else if (align==BLEFT || align==BCENTRE || align==BRIGHT)
-	hot_y= -(float)rows_in/2*style.magnify;
-#ifdef I18N
-    else if (is_i18n_font(font))
-	hot_y= -((float)rows_in/2-(float)overall.descent)*style.magnify;
-#endif  /* I18N */
-    else
-	hot_y= -((float)rows_in/2-(float)font->descent)*style.magnify;
-
-    /* x position */
-    if (align==TLEFT || align==MLEFT || align==BLEFT || align==NONE)
-	hot_x= -(float)max_width/2*style.magnify;
-    else if (align==TCENTRE || align==MCENTRE || align==BCENTRE)
-	hot_x=0;
-    else
-        hot_x=(float)max_width/2*style.magnify;
-
-    /* reserve space for XPoints */
-    xp_in=(XPoint *)malloc((unsigned)(5*sizeof(XPoint)));
-    if (!xp_in)
-	return NULL;
-
-    xp_out=(XPoint *)malloc((unsigned)(5*sizeof(XPoint)));
-    if (!xp_out)
-	return NULL;
-
-    /* bounding box when horizontal, relative to bitmap centre */
-    xp_in[0].x= -(float)cols_in*style.magnify/2-style.bbx_pad;
-    xp_in[0].y= (float)rows_in*style.magnify/2+style.bbx_pad;
-    xp_in[1].x= (float)cols_in*style.magnify/2+style.bbx_pad;
-    xp_in[1].y= (float)rows_in*style.magnify/2+style.bbx_pad;
-    xp_in[2].x= (float)cols_in*style.magnify/2+style.bbx_pad;
-    xp_in[2].y= -(float)rows_in*style.magnify/2-style.bbx_pad;
-    xp_in[3].x= -(float)cols_in*style.magnify/2-style.bbx_pad;
-    xp_in[3].y= -(float)rows_in*style.magnify/2-style.bbx_pad;
-    xp_in[4].x=xp_in[0].x;
-    xp_in[4].y=xp_in[0].y;
-
-    /* rotate and translate bounding box */
-    for(i=0; i<5; i++) {
-	xp_out[i].x=(float)x + ( ((float)xp_in[i].x-hot_x)*cos_angle +
-				 ((float)xp_in[i].y+hot_y)*sin_angle);
-	xp_out[i].y=(float)y + (-((float)xp_in[i].x-hot_x)*sin_angle +
-				 ((float)xp_in[i].y+hot_y)*cos_angle);
-    }
-
-    free((char *)xp_in);
-
-    return xp_out;
-}

@@ -1,6 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 2000-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,26 +22,87 @@
     This adds the underline resource to underline one character of the label
 */
 
-/* Thomas Loimer, 2016: Make ./configure work */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "w_menuentry.h"
 
+#include <stdio.h>
+#include <stdlib.h>		/* abs() */
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-
 #ifdef XAW3D
+#include <X11/Xaw3d/Cardinals.h>
+#include <X11/Xaw3d/SimpleMenu.h>
+#include <X11/Xaw3d/SmeP.h>
 #include <X11/Xaw3d/XawInit.h>
 #else
+#include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/SmeP.h>
 #include <X11/Xaw/XawInit.h>
 #endif /* XAW3D */
 
-#include "figx.h"
-#include "w_menuentryP.h"
 #include "w_canvas.h"
+#include "SmeBSBP.h"
 
-#include <stdio.h>
-#include <stdlib.h>  /* abs() */
+
+/************************************************************
+ *
+ * New fields for the Fig Sme Object class record.
+ *
+ ************************************************************/
+
+typedef struct {
+  int make_compiler_happy;	/* just so it's not empty */
+} FigSmeBSBClassPart;
+
+/* Full class record declaration */
+typedef struct _FigSmeBSBClassRec {
+    RectObjClassPart	rect_class;
+    SmeClassPart	sme_class;
+#ifdef XAW3D
+    SmeThreeDClassPart	sme_threeD_class;
+#endif /* XAW3D */
+    SmeBSBClassPart	sme_bsb_class;
+    FigSmeBSBClassPart	figSme_bsb_class;
+} FigSmeBSBClassRec;
+
+extern FigSmeBSBClassRec figSmeBSBClassRec;
+
+/* New fields for the FigSme Object record */
+typedef struct {
+    /* resources */
+    int underline;		/* which letter of the label to underline */
+
+    /* private resources. */
+    int make_compiler_happy;	/* just so it's not empty */
+
+} FigSmeBSBPart;
+
+/****************************************************************
+ *
+ * Full instance record declaration
+ *
+ ****************************************************************/
+
+typedef struct _FigSmeBSBRec {
+    ObjectPart		object;
+    RectObjPart		rectangle;
+    SmePart		sme;
+#ifdef XAW3D
+    SmeThreeDPart	sme_threeD;
+#endif /* XAW3D */
+    SmeBSBPart		sme_bsb;
+    FigSmeBSBPart	figSme_bsb;
+} FigSmeBSBRec;
+
+/************************************************************
+ *
+ * Private declarations.
+ *
+ ************************************************************/
+
 
 #define offset(field) XtOffsetOf(FigSmeBSBRec, figSme_bsb.field)
 

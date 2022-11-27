@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
 
 #include "resources.h"
 #include "mode.h"
@@ -39,6 +39,7 @@
 #include "f_picobj.h"
 #include "f_read.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "u_bound.h"
 #include "w_export.h"
 #include "w_msgpanel.h"
@@ -243,9 +244,9 @@ void write_colordefs(FILE *fp)
 	if (colorUsed[i])
 	    fprintf(fp, "%s %d #%02x%02x%02x\n", appres.write_v40? "  Ucol": "0",
 		i+NUM_STD_COLS,
-		user_colors[i].red/256,
-		user_colors[i].green/256,
-		user_colors[i].blue/256);
+		user_color[i].color.red/256,
+		user_color[i].color.green/256,
+		user_color[i].color.blue/256);
     }
     if (appres.write_v40)
 	fprintf(fp, "}\n");
@@ -524,7 +525,7 @@ void write_text(FILE *fp, F_text *t)
     fprintf(fp, "%d %d %d %d %d %d %d %.4f %d %d %d %d %d ",
 			O_TXT, t->type, t->color, t->depth, t->pen_style,
 			t->font, t->size, t->angle,
-			t->flags, t->ascent+t->descent, t->length,
+			t->flags, t->height, t->length,
 			t->base_x, t->base_y);
     len = strlen(t->cstring);
     for (l=0; l<len; l++) {

@@ -1,10 +1,9 @@
 /*
- * This layer code written by Tim Love <tpl@eng.cam.ac.uk>  June 25, 1998
- *
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,6 +15,18 @@
  * and this permission notice remain intact.
  *
  */
+
+/*
+ * This layer code written by Tim Love <tpl@eng.cam.ac.uk>  June 25, 1998
+ */
+
+#ifndef W_LAYERS_H
+#define W_LAYERS_H
+
+#include <X11/Intrinsic.h>
+
+#include "object.h"
+#include "resources.h"
 
 extern Boolean	active_layers[MAX_DEPTH +1];
 extern int	object_depths[MAX_DEPTH +1], saved_depths[MAX_DEPTH +1];
@@ -40,3 +51,5 @@ extern void	reset_depths(void);
 
 extern int	LAYER_WD, LAYER_HT;
 extern void update_layerpanel ();
+
+#endif

@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2018 by Thomas Loimer
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,21 +16,33 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
-#include "object.h"
-#include "mode.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_print.h"
-#include "w_setup.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "u_print.h"
 
+#include <errno.h>
+#ifdef I18N
+#include <locale.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <unistd.h>
+#include <X11/Intrinsic.h>
+
+#include "resources.h"
+#include "mode.h"
 #include "f_save.h"
 #include "f_util.h"
+#include "u_colors.h"
 #include "w_cursor.h"
-#include "w_drawprim.h"
+#include "w_layers.h"
+#include "w_msgpanel.h"
 #include "w_util.h"
-#include "u_print.h"
 
 Boolean	print_all_layers = True;
 Boolean	bound_active_layers = False;
@@ -155,6 +167,9 @@ print_to_printer(char *printer, char *backgrnd, float mag,
 		Boolean print_all_layers, Boolean bound_active_layers,
 		char *grid, char *params)
 {
+	(void)mag;
+	(void)print_all_layers;
+	(void)bound_active_layers;
 	char	layers[PATH_MAX];
 	char	syspr[2*PATH_MAX+200];
 	char	prcmd[2*PATH_MAX+200];
@@ -300,10 +315,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		    cur_exp_lang == LANG_PDFTEX || cur_exp_lang == LANG_PSPDF ||
 		    cur_exp_lang == LANG_PSPDFTEX ) {
 
-		n += sprintf(prcmd + n, " -n %s", name);
-
-		if (appres.correct_font_size)
-			n += sprintf(prcmd + n, " -F");
+		n += sprintf(prcmd + n, " -F -n %s", name);
 
 		if (backgrnd[0])	/* must escape the #rrggbb color spec */
 			n += sprintf(prcmd + n, " -g \\%s", backgrnd);
@@ -317,7 +329,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 
 		/* Options common to PS and PDF in PS-mode (not EPS-mode) */
 		if (cur_exp_lang == LANG_PS ||
-				cur_exp_lang == LANG_PDF && pdf_pagemode) {
+				(cur_exp_lang == LANG_PDF && pdf_pagemode)) {
 
 			if (cur_exp_lang == LANG_PDF /* && pdf_pagemode */)
 				n += sprintf(prcmd + n, " -P");
@@ -440,17 +452,14 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			if (border > 0)
 				n += sprintf(prcmd + n, " -b %d", border);
 
-			n += sprintf(prcmd + n, " -n %s", name);
-
-			if (appres.correct_font_size)
-				n += sprintf(prcmd + n, " -F");
+			n += sprintf(prcmd + n, " -F -n %s", name);
 
 			if (backgrnd[0])
 				n += sprintf(prcmd + n, " -g \\%s", backgrnd);
 
 			/* now change the output file name to xxx.pdf */
 			/* strip off current suffix, if any */
-			if (suf = strrchr(outfile, '.'))
+			if ((suf = strrchr(outfile, '.')))
 				sprintf(suf, ".pdf'");
 			else
 				strcat(outfile, ".pdf'");
@@ -519,8 +528,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		if (appres.smooth_factor)
 			n += sprintf(prcmd + n, " -S %d", appres.smooth_factor);
 
-		if (appres.correct_font_size)
-			n += sprintf(prcmd + n, " -F");
+		n += sprintf(prcmd + n, " -F");
 
 		if (backgrnd[0])	/* must escape the #rrggbb color spec */
 			n += sprintf(prcmd + n, " -g \\%s", backgrnd);
@@ -676,14 +684,11 @@ exec_prcmd(char *command, char *msg)
 void
 make_rgb_string(int color, char *rgb_string)
 {
-	XColor xcolor;
 	if (color >= 0) {
-		xcolor.pixel = x_color(color);
-		XQueryColor(tool_d, tool_cm, &xcolor);
-		sprintf(rgb_string,"#%02x%02x%02x",
-				xcolor.red>>8,
-				xcolor.green>>8,
-				xcolor.blue>>8);
+		sprintf(rgb_string, "#%02x%02x%02x",
+				getred(color)>>8,
+				getgreen(color)>>8,
+				getblue(color)>>8);
 	} else {
 		rgb_string[0] = '\0';	/* no background wanted by user */
 	}

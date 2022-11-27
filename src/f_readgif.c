@@ -47,6 +47,7 @@
 #include "object.h"
 #include "f_picobj.h"
 #include "f_readpcx.h"
+#include "u_colors.h"
 #include "w_msgpanel.h"
 
 
@@ -88,7 +89,7 @@ int
 read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
 	char		buf[BUFSIZ];
-	const char 	pcxname_fmt[] = "%s/xfig-pcx.XXXXXX";
+	const char	pcxname_fmt[] = "%s/xfig-pcx.XXXXXX";
 	char		pcxname_buf[128];
 	char		*pcxname = pcxname_buf;
 	char		*cmd_fmt;
@@ -269,7 +270,7 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 		fwrite(buf, size, 1, giftopcx);
 
 	if (pclose(giftopcx)) {
-		i = errno; 
+		i = errno;
 		file_msg("Cannot convert gif to pcx\n");
 		file_msg("Command: %s", cmd);
 		file_msg("Error: %s", strerror(i));

@@ -17,24 +17,28 @@
  *
  */
 
-#include "fig.h"
+#include "w_browse.h"
+
+#include <stdlib.h>
+#include <string.h>
+
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Xlib.h>
+
 #include "figx.h"
 #include "resources.h"
-#include "object.h"
-#include "mode.h"
 #include "e_edit.h"
 #include "f_picobj.h"
-#include "u_create.h"
-#include "w_drawprim.h"
-#include "w_dir.h"
-#include "w_indpanel.h"
-#include "w_msgpanel.h"
-#include "w_util.h"
-#include "w_setup.h"
-
 #include "f_util.h"
+#include "u_create.h"
 #include "w_color.h"
 #include "w_cursor.h"
+#include "w_dir.h"
+#include "w_drawprim.h"
+#include "w_setup.h"
+#include "w_util.h"
+
 
 /* EXPORTS */
 
@@ -111,6 +115,8 @@ browse_panel_dismiss(void)
 void
 got_browse(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
 	char	*abs_path = NULL;
 	char	*fval, *dval;
 
@@ -168,6 +174,8 @@ got_browse(Widget w, XButtonEvent *ev)
 static void
 browse_panel_close(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     browse_panel_dismiss();
 }
 

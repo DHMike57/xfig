@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,12 +16,16 @@
  *
  */
 
-#include "fig.h"
+#include "w_cursor.h"
+
+#include <X11/cursorfont.h>
+#include <X11/Xlib.h>		/* includes X11/X.h */
+
 #include "figx.h"
 #include "resources.h"
-#include "paintop.h"
-
+#include "u_colors.h"
 #include "w_util.h"
+
 
 #define magnify_width 16
 #define magnify_height 16
@@ -31,6 +36,8 @@ static unsigned char magnify_bits[] = {
    0xff, 0x1f, 0x42, 0x08, 0x42, 0x08, 0x46, 0x0c, 0x4c, 0x1e, 0xf8, 0x3f,
    0x40, 0x7c, 0x00, 0xf8, 0x00, 0xf0, 0x00, 0x60};
 
+static XColor x_fg_color;
+static XColor x_bg_color;
 
 
 void
@@ -38,6 +45,18 @@ init_cursor(void)
 {
     register Display *d = tool_d;
     register Pixmap  mag_pixmap;
+
+    /*
+     * Set the rgb values of x_fg_color and x_bg_color.
+     * XRecolorCursor() and probably also XCreatePixmapCursor() only query
+     * the rgb values, not the pixel.
+     */
+    x_fg_color.red = getred(DEFAULT);
+    x_fg_color.green = getgreen(DEFAULT);
+    x_fg_color.blue = getblue(DEFAULT);
+    x_bg_color.red = getred(CANVAS_BG);
+    x_bg_color.green = getgreen(CANVAS_BG);
+    x_bg_color.blue = getblue(CANVAS_BG);
 
     arrow_cursor	= XCreateFontCursor(d, XC_left_ptr);
     bull_cursor		= XCreateFontCursor(d, XC_circle);
@@ -56,7 +75,7 @@ init_cursor(void)
     u_arrow_cursor	= XCreateFontCursor(d, XC_sb_up_arrow);
     d_arrow_cursor	= XCreateFontCursor(d, XC_sb_down_arrow);
 
-    /* we must make our on magnifying glass cursor as there is none
+    /* we must make our own magnifying glass cursor as there is none
 	in the cursor font */
     mag_pixmap		= XCreateBitmapFromData(tool_d, DefaultRootWindow(tool_d),
 				(char *) magnify_bits, magnify_width, magnify_height);

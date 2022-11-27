@@ -1,5 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ *
  * This file Copyright (c) 2002 Stephane Mancini
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
@@ -13,31 +18,27 @@
  *
  */
 
-#include "fig.h"
+#include "w_style.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>	/* includes X11/Xlib.h */
+
 #include "figx.h"
 #include "resources.h"
-#include "object.h"
 #include "mode.h"
-#include "paintop.h"
-#include "d_text.h"
-#include "e_edit.h"
-#include "e_update.h"
-#include "u_draw.h"
-#include "u_fonts.h"
 #include "w_drawprim.h"
-#include "w_file.h"
-#include "w_fontbits.h"
+#include "w_icons.h"
 #include "w_indpanel.h"
-#include "w_color.h"
 #include "w_listwidget.h"
-#include "w_mousefun.h"
+#include "w_modepanel.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
-#include "w_style.h"
 #include "w_util.h"
-#include "w_zoom.h"
 
-#include "w_modepanel.h"
 
 /* EXPORTS */
 
@@ -64,35 +65,35 @@ char   *style_text[MAX_STYLE_FAMILY + 1];
 DeclareStaticArgs (20);
 
 Element style_reference[] = {
-    "depth", Tint, "", &cur_depth, I_DEPTH,
-    "text_step", Tfloat, NULL, &cur_textstep, I_TEXTSTEP,
-    "font_size", Tint, NULL, &cur_fontsize, I_FONTSIZE,
-    "font", Tint, NULL, &cur_latex_font, I_FONT,
-    "font_ps", Tint, NULL, &cur_ps_font, I_FONT,
-    "font_latex", Tint, NULL, &cur_latex_font, I_FONT,
-    "text_flags", Tint, NULL, &cur_textflags, I_FONT | I_TEXTFLAGS,
-    "text_just", Tint, NULL, &cur_textjust, I_TEXTJUST,
-    "line_width", Tint, NULL, &cur_linewidth, I_LINEWIDTH,
-    "line_style", Tint, NULL, &cur_linestyle, I_LINESTYLE,
-    "join_style", Tint, NULL, &cur_joinstyle, I_JOINSTYLE,
-    "cap_style", Tint, NULL, &cur_capstyle, I_CAPSTYLE,
-    "dash_length", Tfloat, NULL, &cur_dashlength, I_CAPSTYLE,
-    "dot_gap", Tfloat, NULL, &cur_dotgap, I_CAPSTYLE,
-    "pen_color", TColor, NULL, &cur_pencolor, I_PEN_COLOR,
-    "fill_color", TColor, NULL, &cur_fillcolor, I_FILL_COLOR,
-    "box_radius", Tint, NULL, &cur_boxradius, I_BOXRADIUS,
-    "fill_style", Tint, NULL, &cur_fillstyle, I_FILLSTYLE,
-    "arrow_mode", Tint, NULL, &cur_arrowmode, I_ARROWMODE,
-    "arrow_type", Tint, NULL, &cur_arrowtype, I_ARROWTYPE,
-    "arrow_width", Tfloat, NULL, &cur_arrowwidth, I_ARROWSIZE,
-    "arrow_height", Tfloat, NULL, &cur_arrowheight, I_ARROWSIZE,
-    "arrow_thick", Tfloat, NULL, &cur_arrowthick, I_ARROWSIZE,
-    "arrow_mult_width", Tfloat, NULL, &cur_arrow_multwidth, I_ARROWSIZE,
-    "arrow_mult_height", Tfloat, NULL, &cur_arrow_multheight, I_ARROWSIZE,
-    "arrow_mult_thick", Tfloat, NULL, &cur_arrow_multthick, I_ARROWSIZE,
-    "arc_type", Tint, NULL, &cur_arctype, I_ARCTYPE,
-    "ellipse_text_angle", Tfloat, NULL, &cur_elltextangle, I_ELLTEXTANGLE,
-    NULL, 0, NULL, NULL, 0
+    {"depth", Tint, "", &cur_depth, I_DEPTH},
+    {"text_step", Tfloat, NULL, &cur_textstep, I_TEXTSTEP},
+    {"font_size", Tint, NULL, &cur_fontsize, I_FONTSIZE},
+    {"font", Tint, NULL, &cur_latex_font, I_FONT},
+    {"font_ps", Tint, NULL, &cur_ps_font, I_FONT},
+    {"font_latex", Tint, NULL, &cur_latex_font, I_FONT},
+    {"text_flags", Tint, NULL, &cur_textflags, I_FONT | I_TEXTFLAGS},
+    {"text_just", Tint, NULL, &cur_textjust, I_TEXTJUST},
+    {"line_width", Tint, NULL, &cur_linewidth, I_LINEWIDTH},
+    {"line_style", Tint, NULL, &cur_linestyle, I_LINESTYLE},
+    {"join_style", Tint, NULL, &cur_joinstyle, I_JOINSTYLE},
+    {"cap_style", Tint, NULL, &cur_capstyle, I_CAPSTYLE},
+    {"dash_length", Tfloat, NULL, &cur_dashlength, I_CAPSTYLE},
+    {"dot_gap", Tfloat, NULL, &cur_dotgap, I_CAPSTYLE},
+    {"pen_color", TColor, NULL, &cur_pencolor, I_PEN_COLOR},
+    {"fill_color", TColor, NULL, &cur_fillcolor, I_FILL_COLOR},
+    {"box_radius", Tint, NULL, &cur_boxradius, I_BOXRADIUS},
+    {"fill_style", Tint, NULL, &cur_fillstyle, I_FILLSTYLE},
+    {"arrow_mode", Tint, NULL, &cur_arrowmode, I_ARROWMODE},
+    {"arrow_type", Tint, NULL, &cur_arrowtype, I_ARROWTYPE},
+    {"arrow_width", Tfloat, NULL, &cur_arrowwidth, I_ARROWSIZE},
+    {"arrow_height", Tfloat, NULL, &cur_arrowheight, I_ARROWSIZE},
+    {"arrow_thick", Tfloat, NULL, &cur_arrowthick, I_ARROWSIZE},
+    {"arrow_mult_width", Tfloat, NULL, &cur_arrow_multwidth, I_ARROWSIZE},
+    {"arrow_mult_height", Tfloat, NULL, &cur_arrow_multheight, I_ARROWSIZE},
+    {"arrow_mult_thick", Tfloat, NULL, &cur_arrow_multthick, I_ARROWSIZE},
+    {"arc_type", Tint, NULL, &cur_arctype, I_ARCTYPE},
+    {"ellipse_text_angle", Tfloat, NULL, &cur_elltextangle, I_ELLTEXTANGLE},
+    {NULL, 0, NULL, NULL, 0}
 };
 
 
@@ -323,13 +324,13 @@ parse_style (Style * style, FILE * file)
 int
 parse_family_style (Style_family * family, FILE * file)
 {
-    int     i = 0, r;
+    int     i = 0;
     char    name[256], string[256];
 
     if (get_nstyle_line (string, 256, file) == NULL)
 	return EOF;
 
-    r = sscanf (string, "%[^{^\n] {", name);
+    sscanf (string, "%[^{^\n] {", name);
     /* remove leading and trailing blanks */
     trim (name);
     family->name = strdup (name);
@@ -586,6 +587,7 @@ style_update (void)
 static void
 family_select (Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure;
 
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
@@ -599,6 +601,7 @@ family_select (Widget w, XtPointer closure, XtPointer call_data)
 static void
 style_select (Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure;
     XawListReturnStruct *ret_struct = (XawListReturnStruct *) call_data;
 
     if (ret_struct == 0)
@@ -614,6 +617,7 @@ style_select (Widget w, XtPointer closure, XtPointer call_data)
 void
 add_family (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval;
 
     FirstArg (XtNstring, &fval);
@@ -628,6 +632,7 @@ add_family (Widget w, XButtonEvent *ev)
 void
 delete_family (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval;
 
     FirstArg (XtNstring, &fval);
@@ -643,6 +648,7 @@ delete_family (Widget w, XButtonEvent *ev)
 void
 add_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval, *sval, ftemp[256], stemp[256];
 
     FirstArg (XtNstring, &fval);
@@ -665,6 +671,7 @@ add_style (Widget w, XButtonEvent *ev)
 void
 delete_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
     char   *fval, *sval;
 
     FirstArg (XtNstring, &fval);
@@ -681,12 +688,16 @@ delete_style (Widget w, XButtonEvent *ev)
 void
 save_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
     save_family_set (current_family_set);
 }
 
 void
 load_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
     load_family_set (current_family_set);
     current_family = current_style = -1;
     style_update ();
@@ -709,6 +720,8 @@ confirm_close_style (void)
 void
 close_style (Widget w, XButtonEvent *ev)
 {
+	(void)w; (void)ev;
+
     if (confirm_close_style() == RESULT_CANCEL)
 	return;
     XtPopdown (style_popup);
@@ -734,14 +747,14 @@ static String style_translations = "<Message>WM_PROTOCOLS: CloseStyle()\n\
 	 <Key>Escape: CloseStyle()\n";
 
 static XtActionsRec style_actions[] = {
-    "ShowNamedStyles", (XtActionProc) popup_manage_style_panel,
-    "add_family", (XtActionProc) add_family,
-    "delete_family", (XtActionProc) delete_family,
-    "add_style", (XtActionProc) add_style,
-    "delete_style", (XtActionProc) delete_style,
-    "family_select", (XtActionProc) family_select,
-    "style_select", (XtActionProc) style_select,
-    "CloseStyle", (XtActionProc) close_style
+    {"ShowNamedStyles", (XtActionProc) popup_manage_style_panel},
+    {"add_family", (XtActionProc) add_family},
+    {"delete_family", (XtActionProc) delete_family},
+    {"add_style", (XtActionProc) add_style},
+    {"delete_style", (XtActionProc) delete_style},
+    {"family_select", (XtActionProc) family_select},
+    {"style_select", (XtActionProc) style_select},
+    {"CloseStyle", (XtActionProc) close_style}
 };
 
 /**********************************/

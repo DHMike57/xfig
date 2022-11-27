@@ -16,38 +16,57 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_util.h"
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#include <unistd.h>
+#include <sys/types.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>	/* XtResizeWidget() */
+#include <X11/Xft/Xft.h>
+
 #include "figx.h"
 #include "resources.h"
-#include "main.h"
 #include "mode.h"
 #include "object.h"
+#ifdef I18N
+#include "d_text.h"
+#endif /* I18N */
+#include "e_placelib.h"
 #include "f_util.h"
-#include "u_redraw.h"
+#include "u_colors.h"
 #include "w_canvas.h"
+#include "w_color.h"
 #include "w_cmdpanel.h"
 #include "w_drawprim.h"
 #include "w_export.h"
 #include "w_indpanel.h"
-#include "w_color.h"
 #include "w_layers.h"
 #include "w_msgpanel.h"
 #include "w_print.h"
-#include "w_util.h"
+#include "w_rulers.h"
 #include "w_setup.h"
+#include "xfig_math.h"
 
-#include <X11/IntrinsicP.h> /* XtResizeWidget() */
-
-#ifdef I18N
-#include "d_text.h"
-#endif /* I18N */
 
 /* EXPORTS */
 
-char	 *grid_inch_choices[] = { "None", "1/16", "1/8", "1/4", "1/2", "1", "2", "5", "10" };
+char	 *grid_inch_choices[] = {"None", "1/16", "1/8", "1/4", "1/2",
+					"1", "2", "5", "10"};
 int	  num_grid_inch_choices = sizeof(grid_inch_choices) / sizeof(char *);
 
-char	 *grid_tenth_inch_choices[] = { "None", "1/10", "1/5", "1/2", "1", "2", "5", "10" };
+char	 *grid_tenth_inch_choices[] = {"None", "1/10", "1/5", "1/2",
+					"1", "2", "5", "10"};
 int	  num_grid_tenth_inch_choices = sizeof(grid_tenth_inch_choices) / sizeof(char *);
 
 char	 *grid_cm_choices[] = { "None", "1 mm", "2 mm", "5 mm", "10 mm",
@@ -69,7 +88,7 @@ Pixmap	  mouse_r=(Pixmap) 0;
 /* LOCALS */
 
 DeclareStaticArgs(14);
-static void _installscroll(Widget parent, Widget widget);
+static void	_installscroll(Widget parent, Widget widget);
 
 static Pixmap	spinup_bm=0;	/* pixmaps for spinners */
 static Pixmap	spindown_bm=0;
@@ -180,6 +199,7 @@ void app_flush(void)
 static void
 accept_yes(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_YES;
 }
@@ -187,6 +207,7 @@ accept_yes(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_no(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_NO;
 }
@@ -194,6 +215,7 @@ accept_no(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_cancel(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_CANCEL;
 }
@@ -201,6 +223,7 @@ accept_cancel(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_part(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_PART;
 }
@@ -208,6 +231,7 @@ accept_part(Widget widget, XtPointer closure, XtPointer call_data)
 static void
 accept_all(Widget widget, XtPointer closure, XtPointer call_data)
 {
+	(void)widget; (void)closure; (void)call_data;
     query_done = 1;
     query_result = RESULT_ALL;
 }
@@ -346,10 +370,6 @@ popup_query(int query_type, char *message)
 #include "SmeCascade.h"
 #endif /* XAW3D1_5E */
 
-#include "d_text.h"
-#include "e_placelib.h"
-#include "w_rulers.h"
-
 Widget
 make_pulldown_menu(char **entries, Cardinal nent, int divide_line, char *divide_message, Widget parent, XtCallbackProc callback)
 {
@@ -379,6 +399,7 @@ make_pulldown_menu(char **entries, Cardinal nent, int divide_line, char *divide_
 static void
 CvtStringToFloat(XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmValuePtr toVal)
 {
+	(void)args;
     static float    f;
 
     if (*num_args != 0)
@@ -393,6 +414,7 @@ CvtStringToFloat(XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmV
 static void
 CvtIntToFloat(XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmValuePtr toVal)
 {
+	(void)args;
     static float    f;
 
     if (*num_args != 0)
@@ -410,8 +432,9 @@ void fix_converters(void)
 
 
 static void
-cancel_color(Widget w, XtPointer widget, XtPointer dum1)
+cancel_color(Widget w, XtPointer widget, XtPointer dum)
 {
+	(void)w; (void)dum;
     XtPopdown((Widget)widget);
 }
 
@@ -469,16 +492,16 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
 	NextArg(XtNfromVert, label);
 	if (i==TRANSP_BACKGROUND) {
 	    /* make its background transparent by using color of parent */
-	    NextArg(XtNforeground, black_color.pixel);
+	    NextArg(XtNforeground, getpixel(BLACK));
 	    NextArg(XtNbackground, bgcolor);
 	    /* and it is a little wider due to the longer name */
 	    NextArg(XtNwidth, COLOR_BUT_WID+14);
 	} else if (i==TRANSP_NONE) {
-	    NextArg(XtNforeground, black_color.pixel);
-	    NextArg(XtNbackground, white_color.pixel);
+	    NextArg(XtNforeground, getpixel(BLACK));
+	    NextArg(XtNbackground, getpixel(WHITE));
 	} else {
-	    NextArg(XtNforeground, white_color.pixel);
-	    NextArg(XtNbackground, black_color.pixel);
+	    NextArg(XtNforeground, getpixel(WHITE));
+	    NextArg(XtNbackground, getpixel(BLACK));
 	}
 	entry = XtCreateManagedWidget(buf, commandWidgetClass, pop_form, Args, ArgCount);
 	XtAddCallback(entry, XtNcallback, callback, (XtPointer) i);
@@ -514,7 +537,6 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
 
     /* now make the buttons in the box */
     for (i = 0; i < NUM_STD_COLS+num_usr_cols; i++) {
-	XColor		xcolor;
 	Pixel		col;
 
 	/* only those user-defined colors that are defined */
@@ -524,17 +546,15 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
 	FirstArg(XtNwidth, COLOR_BUT_WID);
 	NextArg(XtNborderWidth, COLOR_BUT_BD_WID);
 	if (all_colors_available) {
-	    xcolor.pixel = colors[i];
 	    /* get RGB of the color to check intensity */
-	    XQueryColor(tool_d, tool_cm, &xcolor);
 	    /* make contrasting label */
-	    if ((0.3 * xcolor.red + 0.59 * xcolor.green + 0.11 * xcolor.blue) <
+	    if ((0.3 * getred(i) + 0.59 * getgreen(i) + 0.11 * getblue(i)) <
 			0.55 * (255 << 8))
-		col = colors[WHITE];
+		col = getpixel(WHITE);
 	    else
-		col = colors[BLACK];
+		col = getpixel(BLACK);
 	    NextArg(XtNforeground, col);
-	    NextArg(XtNbackground, colors[i]);
+	    NextArg(XtNbackground, getpixel(i));
 	}
 	entry = XtCreateManagedWidget(buf, commandWidgetClass, color_box,
 				      Args, ArgCount);
@@ -569,30 +589,24 @@ set_color_name(int color, char *buf)
  * Set the color name in the label of widget, set its foreground to
  * that color, and set its background to a contrasting color
  */
-
 void
-set_but_col(Widget widget, Pixel color)
+set_but_col(Widget widget, int color)
 {
-	XColor		 xcolor;
-	Pixel		 but_col;
-	char		 buf[50];
+	char	buf[12];
 
-	/* put the color name in the label and the color itself as the background */
 	set_color_name(color, buf);
-	but_col = x_color(color);
 	FirstArg(XtNlabel, buf);
-	NextArg(XtNbackground, but_col);  /* set color of button */
+	NextArg(XtNbackground, getpixel(color));  /* set color of button */
 	SetValues(widget);
 
 	/* now set foreground to contrasting color */
-	xcolor.pixel = but_col;
-	XQueryColor(tool_d, tool_cm, &xcolor);
-	pick_contrast(xcolor, widget);
+	pick_contrast(&user_color[color], widget);
 }
 
 static void
 inc_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     float val;
     char *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -616,6 +630,7 @@ inc_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 static void
 dec_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     float val;
     char *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -640,6 +655,7 @@ dec_flt_spinner(Widget widget, XtPointer info, XtPointer dum)
 static void
 inc_int_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     int     val;
     char   *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -663,6 +679,7 @@ inc_int_spinner(Widget widget, XtPointer info, XtPointer dum)
 static void
 dec_int_spinner(Widget widget, XtPointer info, XtPointer dum)
 {
+	(void)widget; (void)dum;
     int     val;
     char   *sval,str[40];
     spin_struct *spins = (spin_struct*) info;
@@ -695,6 +712,7 @@ static Widget		   cur_spin = (Widget) 0;
 static void /* XtEventHandler */
 start_spin_timer(Widget widget, XtPointer data, XEvent event)
 {
+	(void)data; (void)event;
     auto_spinid = XtAppAddTimeOut(tool_app, appres.spinner_delay,
 				(XtTimerCallbackProc) auto_spin, (XtPointer) NULL);
     /* add event to cancel timer when user releases button */
@@ -709,6 +727,7 @@ start_spin_timer(Widget widget, XtPointer data, XEvent event)
 static void /* XtEventHandler */
 stop_spin_timer(int widget, int data, int event)
 {
+	(void)widget; (void)data; (void)event;
     XtRemoveTimeOut(auto_spinid);
 
     return;
@@ -717,6 +736,7 @@ stop_spin_timer(int widget, int data, int event)
 static void /* XtTimerCallbackProc */
 auto_spin(XtPointer client_data, XtIntervalId *id)
 {
+	(void)client_data; (void)id;
     auto_spinid = XtAppAddTimeOut(tool_app, appres.spinner_rate,
 				(XtTimerCallbackProc) auto_spin, (XtPointer) NULL);
     /* call the proper spinup/down routine */
@@ -842,10 +862,10 @@ MakeSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget b
     if (spinup_bm == 0 || spindown_bm == 0) {
 	spinup_bm = XCreatePixmapFromBitmapData(tool_d, XtWindow(ind_panel),
 		    (char *) spinup_bits, spinup_width, spinup_height,
-		    x_color(BLACK), bgcolor, tool_dpth);
+		    getpixel(BLACK), bgcolor, tool_dpth);
 	spindown_bm = XCreatePixmapFromBitmapData(tool_d, XtWindow(ind_panel),
 		    (char *) spindown_bits, spindown_width, spindown_height,
-		    x_color(BLACK), bgcolor, tool_dpth);
+		    getpixel(BLACK), bgcolor, tool_dpth);
     }
 
     /* a form to put them in */
@@ -922,10 +942,13 @@ MakeSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget b
 void
 validate_int(Widget w, XtPointer info, XtPointer dum)
 {
+	(void)w;
+	(void)dum;
     DeclareArgs(4);
     spin_struct *spins = (spin_struct*) info;
     char	buf[200];
-    int		val, i, modified = 0;
+    int		val, modified = 0;
+    size_t	i;
     XawTextPosition pos;
 
     /* save cursor position */
@@ -960,7 +983,7 @@ validate_int(Widget w, XtPointer info, XtPointer dum)
         panel_set_value(spins->widget, buf);
 
 	/* put cursor back */
-	if (pos < strlen(buf)) {
+	if (pos < (XawTextPosition)strlen(buf)) {
 	    FirstArg(XtNinsertPosition, (pos+1));
 	    SetValues(spins->widget);
 	}
@@ -970,8 +993,11 @@ validate_int(Widget w, XtPointer info, XtPointer dum)
 /* handle the wheelmouse wheel */
 
 void
-spinner_up_down(Widget w, XButtonEvent *ev, String *params, Cardinal *num_params)
+spinner_up_down(Widget w, XButtonEvent *ev, String *params,
+		Cardinal *num_params)
 {
+	(void)num_params;
+
   w = XtParent(w);
   if (params[0][0] == '+') w = XtNameToWidget(w, "*spinup");
   else w = XtNameToWidget(w, "*spindown");
@@ -1051,138 +1077,6 @@ void process_pending(void)
     app_flush();
 }
 
-Boolean	user_colors_saved = False;
-XColor	saved_user_colors[MAX_USR_COLS];
-Boolean	saved_userFree[MAX_USR_COLS];
-int	saved_user_num;
-
-Boolean	nuser_colors_saved = False;
-XColor	saved_nuser_colors[MAX_USR_COLS];
-Boolean	saved_nuserFree[MAX_USR_COLS];
-int	saved_nuser_num;
-
-/* save user colors into temp vars */
-
-void save_user_colors(void)
-{
-    int		i;
-
-    if (appres.DEBUG)
-	fprintf(stderr,"** Saving user colors. Before: user_colors_saved = %d\n",
-		user_colors_saved);
-
-    user_colors_saved = True;
-
-    /* first save the current colors because del_color_cell destroys them */
-    for (i=0; i<num_usr_cols; i++)
-	saved_user_colors[i] = user_colors[i];
-    /* and save Free entries */
-    for (i=0; i<num_usr_cols; i++)
-	saved_userFree[i] = colorFree[i];
-    /* now free any previously defined user colors */
-    for (i=0; i<num_usr_cols; i++) {
-	    del_color_cell(i);		/* remove widget and colormap entry */
-    }
-    saved_user_num = num_usr_cols;
-}
-
-/* save n_user colors into temp vars */
-
-void save_nuser_colors(void)
-{
-    int		i;
-
-    if (appres.DEBUG)
-	fprintf(stderr,"** Saving n_user colors. Before: nuser_colors_saved = %d\n",
-		user_colors_saved);
-
-    nuser_colors_saved = True;
-
-    /* first save the current colors because del_color_cell destroys them */
-    for (i=0; i<n_num_usr_cols; i++)
-	saved_nuser_colors[i] = n_user_colors[i];
-    /* and save Free entries */
-    for (i=0; i<n_num_usr_cols; i++)
-	saved_nuserFree[i] = n_colorFree[i];
-    saved_nuser_num = n_num_usr_cols;
-}
-
-/* restore user colors from temp vars */
-
-void restore_user_colors(void)
-{
-    int		i,num;
-
-    if (!user_colors_saved)
-	return;
-
-    if (appres.DEBUG)
-	fprintf(stderr,"** Restoring user colors. Before: user_colors_saved = %d\n",
-		user_colors_saved);
-
-    user_colors_saved = False;
-
-    /* first free any previously defined user colors */
-    for (i=0; i<num_usr_cols; i++) {
-	    del_color_cell(i);		/* remove widget and colormap entry */
-    }
-
-    num_usr_cols = saved_user_num;
-
-    /* now restore the orig user colors */
-    for (i=0; i<num_usr_cols; i++)
-	 user_colors[i] = saved_user_colors[i];
-    /* and Free entries */
-    for (i=0; i<num_usr_cols; i++)
-	colorFree[i] = saved_userFree[i];
-
-    /* now try to allocate those colors */
-    if (num_usr_cols > 0) {
-	num = num_usr_cols;
-	num_usr_cols = 0;
-	/* fill the colormap and the color memories */
-	for (i=0; i<num; i++) {
-	    if (colorFree[i]) {
-		colorUsed[i] = False;
-	    } else {
-		/* and add a widget and colormap entry */
-		if (add_color_cell(USE_EXISTING_COLOR, i, user_colors[i].red/256,
-			user_colors[i].green/256,
-			user_colors[i].blue/256) == -1) {
-			    file_msg("Can't allocate more than %d user colors, not enough colormap entries",
-					num_usr_cols);
-			    return;
-			}
-	        colorUsed[i] = True;
-	    }
-	}
-    }
-}
-
-/* Restore user colors from temp vars into n_user_...  */
-
-void restore_nuser_colors(void)
-{
-    int		i;
-
-    if (!nuser_colors_saved)
-	return;
-
-    if (appres.DEBUG)
-	fprintf(stderr,"** Restoring user colors into n_...\n");
-
-    nuser_colors_saved = False;
-
-    n_num_usr_cols = saved_nuser_num;
-
-    /* now restore the orig user colors */
-    for (i=0; i<n_num_usr_cols; i++)
-	 n_user_colors[i] = saved_nuser_colors[i];
-    /* and Free entries */
-    for (i=0; i<n_num_usr_cols; i++)
-	n_colorFree[i] = saved_nuserFree[i];
-}
-
 /* create some global bitmaps like menu arrows, checkmarks, etc. */
 
 void create_bitmaps(void)
@@ -1199,19 +1093,18 @@ void create_bitmaps(void)
 	/* make pixmap for red checkmark */
 	check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) check_bits, check_width, check_height,
-		    colors[RED], colors[WHITE], tool_dpth);
+		    getpixel(RED), getpixel(WHITE), tool_dpth);
 	/* and make one same size but all white */
 	null_check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) check_bits, check_width, check_height,
-		    colors[WHITE], colors[WHITE], tool_dpth);
-	/* and one for a smaller checkmark */
+		    getpixel(WHITE), getpixel(WHITE), tool_dpth); /* and one for a smaller checkmark */
 	sm_check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) sm_check_bits, sm_check_width, sm_check_height,
-		    colors[RED], colors[WHITE], tool_dpth);
+		    getpixel(RED), getpixel(WHITE), tool_dpth);
 	/* and make one same size but all white */
 	sm_null_check_pm = XCreatePixmapFromBitmapData(tool_d, tool_w,
 		    (char *) sm_check_bits, sm_check_width, sm_check_height,
-		    colors[WHITE], colors[WHITE], tool_dpth);
+		    getpixel(WHITE), getpixel(WHITE), tool_dpth);
 	/* create the 1-plane bitmaps of the arrow images */
 	/* these will go in the "left bitmap" part of the menu */
 	/* they are used in e_edit.c and w_indpanel.c */
@@ -1286,7 +1179,7 @@ Widget
 CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, Widget beside, Boolean manage, Boolean large, Boolean *value, XtCallbackProc user_callback, Widget *togwidg)
 {
 	DeclareArgs(20);
-	Widget   form, toggle, labelw;
+	Widget   form, toggle;
 	unsigned int check_ht, udum;
 	int	 idum;
 	Window	 root;
@@ -1355,7 +1248,7 @@ CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, W
 	    NextArg(XtNinternalWidth, 2);
 	    NextArg(XtNinternalHeight, 1);
 	}
-	labelw = XtCreateManagedWidget("label", labelWidgetClass,
+	(void)XtCreateManagedWidget("label", labelWidgetClass,
 					form, Args, ArgCount);
 	if (manage)
 	    XtManageChild(form);
@@ -1365,6 +1258,7 @@ CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, W
 void /* XtCallbackProc */
 toggle_checkbutton(Widget w, XtPointer data, XtPointer garbage)
 {
+	(void)garbage;
     DeclareArgs(5);
     Pixmap	   pm;
     Boolean	  *what = (Boolean *) data;
@@ -1418,6 +1312,7 @@ update_wm_title(char *name)
 void
 check_for_resize(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
     int		    dx, dy;
     XConfigureEvent *xc = (XConfigureEvent *) event;
 
@@ -1555,99 +1450,6 @@ void resize_all(int width, int height)
     XawFormDoLayout(tool_form, True);
 }
 
-void
-check_colors(void)
-{
-    int		    i;
-    XColor	    dum,color;
-
-    /* no need to allocate black and white specially */
-    colors[BLACK] = black_color.pixel;
-    colors[WHITE] = white_color.pixel;
-    /* fill the colors array with black (except for white) */
-    for (i=0; i<NUM_STD_COLS; i++)
-	if (i != BLACK && i != WHITE)
-		colors[i] = colors[BLACK];
-
-    /* initialize user color cells */
-    for (i=0; i<MAX_USR_COLS; i++) {
-	    colorFree[i] = True;
-	    n_colorFree[i] = True;
-	    num_usr_cols = 0;
-    }
-
-    /* if monochrome resource is set, do not even check for colors */
-    if (!all_colors_available || appres.monochrome) {
-	return;
-    }
-
-    for (i=0; i<NUM_STD_COLS; i++) {
-	/* try to allocate another named color */
-	/* first try by #xxxxx form if exists, then by name from rgb.txt file */
-	if (!xallncol(colorNames[i+1].rgb,&color,&dum)) {
-	     /* can't allocate it, switch colormaps try again */
-	     if (!switch_colormap() ||
-	        (!xallncol(colorNames[i+1].rgb,&color,&dum))) {
-		    fprintf(stderr, "Not enough colormap entries available for basic colors\n");
-		    fprintf(stderr, "using monochrome mode.\n");
-		    all_colors_available = False;
-		    return;
-	    }
-	}
-	/* put the colorcell number in the color array */
-	colors[i] = color.pixel;
-    }
-
-    /* get two grays for insensitive spinners */
-    if (tool_cells == 2 || appres.monochrome) {
-	/* use black to gray out an insensitive spinner */
-	dark_gray_color = colors[BLACK];
-	med_gray_color = colors[BLACK];
-	lt_gray_color = colors[BLACK];
-	/* color of page border */
-	pageborder_color = colors[BLACK];
-    } else {
-	XColor x_color;
-	/* get a dark gray for making certain spinners insensitive */
-	XParseColor(tool_d, tool_cm, "gray65", &x_color);
-	if (XAllocColor(tool_d, tool_cm, &x_color)) {
-	    dark_gray_color = x_color.pixel;
-	} else {
-	    dark_gray_color = colors[WHITE];
-	}
-	/* get a medium one too */
-	XParseColor(tool_d, tool_cm, "gray80", &x_color);
-	if (XAllocColor(tool_d, tool_cm, &x_color)) {
-	    med_gray_color = x_color.pixel;
-	} else {
-	    med_gray_color = colors[WHITE];
-	}
-	/* get a lighter one too */
-	XParseColor(tool_d, tool_cm, "gray90", &x_color);
-	if (XAllocColor(tool_d, tool_cm, &x_color)) {
-	    lt_gray_color = x_color.pixel;
-	} else {
-	    lt_gray_color = colors[WHITE];
-	}
-
-	/* get page border color */
-	XParseColor(tool_d, tool_cm, appres.pageborder, &x_color);
-	if (XAllocColor(tool_d, tool_cm, &x_color)) {
-	    pageborder_color = x_color.pixel;
-	} else {
-	    pageborder_color = colors[BLACK];
-	}
-	/* get axis lines color */
-	XParseColor(tool_d, tool_cm, appres.axislines, &x_color);
-	if (XAllocColor(tool_d, tool_cm, &x_color)) {
-	    axis_lines_color = x_color.pixel;
-	} else {
-	    axis_lines_color = colors[BLACK];
-	}
-    }
-
-}
-
 /* useful when using ups */
 void XSyncOn(void)
 {
@@ -1659,37 +1461,6 @@ void XSyncOff(void)
 {
 	XSynchronize(tool_d, False);
 	XFlush(tool_d);
-}
-
-/*
- * This will parse the hexadecimal form of the named colors in the standard color
- * names.  Some servers can't parse the hex form for XAllocNamedColor()
- */
-
-int
-xallncol(char *name, XColor *color, XColor *exact)
-{
-    unsigned	short r,g,b;
-    char	nam[30];
-
-    if (*name != '#')
-	return XAllocNamedColor(tool_d,tool_cm,name,color,exact);
-
-    /* gcc doesn't allow writing on constant strings without the -fwritable_strings
-       option, and apparently some versions of sscanf need to write a char back */
-    strcpy(nam,name);
-    if (sscanf(nam,"#%2hx%2hx%2hx",&r,&g,&b) != 3 || nam[7] != '\0') {
-	fprintf(stderr,
-	  "Malformed color specification %s in resources.c must be 6 hex digits",nam);
-	exit(1);
-    }
-
-    color->red   = r<<8;
-    color->green = g<<8;
-    color->blue  = b<<8;
-    color->flags = DoRed|DoGreen|DoBlue;
-    *exact = *color;
-    return XAllocColor(tool_d,tool_cm,color);
 }
 
 Widget
@@ -1889,7 +1660,7 @@ convert_gridstr(Widget widget, float mult)
 	char	*sval, fraction[20];
 	double	 fracts[] = { 2, 4, 8, 16, 32 };
 	double	 tol[]    = { 0.05, 0.1, 0.2, 0.3, 0.6};
-#define NUM_FRACTS sizeof(fracts)/sizeof(double)
+#define NUM_FRACTS	(sizeof(fracts)/sizeof(double))
 	int	 i;
 
 	FirstArg(XtNstring, &sval);
@@ -1905,13 +1676,13 @@ convert_gridstr(Widget widget, float mult)
 	}
 	/* if user wants fractions, give him fractions */
 	if (cur_gridunit == FRACT_UNIT) {
-	    for (i=0; i<NUM_FRACTS; i++) {
+	    for (i = 0; i < (int)NUM_FRACTS; ++i) {
 		numer = round(value*fracts[i]);
 		diff = fabs(value*fracts[i] - numer);
 		if (diff < tol[i] && numer > 0.0)
 		    break;
 	    }
-	    if (i < NUM_FRACTS) {
+	    if (i < (int)NUM_FRACTS) {
 		sprintf(fraction, "%d/%d", (int) numer, (int) fracts[i]);
 		panel_set_value(widget, fraction);
 		return;
@@ -1942,6 +1713,19 @@ convert_gridstr(Widget widget, float mult)
  * We draw the xfig logo followed by "3.X.X", STEPSIZE pixels at a time.
  * Then we fade the letters to the background color and remove the icon.
  ****************************************************************************/
+
+static XColor
+getxcolor(int c)
+{
+	XColor result;
+
+	result.pixel = getpixel(c);
+	result.red = getred(c);
+	result.green = getgreen(c);
+	result.blue = getblue(c);
+
+	return result;
+}
 
 void splash_screen(void)
 {
@@ -2016,8 +1800,8 @@ void splash_screen(void)
 	    if (tool_vclass == GrayScale || tool_vclass == PseudoColor) {
 		/* allocate a color for the background of the text pixmap */
 		if (XAllocColorCells(tool_d, tool_cm, 0, &plane_mask, 0,
-					&colbg.pixel, 1)==0) {
-		    colbg = x_bg_color;
+					&colbg.pixel, 1) == 0) {
+		    colbg = getxcolor(CANVAS_BG);
 		} else {
 		    XStoreColor(tool_d, tool_cm, &colbg);
 		}
@@ -2037,17 +1821,17 @@ void splash_screen(void)
 	    }
 	} else {
 	    /* monochrome or no colors availble, draw text in fg, bg */
-	    col = x_fg_color;
-	    colbg = x_bg_color;
+	    col = getxcolor(DEFAULT);
+	    colbg = getxcolor(CANVAS_BG);
 	}
 	/* make our own gc */
 	splash_gc = makegc(PAINT, col.pixel, colbg.pixel);
 
 	XSetForeground(tool_d, splash_gc, col.pixel);
 	/* step size to go from the starting color to the background color */
-	red_step   = (x_bg_color.red-col.red)/COLSTEPS;
-	green_step = (x_bg_color.green-col.green)/COLSTEPS;
-	blue_step  = (x_bg_color.blue-col.blue)/COLSTEPS;
+	red_step   = (getred(CANVAS_BG) - col.red) / COLSTEPS;
+	green_step = (getgreen(CANVAS_BG) - col.green) / COLSTEPS;
+	blue_step  = (getblue(CANVAS_BG) - col.blue) / COLSTEPS;
 
 #ifdef USE_SPLASH
 	/* write the background on the canvas */

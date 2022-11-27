@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,26 +16,35 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_layers.h"
 
-#include "fig.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+
 #include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
 #include "f_read.h"
+#include "u_redraw.h"
 #include "w_drawprim.h"
-#include "w_dir.h"
+#include "w_canvas.h"
+#include "w_cmdpanel.h"
 #include "w_file.h"
 #include "w_indpanel.h"
 #include "w_layers.h"
-#include "w_util.h"
-#include "w_setup.h"
-#include "u_redraw.h"
-#include "w_snap.h"
-
-#include "w_cmdpanel.h"
 #include "w_msgpanel.h"
-#include "w_canvas.h"
+#include "w_setup.h"
+#include "w_snap.h"
+#include "w_util.h"
+
 
 /* EXPORTS */
 
@@ -486,6 +496,7 @@ draw_layer_button(Window win, int but)
 static void
 layer_exposed(Widget w, XExposeEvent *event, String *params, Cardinal *nparams)
 {
+	(void)params; (void)nparams;
     int		    y, i;
 
     if (min_depth < 0) return;  /* if no objects return */
@@ -524,6 +535,7 @@ calculate_pressed_depth(int y)
 static void
 set_depth_to_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)params; (void)nparams;
     int		    but;
 
     but = calculate_pressed_depth(event->y);
@@ -536,6 +548,7 @@ set_depth_to_layer(Widget w, XButtonEvent *event, String *params, Cardinal *npar
 static void
 toggle_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)params; (void)nparams;
     Window	    win = XtWindow(layer_canvas);
     int		    but, i;
     Boolean	    obscure;
@@ -572,6 +585,7 @@ toggle_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 static void
 sweep_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)params; (void)nparams;
     Window	    win = XtWindow(layer_canvas);
     int		    but;
     int		    i;
@@ -611,12 +625,14 @@ sweep_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 static void
 leave_layer(Widget w, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)w; (void)event; (void)params; (void)nparams;
     pressed_but = -1;
 }
 
 static void
 all_active(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
     int i;
     Boolean changed = False;
 
@@ -638,6 +654,7 @@ all_active(Widget w, XtPointer closure, XtPointer call_data)
 static void
 all_inactive(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
     int i;
     Boolean changed = False;
 
@@ -659,6 +676,7 @@ all_inactive(Widget w, XtPointer closure, XtPointer call_data)
 static void
 toggle_all(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
     int i;
 
     if (min_depth < 0) return;
@@ -675,6 +693,7 @@ toggle_all(Widget w, XtPointer closure, XtPointer call_data)
 static void
 switch_layer_mode(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)closure; (void)call_data;
     Boolean	    state;
     intptr_t	    which;
 
@@ -754,36 +773,42 @@ void update_layerpanel()
      * w_cmdpanel.c:refresh_view_menu().
      */
 
-    if (all_active_but)
+    if (all_active_but) {
 	if (appres.showballoons)
 	    XawTipEnable(all_active_but, "Display all depths");
 	else
 	    XawTipDisable(all_active_but);
-    if (all_inactive_but)
+    }
+    if (all_inactive_but) {
 	if (appres.showballoons)
 	    XawTipEnable(all_inactive_but, "Hide all depths");
 	else
 	    XawTipDisable(all_inactive_but);
-    if (toggle_all_but)
+    }
+    if (toggle_all_but) {
 	if (appres.showballoons)
 	    XawTipEnable(toggle_all_but, "Toggle displayed/hidden depths");
 	else
 	    XawTipDisable(toggle_all_but);
-    if (layer_viewp)
+    }
+    if (layer_viewp) {
 	if (appres.showballoons)
 	    XawTipEnable(layer_viewp, "Display or hide any depth");
 	else
 	    XawTipDisable(layer_viewp);
-    if (graylabel)
+    }
+    if (graylabel) {
 	if (appres.showballoons)
 	    XawTipEnable(graylabel, "Display inactive layers in gray");
 	else
 	    XawTipDisable(graylabel);
-    if (blanklabel)
+    }
+    if (blanklabel) {
 	if (appres.showballoons)
 	    XawTipEnable(blanklabel, "Blank inactive layers");
 	else
 	    XawTipDisable(blanklabel);
+    }
 }
 #else
 static	Widget layer_balloon_popup = (Widget) 0;

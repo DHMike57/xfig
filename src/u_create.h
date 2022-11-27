@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -18,6 +19,9 @@
 #ifndef U_CREATE_H
 #define U_CREATE_H
 
+#include <X11/Intrinsic.h>
+#include "object.h"
+
 extern F_arc      *create_arc(void);
 extern F_ellipse  *create_ellipse(void);
 extern F_line     *create_line(void);
@@ -28,8 +32,9 @@ extern F_pic      *create_pic(void);
 extern F_point    *create_point(void);
 extern F_sfactor  *create_sfactor(void);
 extern F_compound  *create_dimension_line(F_line *line, Boolean add_to_figure);
-extern void	  create_dimline_ticks(F_line *line, F_line **tick1, F_line **tick2);
-extern struct _pics * create_picture_entry(void);
+extern void	  create_dimline_ticks(F_line *line, F_line **tick1,
+					F_line **tick2);
+extern struct _pics *create_picture_entry(void);
 
 extern F_arc      *copy_arc(F_arc *a);
 extern F_ellipse  *copy_ellipse(F_ellipse *e);
@@ -50,7 +55,8 @@ extern F_arrow	  *create_arrow(void);
 extern F_arrow	  *forward_dim_arrow(void);
 extern F_arrow	  *backward_dim_arrow(void);
 
-extern F_arrow	  *new_arrow(int type, int style, float thickness, float wd, float ht);
+extern F_arrow	  *new_arrow(int type, int style, float thickness, float wd,
+				float ht);
 extern char	  *new_string(int len);
 extern F_linkinfo *new_link(F_line *l, F_point *ep, F_point *pp);
 

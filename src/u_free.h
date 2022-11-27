@@ -16,6 +16,11 @@
  *
  */
 
+#ifndef U_FREE_H
+#define U_FREE_H
+
+#include "object.h"
+
 
 extern void	free_Fonts(void);
 extern void	free_GCs(void);
@@ -31,3 +36,5 @@ extern void	free_sfactors(F_sfactor *sf);
 extern void	free_spline(F_spline **list);
 extern void	free_splinestorage(F_spline *s);
 extern void	free_text(F_text **list);
+
+#endif

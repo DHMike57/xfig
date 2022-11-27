@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -18,7 +19,10 @@
 #ifndef U_SEARCH_H
 #define U_SEARCH_H
 
-Boolean		in_text_bound(F_text *t, int x, int y, int *posn, Boolean extra);
+#include <X11/Intrinsic.h>
+#include "object.h"
+
+Boolean		in_text_bound(F_text *t, int x, int y, int *posn);
 
 void		init_searchproc_left(void (*handlerproc) (/* ??? */));
 void		init_searchproc_middle(void (*handlerproc) (/* ??? */));
@@ -38,6 +42,5 @@ F_text	       *text_search(int x, int y, int *posn);
 F_compound     *compound_search(int x, int y, int tolerance, int *px, int *py);
 F_compound     *compound_point_search(int x, int y, int tol, int *cx, int *cy, int *fx, int *fy);
 F_spline       *get_spline_point(int x, int y, F_point **p, F_point **q);
-
 
 #endif /* U_SEARCH_H */

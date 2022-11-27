@@ -16,6 +16,14 @@
  * party to do so, with the only requirement being that the above copyright
  * and this permission notice remain intact.
  *
+ */
+
+/*
+ * Part of the code in this file is taken from xdir,
+ * an X-based directory browser.
+ */
+
+/*
  *
  * Original xdir code:
  *
@@ -55,6 +63,13 @@
 
 #ifndef W_DIR_H
 #define W_DIR_H
+
+#if defined HAVE_CONFIG_H && !defined VERSION
+#include "config.h"		/* restrict */
+#endif
+
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
+
 
 /* Useful constants. */
 

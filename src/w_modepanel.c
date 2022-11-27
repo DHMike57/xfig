@@ -21,8 +21,10 @@
 #endif
 #include "w_modepanel.h"
 
-#include <stddef.h>
 #include <math.h>
+#include <stddef.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
 
 #include "figx.h"
 #include "resources.h"
@@ -457,8 +459,9 @@ init_mode_panel(Widget tool)
 
 void setup_mode_panel(void)
 {
-    register int    i;
-    register mode_sw_info *msw;
+    int			i;
+    mode_sw_info	*msw;
+    unsigned long	but_fg, but_bg;
 
     blank_gc = XCreateGC(tool_d, XtWindow(mode_panel), (unsigned long) 0, NULL);
     FirstArg(XtNforeground, &but_fg);

@@ -1,6 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
- * Copyright (c) 1989-2007 by Brian V. Smith
+ * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,12 +17,15 @@
  */
 
 
-
 #ifndef U_FONTS_H
 #define U_FONTS_H
 
+#include <X11/Xlib.h>		/* includes X11/X.h */
+#include <X11/Xft/Xft.h>
+
+#include "object.h"		/* F_pos */
+
 #define DEF_FONTSIZE		12		/* default font size in pts */
-#define DEF_PS_FONT		0
 #define DEF_LATEX_FONT		0
 #define PS_FONTPANE_WD		290
 #define LATEX_FONTPANE_WD	112
@@ -56,12 +62,20 @@ struct _xfstruct {
 				 * sizes */
 };
 
-extern int		psfontnum(char *font);
-extern int		latexfontnum(char *font);
 
+extern int	psfontnum(char *font);
+extern int	latexfontnum(char *font);
+extern int	x_fontnum(int psflag, int fnum);
+extern void	closefont(XftFont *font);
+extern XftFont	*getfont(int psflag, int fnum, double size, double angle);
+extern void	textextents(F_text *t);
+extern int	textlength(XftFont *horfont, XftChar8 *string, int len);
+extern void	textmaxheight(int psflag, int font, int size, int *ascent,
+				int *descent);
+extern void	text_origin(int *draw_x, int *draw_y, int base_x, int base_y,
+				int align, F_pos offset);
 extern struct _xfstruct	x_fontinfo[], x_backup_fontinfo[];
 extern struct _fstruct	ps_fontinfo[];
 extern struct _fstruct	latex_fontinfo[];
 
-int		x_fontnum(int psflag, int fnum);
 #endif /* U_FONTS_H */

@@ -20,7 +20,12 @@
 
 /**************** IMPORTS ****************/
 
-#include "fig.h"
+#include "u_undo.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
@@ -29,28 +34,25 @@
 #include "e_arrow.h"
 #include "e_compound.h"
 #include "e_convert.h"
-#include "u_draw.h"
-#include "u_elastic.h"
-#include "u_list.h"
-#include "u_redraw.h"
-#include "u_undo.h"
-#include "w_canvas.h"
-#include "w_drawprim.h"
-#include "w_file.h"
-#include "w_layers.h"
-#include "w_msgpanel.h"
-#include "w_setup.h"
-
 #include "e_deletept.h"
 #include "e_scale.h"
 #include "f_read.h"
 #include "u_bound.h"
+#include "u_draw.h"
 #include "u_free.h"
+#include "u_list.h"
 #include "u_markers.h"
+#include "u_redraw.h"
 #include "u_translate.h"
+#include "w_canvas.h"
 #include "w_cmdpanel.h"
-#include "w_indpanel.h"
 #include "w_color.h"
+#include "w_drawprim.h"
+#include "w_file.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+
 
 extern void	swap_depths(void);	/* w_layers.c */
 extern void	swap_counts(void);	/* w_layers.c */
@@ -114,6 +116,10 @@ undo(void)
 {
     /* turn off Compose key LED */
     setCompLED(0);
+
+    /* finish text input or return if in the middle of an action */
+    if (check_action_on())
+	return;
 
     switch (last_action) {
       case F_ADD:
@@ -589,8 +595,6 @@ void undo_move(void)
 {
     int		    dx, dy;
     int		    xmin1, ymin1, xmax1, ymax1;
-    int		    xmin2, ymin2, xmax2, ymax2;
-    int		    dum;
 
     dx = last_position.x - new_position.x;
     dy = last_position.y - new_position.y;
@@ -598,48 +602,40 @@ void undo_move(void)
       case O_POLYLINE:
 	line_bound(saved_objects.lines, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_line(saved_objects.lines, dx, dy);
-	line_bound(saved_objects.lines, &xmin2, &ymin2, &xmax2, &ymax2);
 	adjust_links(last_linkmode, last_links, dx, dy, 0, 0, 1.0, 1.0, False);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_ELLIPSE:
 	ellipse_bound(saved_objects.ellipses, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_ellipse(saved_objects.ellipses, dx, dy);
-	ellipse_bound(saved_objects.ellipses, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_TXT:
-	text_bound(saved_objects.texts, &xmin1, &ymin1, &xmax1, &ymax1,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound(saved_objects.texts, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_text(saved_objects.texts, dx, dy);
-	text_bound(saved_objects.texts, &xmin2, &ymin2, &xmax2, &ymax2,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_SPLINE:
 	spline_bound(saved_objects.splines, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_spline(saved_objects.splines, dx, dy);
-	spline_bound(saved_objects.splines, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_ARC:
 	arc_bound(saved_objects.arcs, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_arc(saved_objects.arcs, dx, dy);
-	arc_bound(saved_objects.arcs, &xmin2, &ymin2, &xmax2, &ymax2);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
       case O_COMPOUND:
 	compound_bound(saved_objects.compounds, &xmin1, &ymin1, &xmax1, &ymax1);
 	translate_compound(saved_objects.compounds, dx, dy);
-	compound_bound(saved_objects.compounds, &xmin2, &ymin2, &xmax2, &ymax2);
 	adjust_links(last_linkmode, last_links, dx, dy, 0, 0, 1.0, 1.0, False);
 	redisplay_regions(xmin1, ymin1, xmax1, ymax1,
-			  xmin2, ymin2, xmax2, ymax2);
+			  xmin1 + dx, ymin1 + dy, xmax1 + dx, ymax1 + dy);
 	break;
     }
     swap_newp_lastp();

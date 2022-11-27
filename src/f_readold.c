@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -25,13 +25,12 @@
 #include "object.h"
 #include "d_spline.h"
 #include "f_read.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_free.h"
-#include "w_drawprim.h"
 #include "w_msgpanel.h"
 #include "w_zoom.h"
-#include "xfig_math.h"
 
 
 /*******    Fig 1.3 subtype of objects	  *******/
@@ -477,7 +476,7 @@ read_1_3_textobject(FILE *fp)
     int		    n;
     int		    dum;
     char	    buf[512];
-    PR_SIZE	    tx_dim;
+    //PR_SIZE	    tx_dim;
 
     if ((t = create_text()) == NULL)
 	return (NULL);
@@ -522,21 +521,18 @@ read_1_3_textobject(FILE *fp)
 	return (NULL);
     }
 
-    /* get the font struct */
+    /* get the font */
     t->zoom = zoomscale;
-    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
-			round(t->size*display_zoomscale));
-
     if (t->font >= MAXFONT(t)) {
 	file_msg("Invalid text font (%d) at line %d, setting to DEFAULT.",
 		t->font, line_no);
 	t->font = DEFAULT;
     }
-    /* now calculate the actual length and height of the string in fig units */
-    tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-    t->length = round(tx_dim.length);
-    t->ascent = round(tx_dim.ascent);
-    t->descent = round(tx_dim.descent);
+    t->xftfont = getfont(psfont_text(t), t->font, t->size * display_zoomscale,
+			t->angle);
 
-    return (t);
+    /* now calculate the actual length and height of the string in fig units */
+    textextents(t);
+
+    return t;
 }

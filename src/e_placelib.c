@@ -59,7 +59,7 @@ static int	off_library_y;
 static void	init_move_object(int x, int y);
 static void	move_object(int x, int y);
 static void	change_draw_mode(int x, int y);
-static void	transform_lib_obj(XKeyEvent *kpe, unsigned char c,KeySym keysym);
+static void	transform_lib_obj(unsigned char *c, int clen, KeySym keysym);
 static void	place_lib_object(int x, int y, unsigned int shift);
 static void	put_draw(int paint_mode);
 static void	sel_place_lib_obj_proc(int x, int y, int shift);
@@ -116,10 +116,10 @@ put_selected(void)
 /* allow rotation or flipping of library object before placing on canvas */
 
 static void
-transform_lib_obj(XKeyEvent *kpe, unsigned char c, KeySym keysym)
+transform_lib_obj(unsigned char *c, int clen, KeySym keysym)
 {
-	(void)kpe;
 	(void)keysym;
+	(void)clen;
     int x,y;
 
     x = cur_x;
@@ -127,21 +127,21 @@ transform_lib_obj(XKeyEvent *kpe, unsigned char c, KeySym keysym)
 
     /* first erase the existing image */
     put_draw(ERASE);
-    if (c == 'r') {
+    if (c[0] == 'r') {
 	rotn_dirn = 1;
 	act_rotnangle = 90;
 	rotate_compound(new_c, x, y);
-    } else if (c == 'l') {
+    } else if (c[0] == 'l') {
 	rotn_dirn = -1;
 	act_rotnangle = 90;
 	rotate_compound(new_c, x, y);
-    } else if (c == 'h') {
+    } else if (c[0] == 'h') {
 	flip_compound(new_c, x, y, LR_FLIP);
-    } else if (c == 'v') {
+    } else if (c[0] == 'v') {
 	flip_compound(new_c, x, y, UD_FLIP);
-    } else if (c == 's') {
+    } else if (c[0] == 's') {
 	scale_compound(new_c, 0.9, 0.9, x, y);
-    } else if (c == 'S') {
+    } else if (c[0] == 'S') {
 	scale_compound(new_c, 1.1, 1.1, x, y);
     } /* if not any of the above characters, ignore it */
     /* and draw the new image */

@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1995 by C. Blanc and C. Schlick
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,30 +17,33 @@
  *
  */
 
-#include "fig.h"
+#include "u_list.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
 #include "paintop.h"
 #include "f_read.h"
 #include "u_create.h"
-#include "u_list.h"
-#include "u_elastic.h"
+#include "u_draw.h"
+#include "u_markers.h"
 #include "u_redraw.h"
 #include "u_undo.h"
 #include "w_layers.h"
 #include "w_setup.h"
 
-#include "u_draw.h"
-#include "u_markers.h"
+
+static int	point_on_perim(F_point *p, int llx, int lly, int urx, int ury);
+static int	point_on_inside(F_point *p, int llx, int lly, int urx, int ury);
+
 
 /*************************************/
 /****** DELETE object from list ******/
 /*************************************/
-
-
-int point_on_perim (F_point *p, int llx, int lly, int urx, int ury);
-int point_on_inside (F_point *p, int llx, int lly, int urx, int ury);
 
 void
 list_delete_arc(F_arc **arc_list, F_arc *arc)
@@ -1254,7 +1258,7 @@ get_links(int llx, int lly, int urx, int ury)
 
 static int LINK_TOL = 3 * PIX_PER_INCH / DISPLAY_PIX_PER_INCH;
 
-int
+static int
 point_on_perim(F_point *p, int llx, int lly, int urx, int ury)
 {
     return ((abs(p->x - llx) <= LINK_TOL && p->y >= lly - LINK_TOL
@@ -1312,7 +1316,7 @@ get_interior_links(int llx, int lly, int urx, int ury)
 	}
 }
 
-int
+static int
 point_on_inside(F_point *p, int llx, int lly, int urx, int ury)
 {
     return ((p->x >= llx) && (p->x <= urx) &&
@@ -1327,6 +1331,7 @@ adjust_links(int mode, F_linkinfo *links,
 	float sx, float sy,	/* scale factor - NOT USED YET */
 	Boolean copying)
 {
+	(void)cx; (void)cy; (void)sx; (void)sy;
     F_linkinfo	   *k;
     F_line	   *l;
 

@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -30,6 +31,7 @@
 #include "u_draw.h"
 #include "u_geom.h"
 #include "u_create.h"
+#include "u_fonts.h"
 #include "u_list.h"
 #include "u_markers.h"
 #include "u_redraw.h"
@@ -241,13 +243,11 @@ init_rotatetext(F_text *t, int px, int py)
 	add_text(text);
     } else {
 	toggle_textmarker(t);
-	draw_text(t, ERASE);
 	change_text(t, text);
     }
     /* redisplay objects under this object before it was rotated */
-    redisplay_text(t);
+    redisplay_texts(t, text);
     /* and this text and any other objects on top */
-    redisplay_text(text);
     reset_cursor();
 }
 
@@ -402,10 +402,12 @@ void rotate_text(F_text *t, int x, int y)
 	rotate_xy(&t->base_x, &t->base_y, x, y);
     }
     t->angle -= (float) (rotn_dirn * act_rotnangle * M_PI / 180.0);
-    if (t->angle < 0.0)
+    if (t->angle < 0.0f)
 	t->angle += M_2PI;
-    else if (t->angle >= M_2PI - 0.001)
+    else if (t->angle > M_2PI)
 	t->angle -= M_2PI;
+    t->angle = roundf(t->angle * 1024.0f) / 1024.0f;
+    textextents(t);
     reload_text_fstruct(t);
 }
 
@@ -431,8 +433,9 @@ void rotate_ellipse(F_ellipse *e, int x, int y)
     e->angle -= (float) (rotn_dirn * act_rotnangle * M_PI / 180.0);
     if (e->angle < 0.0)
 	e->angle += M_2PI;
-    else if (e->angle >= M_2PI - 0.001)
+    else if (e->angle > M_2PI)
 	e->angle -= M_2PI;
+    e->angle = roundf(e->angle * 1024.0f) / 1024.0f;
 }
 
 void rotate_arc(F_arc *a, int x, int y)
@@ -540,7 +543,7 @@ void rotate_point(F_point *p, int x, int y)
     theta -= (double) (rotn_dirn * act_rotnangle * M_PI / 180.0);
     if (theta < 0.0)
 	theta += M_2PI;
-    else if (theta >= M_2PI - 0.001)
+    else if (theta > M_2PI)
 	theta -= M_2PI;
     mag = sqrt(dx * dx + dy * dy);
     cosa = mag * cos(theta);
@@ -564,7 +567,7 @@ void rotate_xy(int *orig_x, int *orig_y, int x, int y)
     theta -= (double) (rotn_dirn * act_rotnangle * M_PI / 180.0);
     if (theta < 0.0)
 	theta += M_2PI;
-    else if (theta >= M_2PI - 0.001)
+    else if (theta > M_2PI)
 	theta -= M_2PI;
     mag = sqrt(dx * dx + dy * dy);
     cosa = mag * cos(theta);

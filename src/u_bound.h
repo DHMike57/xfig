@@ -19,13 +19,24 @@
 #ifndef U_BOUND_H
 #define U_BOUND_H
 
-extern int	overlapping(int xmin1, int ymin1, int xmax1, int ymax1, int xmin2, int ymin2, int xmax2, int ymax2);
-extern void arc_bound (F_arc *arc, int *xmin, int *ymin, int *xmax, int *ymax);
-extern void compound_bound (F_compound *compound, int *xmin, int *ymin, int *xmax, int *ymax);
-extern void active_compound_bound(F_compound *compound, int *xmin, int *ymin, int *xmax, int *ymax, Boolean active_only);
-extern void ellipse_bound (F_ellipse *e, int *xmin, int *ymin, int *xmax, int *ymax);
-extern void line_bound (F_line *l, int *xmin, int *ymin, int *xmax, int *ymax);
-extern void spline_bound (F_spline *s, int *xmin, int *ymin, int *xmax, int *ymax);
-extern void text_bound (F_text *t, int *xmin, int *ymin, int *xmax, int *ymax, int *rx1, int *ry1, int *rx2, int *ry2, int *rx3, int *ry3, int *rx4, int *ry4);
+#include <X11/Intrinsic.h>
+#include "object.h"
+
+
+extern int overlapping(int xmin1, int ymin1, int xmax1, int ymax1,
+				int xmin2, int ymin2, int xmax2, int ymax2);
+extern void arc_bound(F_arc *arc, int *xmin, int *ymin, int *xmax, int *ymax);
+extern void compound_bound(F_compound *compound, int *xmin, int *ymin,
+						int *xmax, int *ymax);
+extern void active_compound_bound(F_compound *compound, int *xmin, int *ymin,
+				int *xmax, int *ymax, Boolean active_only);
+extern void ellipse_bound(F_ellipse *e,
+				int *xmin, int *ymin, int *xmax, int *ymax);
+extern void line_bound(F_line *l, int *xmin, int *ymin, int *xmax, int *ymax);
+extern void spline_bound(F_spline *s, int *xmin,int *ymin, int *xmax,int *ymax);
+extern void text_bound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax);
+extern void text_rotbound(F_text *t, int *xmin, int *ymin, int *xmax, int *ymax,
+		int *rx1, int *ry1, int *rx2, int *ry2, int *rx3, int *ry3,
+		int *rx4, int *ry4);
 
 #endif /* U_BOUND_H */

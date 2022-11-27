@@ -27,6 +27,7 @@
 #else
 #include <X11/Xaw/Sme.h>
 #endif
+#include <X11/Intrinsic.h>
 
 #ifdef XAW3D1_5E
 #include <X11/Xaw3d/SmeBSB.h>

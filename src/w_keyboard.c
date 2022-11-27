@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,27 +17,31 @@
  *
  */
 
-#include <sys/types.h>
-#include <regex.h>
-#include <string.h>
+#include "w_keyboard.h"
 
-#include "fig.h"
+#include <math.h>
+#include <regex.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+
 #include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
 #include "f_util.h"
 #include "w_canvas.h"
-#include "w_setup.h"
-#include "w_indpanel.h"
-#include "w_util.h"
-#include "w_keyboard.h"
 #include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "xfig_math.h"
 
-Boolean keyboard_input_available = False;
-int keyboard_x;
-int keyboard_y;
-int keyboard_state;
+Boolean	keyboard_input_available = False;
+int	keyboard_x;
+int	keyboard_y;
+int	keyboard_state;
 
 /* popups for keyboard input */
 
@@ -52,11 +57,10 @@ static keyboard_history_s * keyboard_history_write_pointer;
 static int keyboard_history_nr_etys;
 #define KEYBOARD_HISTORY_MAX	32
 
-void
-next_keyboard_history(w, event)
-     Widget w;
-     XKeyEvent *event;
+static void
+next_keyboard_history(Widget w, XKeyEvent *event)
 {
+	(void)event;
   if (keyboard_history) {
     char * str;
     keyboard_history_read_pointer = keyboard_history_read_pointer->next;
@@ -65,11 +69,10 @@ next_keyboard_history(w, event)
   }
 }
 
-void
-prior_keyboard_history(w, event)
-     Widget w;
-     XKeyEvent *event;
+static void
+prior_keyboard_history(Widget w, XKeyEvent *event)
 {
+	(void)event;
   if (keyboard_history) {
     char * str;
     keyboard_history_read_pointer = keyboard_history_read_pointer->prior;
@@ -79,18 +82,15 @@ prior_keyboard_history(w, event)
 
 }
 
-void
-ignore_keyboard_input(w, event)
-     Widget w;
-     XKeyEvent *event;
+static void
+ignore_keyboard_input(Widget w, XKeyEvent *event)
 {
-  popdown_keyboard_panel();
+	(void)w; (void)event;
+	popdown_keyboard_panel();
 }
 
-void
-handle_keyboard_input(w, event)
-     Widget w;
-     XKeyEvent *event;
+static void
+handle_keyboard_input(Widget w, XKeyEvent *event)
 {
 
 #define WS "[[:space:]]*"
@@ -411,13 +411,6 @@ static Widget keyboard_panel = None;
 static Widget active_keyboard_panel = None;
 static Widget keyboard_input = None;
 
-String  keyboard_translations =
-        "<Key>Return: HandleKeyboardInput()\n\
-        <Key>Escape:  IgnoreKeyboardInput()\n\
-        Ctrl<Key>n:   NextKeyboardHistory()\n\
-        <Key>Down:    NextKeyboardHistory()\n\
-        Ctrl<Key>p:   PriorKeyboardHistory()\n\
-        <Key>Up:      PriorKeyboardHistory()\n";
 
 static void
 create_keyboard_panel()
@@ -426,6 +419,13 @@ create_keyboard_panel()
   Widget label, usage_hint;
   DeclareArgs(10);
   char * str;
+  String  keyboard_translations =
+        "<Key>Return: HandleKeyboardInput()\n\
+        <Key>Escape:  IgnoreKeyboardInput()\n\
+        Ctrl<Key>n:   NextKeyboardHistory()\n\
+        <Key>Down:    NextKeyboardHistory()\n\
+        Ctrl<Key>p:   PriorKeyboardHistory()\n\
+        <Key>Up:      PriorKeyboardHistory()\n";
 
   keyboard_panel = XtVaCreatePopupShell("keyboard_menu", transientShellWidgetClass, tool,
 					XtNtitle, "Keyboard Input", NULL);
@@ -479,6 +479,7 @@ popup_keyboard_panel(Widget widget,
 		     String * params,
 		     Cardinal * num_params)
 {
+	(void)widget; (void)params; (void)num_params;
   Dimension wd, ht;
 
   /* make sure we're in a drawing mode first */
@@ -498,7 +499,7 @@ popup_keyboard_panel(Widget widget,
 }
 
 void
-popdown_keyboard_panel()
+popdown_keyboard_panel(void)
 {
   if (active_keyboard_panel != None) {
     XtPopdown(active_keyboard_panel);

@@ -19,11 +19,14 @@
 #ifndef F_UTIL_H
 #define F_UTIL_H
 
-#include <X11/Intrinsic.h>	/* Boolean */
 #include <sys/types.h>		/* time_t */
+#include <X11/Intrinsic.h>	/* Boolean */
+#include <X11/Xft/Xft.h>
 
 #include "object.h"
+#include "u_colors.h"
 
+extern XftColor	image_cells[MAX_COLORMAP_SIZE];
 extern char	*xf_basename(char *filename);
 extern int	 emptyfigure(void);
 extern char	*safe_strcpy(char *p1, char *p2);

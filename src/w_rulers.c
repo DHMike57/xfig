@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,31 +16,42 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_rulers.h"
+
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/IntrinsicP.h>
+
 #include "figx.h"
 #include "resources.h"
-#include "mode.h"
-#include "paintop.h"
-#include "u_pan.h"
-#include "w_drawprim.h"
-#include "w_icons.h"
-#include "w_indpanel.h"
-#include "w_mousefun.h"
-#include "w_msgpanel.h"
-#include "w_rulers.h"
-#include "w_setup.h"
-#include "w_util.h"
-#include "w_zoom.h"
 #include "object.h"
+#include "mode.h"
 
 #include "f_util.h"
+#include "u_pan.h"
 #include "u_redraw.h"
 #include "u_scale.h"
 #include "w_canvas.h"
 #include "w_color.h"
+#include "w_drawprim.h"
 #include "w_export.h"
 #include "w_grid.h"
+#include "w_icons.h"
+#include "w_mousefun.h"
+#include "w_msgpanel.h"
 #include "w_print.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
 
 /*
  * The following will create rulers the same size as the initial screen size.
@@ -405,11 +417,12 @@ void update_rulerpanel()
     else
 	sprintf(msg + strlen(msg), "(right button)");
 
-    if (unitbox_sw)
+    if (unitbox_sw) {
 	if (appres.showballoons)
 	    XawTipEnable(unitbox_sw, msg);
 	else
 	    XawTipDisable(unitbox_sw);
+    }
 }
 #else
 /* come here when the mouse passes over the unit box */
@@ -521,12 +534,17 @@ unit_panel_dismiss(void)
 static void
 unit_panel_cancel(Widget w, XButtonEvent *ev)
 {
-    unit_panel_dismiss();
+	(void)w;
+	(void)ev;
+
+	unit_panel_dismiss();
 }
 
 static void
 unit_panel_set(Widget w, XButtonEvent *ev)
 {
+	(void)w;
+	(void)ev;
     int		    old_rul_unit, pix;
     float	    scale_factor;
 
@@ -620,6 +638,8 @@ set_unit_indicator(Boolean use_userscale)
 static void
 fig_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 {
+	(void)garbage;
+
     FirstArg(XtNlabel, XtName(w));
     SetValues(fig_unit_panel);
     fig_unit_setting = (Boolean) (intptr_t) new_unit;
@@ -640,6 +660,8 @@ fig_unit_select(Widget w, XtPointer new_unit, XtPointer garbage)
 static void
 fig_scale_select(Widget w, XtPointer new_scale, XtPointer garbage)
 {
+	(void)garbage;
+
     FirstArg(XtNlabel, XtName(w));
     SetValues(fig_scale_panel);
     fig_scale_setting = (Boolean) (intptr_t) new_scale;
@@ -660,6 +682,7 @@ fig_scale_select(Widget w, XtPointer new_scale, XtPointer garbage)
 static void
 rul_unit_select(Widget w, XtPointer closure, XtPointer garbage)
 {
+	(void)garbage;
     intptr_t	    new_unit = (intptr_t) closure;
 
     /* return if no change */
@@ -820,8 +843,9 @@ popup_unit_panel(void)
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNleftBitmap, menu_arrow);	/* use menu arrow for pull-down */
-    fig_scale_panel = XtCreateManagedWidget(fig_scale_items[fig_scale_setting],
-				menuButtonWidgetClass, unit_panel, Args, ArgCount);
+    fig_scale_panel = XtCreateManagedWidget(
+		    fig_scale_items[(int)fig_scale_setting],
+		    menuButtonWidgetClass, unit_panel, Args, ArgCount);
     below = fig_scale_panel;
     make_pulldown_menu(fig_scale_items, XtNumber(fig_scale_items), -1, "",
                                      fig_scale_panel, fig_scale_select);
@@ -929,6 +953,7 @@ static String	topruler_translations =
 static void
 topruler_selected(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
     XButtonEvent   *be = (XButtonEvent *) event;
 
     /* see if wheel mouse */
@@ -1013,6 +1038,8 @@ void set_toprulermark(int x)
 static void
 topruler_exposed(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
+
     if (((XExposeEvent *) event)->count > 0)
 	return;
     redisplay_topruler();
@@ -1256,6 +1283,7 @@ static String	sideruler_translations =
 static void
 sideruler_selected(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
     XButtonEvent   *be = (XButtonEvent *) event;
 
     /* see if wheel mouse */
@@ -1322,6 +1350,8 @@ sideruler_selected(Widget tool, XButtonEvent *event, String *params, Cardinal *n
 static void
 sideruler_exposed(Widget tool, XButtonEvent *event, String *params, Cardinal *nparams)
 {
+	(void)tool; (void)params; (void)nparams;
+
     if (((XExposeEvent *) event)->count > 0)
 	return;
     redisplay_sideruler();

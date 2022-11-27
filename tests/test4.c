@@ -34,7 +34,6 @@
 #include <limits.h>
 #include <math.h>
 
-#include "fig.h"
 #include "resources.h"	/* must come before mode.h; struct appres */
 #include "mode.h"
 

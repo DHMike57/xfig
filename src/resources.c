@@ -21,62 +21,17 @@
 #endif
 #include "resources.h"
 
+#include <stddef.h>
 #include <sys/types.h>
 
-#include "object.h"
+#include <u_colors.h>
 
-
-fig_colors colorNames[] = {
-		{"Default",	"NULL"},
-		{"Black",	"black"},
-		{"Blue",	"blue"},
-		{"Green",	"green"},
-		{"Cyan",	"cyan"},
-		{"Red",		"red"},
-		{"Magenta",	"magenta"},
-		{"Yellow",	"yellow"},
-		{"White",	"white"},
-		{"Blue4",	"#000090"},	/* NOTE: hex colors must be 6 digits */
-		{"Blue3",	"#0000b0"},
-		{"Blue2",	"#0000d0"},
-		{"LtBlue",	"#87ceff"},
-		{"Green4",	"#009000"},
-		{"Green3",	"#00b000"},
-		{"Green2",	"#00d000"},
-		{"Cyan4",	"#009090"},
-		{"Cyan3",	"#00b0b0"},
-		{"Cyan2",	"#00d0d0"},
-		{"Red4",	"#900000"},
-		{"Red3",	"#b00000"},
-		{"Red2",	"#d00000"},
-		{"Magenta4",	"#900090"},
-		{"Magenta3",	"#b000b0"},
-		{"Magenta2",	"#d000d0"},
-		{"Brown4",	"#803000"},
-		{"Brown3",	"#a04000"},
-		{"Brown2",	"#c06000"},
-		{"Pink4",	"#ff8080"},
-		{"Pink3",	"#ffa0a0"},
-		{"Pink2",	"#ffc0c0"},
-		{"Pink",	"#ffe0e0"},
-		{"Gold",	"gold" }
-		};
-
-char	*short_clrNames[] = {
-		"Default",
-		"Blk", "Blu", "Grn", "Cyn", "Red", "Mag", "Yel", "Wht",
-		"Bl4", "Bl3", "Bl2", "LBl", "Gr4", "Gr3", "Gr2",
-		"Cn4", "Cn3", "Cn2", "Rd4", "Rd3", "Rd2",
-		"Mg4", "Mg3", "Mg2", "Br4", "Br3", "Br2",
-		"Pk4", "Pk3", "Pk2", "Pnk", "Gld" };
 
 /* current export/print background color */
 int		export_background_color = COLOR_NONE;
 
 /* these are allocated in main() in case we aren't using default colormap
    (so we can't use BlackPixelOfScreen...) */
-
-XColor		black_color, white_color;
 
 /* for the xfig icon */
 Pixmap		fig_icon;
@@ -85,7 +40,7 @@ Pixmap		fig_icon;
 char		xfig_version[100];
 
 /* original directory where xfig started */
-char	orig_dir[PATH_MAX+2];
+char		orig_dir[PATH_MAX+2];
 
 /* whether user is updating Fig files or loading one to view */
 Boolean		update_figs = False;
@@ -93,21 +48,7 @@ Boolean		update_figs = False;
 #ifdef USE_XPM
 XpmAttributes	xfig_icon_attr;
 #endif /* USE_XPM */
-Pixel		colors[NUM_STD_COLS+MAX_USR_COLS];
-XColor		user_colors[MAX_USR_COLS];
-XColor		undel_user_color;
-XColor		n_user_colors[MAX_USR_COLS];
-XColor		save_colors[MAX_USR_COLS];
-int		num_usr_cols=0;
-int		n_num_usr_cols;
 int		current_memory;
-Boolean		colorUsed[MAX_USR_COLS];
-Boolean		colorFree[MAX_USR_COLS];
-Boolean		n_colorFree[MAX_USR_COLS];
-Boolean		all_colors_available;
-Pixel		dark_gray_color, med_gray_color, lt_gray_color;
-Pixel		pageborder_color;
-Pixel		axis_lines_color;
 int		max_depth=-1;
 int		min_depth=-1;
 char		tool_name[200];
@@ -117,19 +58,12 @@ float		 scale_factor=1.0;	/* scale drawing as it is read in */
 char		 minor_grid[40], major_grid[40]; /* export/print grid values */
 Boolean		 draw_parent_gray;	/* in open compound, draw rest in gray */
 
-/* number of colors we want to use for pictures */
-/* this will be determined when the first picture is used.  We will take
-   min(number_of_free_colorcells, 100, appres.maximagecolors) */
-
-int		avail_image_cols = -1;
-
-/* colormap used for same */
-XColor		image_cells[MAX_COLORMAP_SIZE];
-
 appresStruct	appres;
 Window		main_canvas;		/* main canvas window */
 Window		canvas_win;		/* current canvas */
 Window		msg_win, sideruler_win, topruler_win;
+XftDraw		*main_draw;
+XftDraw		*canvas_draw;
 
 Cursor		cur_cursor;
 Cursor		arrow_cursor, bull_cursor, buster_cursor, crosshair_cursor,
@@ -175,13 +109,8 @@ GC		border_gc, button_gc, ind_button_gc, mouse_button_gc, pic_gc,
 		tr_gc, tr_xor_gc, tr_erase_gc,	/* for the rulers */
 		sr_gc, sr_xor_gc, sr_erase_gc;
 
-Color		grid_color;
 Pixmap		fill_pm[NUMFILLPATS],fill_but_pm[NUMPATTERNS];
 float		fill_pm_zoom[NUMFILLPATS],fill_but_pm_zoom[NUMFILLPATS];
-XColor		x_fg_color, x_bg_color;
-unsigned long	but_fg, but_bg;
-unsigned long	ind_but_fg, ind_but_bg;
-unsigned long	mouse_but_fg, mouse_but_bg;
 
 float		ZOOM_FACTOR;	/* assigned in main.c */
 float		PIC_FACTOR;	/* assigned in main.c, updated in unit_panel_set() and
@@ -257,7 +186,6 @@ char    *overlap_pages[] = {
     "  Overlap  "};
 
 /* for w_file.c and w_export.c */
-
 char    *offset_unit_items[] = {
         " Inches  ", " Centim. ", "Fig Units" };
 
@@ -265,7 +193,6 @@ int	RULER_WD;
 
 /* flag for when picture object is read in merge_file to see if need to remap
    existing picture colors */
-
 Boolean	pic_obj_read;
 
 /* recent file structure/array */

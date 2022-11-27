@@ -39,7 +39,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	  echo 'm4_define([AT_PACKAGE_URL], [@PACKAGE_URL@])'; \
 	} >'$(srcdir)/package.m4'
 
-AM_CPPFLAGS = -I$(top_srcdir)/src $(XCPPFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/src -I$(oldincludedir)/freetype2 $(XCPPFLAGS)
 
 if ALLOW_MULTIPLE_DEFINITION
 AM_LDFLAGS = -Wl,--allow-multiple-definition $(XLDFLAGS)
@@ -52,7 +52,8 @@ $(top_builddir)/src/libxfig.a:
 endif
 
 check-local: atconfig $(TESTSUITE) atlocal
-	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
+	$(SHELL) '$(TESTSUITE)' ASAN_OPTIONS=leak_check_at_exit=0 \
+		$(TESTSUITEFLAGS)
 
 installcheck-local: atconfig $(TESTSUITE) atlocal
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)

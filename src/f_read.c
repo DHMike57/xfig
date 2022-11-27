@@ -32,16 +32,18 @@
 #ifdef I18N
 #include <locale.h>
 #endif
+#include <X11/Xft/Xft.h>
 
 #include "resources.h"
-#include "object.h"
 #include "mode.h"
+#include "object.h"
 
 #include "d_spline.h"
 #include "e_update.h"
 #include "f_picobj.h"
 #include "f_util.h"
 #include "u_bound.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_free.h"
@@ -49,14 +51,12 @@
 #include "u_translate.h"
 #include "w_canvas.h"
 #include "w_color.h"
-#include "w_drawprim.h"
 #include "w_file.h"
 #include "w_layers.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
 #include "w_util.h"
 #include "w_zoom.h"
-
 #include "xfig_math.h"
 
 extern int	read_1_3_objects(FILE *fp, char *buf, F_compound *obj,
@@ -87,6 +87,7 @@ static char	  *attach_comments(void);
 static void	   count_lines_correctly(FILE *fp);
 static int	   read_return(int status);
 static Boolean	   contains_picture(F_compound *compound);
+static XftColor		save_colors[MAX_USR_COLS];
 
 #define FILL_CONVERT(f) \
 	   ((proto >= 22) ? (f): \
@@ -621,9 +622,9 @@ read_colordef(void)
     }
     /* make in the range 0...MAX_USR_COLS */
     c -= NUM_STD_COLS;
-    n_user_colors[c].red = r*256;
-    n_user_colors[c].green = g*256;
-    n_user_colors[c].blue = b*256;
+    n_user_colors[c].color.red = r*256;
+    n_user_colors[c].color.green = g*256;
+    n_user_colors[c].color.blue = b*256;
     n_colorFree[c] = False;
     /* keep track of highest color number */
     n_num_usr_cols = max2(c, n_num_usr_cols);
@@ -1317,7 +1318,6 @@ read_textobject(FILE *fp)
     float	    tx_size;
     float	    length, height;
     Boolean	    more;
-    PR_SIZE	    tx_dim;
 
     if ((t = create_text()) == NULL){
 	numcom=0;
@@ -1405,10 +1405,6 @@ read_textobject(FILE *fp)
 		t->font, save_line);
 	t->font = DEFAULT;
     }
-
-    /* get the UNZOOMED font struct */
-    if (!update_figs)
-	t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
 
     fix_depth(&t->depth);
     check_color(&t->color);
@@ -1510,16 +1506,13 @@ read_textobject(FILE *fp)
     (void) strcpy(t->cstring, &s[1]);
 
     if (!update_figs) {
-	/* now calculate the actual length and height of the string in fig units */
-	tx_dim = textsize(t->fontstruct, strlen(t->cstring), t->cstring);
-	t->length = round(tx_dim.length);
-	t->ascent = round(tx_dim.ascent);
-	t->descent = round(tx_dim.descent);
-	/* now get the zoomed font struct */
+	/* calculate the actual length and height of the string in fig units */
+	textextents(t);
+
+	/* get the zoomed font */
 	t->zoom = zoomscale;
-	if (display_zoomscale != 1.0)
-	    t->fontstruct = lookfont(x_fontnum(psfont_text(t), t->font),
-				round(t->size*display_zoomscale));
+	t->xftfont = getfont(psfont_text(t), t->font,
+				t->size * display_zoomscale, t->angle);
     }
 
     t->comments = attach_comments();		/* attach any comments */
@@ -1755,7 +1748,7 @@ void swap_colors(void)
 
     /* first save the current colors because del_color_cell destroys them */
     for (i=0; i<num_usr_cols; i++)
-	save_colors[i] = user_colors[i];
+	save_colors[i] = user_color[i];
     /* and save Free entries */
     for (i=0; i<num_usr_cols; i++)
 	saveFree[i] = colorFree[i];
@@ -1765,7 +1758,7 @@ void swap_colors(void)
     }
     /* now swap old colors with new */
     for (i=0; i<n_num_usr_cols; i++)
-	user_colors[i] = n_user_colors[i];
+	user_color[i] = n_user_colors[i];
     for (i=0; i<num_usr_cols; i++)
 	n_user_colors[i] = save_colors[i];
     /* and swap Free entries */
@@ -1788,9 +1781,10 @@ void swap_colors(void)
 		colorUsed[i] = False;
 	    } else {
 		/* and add a widget and colormap entry */
-		if (add_color_cell(USE_EXISTING_COLOR, i, user_colors[i].red/256,
-			user_colors[i].green/256,
-			user_colors[i].blue/256) == -1) {
+		if (add_color_cell(USE_EXISTING_COLOR, i,
+					user_color[i].color.red/256,
+			user_color[i].color.green/256,
+			user_color[i].color.blue/256) == -1) {
 			    file_msg("Can't allocate more than %d user colors, not enough colormap entries",
 					num_usr_cols);
 			    return;
@@ -1842,9 +1836,10 @@ merge_colors(F_compound *objects)
 		for (j=0; j<num_usr_cols; j++)
 		    /* compare only the upper 8-bits because the server may change the lower */
 		    if (colorUsed[j] &&
-			 (user_colors[j].red>>8 == n_user_colors[i].red>>8) &&
-			 (user_colors[j].green>>8 == n_user_colors[i].green>>8) &&
-			 (user_colors[j].blue>>8 == n_user_colors[i].blue>>8)) {
+			 (user_color[j].color.red>>8 == n_user_colors[i].color.red>>8) &&
+			 (user_color[j].color.green>>8 ==
+			  n_user_colors[i].color.green>>8) &&
+			 (user_color[j].color.blue>>8 == n_user_colors[i].color.blue>>8)) {
 			    renum[i] = j;	/* yes, use it */
 			    found_exist=True;
 			    break;		/* skip to next */
@@ -1876,12 +1871,12 @@ merge_colors(F_compound *objects)
     /* now create colorcells for the new colors */
     for (i=0; i<n_num_usr_cols; i++) {
 	if (x_colorFree[i] != 1) {
-	    user_colors[i] = n_user_colors[i];
+	    user_color[i] = n_user_colors[i];
 	    /* and add a widget and colormap entry */
 	    if (add_color_cell(USE_EXISTING_COLOR, i,
-		user_colors[i].red/256,
-		user_colors[i].green/256,
-		user_colors[i].blue/256) == -1) {
+		user_color[i].color.red/256,
+		user_color[i].color.green/256,
+		user_color[i].color.blue/256) == -1) {
 		    file_msg("Can't allocate more than %d user colors, not enough colormap entries",
 				n_num_usr_cols);
 		    return;

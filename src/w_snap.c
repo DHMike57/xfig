@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,22 +17,36 @@
  *
  */
 
-#include "fig.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "w_snap.h"
+
+#include <math.h>
+#include <stddef.h>
+#include <X11/StringDefs.h>
+#include <X11/Xlib.h>
+#ifdef XAW3D
+#include <X11/Xaw3d/Form.h>
+#include <X11/Xaw3d/Label.h>
+#else
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#endif
+
 #include "figx.h"
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
-#include "w_snap.h"
-#include "w_intersect.h"
-#include "w_layers.h"
-#include "w_setup.h"
-#include "w_indpanel.h"
-#include "w_util.h"
-#include "w_msgpanel.h"
+#include "f_util.h"
 #include "u_quartic.h"
 #include "u_search.h"
-#include "f_util.h"
-#include <math.h>
+#include "w_intersect.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_util.h"
+#include "xfig_math.h"
+
 
 int snap_gx;
 int snap_gy;
@@ -134,6 +149,8 @@ snap_polyline_endpoint_handler(l, x, y)
 void
 snap_polyline_focus_handler(F_line * l, int x, int y)
 {
+	(void)x;
+	(void)y;
   /* polyline (type 1): simple verts			*/
   /* box (type 2):					*/
   /* polygon (type 3)					*/
@@ -352,7 +369,6 @@ snap_ellipse_normal_ellipse_handler(e, x, y, cur_point_x, cur_point_y)
   double soli[4];
   double tf;
   double a, b, a2;
-  int nsol;
   int i;
   double dist;
   double mind = HUGE_VAL;
@@ -386,7 +402,7 @@ snap_ellipse_normal_ellipse_handler(e, x, y, cur_point_x, cur_point_y)
   c[1] = 2.0 * a2 * a2 * PX * tf;
   c[0] = -a2 * a2 * a2 * PX * PX;
 
-  nsol = quartic(c, solr, soli);
+  (void)quartic(c, solr, soli);
 
   for (i = 0; i < 4; i++) {
     ix[0] = ix[1] = solr[i];
@@ -614,7 +630,7 @@ snap_ellipse_tangent_ellipse_handler(e, x, y)
    *
    */
 
-  double A, B;
+  double B;
   double K, L, M;
   double P, Q, R;
 
@@ -632,7 +648,6 @@ snap_ellipse_tangent_ellipse_handler(e, x, y)
   snap_rotate_vector (&PX, &PY, PX, PY, (double)(e->angle));
   snap_rotate_vector (&X,  &Y,  X,  Y,  (double)(e->angle));
 
-  A = pow(a, 2.0);
   B = pow(b, 2.0);
 
   K = PY * a;
@@ -1092,12 +1107,9 @@ snap_ellipse_handler(e, x, y)
 }
 
 static void
-snap_handler(p, type, x, y, px, py)
-    void * p;
-    int type;
-    int x, y;
-    int px, py;
+snap_handler(void *p, int type, int x, int y, int px, int py)
 {
+	(void)px; (void)py;
   static void * intersect_object_1;
   static int intersect_type_1;
 
@@ -1177,31 +1189,26 @@ snap_process(px, py, state)
 }
 
 void
-snap_hold(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_hold(Widget w, XtPointer closure, XtPointer call_data)
 {
-  snap_held = True;
+	(void)w; (void)closure; (void)call_data;
+
+	snap_held = True;
 }
 
 void
-snap_release(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_release(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
   snap_held = False;
   snap_mode = SNAP_MODE_NONE;
   XtVaSetValues(snap_indicator_label, XtNlabel, "None     " , NULL);
 }
 
 void
-snap_endpoint(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_endpoint(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		polyline (incl box and polygon) vertices		-- done	*/
@@ -1215,11 +1222,9 @@ snap_endpoint(w, closure, call_data)
 }
 
 void
-snap_midpoint(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_midpoint(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		polyline (incl box and polygon) segment midpoints	-- done	*/
@@ -1233,11 +1238,9 @@ snap_midpoint(w, closure, call_data)
 }
 
 void
-snap_nearest(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_nearest(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		nearest object							*/
@@ -1247,31 +1250,29 @@ snap_nearest(w, closure, call_data)
 }
 
 void
-snap_focus(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_focus(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
-  /* snap to:									*/
-  /*		closed polyline (box and polygon) centroids		-- done	*/
-  /*		open polyline centroids (?)				-- done	*/
-  /*		ellipse foci and circle centerpoints			-- done	*/
-  /*		closed spline centroids					-- todo	*/
-  /*		open spline centroids (?)				-- ????	*/
-  /*		text bounding box centroids (?)				-- done	*/
-  /*		arc centroids (or origin ?)				-- done	*/
+	/*
+	 * snap to:
+	 *	closed polyline (box and polygon) centroids	-- done
+	 *	open polyline centroids (?)			-- done
+	 *	ellipse foci and circle centerpoints		-- done
+	 *	closed spline centroids				-- todo
+	 *	open spline centroids (?)			-- ????
+	 *	text bounding box centroids (?)			-- done
+	 *	arc centroids (or origin ?)			-- done
+	 */
 
-  XtVaSetValues(snap_indicator_label, XtNlabel, "Focus" , NULL);
-  snap_mode = SNAP_MODE_FOCUS;
+	XtVaSetValues(snap_indicator_label, XtNlabel, "Focus" , NULL);
+	snap_mode = SNAP_MODE_FOCUS;
 }
 
 void
-snap_diameter(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_diameter(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to:									*/
   /*		closed polyline (box and polygon) point opp centroids	-- done	*/
@@ -1294,11 +1295,9 @@ snap_diameter(w, closure, call_data)
 }
 
 void
-snap_intersect(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_intersect(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* snap to the intersection of the next two objects selected.			*/
 
@@ -1308,11 +1307,9 @@ snap_intersect(w, closure, call_data)
 }
 
 void
-snap_normal(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_normal(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* for current polyline, box, or polygon, snap to a point on the target	*/
   /* such that the segment defined by that point and the existing current	*/
@@ -1342,11 +1339,9 @@ snap_normal(w, closure, call_data)
 }
 
 void
-snap_tangent(w, closure, call_data)
-    Widget    w;
-    XtPointer closure;
-    XtPointer call_data;
+snap_tangent(Widget w, XtPointer closure, XtPointer call_data)
 {
+	(void)w; (void)closure; (void)call_data;
 
   /* for current polyline, box, or polygon, snap to a point on the target	*/
   /* such that the segment defined by that point and the existing current	*/

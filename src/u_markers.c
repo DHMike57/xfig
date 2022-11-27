@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -15,17 +16,20 @@
  *
  */
 
-#include "fig.h"
+#include "u_markers.h"
+
+#include <limits.h>	/* INT_MIN */
+#include <stddef.h>
+#include <X11/Xlib.h>
+
 #include "resources.h"
 #include "object.h"
 #include "mode.h"
 #include "paintop.h"
-#include "u_markers.h"
 #include "w_drawprim.h"
 #include "w_layers.h"
 #include "w_zoom.h"
 
-#include <limits.h>	/* INT_MIN */
 
 #define set_marker(win,x,y,w,h) \
 	XDrawRectangle(tool_d,(win),gccache[INV_PAINT], \
@@ -302,33 +306,32 @@ void toggle_archighlight(F_arc *a)
 
 void toggle_textmarker(F_text *t)
 {
-    int		    dx, dy;
-
-    set_line_stuff(1, RUBBER_LINE, 0.0, JOIN_MITER, CAP_BUTT, INV_PAINT, DEFAULT);
-    /* adjust for text angle */
-    dy = (int) ((double) t->ascent * cos(t->angle));
-    dx = (int) ((double) t->ascent * sin(t->angle));
-    set_marker(canvas_win,t->base_x-dx-2,t->base_y-dy-2,MARK_SIZ,MARK_SIZ);
-    /* only draw second marker if not on top of first (e.g. string with only
-       spaces has no height) */
-    if (dx != 0 || dy != 0)
-	set_marker(canvas_win,t->base_x-2,t->base_y-2,MARK_SIZ,MARK_SIZ);
-    if (t->tagged)
-	toggle_texthighlight(t);
+	set_line_stuff(1, RUBBER_LINE, 0.0, JOIN_MITER, CAP_BUTT, INV_PAINT,
+			DEFAULT);
+	set_marker(canvas_win, t->base_x - 2, t->base_y - 2, MARK_SIZ,MARK_SIZ);
+	/* only draw second marker if not on top of first
+	   (e.g. string with only spaces has no height) */
+	if (t->top.x != 0 || t->top.y != 0)
+		set_marker(canvas_win, t->top.x + t->base_x - 2,
+				t->top.y + t->base_y - 2, MARK_SIZ, MARK_SIZ);
+	if (t->tagged)
+		toggle_texthighlight(t);
 }
 
 void toggle_texthighlight(F_text *t)
 {
-    int		    dx, dy;
 
-    set_line_stuff(1, RUBBER_LINE, 0.0, JOIN_MITER, CAP_BUTT, INV_PAINT, DEFAULT);
-    /* adjust for text angle */
-    dy = (int) ((double) t->ascent * cos(t->angle));
-    dx = (int) ((double) t->ascent * sin(t->angle));
-    set_marker(canvas_win, t->base_x-dx, t->base_y-dy, 1, 1);
-    set_marker(canvas_win, t->base_x-dx-1, t->base_y-dy-1, SM_MARK, SM_MARK);
-    set_marker(canvas_win, t->base_x, t->base_y, 1, 1);
-    set_marker(canvas_win, t->base_x-1, t->base_y-1, SM_MARK, SM_MARK);
+	set_line_stuff(1, RUBBER_LINE, 0.0, JOIN_MITER, CAP_BUTT, INV_PAINT,
+			DEFAULT);
+	set_marker(canvas_win, t->base_x, t->base_y, 1, 1);
+	set_marker(canvas_win, t->base_x - 1, t->base_y - 1, SM_MARK, SM_MARK);
+	/* only draw second marker if not on top of first */
+	if (t->top.x != 0 || t->top.y != 0) {
+		set_marker(canvas_win, t->top.x + t->base_x,
+				t->top.y + t->base_y, 1, 1);
+		set_marker(canvas_win, t->top.x + t->base_x - 1,
+				t->top.y + t->base_y - 1, SM_MARK, SM_MARK);
+	}
 }
 
 void toggle_all_compoundmarkers(void)

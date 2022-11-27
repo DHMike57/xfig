@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -21,18 +22,20 @@
  *	COMPUTE ANGLE, COMPUTE DIRECTION, LATEX LINE ROUTINES.
  */
 
-#include "fig.h"
-#include "resources.h"
-#include "object.h"
 #include "u_geom.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
+
+#include "object.h"
+#include "xfig_math.h"
+
+static int	gcd (int a, int b);
+
 
 /*************************** ROTATE VECTOR **********************
 In fact, rotate & scale ;-)                                    */
-
-
-int compute_arccenter (F_pos p1, F_pos p2, F_pos p3, float *x, float *y);
-int gcd (int a, int b);
-
 static void
 rotate_vector(double *vx, double *vy, double c, double s)
 {
@@ -302,7 +305,7 @@ close_to_arc(F_arc *a, int xp, int yp, int d, float *px, float *py)
        wang -= 2*M_PI;
        if (uang <= pang)
          pang -= 2*M_PI;
-         ok = (pang >= wang);
+       ok = (pang >= wang);
      }
    }
    if (!ok)
@@ -937,7 +940,7 @@ pgcd(int a, int b)
  * compute greatest common divisor
  */
 
-int
+static int
 gcd(int a, int b)
 {
     if (a < 0)
@@ -951,7 +954,7 @@ gcd(int a, int b)
  * compute least common multiple
  */
 
-int
+static int
 lcm(int a, int b)
 {
     return abs(a * b) / gcd(a, b);

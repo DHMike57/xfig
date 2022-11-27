@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <X11/Intrinsic.h>	/* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
 #include <X11/StringDefs.h>	/* XtNlabel, XtNstring */
 
 #include "resources.h"

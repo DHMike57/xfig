@@ -37,6 +37,7 @@
 #include "object.h"
 #include "f_util.h"
 #include "f_picobj.h"
+#include "u_colors.h"
 #include "w_setup.h"
 
 /* This is based on: */

@@ -16,20 +16,28 @@
  *
  */
 
-#include "fig.h"
-#include "resources.h"
+#include "u_search.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <X11/Xlib.h>
+
+#include "object.h"
+
 #include "object.h"
 #include "mode.h"
-#include "u_list.h"
-#include "u_search.h"
-#include "w_drawprim.h"
-#include "w_layers.h"
-#include "w_setup.h"
-#include "w_zoom.h"
-#include "w_snap.h"
-
+#include "u_bound.h"
 #include "u_geom.h"
+#include "u_list.h"
 #include "u_markers.h"
+#include "u_search.h"
+#include "w_layers.h"
+#include "w_msgpanel.h"
+#include "w_setup.h"
+#include "w_snap.h"
+#include "w_zoom.h"
+#include "xfig_math.h"
+
 
 #define TOLERANCE ((int)((display_zoomscale < 20.0? 10: 14) * \
 			PIX_PER_INCH/DISPLAY_PIX_PER_INCH/display_zoomscale))
@@ -306,6 +314,7 @@ next_spline_found(int x, int y, int tolerance, int *px, int *py, unsigned int sh
 Boolean
 next_text_found(int x, int y, int tolerance, int *px, int *py, unsigned int shift)
 {
+	(void)tolerance;
     int		    dum;
 
     if (!anytext_in_mask())
@@ -325,7 +334,7 @@ next_text_found(int x, int y, int tolerance, int *px, int *py, unsigned int shif
 	}
 	if (validtext_in_mask(t)) {
 	    ++n;
-	    if (in_text_bound(t, x, y, &dum, False)) {
+	    if (in_text_bound(t, x, y, &dum)) {
 		*px = x;
 		*py = y;
 		return True;
@@ -874,79 +883,83 @@ text_search(int x, int y, int *posn)
     F_text	   *t;
 
     for (t = objects.texts; t != NULL; t = t->next) {
-	if (active_layer(t->depth) && in_text_bound(t, x, y, posn, False))
+	if (active_layer(t->depth) && in_text_bound(t, x, y, posn))
 		return(t);
     }
     return (NULL);
 }
 
-/* return true if (x,y) is in the text rectangle by rotating the point (x,y)
-   around the text base point by it's negative angle and seeing if that is
-   in the rectangle.
-   Additionally, set posn to the pixel position of the mouse from the beginning
-   of the string
-   Call with extra = True to consider small distance on either end of string as
-   "inside" the bounds.  This is used by the text select tracker (track_text_select).
+/*
+ * Return true if (x,y) is inside the text rectangle, given by t->rotbb[0-3].
+ * Set posn to the pixel position of the mouse from the beginning of the string.
+ *
+ * Check if inside by computing the scalar products with the two vectors
+ * defining the rectangle,
+ *
+ *  x A               0 <= dot(OA,OP) <= dot(OA,OA) &&
+ *  |                 0 <= dot(OB,OP) <= dot(OB,OB)
+ *  |  x P
+ *  | /               Acknowledgements to:
+ *  |/                https://stackoverflow.com/a/2763387/12428326
+ *  O---------x B
+ *
+ * An extra parameter to enlarge the rectangle by a small amount was previously
+ * used by the text select tracker, track_text_select().
  */
-
 Boolean
-in_text_bound(F_text *t, int x, int y, int *posn, Boolean extra)
+in_text_bound(F_text *t, int x, int y, int *posn)
 {
-    double	    cost, sint;
-    int		    xo,yo, xr,yr;
-    int		    x0, x1,y1, x2,y2;
-    int		    l, h;
+	int	xmin, ymin, xmax, ymax;
+	int	rx1, ry1, rx2, ry2, rx3, ry3, rx4, ry4;
+	F_pos	oa, ob, op;
+	int	oa_dot_op;
+	int	ob_dot_op;
 
-    cost = cos((double) -t->angle);
-    sint = sin((double) -t->angle);
-    xo = t->base_x;
-    yo = t->base_y;
+	/* quicker check for a horizontal or vertical rectangle */
+	if (t->offset.x == 0 || t->offset.y == 0) {
+		int	xmin, ymin, xmax, ymax;
 
-    /* rotate the point (x,y) about (xo,yo) giving (xr,yr) */
-    xr = xo + (x-xo)*cost - (yo-y)*sint;
-    yr = yo - (yo-y)*cost - (x-xo)*sint;
-    /* now see if that point is in the text bounds of the unrotated text */
-    l = text_length(t);
-    /* add 5 char widths to length if extra wanted */
-    if (extra)
-	l += 5*char_width(t->fontstruct);
-    h = t->ascent+t->descent;
-    x1 = t->base_x;
-    /* use x0 for left bound comparison but use x1 for char position in string of x,y */
-    x0 = x1;
-    /* subtract 4 char widths before start of string */
-    if (extra)
-	x0 -= 4*char_width(t->fontstruct);
-    y1 = t->base_y+t->descent;
-    if (t->type == T_CENTER_JUSTIFIED) {
-	x2 = x1 + l/2;
-	x1 = x1 - l/2;
-	x0 = x0 - l/2;
-	y2 = y1 - h;
-    }
-    else if (t->type == T_RIGHT_JUSTIFIED) {
-	x2 = x1;
-	x1 = x1 - l;
-	x0 = x0 - l;
-	y2 = y1 - h;
-    }
-    else {
-	x2 = x1 + l;
-	y2 = y1 - h;
-    }
-    if (xr >= x0 && xr <= x2 && yr <= y1 && yr >= y2) {
-	/* return the pixel position from the beginning of the string */
-	*posn = xr-x1;
-	if (*posn < 0)
-	    *posn = 0;
-	else if (*posn > text_length(t))
-	    *posn = text_length(t);
+		text_bound(t, &xmin, &ymin, &xmax, &ymax);
+		if (x < xmin || x > xmax || y < ymin || y > ymax)
+			return False;
+		if (t->offset.y == 0)
+			*posn = x - t->bb[0].x;
+		else if (t->offset.x == 0)
+			*posn = y - t->bb[0].y;
+		else
+			put_msg("Strange error, line %d in file %s.\n",
+					__LINE__, __FILE__);
+		if (*posn < 0)
+			*posn = -*posn;
+
+		return True;
+	}
+
+	/* rotated rectangle */
+	text_rotbound(t, &xmin, &ymin, &xmax, &ymax, &rx1, &ry1, &rx2, &ry2,
+			&rx3, &ry3, &rx4, &ry4);
+	oa.x = rx4 - rx1;
+	oa.y = ry4 - ry1;
+	ob.x = rx2 - rx1;
+	ob.y = ry2 - ry1;
+	op.x = x - rx1;
+	op.y = y - ry1;
+	/* 0 <= dot(OA,OP) <= dot(OA,OA) && 0 <= dot(OB,OP) <= dot(OB,OB) */
+#define DOT(a,b)	a.x * b.x + a.y * b.y
+	oa_dot_op = DOT(oa, op);
+	ob_dot_op = DOT(ob, op);
+
+	if (0 > oa_dot_op || oa_dot_op > DOT(oa, oa) ||
+			0 > ob_dot_op || ob_dot_op > DOT(ob, ob))
+		return False;
+	*posn = ob_dot_op / sqrt(DOT(ob, ob));
+#undef DOT
+
 	return True;
-    }
-    return False;
 }
 
-F_compound     *
+
+F_compound *
 compound_search(int x, int y, int tolerance, int *px, int *py)
 {
     F_compound	   *c;

@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -14,6 +15,11 @@
  * and this permission notice remain intact.
  *
  */
+
+#ifndef W_MSGPANEL_H
+#define W_MSGPANEL_H
+
+#include <X11/Intrinsic.h>
 
 extern void	init_msg(Widget tool);
 extern void	put_msg(char *format, ...);
@@ -38,3 +44,5 @@ extern void arc_msg (int x1, int y1, int x2, int y2, int x3, int y3);
 extern void areameas_msg (char *msgtext, float area, float totarea, int flag);
 extern void lenmeas_msg (char *msgtext, float len, float totlen);
 extern void setup_msg(void);
+
+#endif

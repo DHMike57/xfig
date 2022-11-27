@@ -35,6 +35,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <X11/Intrinsic.h>	/* Widget, Boolean */
+#include <X11/Shell.h>
+#include <X11/StringDefs.h>
+#include <X11/Xatom.h>
 
 #include "figx.h"
 #include "resources.h"		/* also PATH_MAX */
@@ -50,6 +53,7 @@
 #include "f_read.h"
 #include "f_util.h"
 #include "u_bound.h"
+#include "u_colors.h"
 #include "u_create.h"
 #include "u_draw.h"
 #include "u_fonts.h"
@@ -75,9 +79,6 @@
 #include "w_mousefun.h"
 #include "w_setup.h"
 #include "w_util.h"
-#ifdef I18N
-#include "w_i18n.h"
-#endif
 #include "xfig_math.h"
 
 /* EXPORTS */
@@ -764,7 +765,7 @@ popdown_comments(void)
 void edit_item(void *p, int type, int x, int y)
 {
     XtWidgetGeometry xtgeom,comp;
-    int		    llx, lly, urx, ury, dum;
+    int		    llx, lly, urx, ury;
     Dimension	    w, h;
     Position	    rootlx, rootly, rootux, rootuy;
 
@@ -796,8 +797,7 @@ void edit_item(void *p, int type, int x, int y)
 	make_window_line((F_line *) p);
 	break;
       case O_TXT:
-	text_bound((F_text *) p, &llx, &lly, &urx, &ury,
-		&dum,&dum,&dum,&dum,&dum,&dum,&dum,&dum);
+	text_bound((F_text *) p, &llx, &lly, &urx, &ury);
 	make_window_text((F_text *) p);
 	break;
       case O_ELLIPSE:
@@ -1469,7 +1469,7 @@ get_new_compound_values(void)
     float	 scalex, scaley;
     F_text	*t;
     int		 i;
-    PR_SIZE	 size;
+    //PR_SIZE	 size;
 
     nw_x = panel_get_dim_value(x1_panel);
     nw_y = panel_get_dim_value(y1_panel);
@@ -1496,13 +1496,6 @@ get_new_compound_values(void)
 	if (t->cstring)
 	    free(t->cstring);
 	t->cstring = strdup(panel_get_value(compound_text_panels[i]));
-	/* calculate new size */
-	/* get the fontstruct for zoom = 1 to get the size of the string */
-	canvas_font = lookfont(x_fontnum(psfont_text(t), t->font), t->size);
-	size = textsize(canvas_font, strlen(t->cstring), t->cstring);
-	t->length = size.length;
-	t->ascent = size.ascent;
-	t->descent = size.descent;
     }
 
     translate_compound(new_c, dx, dy);
@@ -1737,12 +1730,11 @@ make_window_line(F_line *l)
 	    NextArg(XtNleft, XtChainLeft);
 	    NextArg(XtNright, XtChainLeft);
 	    /* make box red indicating this type of picture file */
-	    if (new_l->pic != 0 && new_l->pic->pic_cache &&
-			    new_l->pic->pic_cache->subtype == i+1) {
-		NextArg(XtNbackground, colors[RED]);
+	    if (new_l->pic != 0 && new_l->pic->pic_cache && new_l->pic->pic_cache->subtype == i+1) {
+		NextArg(XtNbackground, getpixel(RED));
 		NextArg(XtNsensitive, True);
 	    } else {
-		NextArg(XtNbackground, colors[WHITE]);
+		NextArg(XtNbackground, getpixel(WHITE));
 		NextArg(XtNsensitive, False);
 	    }
 	    NextArg(XtNlabel, " ");
@@ -2138,10 +2130,10 @@ get_new_line_values(void)
 	/* make box red indicating this type of picture file */
 	for (i=0; i<NUM_PIC_TYPES; i++) {
 	    if (new_l->pic->pic_cache->subtype == i+1) {
-		FirstArg(XtNbackground, colors[RED]);
+		FirstArg(XtNbackground, getpixel(RED));
 		NextArg(XtNsensitive, True);
 	    } else {
-		FirstArg(XtNbackground, colors[WHITE]);
+		FirstArg(XtNbackground, getpixel(WHITE));
 		NextArg(XtNsensitive, False);
 	    }
 	    SetValues(pic_type_box[i]);
@@ -2452,7 +2444,7 @@ make_window_text(F_text *t)
 		latexfont_menu_bitmaps[new_t->font], "Font", &font_panel);
 #ifdef I18N
     str_panel(new_t->cstring, "Text", &text_panel, 220, True,
-	      appres.latin_keyboard || is_i18n_font(new_t->fontstruct));
+	      appres.latin_keyboard);
 #else
     str_panel(new_t->cstring, "Text", &text_panel, 220, True, False);
 #endif /* I18N */
@@ -2461,7 +2453,6 @@ make_window_text(F_text *t)
 static void
 get_new_text_values(void)
 {
-    PR_SIZE	    size;
 
     check_depth();
     new_t->type = textjust;
@@ -2470,7 +2461,7 @@ get_new_text_values(void)
 	| (special_text_flag ? SPECIAL_TEXT : 0)
 	| (hidden_text_flag ? HIDDEN_TEXT : 0)
 	| (new_psflag ? PSFONT_TEXT : 0);
-    if (psfont_text(new_t))
+    if (new_psflag)
 	new_t->font = new_ps_font;
     else
 	new_t->font = new_latex_font;
@@ -2491,13 +2482,8 @@ get_new_text_values(void)
     new_t->cstring = strdup(panel_get_value(text_panel));
     /* get any comments */
     new_t->comments = strdup(panel_get_value(comments_panel));
-    /* get the fontstruct for zoom = 1 to get the size of the string */
-    canvas_font = lookfont(x_fontnum(psfont_text(new_t), new_t->font), new_t->size);
-    size = textsize(canvas_font, strlen(new_t->cstring), new_t->cstring);
-    new_t->ascent = size.ascent;
-    new_t->descent = size.descent;
-    new_t->length = size.length;
-    /* now set the fontstruct for this zoom scale */
+    textextents(new_t);
+    /* now set the font for this zoom scale */
     reload_text_fstruct(new_t);
 }
 
@@ -3805,10 +3791,10 @@ update_fill_image(Widget w, XtPointer dummy, XtPointer dummy2)
 	}
 
 	/* get current colors into the gc */
-	XSetForeground(tool_d,fill_image_gc,x_color(fill_color));
+	XSetForeground(tool_d, fill_image_gc, getpixel(fill_color));
 	/* shade (use BLACK) or tint (use WHITE)? */
 	bg = (val <= 100? BLACK: WHITE);
-	XSetBackground(tool_d,fill_image_gc,x_color(bg));
+	XSetBackground(tool_d,fill_image_gc,getpixel(bg));
 
 	/* convert intensity to shade/tint index */
 	val = val / (200 / (NUMSHADEPATS+NUMTINTPATS-1));
@@ -3836,8 +3822,8 @@ update_fill_image(Widget w, XtPointer dummy, XtPointer dummy2)
 	    val += NUMSHADEPATS+NUMTINTPATS;
 
 	    /* get current colors into the gc */
-	    XSetForeground(tool_d,fill_image_gc,x_color(pen_color));
-	    XSetBackground(tool_d,fill_image_gc,x_color(fill_color));
+	    XSetForeground(tool_d, fill_image_gc, getpixel(pen_color));
+	    XSetBackground(tool_d, fill_image_gc, getpixel(fill_color));
 
 	    /* update the pixmap */
 	    set_image_pm(val);
@@ -3872,8 +3858,8 @@ fill_style_menu(int fill, int fill_flag)
 	int	i,j;
 	Pixel	fg,bg;
 
-	fg = x_color(pen_color);
-	bg = x_color(fill_color);
+	fg = getpixel(pen_color);
+	bg = getpixel(fill_color);
 	if (!fill_image_bm_exist) {
 	    fill_image_bm_exist = True;
 	    fill_image_gc = makegc(PAINT, fg, bg);
@@ -5032,22 +5018,24 @@ color_select(Widget w, Color color)
     NextArg(XtNwidth, COLOR_BUT_WID);
 
     if (all_colors_available) { /* set color if possible */
-	XColor		xcolor;
 	Pixel		col;
+	unsigned short	red, green, blue;
 
 	/* background in the color selected */
-	col = (color < 0 || color >= NUM_STD_COLS+num_usr_cols) ?
-			x_fg_color.pixel : colors[color];
+	if (color < 0 || color >= NUM_STD_COLS + num_usr_cols)
+		color = DEFAULT;
+	col = getpixel(color);
+	red = getred(color);
+	green = getgreen(color);
+	blue = getblue(color);
+
 	NextArg(XtNbackground, col);
-	xcolor.pixel = col;
 	/* get RGB of the color to check intensity */
-	XQueryColor(tool_d, tool_cm, &xcolor);
 	/* set the foreground in a contrasting color (white or black) */
-	if ((0.3 * xcolor.red + 0.59 * xcolor.green + 0.11 * xcolor.blue) <
-			0.55 * (255 << 8))
-	    col = colors[WHITE];
+	if ((0.3 * red + 0.59 * green + 0.11 * blue) < 0.55 * 0xffff)
+	    col = getpixel(WHITE);
 	else
-	    col = colors[BLACK];
+	    col = getpixel(BLACK);
 	NextArg(XtNforeground, col);
     }
     SetValues(w);

@@ -1,9 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
+ * Parts Copyright (c) 2016-2020 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,17 +17,18 @@
  *
  */
 
-#include "fig.h"
-#include "figx.h"
-#include "resources.h"
-#include "object.h"
-#include "mode.h"
-#include "w_snap.h"
 #include "w_intersect.h"
-#include "w_msgpanel.h"
+
+#include <math.h>
+#include <stdlib.h>
+#include <X11/Intrinsic.h>
+
+#include "object.h"
 #include "f_util.h"
 #include "u_quartic.h"
-#include <math.h>
+#include "w_snap.h"
+#include "w_msgpanel.h"
+
 #undef I
 
 #define ISET_P1 (1 << 0)
@@ -989,11 +991,9 @@ intersect_ellipse_polyline_handler(F_ellipse * e, F_line *  l, int x, int y, ise
 }
 
 static void
-intersect_ellipse_spline_handler(obj1, obj2, x, y)
-     void * obj1;
-     void * obj2;
-     int x, y;
+intersect_ellipse_spline_handler(void *obj1, void *obj2, int x, int y)
 {
+	(void)obj1; (void)obj2; (void)x; (void)y;
   put_msg("Ellipse-spline intersections not yet implemented");
   beep();
   snap_msg_set = True;
@@ -1052,10 +1052,7 @@ build_text_bounding_box(F_text * t)
 }
 
 static void
-intersect_ellipse_text_handler(e, t, x, y)
-     F_ellipse * e;
-     F_text * t;
-     int x, y;
+intersect_ellipse_text_handler(F_ellipse *e, F_text *t, int x, int y)
 {
   F_line * f_line_p = build_text_bounding_box(t);
   intersect_ellipse_polyline_handler(e, f_line_p, x, y, NULL);
@@ -1173,21 +1170,16 @@ intersect_polyline_polyline_handler(F_line * l1, F_line * l2, int x, int y, isec
 }
 
 static void
-intersect_polyline_spline_handler(obj1, obj2, x, y)
-     void * obj1;
-     void * obj2;
-     int x, y;
+intersect_polyline_spline_handler(void *obj1, void *obj2, int x, int y)
 {
+	(void)obj1; (void)obj2; (void)x; (void)y;
   put_msg("Polyline-spline intersections not yet implemented");
   beep();
   snap_msg_set = True;
 }
 
 static void
-intersect_polyline_text_handler(l, t, x, y)
-     F_line * l;
-     F_text * t;
-     int x, y;
+intersect_polyline_text_handler(F_line *l, F_text *t, int x, int y)
 {
   F_line * f_line_p = build_text_bounding_box(t);
   intersect_polyline_polyline_handler(l, f_line_p, x, y, NULL);
@@ -1207,33 +1199,27 @@ intersect_polyline_arc_handler(F_line * l,  F_arc *a,  int x, int y, isect_cb_s 
 }
 
 static void
-intersect_spline_spline_handler(obj1, obj2, x, y)
-     void * obj1;
-     void * obj2;
-     int x, y;
+intersect_spline_spline_handler(void *obj1, void *obj2, int x, int y)
 {
+	(void)obj1; (void)obj2; (void)x; (void)y;
   put_msg("Spline-spline intersections not yet implemented");
   beep();
   snap_msg_set = True;
 }
 
 static void
-intersect_spline_text_handler(s, t, x, y)
-     F_spline * s;
-     F_text * t;
-     int x, y;
+intersect_spline_text_handler(F_spline *s, F_text *t, int x, int y)
 {
+	(void)s; (void)t; (void)x; (void)y;
   put_msg("Spline-text intersections not yet implemented");
   beep();
   snap_msg_set = True;
 }
 
 static void
-intersect_spline_arc_handler(obj1, obj2, x, y)
-     void * obj1;
-     void * obj2;
-     int x, y;
+intersect_spline_arc_handler(void *obj1, void *obj2, int x, int y)
 {
+	(void)obj1; (void)obj2; (void)x; (void)y;
   put_msg("Spline-arc intersections not yet implemented");
   beep();
   snap_msg_set = True;
