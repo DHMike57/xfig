@@ -5,7 +5,7 @@
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1994 by Bill Taylor
  *       "Enter Compound" written by Bill Taylor (bill@mainstream.com) 1994
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -45,6 +45,7 @@
 #include "u_markers.h"
 #include "u_redraw.h"
 #include "u_search.h"
+#include "u_undo.h"
 #include "w_canvas.h"
 #include "w_color.h"
 #include "w_cursor.h"
@@ -60,7 +61,6 @@ static Widget	close_compound_popup;
 static Boolean	close_popup_isup = False;
 static int	save_mask;
 
-static void	open_this_compound(F_compound *c, Boolean vis);
 static void	popup_close_compound (void);
 
 
@@ -92,11 +92,13 @@ init_open_compound_vis(F_compound *c, int type, int x, int y, int px, int py,
     open_this_compound(c, True);
 }
 
-static void
+void
 open_this_compound(F_compound *c, Boolean vis)
 {
   F_compound *d;
 
+  clean_up();
+  set_action(F_ENTER_COMP);
   mask_toggle_compoundmarker(c);
 
   /* save current indicator panel button mask */
@@ -144,6 +146,10 @@ close_compound(void)
   /* if trying to close compound while drawing an object, don't allow it */
   if (check_action_on())
 	return;
+
+  clean_up();
+  set_action(F_EXIT_COMP);
+
   if ((c = (F_compound *)objects.parent)) {
     objects.parent = NULL;
     d = (F_compound *)objects.GABPtr;	/* Where this compound was */
@@ -160,6 +166,8 @@ close_compound(void)
     /* user may have deleted all objects inside the compound */
     if (object_count(d)==0) {
 	list_delete_compound(&objects.compounds, d);
+    } else {
+	set_latestcompound(d);
     }
     free(c);
     /* popdown close panel if this is the last one */
@@ -186,6 +194,14 @@ close_all_compounds(void)
   /* if trying to close compound while drawing an object, don't allow it */
   if (check_action_on())
 	return;
+
+  clean_up();
+  set_action(F_EXIT_ALL_COMP);
+  /*
+   * TODO: To be able to undo close_all_compounds(),
+   * add list of closed compounds to saved_objects.
+   */
+
   if (objects.parent) {
     while ((c = (F_compound *)objects.parent)) {
       objects.parent = NULL;

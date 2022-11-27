@@ -897,7 +897,6 @@ read_lineobject(FILE *fp)
     int		    type, style, radius_flag;
     float	    thickness, wd, ht;
     int		    ox, oy;
-    char	    picfile[PATH_MAX];
     Boolean	    dum;
 
     if ((l = create_line()) == NULL){
@@ -985,7 +984,7 @@ read_lineobject(FILE *fp)
 	l->back_arrow = new_arrow(type, style, thickness, wd, ht);
     }
     if (l->type == T_PICTURE) {
-	char s1[PATH_MAX];
+	char	*s1;
 
 	if (read_line(fp) == -1) {
 	    free((char *) l);
@@ -997,27 +996,23 @@ read_lineobject(FILE *fp)
 	    numcom=0;
 	    return NULL;
 	}
-	if (sscanf(buf, "%d %[^\n]", &l->pic->flipped, s1) != 2) {
+	if (sscanf(buf, "%d %m[^\n]", &l->pic->flipped, &s1) != 2) {
 	    file_msg(Err_incomp, "Picture Object", save_line);
+	    free(s1);
 	    free((char *) l);
 	    numcom=0;
 	    return NULL;
 	}
 
-	/* if path is relative convert it to absolute path */
-	if (s1[0] != '/')
-	    sprintf(picfile, "%s/%s", cur_file_dir, s1);
-	else
-	    strcpy(picfile, s1);
-
 	if (!update_figs) {
 	    /* only read in the image if update_figs is False */
-	    read_picobj(l->pic, picfile, l->pen_color, False, &dum);
+	    read_picobj(l->pic, internal_path(s1), l->pen_color, False, &dum);
 	} else {
 	    /* otherwise just make a pseudo entry with the filename */
 	    l->pic->pic_cache = create_picture_entry();
-	    l->pic->pic_cache->file = strdup(picfile);
+	    l->pic->pic_cache->file = internal_path(s1);
 	}
+	free(s1);
 	/* we've read in a pic object - merge_file uses this info to decide
 	   whether or not to remap any picture colors in first figure */
 	pic_obj_read = True;

@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2021 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -17,11 +17,9 @@
  */
 
 /*
- *	test1.c: Test {floor,ceil}_coords_[xy](), defined in src/u_bound.c.
- *	Author: Thomas Loimer, 2017-12-26
+ *	test1.c: Test {floor,ceil}_coords() for overflow.
+ *	Author: Thomas Loimer, 2017-2022
  *
- * Test, whether the "smaller than zero inverts problem"-lines in the
- * {floor,ceil}_coords_[xy]() functions do not cause overflow.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -29,36 +27,54 @@
 #endif
 
 #include <limits.h>
+#include <stdio.h>
 
-extern int floor_coords_x();		/* from "u_bound.h" */
-extern int floor_coords_y();		/* from "u_bound.h" */
-extern int ceil_coords_x();		/* from "u_bound.h" */
-extern int ceil_coords_y();		/* from "u_bound.h" */
-extern int cur_pointposn;		/* mode.h */
-
-/* stubs */
-void
-round_coords(int *x, int *y)
-{
-	(void) x; (void) y;
-}
+#include "object.h"
+#include "mode.h"
+#include "w_canvas.h"
 
 int
-main(void)
+main(int argc, char *argv[])
 {
-	int errcode = 0;
+	(void)argc;
+	(void)argv;
+	int	x, y;
+	int	spacing;
+	int	err = 0;
 
-	cur_pointposn = 2;	/* == P_GRID1, see mode.h */
+	appres.userscale = 1.0;
+	anypointposn = 0;
+	cur_gridunit = FRACT_UNIT;
+	cur_gridtype = GRID_SQUARE;
+	cur_pointposn = P_GRID1;
 
-	/* Since round_coords() is replaced by the no-op above, the
-	   expected results are as below. */
-	if (floor_coords_x(INT_MIN, 0) != INT_MIN)
-		errcode |= 0x1;
-	if (floor_coords_y(0, INT_MIN) != INT_MIN)
-		errcode |= 0x2;
-	if (ceil_coords_x(INT_MIN, 0) != -INT_MAX)
-		errcode |= 0x4;
-	if (ceil_coords_y(0, INT_MIN) != -INT_MAX)
-		errcode |= 0x8;
-	return errcode;
+	spacing = point_spacing();
+
+#define	BIGGER(X, VAL)		X > VAL + spacing
+#define SMALLER(X, VAL)		X < VAL - spacing
+#define	TEST_BOUND(FUNC, XVAL, YVAL, TEST, NUM)		\
+		do {					\
+			x = XVAL; y = YVAL;		\
+			FUNC(&x, &y);			\
+			if (TEST)			\
+				err |= 1 << NUM;	\
+		}	while (0)
+
+	TEST_BOUND(floor_coords, INT_MIN, 0, BIGGER(x, INT_MIN), 0);
+	TEST_BOUND(floor_coords, 0, INT_MIN, BIGGER(y, INT_MIN), 1);
+	TEST_BOUND(ceil_coords, INT_MAX, 0, SMALLER(x, INT_MAX), 2);
+	TEST_BOUND(ceil_coords, 0, INT_MAX, SMALLER(y, INT_MAX), 3);
+
+	cur_gridtype = GRID_ISO;
+	cur_pointposn = P_GRID2;
+	spacing = point_spacing();
+
+	TEST_BOUND(floor_coords, INT_MIN, 0, BIGGER(x, INT_MIN), 4);
+	TEST_BOUND(floor_coords, 0, INT_MIN, BIGGER(y, INT_MIN), 5);
+	TEST_BOUND(ceil_coords, INT_MAX, 0, SMALLER(x, INT_MAX), 6);
+	TEST_BOUND(ceil_coords, 0, INT_MAX, SMALLER(y, INT_MAX), 7);
+
+	if (err)
+		fprintf(stderr, "error code: %d\n", err);
+	return err;
 }

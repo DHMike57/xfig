@@ -966,9 +966,6 @@ Unified Modelling Language (UML) symbols
 Welding - common welding patterns and errors
 </dl>
 
-<img src="images/exclaim.png" alt="">
-It is hoped that users will contribute Fig objects to the libraries to
-expand and enhance them for all <b>xfig</b> users.
 If you wish to contribute any Fig objects to existing or new libraries, please send
 them to <a href="mailto:thomas.loimer@tuwien.ac.at">thomas.loimer@tuwien.ac.at</a>.
 You may restrict their usage by users if you
@@ -1020,11 +1017,13 @@ will result in the library name &quot;Electrical - Physical&quot;.
 <h3>Method 2</h3>
 
 In the second method,
-you create a text file which contains list of libraries.
+you create a text file which contains a list of libraries.
 Each line of the file contains the absolute path
-of the library (a directory containing <b>Fig</b> files)
-followed by the name of the library,
+of the library (a directory containing <b>Fig</b> files),
+optionally followed by a name for the library,
 which may be multiple words with whitespace.
+Otherwise, the name of the library will be the last directory
+element of the path to the library.
 <p>
 And then you can start <b>xfig</b> specifying
 the file with <tt>-library_dir</tt> option
@@ -1036,7 +1035,7 @@ Here is an example of the file:
   /xfig/Libraries/Electrical/Logic    Electrical Parts (Logic)
   /xfig/Libraries/Electrical/Analog   Electrical Parts (Analog)
   /home/tim/lib/Flowchart             Tim's Flowchart Elements
-  /home/chim/xfig/Buildings           Computer Clipart
+  /home/chim/xfig/Buildings
 </pre>
 <p>
 The advantage of this method is flexibility;
@@ -1061,7 +1060,7 @@ Number of libraries:
 <br>
 <dd><img src="images/redballdot.png" alt="-">
 Length of each library name:
-  at most 40 characters
+  at most 80 characters
 <br>
 <dd><img src="images/redballdot.png" alt="-">
 Number of objects in a library:
@@ -1069,7 +1068,7 @@ Number of objects in a library:
 <br>
 <dd><img src="images/redballdot.png" alt="-">
 Length of each object name (filename of <b>Fig</b> files):
-  at most 40 characters
+  at most 80 characters
 </dl>
 
 <img src="images/blueramp.png" alt="-">

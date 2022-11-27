@@ -2,8 +2,10 @@
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
+ * Parts Copyright (c) 1990 by Digital Equipment Corporation. All Rights Reserved.
+ * Parts Copyright (c) 1990 by Digital Equipment Corporation
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -22,6 +24,10 @@
  */
 
 /*
+ *
+ * Original xdir code:
+ *
+ * This file is part of xdir, an X-based directory browser.
  *
  *	Created: 13 Aug 88
  *
@@ -67,15 +73,10 @@
 
 /* Useful constants. */
 
-#define EOS	'\0'		/* End-of-string. */
-
 #define NENTRIES	100	/* chunk size for allocating filename space */
 #define F_FILE_WIDTH	413	/* width of filename, etc widgets for FILE panel */
 #define E_FILE_WIDTH	360	/* width of filename, etc widgets for EXPORT panel */
 
-/* Useful macros. */
-
-#define streq(a, b)	(! strcmp((a), (b)))
 
 extern Widget	popup_dir_text;
 extern void	create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside, Widget *ret_below, Widget *mask_w, Widget *dir_w, Widget *flist_w, Widget *dlist_w, int file_width, Boolean file_panel);
@@ -86,7 +87,6 @@ extern void	update_file_export_dir(const char *restrict dir);
 extern char	       *SaveString();
 extern void		MakeFullPath(char *root, char *filename, char *pathname);
 extern Boolean		IsDirectory(char *path, char *file);
-extern void parseuserpath (char *path, char *longpath);
 extern void Rescan (Widget widget, XEvent *event, String *params, Cardinal *num_params);
 
 #endif /* W_DIR_H */

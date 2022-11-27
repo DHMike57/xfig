@@ -32,6 +32,7 @@
 #include "paintop.h"
 #include "e_addpt.h"
 #include "e_arrow.h"
+#include "e_compound.h"
 #include "e_convert.h"
 #include "e_deletept.h"
 #include "e_scale.h"
@@ -138,6 +139,13 @@ undo(void)
 	break;
       case F_BREAK:
 	undo_break();
+	break;
+      case F_ENTER_COMP:
+	close_compound();
+	break;
+      case F_EXIT_COMP:
+	if (saved_objects.compounds)
+	  open_this_compound(saved_objects.compounds, False);
 	break;
       case F_LOAD:
 	undo_load();
@@ -817,7 +825,8 @@ void clean_up(void)
 	free_line(&saved_objects.lines);
 	free_spline(&saved_objects.splines);
 	free_text(&saved_objects.texts);
-    } else if (last_action == F_GLUE) {
+    } else if (last_action == F_GLUE || last_action == F_EXIT_COMP ||
+		last_action == F_EXIT_ALL_COMP) {
 	saved_objects.compounds = NULL;
     } else if (last_action == F_BREAK) {
 	free((char *) saved_objects.compounds);

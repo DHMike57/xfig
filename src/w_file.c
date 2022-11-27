@@ -466,6 +466,60 @@ save_request(Widget w, XButtonEvent *ev)
     }
 }
 
+/*
+ * The user might enter a file path containing directory components relative to
+ * cur_file_dir, an absolute path, or a path relative to the home dir.
+ * Set cur_file_dir to the directory containing the basename of the file.
+ * If something goes wrong, continue with a probably wrong cur_file_dir.
+ */
+static void
+set_curfiledir_from_savepath(const char *restrict fname)
+{
+	char	*b;	/* point to slash before basename component in fname */
+
+	b = strrchr(fname, '/');
+	if (!b && !(fname[0] == '~' && fname[1] == '/'))
+		/* fname does not contain a directory component */
+		return;
+
+	if (fname[0] == '~' && fname[1] == '/') {
+		char	*home = getenv("HOME");
+		size_t	home_len = strlen(home);
+
+		if (b - fname + home_len < PATH_MAX) {
+			memcpy(cur_file_dir, home, home_len);
+			memcpy(cur_file_dir + home_len, fname + 1,
+					b - fname - 1);/* omit the last slash */
+			cur_file_dir[b - fname + home_len - 1] = '\0';
+		} else {
+			goto warning;
+		}
+		return;
+	} else if (fname[0] == '/') {
+		if (b - fname + 1 < PATH_MAX) {
+			memcpy(cur_file_dir, fname, b - fname);
+			cur_file_dir[b - fname] = '\0';
+		} else {
+			goto warning;
+		}
+	} else { /*  to/rel/path/f.fig */
+		size_t	cur_len = strlen(cur_file_dir);
+		if (cur_len + b - fname + 2 < PATH_MAX) {
+			cur_file_dir[cur_len] = '/';
+			memcpy(cur_file_dir + cur_len + 1, fname, b - fname);
+			cur_file_dir[cur_len + b - fname + 1] = '\0';
+		} else {
+			goto warning;
+		}
+	}
+	return;
+
+warning:
+	file_msg("Could not change to directory of saved file. "
+			"If %s contains pictures, incorrect picture file paths "
+			"might be written to the saved file.");
+}
+
 void
 do_save(Widget w, XButtonEvent *ev)
 {
@@ -511,11 +565,14 @@ do_save(Widget w, XButtonEvent *ev)
 	GetValues(file_selfile);    /* check the ascii widget for a filename */
 	strcpy(fname, fval);
 	if (emptyname(fname)) {
-	    strcpy(fname, cur_filename); /* "Filename" widget empty, use current filename */
+		/* "Filename" widget empty, use current filename */
+	    strcpy(fname, cur_filename);
 	    warnexist = False;		/* don't warn if this file exists */
 	/* copy the name from the file_name widget to the current filename */
 	} else {
-	    if (!strchr(fname,'.'))	/* if no suffix, add .fig */
+		char	*b = strrchr(fname, '/');
+		/* if no suffix in the basename part, add .fig */
+	    if (b && !strchr(b, '.') || !strchr(fname, '.'))
 		strcat(fname,".fig");
 	    if (strcmp(cur_filename, fname) != 0)
 		warnexist = True;	/* warn if this file exists */
@@ -531,14 +588,36 @@ do_save(Widget w, XButtonEvent *ev)
 	    strcpy(save_file_dir, dval);
 	}
 
+	/*
+	 * Image paths are written to the .fig file as relative to cur_file_dir.
+	 * The user might enter a file path containing directory components into
+	 * the file_selfile widget. Update cur_file_dir accordingly.
+	 */
+
 	/* go to the file directory */
 	if (change_directory(save_file_dir) == 0) {
+		char	tmp_save_dir[PATH_MAX];
+		char	abs_path_buf[1024] = "";
+		char	*abs_path = abs_path_buf;
+
 	    if (!ok_to_write(fname, "SAVE"))
 		return;
 	    XtSetSensitive(save_button, False);
 	    if (appres.write_bak == True)
 		(void) renamefile(fname);
-	    if (write_file(fname, True) == 0) {
+	    strcpy(tmp_save_dir, cur_file_dir);
+	    set_curfiledir_from_savepath(fname);
+	    if (fname[0] == '~' && fname[1] == '/') {
+		    char	*home = getenv("HOME");
+		    size_t	home_len = strlen(home);
+		    size_t	fname_len = strlen(fname) - 1;
+		    if (home_len + fname_len + 1 > sizeof abs_path_buf &&
+			    !(abs_path = new_string(home_len + fname_len)))
+			    return;
+		    memcpy(abs_path, home, home_len);
+		    memcpy(abs_path + home_len, fname + 1, fname_len + 1);
+	    }
+	    if (write_file(*abs_path ? abs_path : fname, True) == 0) {
 		FirstArg(XtNlabel, fname);
 		SetValues(cfile_text);
 		if (strcmp(fname, cur_filename) != 0) {
@@ -548,12 +627,17 @@ do_save(Widget w, XButtonEvent *ev)
 		if (file_up)
 		    file_panel_dismiss();
 	    }
+	    if (abs_path != abs_path_buf)
+		    free(abs_path);
 	    XtSetSensitive(save_button, True);
+	    strcpy(cur_file_dir, tmp_save_dir);
 	}
     } else { /* !file_popup */
+	    char	tmp_save_dir[PATH_MAX];
 	/*
 	 * !file_popup, so the file panel was never created and probably
-	 * save_file_dir not set.
+	 * save_file_dir not set. Also, the user did not have opportunity to
+	 * enter "~/some.fig" as file path, no need to parse for "~".
 	 */
 	if (*save_file_dir == '\0') {
 		strcpy(save_file_dir, cur_file_dir);
@@ -565,8 +649,11 @@ do_save(Widget w, XButtonEvent *ev)
 	/* not using popup => filename not changed so ok to write existing file */
 	warnexist = False;
 	(void) renamefile(cur_filename);
+	strcpy(tmp_save_dir, cur_file_dir);
+	set_curfiledir_from_savepath(fname);
 	if (write_file(cur_filename, True) == 0)
 	    reset_modifiedflag();
+	strcpy(cur_file_dir, tmp_save_dir);
     }
 }
 

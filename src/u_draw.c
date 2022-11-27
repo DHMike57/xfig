@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Parts Copyright (c) 1992 by James Tough
  * Parts Copyright (c) 1998 by Georg Stemmer
@@ -36,6 +36,7 @@
 #include "paintop.h"
 #include "d_text.h"		/* reload_text_fstruct() */
 #include "f_util.h"		/* xf_basename() */
+#include "f_picobj.h"		/* ABSOLUTE_PATHNAME */
 #include "u_bound.h"		/* <obj>_bound(), overlapping() */
 #include "u_error.h"		/* X_error_handler() */
 #include "u_fonts.h"
@@ -653,11 +654,13 @@ void draw_line(F_line *line, int op)
 
 	/* either there is no pixmap or this layer is grayed out,
 	   label empty pic bounding box */
-	if (!line->pic->pic_cache || line->pic->pic_cache->file[0] == '\0')
+	if (!line->pic->pic_cache || !line->pic->pic_cache->file ||
+					line->pic->pic_cache->file[0] == '\0')
 	    string = EMPTY_PIC;
-	else {
+	else
+		/* xf_basename anyhow walks over possibly prepended chars */
 	    string = xf_basename(line->pic->pic_cache->file);
-	}
+
 	p0 = line->points;
 	p1 = p0->next;
 	p2 = p1->next;
@@ -971,11 +974,13 @@ void create_pic_pixmap(F_line *box, int rotation, int width, int height, int fli
 	    nbytes = (width + 7) / 8;
 	    bbytes = (cwidth + 7) / 8;
 	    if ((data = (unsigned char *) malloc(nbytes * height)) == NULL) {
-		file_msg(ALLOC_PIC_ERR, box->pic->pic_cache->file);
+		file_msg(ALLOC_PIC_ERR,
+				ABSOLUTE_PATH(box->pic->pic_cache->file));
 		return;
 	    }
 	    if ((tdata = (unsigned char *) malloc(nbytes)) == NULL) {
-		file_msg(ALLOC_PIC_ERR, box->pic->pic_cache->file);
+		file_msg(ALLOC_PIC_ERR,
+				ABSOLUTE_PATH(box->pic->pic_cache->file));
 		free(data);
 		return;
 	    }
@@ -1088,14 +1093,16 @@ void create_pic_pixmap(F_line *box, int rotation, int width, int height, int fli
 	    cbpl = cwidth * cbpp;
 	    bpl = width * image_bpp;
 	    if ((data = malloc(bpl * height)) == NULL) {
-		file_msg(ALLOC_PIC_ERR,box->pic->pic_cache->file);
+		file_msg(ALLOC_PIC_ERR,
+				ABSOLUTE_PATH(box->pic->pic_cache->file));
 		return;
 	    }
 	    /* allocate mask for any transparency information */
 	    if (box->pic->pic_cache->subtype == T_PIC_GIF &&
 	        box->pic->pic_cache->transp != TRANSP_NONE) {
 		    if ((mask = (unsigned char *) malloc((width+7)/8 * height)) == NULL) {
-			file_msg(ALLOC_PIC_ERR,box->pic->pic_cache->file);
+			file_msg(ALLOC_PIC_ERR,
+				    ABSOLUTE_PATH(box->pic->pic_cache->file));
 			free(data);
 			return;
 		    }

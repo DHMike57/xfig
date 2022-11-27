@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -170,26 +171,9 @@ create_compoundobject(int x, int y)
 	put_msg("Empty compound, ignored");
 	return;
     }
-    /*
-     * Make the bounding box exactly match the dimensions of the compound.
-     */
+
     compound_bound(c, &c->nwcorner.x, &c->nwcorner.y,
 		   &c->secorner.x, &c->secorner.y);
-
-    /* if zero width or height in the compound, adjust to next positioning
-       grid point or a few pixels if positioning grid is "ANY" */
-    if (c->nwcorner.x == c->secorner.x) {
-	if (cur_pointposn != P_ANY) {
-	    c->secorner.x += point_spacing();
-	    c->secorner.x = ceil_coords_x(c->secorner.x,c->secorner.y);
-	}
-    }
-    if (c->nwcorner.y == c->secorner.y) {
-	if (cur_pointposn != P_ANY) {
-	    c->secorner.y += point_spacing();
-	    c->secorner.y = ceil_coords_y(c->secorner.x,c->secorner.y);
-	}
-    }
     c->next = NULL;
     clean_up();
     set_action(F_GLUE);

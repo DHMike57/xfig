@@ -152,6 +152,8 @@ init_align(F_line *p, int type, int x, int y, int px, int py)
     toggle_compoundmarker(cur_c);
     draw_compoundelements(cur_c, ERASE);
     old_c = copy_compound(cur_c);
+    /* keep the compound borders on the current point positinioning mode */
+    anypointposn = 0;
     compound_bound(cur_c, &xcmin, &ycmin, &xcmax, &ycmax);
     align_ellipse();
     align_arc();

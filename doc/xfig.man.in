@@ -628,10 +628,11 @@ This is the default.
 .\"-------
 .At
 .BR \-library_d [ ir ]
-.I directory
+.I [directory | file]
 .Ap
-Specify directory where Fig object libraries are located.  There may be sub-directories
-there and sub-sub-directories, etc.
+Specify directory or file containing directory names where Fig object libraries
+are located.
+There may be sub-directories there and sub-sub-directories, etc.
 .\"-------
 .At
 .BR \-library_i [ con_size ]

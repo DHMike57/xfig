@@ -1,8 +1,9 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
- * Parts Copyright (c) 1989-2007 by Brian V. Smith
+ * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -35,6 +36,7 @@
 
 #include "e_compound.h"
 #include "f_load.h"
+#include "f_picobj.h"
 #include "f_read.h"
 #include "f_util.h"
 #include "u_colors.h"
@@ -386,7 +388,6 @@ void write_line(FILE *fp, F_line *l)
 {
     F_point	   *p;
     int		    npts;
-    char	   *picfile;
 
     if (l->points == NULL)
 	return;
@@ -433,21 +434,17 @@ void write_line(FILE *fp, F_line *l)
 
 	/* handle picture stuff */
 	if (l->type == T_PICTURE) {
-	    char *s1;
-	    picfile = NULL;
-	    if (l->pic->pic_cache)
-	    picfile = l->pic->pic_cache->file;
-	    if (picfile == NULL || strlen(picfile) == 0) {
-		s1 = "<empty>";
-	    } else if (strncmp(picfile, cur_file_dir, strlen(cur_file_dir))==0 &&
-		strlen(picfile) > strlen(cur_file_dir) && picfile[strlen(cur_file_dir)] == '/') {
-		/* use relative path if the file is under current directory */
-		    s1 = &picfile[strlen(cur_file_dir)+1];
-	    } else {
-		/* use full path */
-		s1 = picfile;
-	    }
-	    fprintf(fp, "\t%d %s\n", l->pic->flipped, s1);
+	    char	picfile_buf[128];
+	    char	*picfile = picfile_buf;
+	    if (l->pic->pic_cache && l->pic->pic_cache->file)
+		    external_path(&picfile, sizeof picfile_buf,
+				    l->pic->pic_cache->file);
+	    if (picfile[0] == '\0')
+		    strcpy(picfile, EMPTY_PIC);
+
+	    fprintf(fp, "\t%d %s\n", l->pic->flipped, picfile);
+	    if (picfile != picfile_buf)
+		    free(picfile);
 	}
 
 	fprintf(fp, "\t");

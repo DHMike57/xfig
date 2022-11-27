@@ -3,8 +3,9 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1990 by Digital Equipment Corporation. All Rights Reserved.
+ * Parts Copyright (c) 1990 by Digital Equipment Corporation
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -52,7 +53,6 @@
  * used in advertising or publicity pertaining to distribution of the
  * software without specific, written prior permission.
  *
- *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -63,6 +63,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Xlib.h>
 
+#include <errno.h>
 #include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -104,6 +105,8 @@ static void	CallbackRescan(Widget widget, XtPointer closure,
 				XtPointer call_data);
 static Boolean	MakeFileList(char *dir_name, char *mask, char ***_dirs,
 				char ***files);
+static void	parseuserpath(const char *restrict path,
+				char *restrict longpath);
 
 /* Static variables */
 
@@ -240,6 +243,7 @@ void
 SetDir(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 {
 	(void)widget; (void)event; (void)params; (void)num_params;
+    char	longdir[PATH_MAX];
     char	   *ndir;
 
     /* get the string from the widget */
@@ -256,42 +260,27 @@ SetDir(Widget widget, XEvent *event, String *params, Cardinal *num_params)
     }
     /* if there is a ~ in the directory, parse the username */
     if (ndir[0]=='~') {
-	char longdir[PATH_MAX];
 	parseuserpath(ndir,longdir);
 	ndir=longdir;
     }
     DoChangeDir(ndir);
 }
 
-/* make the full path from ~/partialpath */
-void parseuserpath(char *path, char *longpath)
+/*
+ * make the full path from ~/partialpath
+ * Parse ~somewhere as ~/somewhere, do not go to other user's home directories.
+ */
+static void
+parseuserpath(const char *restrict path, char *restrict longpath)
 {
-    char	  *p;
-    struct passwd *who;
-
-    /* this user's home */
-    if (strlen(path)==1 || path[1]=='/') {
-	strcpy(longpath,getenv("HOME"));
-	if (strlen(path)==1)		/* nothing after the ~, we have the full path */
-		return;
-	strcat(longpath,&path[1]);	/* append the rest of the path */
+	/* parseuserpath is called with  path[0] == '~' */
+	strcpy(longpath, getenv("HOME"));
+	if (strlen(path) == 1)
+		return;		/* nothing after the ~, we have the full path */
+	if (path[1] != '/')
+		strcat(longpath, "/");
+	strcat(longpath, &path[1]);	/* append the rest of the path */
 	return;
-    }
-    /* another user name after ~ */
-    strcpy(longpath,&path[1]);
-    p=strchr(longpath,'/');
-    if (p)
-	    *p='\0';
-    who = getpwnam(longpath);
-    if (!who) {
-	file_msg("No such user: %s",longpath);
-	strcpy(longpath,path);
-    } else {
-	strcpy(longpath,who->pw_dir);
-	p=strchr(path,'/');
-	if (p)
-		strcat(longpath,p);	/* attach stuff after the / */
-    }
 }
 
 
@@ -682,65 +671,53 @@ ParentDir(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void
 DoChangeDir(char *dir)
 {
-    char	   *p;
-    char	    ndir[PATH_MAX];
+	char	*abs_path = NULL;
 
-
-    if (browse_up) {
-	strcpy(ndir, cur_browse_dir);
-    } else if (file_up) {
-	strcpy(ndir, cur_file_dir);
-    } else if (export_up) {
-	strcpy(ndir, cur_export_dir);
-    }
-    if (dir != NULL && dir[0] != '/') { /* relative path, prepend current dir */
-	if (dir[strlen(dir) - 1] == '/')
-	    dir[strlen(dir) - 1] = '\0';
-	if (strcmp(dir, "..")==0) {	/* Parent directory. */
-	    if (*ndir == '\0')
-		return;			/* no current directory, */
-					/* can't do anything unless absolute path */
-	    p = strrchr(ndir, '/');
-	    *p = EOS;
-	    if (ndir[0] == EOS)
-		strcpy(ndir, "/");
-	} else if (strcmp(dir, ".")!=0) {
-	    if (strcmp(ndir, "/"))	/* At the root already */
-		strcat(ndir, "/");
-	    strcat(ndir, dir);
+	/* resolve the path given in dir to abs_path */
+	if (!(abs_path = realpath(dir && *dir ? dir : ".", NULL))) {
+		/* realpath knows about the current directory and
+		   correctly resolves relative paths. */
+		file_msg("Cannot infer absolute path for %s: %s",
+				dir, strerror(errno));
+		return;
 	}
-    } else {
-	strcpy(ndir, dir);		/* abs path copy to ndir */
-    }
-    if (change_directory(ndir) != 0 ) {
-	return;				/* some problem, return */
-    } else if (MakeFileList(ndir, dirmask, &dirlist, &filelist) == False) {
-	file_msg("Unable to list directory %s", ndir);
-	return;
-    }
 
-    FirstArg(XtNstring, ndir);
-    /* update the current directory and file/dir list widgets */
-    if (browse_up) {
-	SetValues(browse_dir);
-	strcpy(cur_browse_dir,ndir);	/* update global var */
-	XawTextSetInsertionPoint(browse_dir, strlen(ndir));
-	NewList(browse_flist, filelist);
-	NewList(browse_dlist, dirlist);
-    } else if (file_up) {
-	SetValues(file_dir);
-	update_file_export_dir(ndir);
-	XawTextSetInsertionPoint(file_dir, strlen(ndir));
-	NewList(file_flist,filelist);
-	NewList(file_dlist,dirlist);
-    } else if (export_up) {
-	SetValues(exp_dir);
-	strcpy(cur_export_dir,ndir);	/* update global var */
-	XawTextSetInsertionPoint(exp_dir, strlen(ndir));
-	NewList(exp_flist, filelist);
-	NewList(exp_dlist, dirlist);
-    }
-    CurrentSelectionName[0] = '\0';
+	/* change to abs_path */
+	if (abs_path && change_directory(abs_path)) {
+		free(abs_path);
+		/* change_directory already delivered an error message */
+		return;
+	}
+
+	if (MakeFileList(abs_path, dirmask, &dirlist, &filelist) == False) {
+		file_msg("Unable to list directory %s", abs_path);
+		free(abs_path);
+		return;
+	}
+
+	/* update the current directory and file/dir list widgets */
+	FirstArg(XtNstring, abs_path);
+	if (browse_up) {
+		SetValues(browse_dir);
+		strcpy(cur_browse_dir, abs_path);	/* update global var */
+		XawTextSetInsertionPoint(browse_dir, strlen(abs_path));
+		NewList(browse_flist, filelist);
+		NewList(browse_dlist, dirlist);
+	} else if (file_up) {
+		SetValues(file_dir);
+		update_file_export_dir(abs_path);
+		XawTextSetInsertionPoint(file_dir, strlen(abs_path));
+		NewList(file_flist, filelist);
+		NewList(file_dlist, dirlist);
+	} else if (export_up) {
+		SetValues(exp_dir);
+		strcpy(cur_export_dir, abs_path);	/* update global var */
+		XawTextSetInsertionPoint(exp_dir, strlen(abs_path));
+		NewList(exp_flist, filelist);
+		NewList(exp_dlist, dirlist);
+	}
+	free(abs_path);
+	CurrentSelectionName[0] = '\0';
 }
 
 void

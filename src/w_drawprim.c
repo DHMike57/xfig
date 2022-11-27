@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2021 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -86,20 +86,18 @@ XftFont		*mono_font;
 
 /* LOCAL */
 
-static int	clip_poly(XPoint *inVertices, int npoints, XPoint *outVertices);
-static void	intersect(XPoint first, XPoint second, int x1, int y1, int x2, int y2, XPoint *intersectPt);
-static Boolean	inside (XPoint testVertex, int x1, int y1, int x2, int y2);
-static void	setup_next(int npoints, XPoint *in, XPoint *out);
 static Pixel	gc_color[NUMOPS], gc_background[NUMOPS];
 static XRectangle clip[1];
 static Boolean	openwinfonts;
 static Boolean  font_scalable[NUM_FONTS];
 
-void rescale_pattern (int patnum);
-void zXFillPolygon (Display *d, Window w, GC gc, zXPoint *points, int n, int complex, int coordmode);
-void zXDrawLines (Display *d, Window w, GC gc, zXPoint *points, int n, int coordmode);
-void scale_pattern (int indx);
-int SutherlandHodgmanPolygoClip (XPoint *inVertices, XPoint *outVertices, int inLength, int x1, int y1, int x2, int y2);
+static void	scale_pattern (int indx);
+static void	rescale_pattern (int patnum);
+static void	zXFillPolygon(Display *d, Window w, GC gc, zXPoint *points,
+				int n, int shape, int coordmode);
+static void	zXDrawLines(Display *d, Window w, GC gc, zXPoint *points,
+				int n, int coordmode);
+
 
 void init_font(void)
 {
@@ -1435,7 +1433,8 @@ void set_line_stuff(int width, int style, float style_val, int join_style, int c
 /* resize the fill patterns for the current display_zoomscale */
 /* also generate new Pixmaps in fill_pm[] */
 
-void rescale_pattern(int patnum)
+static void
+rescale_pattern(int patnum)
 {
 	int		j;
 	XGCValues	gcv;
@@ -1463,7 +1462,8 @@ void rescale_pattern(int patnum)
 	reset_cursor();
 }
 
-void scale_pattern(int indx)
+static void
+scale_pattern(int indx)
 {
     int	    i;
     int	    j;
@@ -1540,41 +1540,29 @@ static Boolean	 _noalloc_ = False;		/* signals previous failed alloc */
 static Boolean	 chkalloc(int n);
 static void	 convert_sh(zXPoint *p, int n);
 
-void zXDrawLines(Display *d, Window w, GC gc, zXPoint *points, int n, int coordmode)
+static void
+zXDrawLines(Display *d, Window w, GC gc, zXPoint *points, int n, int coordmode)
 {
-#ifdef CLIP_LINE
-    XPoint	*outp;
-#endif /* CLIP_LINE */
-
     /* make sure we have allocated data */
     if (!chkalloc(n)) {
 	return;
     }
     /* now convert each point to short into _pp_ */
     convert_sh(points, n);
-#ifdef CLIP_LINE
-    outp = (XPoint *) malloc(2*n*sizeof(XPoint));
-    n = clip_poly(_pp_, n, outp);
-    XDrawLines(d, w, gc, outp, n, coordmode);
-#else
     XDrawLines(d, w, gc, _pp_, n, coordmode);
-#endif /* CLIP_LINE */
 }
 
-void zXFillPolygon(Display *d, Window w, GC gc, zXPoint *points, int n, int complex, int coordmode)
+static void
+zXFillPolygon(Display *d, Window w, GC gc, zXPoint *points, int n,
+		int shape, int coordmode)
 {
-    XPoint	*outp;
-
     /* make sure we have allocated data for _pp_ */
     if (!chkalloc(n)) {
 	return;
     }
     /* now convert each point to short into _pp_ */
     convert_sh(points, n);
-    outp = (XPoint *) malloc(2*n*sizeof(XPoint));
-    n = clip_poly(_pp_, n, outp);
-    XFillPolygon(d, w, gc, outp, n, complex, coordmode);
-    free(outp);
+    XFillPolygon(d, w, gc, _pp_, n, shape, coordmode);
 }
 
 /* convert each point to short */
@@ -1620,147 +1608,4 @@ chkalloc(int n)
 	_npp_ = i;
     }
     return True;
-}
-
-/*
- * clip_poly - This procedure performs the Sutherland-Hodgman polygon clipping
- * on the inVertices array, putting the resultant points into the outVertices array,
- * and returning the number of points as the return value.
- * We are clipping to the canvas area.
- */
-
-static int
-clip_poly(XPoint *inVertices, int npoints, XPoint *outVertices)
-{
-	/* clip to left edge */
-        npoints = SutherlandHodgmanPolygoClip (inVertices, outVertices, npoints,
-					-100, CANVAS_HT*2, -100, -100);
-        setup_next(npoints, inVertices, outVertices);
-	/* now to bottom edge */
-        npoints = SutherlandHodgmanPolygoClip (inVertices,outVertices, npoints,
-					-100, CANVAS_HT*2, CANVAS_WD*2, CANVAS_HT*2);
-        setup_next(npoints, inVertices, outVertices);
-	/* right edge */
-        npoints = SutherlandHodgmanPolygoClip (inVertices,outVertices, npoints,
-					CANVAS_WD*2, -100, CANVAS_WD*2, CANVAS_HT*2);
-        setup_next(npoints, inVertices, outVertices);
-	/* top edge */
-        npoints = SutherlandHodgmanPolygoClip (inVertices,outVertices, npoints,
-					CANVAS_WD*2, -100, -100, -100);
-        setup_next(npoints, inVertices, outVertices);
-        return npoints;
-}
-
-/*
- * The "SutherlandHodgmanPolygoClip" function is a critical function of the
- * polygon clipping. It uses the Sutherland_Hodgman algorithm to implement
- * a step in clipping a polygon to a clipping window.
- */
-
-int
-SutherlandHodgmanPolygoClip (
-    XPoint	*inVertices,		/* Input vertex array */
-    XPoint	*outVertices,		/* Output vertex array */
-    int		 inLength,		/* Number of entries in inVertices */
-    int		 x1, int y1, int x2, int y2)	/* Edge of clip polygon */
-{
-	XPoint s,p;	/*Start, end point of current polygon edge*/
-	XPoint i;	/*Intersection point with a clip boundary*/
-	int j;		/*Vertex loop counter*/
-	int outpts;	/* number of points in output array */
-
-        outpts = 0;
-        s.x = inVertices[inLength-1].x; /*Start with the last vertex in inVertices*/
-        s.y = inVertices[inLength-1].y;
-        for (j=0; j < inLength; j++) {
-            p.x = inVertices[j].x; /*Now s and p correspond to the vertices*/
-            p.y = inVertices[j].y;
-            if (inside(p,x1, y1, x2, y2)) {      /*Cases 1 and 4*/
-                 if (inside(s, x1, y1, x2, y2)) {
-			outVertices[outpts].x = p.x;
-			outVertices[outpts].y = p.y;
-			outpts++;
-                } else {                            /*Case 4*/
-                        intersect(s, p, x1, y1, x2, y2, &i);
-			outVertices[outpts].x = i.x;
-			outVertices[outpts].y = i.y;
-			outpts++;
-			outVertices[outpts].x = p.x;
-			outVertices[outpts].y = p.y;
-			outpts++;
-                }
-            } else {                  /*Cases 2 and 3*/
-                if (inside(s, x1, y1, x2, y2))  /*Cases 2*/ {
-                        intersect(s, p, x1, y1, x2, y2, &i);
-			outVertices[outpts].x = i.x;
-			outVertices[outpts].y = i.y;
-			outpts++;
-                }
-           }                          /*No action for case 3*/
-           s.x = p.x;	/*Advance to next pair of vertices*/
-           s.y = p.y;
-	}
-	return outpts;
-}      /*SutherlandHodgmanPolygonClip*/
-
-/*
- * The "Inside" function returns TRUE if the vertex tested is on the inside
- * of the clipping boundary. "Inside" is defined as "to the left of
- * clipping boundary when one looks from the first vertex to the second
- * vertex of the clipping boundary". The code for this function is:
- */
-
-static Boolean
-inside (XPoint testVertex, int x1, int y1, int x2, int y2)
-{
-    if (x2 > x1)              /*bottom edge*/
-	if (testVertex.y <= y1)
-	    return True;
-    if (x2 < x1)              /*top edge*/
-	if (testVertex.y >= y1)
-	    return True;
-    if (y2 > y1)              /*right edge*/
-	if (testVertex.x <= x2)
-	    return True;
-    if (y2 < y1)              /*left edge*/
-	if (testVertex.x >= x2)
-	    return True;
-    /* outside */
-    return False;
-}
-
-/*
- * The "intersect" function calculates the intersection of the polygon edge
- * (vertex s to p) with the clipping boundary.
- */
-
-static void
-intersect(XPoint first, XPoint second, int x1, int y1, int x2, int y2,
-                XPoint *intersectPt)
-{
-	(void)x2;
-
-  if (y1 == y2) {    /*horizontal*/
-     intersectPt->y=y1;
-     intersectPt->x=first.x +(y1-first.y)*
-                    (second.x-first.x)/(second.y-first.y);   /*Vertical*/
-   } else {
-           intersectPt->x=x1;
-           intersectPt->y=first.y +(x1-first.x)*
-                    (second.y-first.y)/(second.x-first.x);
-   }
-}
-
-/*
- * setup_next copies the input to the output
- */
-
-static void
-setup_next(int npoints, XPoint *in, XPoint *out)
-{
-	int i;
-	for (i=0; i<npoints; i++) {
-		in[i].x = out[i].x;
-		in[i].y = out[i].y;
-	}
 }

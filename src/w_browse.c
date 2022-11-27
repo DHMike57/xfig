@@ -1,10 +1,10 @@
 /*
  * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ * Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -29,6 +29,7 @@
 #include "figx.h"
 #include "resources.h"
 #include "e_edit.h"
+#include "f_picobj.h"
 #include "f_util.h"
 #include "u_create.h"
 #include "w_color.h"
@@ -67,7 +68,7 @@ static String	file_list_translations =
 static String	file_name_translations =
 	"<Key>Return: ApplyBrowseAndClose()\n";
 static void	browse_panel_close(Widget w, XButtonEvent *ev);
-void		got_browse(Widget w, XButtonEvent *ev);
+static void	got_browse(Widget w, XButtonEvent *ev);
 
 static XtActionsRec	file_name_actions[] =
 {
@@ -116,9 +117,12 @@ got_browse(Widget w, XButtonEvent *ev)
 {
 	(void)w;
 	(void)ev;
-    char	   *fval, *dval, *path;
+	char	*abs_path = NULL;
+	char	*fval, *dval;
 
-    if (browse_popup) {
+	if (!browse_popup)
+		return;
+
 	FirstArg(XtNstring, &dval);
 	GetValues(browse_dir);
 	FirstArg(XtNstring, &fval);
@@ -131,16 +135,40 @@ got_browse(Widget w, XButtonEvent *ev)
 	if (emptyname_msg(fval, "Apply"))
 	    return;
 
-	path = new_string( strlen(dval) + 1 + strlen(fval) + 1);
-	if ( path ) {
-	    strcpy( path,dval );
-	    strcat( path, "/");
-	    strcat( path, fval );
-	    panel_set_value( pic_name_panel, path );
-	    free(path);
+	if (fval[0] == '/' || fval[0] == '~') {
+		/* the user entered an absolute path, or relative to $HOME */
+		abs_path = internal_path(fval);
+	} else {
+		char	full_path_buf[128];
+		char	*full_path = full_path_buf;
+		size_t	dval_len, fval_len;
+		dval_len = strlen(dval);
+		fval_len = strlen(fval);
+		if (dval_len + 1 + fval_len + 1 >= sizeof full_path_buf)
+			full_path = new_string(dval_len + fval_len + 1);
+		if (full_path) {
+			/* Create an absolute file name.. */
+			memcpy(full_path, dval, dval_len);
+			full_path[dval_len] = '/';
+			memcpy(full_path + dval_len + 1, fval, fval_len + 1);
+			abs_path = realpath(full_path, NULL);
+		}
+		if (full_path != full_path_buf)
+			free(full_path);
 	}
+	if (abs_path) {
+		char	path_buf[128];
+		char	*path = path_buf;
+		if (external_path(&path, sizeof path_buf, abs_path) >= 0)
+			panel_set_value(pic_name_panel, path);
+		else
+			panel_set_value(pic_name_panel, "");
+		free(abs_path);
+		if (path != path_buf)
+			free(path);
+	}
+	/* inter alia, writes the path name to the picture object */
 	push_apply_button();  /* slightly iffy - assumes called from edit picture */
-    }
 }
 
 static void
@@ -179,6 +207,8 @@ void popup_browse_panel(Widget w)
       strcpy(browse_filename, fval+1);
       local_dir[strlen(pval) - strlen(fval)] = '\0';
       (void) change_directory(local_dir);
+      /* and get the canonical path */
+      get_directory(local_dir);
     }
 
     if (!browse_popup) {
