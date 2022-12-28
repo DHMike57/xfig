@@ -58,7 +58,8 @@ xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	u_fonts.h u_free.c u_free.h u_geom.c u_geom.h u_ghostscript.c u_list.c \
 	u_list.h u_markers.c u_markers.h u_pan.c u_pan.h u_print.c u_print.h \
 	u_quartic.c u_quartic.h u_redraw.c u_redraw.h u_scale.c u_scale.h \
-	u_search.c u_search.h u_smartsearch.c u_smartsearch.h u_translate.c \
+	u_search.c u_search.h u_smartsearch.c u_smartsearch.h \
+	u_spawn.c u_spawn.h u_translate.c \
 	u_translate.h u_undo.c u_undo.h w_browse.c w_browse.h w_canvas.c \
 	w_canvas.h w_capture.c w_capture.h w_cmdpanel.c w_cmdpanel.h w_color.c \
 	w_color.h w_cursor.c w_cursor.h w_digitize.c w_digitize.h w_dir.c \

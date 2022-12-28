@@ -199,10 +199,8 @@ AM_CONDITIONAL([ALLOW_MULTIPLE_DEFINITION],
 	[test "x$ax_cv_check_ldflags___Wl___allow_multiple_definition" = xyes])dnl
 
 # Checks for library functions.
-AC_FUNC_FORK
-dnl AC_FUNC_STRTOD
 # The setlocale seems to be broken, grep HAVE_SETLOCALE, setlocale
-AC_CHECK_FUNCS_ONCE([getcwd setlocale strerror])
+AC_CHECK_FUNCS_ONCE([getcwd setlocale strerror posix_spawnp])
 AC_REPLACE_FUNCS([isascii strstr strchr strrchr strcasecmp strncasecmp \
 	strdup strndup])
 
