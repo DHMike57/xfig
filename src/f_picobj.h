@@ -39,12 +39,12 @@ struct xfig_stream {
 	char	*name_on_disk;	/* e.g., image.ppm.gz */
 	char	*content;	/* points to a regular file containing the
 				   uncompressed content of name */
-	const char *uncompress;	/* e.g., "gunzip -c", "", or NULL
-				   NULL if compression status is undecided */
+	char	**uncompress;	/* e.g., {"gunzip", "-c"}, or NULL
+				   NULL if uncompression is unnecessary */
 	char	name_buf[128];
 	char	name_on_disk_buf[128];
 	char	content_buf[128];
-	/* regular file, if *uncompress == '\0' */
+	/* regular file, if uncompress == NULL */
 };
 
 extern void	read_picobj(F_pic *pic, char *file, int color, Boolean force,

@@ -43,6 +43,7 @@
 #include "f_readpcx.h"		/* read_pcx() */
 #include "f_util.h"		/* file_timestamp() */
 #include "u_create.h"		/* create_picture_entry() */
+#include "u_spawn.h"
 #include "w_file.h"		/* check_cancel() */
 #include "w_msgpanel.h"
 #include "w_setup.h"		/* PIX_PER_INCH, PIX_PER_CM */
@@ -143,24 +144,23 @@ free_stream(struct xfig_stream *restrict xf_stream)
  *		free(found);
  */
 static int
-file_on_disk(const char *restrict name, char *restrict *found, size_t len,
-		const char *restrict *uncompress)
+file_on_disk(const char *restrict name, char **restrict found, size_t len,
+		char **uncompress[restrict])
 {
 	int		i;
 	size_t		name_len;
 	char		*suffix;
 	struct stat	status;
-	static const char empty[] = "";
-	static const char *filetypes[][2] = {
+	static char	*filetypes[][3] = {
 		/* sorted by popularity? */
 #define FILEONDISK_ADD	5	/* must be max(strlen(filetypes[0][])) + 1 */
-		{ ".gz",	"gunzip -c" },
-		{ ".Z",		"gunzip -c" },
-		{ ".z",		"gunzip -c" },
-		{ ".zip",	"unzip -p"  },
-		{ ".bz2",	"bunzip2 -c" },
-		{ ".bz",	"bunzip2 -c" },
-		{ ".xz",	"unxz -c" }
+		{ ".gz",	"gunzip", "-c" },
+		{ ".Z",		"gunzip", "-c" },
+		{ ".z",		"gunzip", "-c" },
+		{ ".zip",	"unzip", "-p" },
+		{ ".bz2",	"bunzip2", "-c" },
+		{ ".bz",	"bunzip2", "-c" },
+		{ ".xz",	"unxz", "-c" }
 	};
 	const int	filetypes_len =
 				(int)(sizeof filetypes / sizeof(filetypes[1]));
@@ -191,7 +191,7 @@ file_on_disk(const char *restrict name, char *restrict *found, size_t len,
 		for (i = 0; i < filetypes_len; ++i) {
 			strcpy(suffix, filetypes[i][0]);
 			if (!stat(*found, &status)) {
-				*uncompress = filetypes[i][1];
+				*uncompress = &filetypes[i][1];
 				break;
 			}
 		}
@@ -205,7 +205,7 @@ file_on_disk(const char *restrict name, char *restrict *found, size_t len,
 				if (!strcmp(suffix, filetypes[i][0])) {
 					*(*found + (suffix - name)) = '\0';
 					if (!stat(*found, &status)) {
-						*uncompress = empty;
+						*uncompress = NULL;
 						break;
 					} else {
 						*found[0] = '\0';
@@ -226,7 +226,7 @@ file_on_disk(const char *restrict name, char *restrict *found, size_t len,
 		if ((suffix = strrchr(name, '.'))) {
 			for (i = 0; i < filetypes_len; ++i) {
 				if (!strcmp(suffix, filetypes[i][0])) {
-					*uncompress = filetypes[i][1];
+					*uncompress = &filetypes[i][1];
 					break;
 				}
 			}
@@ -235,7 +235,7 @@ file_on_disk(const char *restrict name, char *restrict *found, size_t len,
 		}
 
 		if (i == filetypes_len)
-			*uncompress = empty;
+			*uncompress = NULL;
 	}
 
 	return 0;
@@ -253,7 +253,7 @@ get_picture_status(F_pic *pic, struct _pics *pics, bool force,
 {
 	char		found_buf[256];
 	char		*found = found_buf;
-	const char	*uncompress;
+	char		**uncompress;
 	const char	*file = ABSOLUTE_PATH(pics->file);
 	time_t		mtime;
 
@@ -437,7 +437,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 
 /*
  * Return a file stream, either to a pipe or to a regular file.
- * If xf_stream->uncompress[0] == '\0', it is a regular file, otherwise a pipe.
+ * If xf_stream->uncompress == NULL it is a regular file, otherwise a pipe.
  */
 FILE *
 open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
@@ -457,30 +457,47 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 	if (file_on_disk(name, &xf_stream->name_on_disk,
 				sizeof xf_stream->name_on_disk_buf,
 				&xf_stream->uncompress)) {
-
 		free_stream(xf_stream);
 		return NULL;
 	}
 
-	if (*xf_stream->uncompress) {
+	if (xf_stream->uncompress) {
 		/* a compressed file */
-		char	command_buf[256];
-		char	*command = command_buf;
 
-		len = strlen(xf_stream->name_on_disk) +
-					strlen(xf_stream->uncompress) + 2;
-		if (len > sizeof command_buf) {
-			if (!(command = new_string(len - 1)))
-				return NULL;
+		int	fd[2];
+		char	*args[4];
+
+		args[0] = xf_stream->uncompress[0];
+		args[1] = xf_stream->uncompress[1];
+		args[2] = xf_stream->name_on_disk;
+		args[3] = NULL;
+
+		if (pipe(fd)) {
+			file_msg("Trying to uncompress %s, "
+						"cannot create pipe: %s",
+					xf_stream->name_on_disk,
+					strerror(errno));
+			return NULL;
 		}
-		sprintf(command, "%s '%s'",
-				xf_stream->uncompress, xf_stream->name_on_disk);
-		xf_stream->fp = popen(command, "r");
-		if (command != command_buf)
-			free(command);
+		if (spawn_writefd(args, fd[1])) {
+			/* spawn_writefd() already wrote error messages */
+			close(fd[0]);
+			close(fd[1]);
+			return NULL;
+		}
+		close(fd[1]);
+		if (!(xf_stream->fp = fdopen(fd[0], "r")))
+			file_msg("Cannot read uncompressed content of %s: %s",
+					xf_stream->name_on_disk,
+					strerror(errno));
+
 	} else {
 		/* uncompressed file */
-		xf_stream->fp = fopen(xf_stream->name_on_disk, "rb");
+
+		if (!(xf_stream->fp = fopen(xf_stream->name_on_disk, "rb")))
+			file_msg("Unable to open %s: %s",
+					xf_stream->name_on_disk,
+					strerror(errno));
 	}
 
 	return xf_stream->fp;
@@ -495,7 +512,7 @@ close_stream(struct xfig_stream *restrict xf_stream)
 	if (xf_stream->fp == NULL)
 		return -1;
 
-	if (xf_stream->uncompress[0] == '\0') {
+	if (!xf_stream->uncompress) {
 		/* a regular file */
 		return fclose(xf_stream->fp);
 	} else {
@@ -506,7 +523,7 @@ close_stream(struct xfig_stream *restrict xf_stream)
 		while (fread(trash, (size_t)1, (size_t)BUFSIZ, xf_stream->fp) ==
 				(size_t)BUFSIZ)
 			;
-		return pclose(xf_stream->fp);
+		return fclose(xf_stream->fp);
 	}
 }
 
@@ -516,7 +533,7 @@ rewind_stream(struct xfig_stream *restrict xf_stream)
 	if (xf_stream->fp == NULL)
 		return NULL;
 
-	if (xf_stream->uncompress[0] == '\0') {
+	if (!xf_stream->uncompress) {
 		/* a regular file */
 		rewind(xf_stream->fp);
 		return xf_stream->fp;
@@ -547,12 +564,10 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 	int		ret = -1;
 	int		fd;
 	int		len;
-	char		command_buf[256];
-	char		*command = command_buf;
-	char *const	command_fmt = "%s '%s' 1>&%d";
+	char		*args[4];
 	char *const	content_fmt = "%s/xfigXXXXXX";
 
-	if (*xf_stream->uncompress == '\0') {
+	if (!xf_stream->uncompress) {
 		xf_stream->content = xf_stream->name_on_disk;
 		return 0;
 	}
@@ -574,45 +589,20 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 	}
 
 	if ((fd = mkstemp(xf_stream->content)) == -1) {
-		fd = errno;
-		file_msg("Could not open temporary file %s, error: %s",
-				xf_stream->content, strerror(fd));
+		file_msg("Could not open temporary file %s: %s",
+				xf_stream->content, strerror(errno));
 		return ret;
 	}
 
-	/*
-	 * One could already here redirect stdout to the fd of our tmp
-	 * file - but then, how to re-open stdout?
-	 *   close(1);
-	 *   dup(fd);	* takes the lowest integer found, now 1 *
-	 *   close(fd);
-	 */
-	len = snprintf(command, sizeof command_buf, command_fmt,
-			xf_stream->uncompress, xf_stream->name_on_disk, fd);
-	if (len >= (int)(sizeof command_buf)) {
-		if (!(command = new_string(len))) {
-			close(fd);
-			return ret;
-		}
-		len = sprintf(command, command_fmt, xf_stream->uncompress,
-						xf_stream->name_on_disk, fd);
-	}
-	if (len < 0) {
-		len = errno;
-		file_msg("Unable to write command string.");
-		file_msg("Error: %s", strerror(len));
-		return ret;
-	}
+	args[0] = xf_stream->uncompress[0];
+	args[1] = xf_stream->uncompress[1];
+	args[2] = xf_stream->name_on_disk;
+	args[3] = NULL;
 
-	if (system(command) == 0)
-		ret = 0;
-	else
-		file_msg("Could not uncompress %s, command: %s",
-				xf_stream->name_on_disk, command);
-
+	/* spawn_writefd() gives sufficient error information */
+	ret = spawn_writefd(args, fd);
 	close(fd);
-	if (command != command_buf)
-		free(command);
+
 	return ret;
 }
 

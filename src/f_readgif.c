@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -289,12 +289,12 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	 * Construct a rudimentary struct xfig_stream that can be passed to
 	 * read_pcx(). Tell read_pcx() that the FILE pointer is positioned at
 	 * the start (*name == '\0') and that it is a regular file
-	 * (*uncompress == '\0').
+	 * (uncompress == NULL).
 	 * ATTENTION, requires knowledge of fields of struct xfig_stream.
 	 */
 	pcx.name_buf[0] = '\0';
 	pcx.name = pcx.name_buf;
-	pcx.uncompress = pcx.name_buf;
+	pcx.uncompress = NULL;
 
 	if ((pcx.fp = fopen(pcxname, "rb")) == NULL) {
 		file_msg("Cannot open temporary output file\n");
