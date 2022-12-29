@@ -24,6 +24,7 @@
 #include <fcntl.h>		/* open(), creat() */
 #include <poll.h>
 #include <unistd.h>		/* close() */
+#include <signal.h>		/* SIGPIPE */
 #include <stdio.h>
 #include <stdlib.h>		/* EXIT_SUCCESS */
 #include <string.h>		/* strerror() */
@@ -36,61 +37,83 @@
 #include "w_msgpanel.h"
 
 /*
- * Spawn the process argv[0], with the NULL-terminated argument list argv.
- * If any of the fd[] is not -1, re-direct stdin, stdout or stderr to the file
- * descriptor given in fd[0], fd[1] or fd[2], respectively.
- * Return 0 on success, an errno on failure.
+ * The first element is statically allocated.
+ * All other elements, if they ever appear, must be allocated on the heap.
+ */
+static struct process_info {
+	int			fd;
+	int			fderr;
+	pid_t			pid;
+	struct process_info	*next;
+} process_info = { -1, 0, -1, NULL };
+
+static struct process_info *const first = &process_info;
+
+
+/*
+ * Fill the first or add an element to the linked list of process information.
+ * The elements are identified based on the file descriptor fd.
+ */
+static void
+add_info(int fd, int fderr, pid_t pid)
+{
+	if (first->fd == -1) {
+		first->fd = fd;
+		first->fderr = fderr;
+		first->pid = pid;
+	} else {
+		struct process_info	*info = first;
+		while (info->next)
+			info = info->next;
+		if (!(info->next = malloc(sizeof(struct process_info))))
+			return;
+		info = info->next;
+		info->fd = fd;
+		info->fderr = fderr;
+		info->pid = pid;
+		info->next = NULL;
+	}
+}
+
+/*
+ * Input: fd
+ * Outputs: fderr, pid
  */
 static int
-spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3])
+retrieve_info(int fd, int *fderr, pid_t *pid)
 {
-#ifdef HAVE_POSIX_SPAWNP
-	int				i;
-	int				has_fa = 0;
-	posix_spawn_file_actions_t	file_actions;
-
-	for (i = 0; i < 3; ++i) {
-		if (fd[i] != -1) {
-			has_fa = 1;
-			break;
+	if (first->fd == fd) {
+		*fderr = first->fderr;
+		*pid = first->pid;
+		if (first->next) {
+			struct process_info	*info = first->next;
+			first->fd = info->fd;
+			first->fderr = info->fderr;
+			first->pid = info->pid;
+			first->next = info->next;
+			free(info);
+		} else {
+			first->fd = -1;
 		}
-	}
-	if (has_fa == 1) {
-		posix_spawn_file_actions_init(&file_actions);
-		for (i = 0; i < 3; ++i) {
-			if (fd[i] != -1) {
-				/* 0 must be stdin, 1 stdout, and 2 stderr */
-				posix_spawn_file_actions_adddup2(
-						&file_actions, fd[i], i);
-				posix_spawn_file_actions_addclose(
-						&file_actions, fd[i]);
-			}
+		return 0;
+	} else {
+		struct process_info	*info = first->next;
+		struct process_info	*prev = first;
+		if (!info)
+			return -1;
+		while (info->fd != fd && info->next) {
+			prev = info;
+			info = info->next;
 		}
-	}
-	return posix_spawnp(pid, argv[0], has_fa ? &file_actions : NULL,
-				NULL, argv, NULL);
-
-#else	/* HAVE_POSIX_SPAWNP undefined: fork() and exec() */
-	*pid = fork();
-	if (*pid == -1)
-		return errno;
-	if (*pid == 0) {
-		/* the child */
-		int	i;
-		for (i = 0; i < 3; ++i) {
-			if (fd[i] != -1) {
-				if (dup2(fd[i], i) == -1)
-					return errno;
-				close(fd[i]);
-			}
+		if (info->fd == fd) {
+			*fderr = info->fderr;
+			*pid = info->pid;
+			prev->next = info->next;
+			free(info);
+			return 0;
 		}
-		if (execvp(argv[0], argv) == -1)
-			return errno;;
+		return -1;
 	}
-
-	/* the parent */
-	return 0;
-#endif /* HAVE_POSIX_SPAWNP */
 }
 
 /*
@@ -116,9 +139,197 @@ full_command(char *const argv[restrict])
 }
 
 /*
+ * Spawn the process argv[0], with the NULL-terminated argument list argv.
+ * If any of the fd[] is not -1, re-direct stdin, stdout or stderr to the file
+ * descriptor given in fd[0], fd[1] or fd[2], respectively.
+ * The file descriptors given in cfd are closed in the spawned process.
+ * At least one of all file descriptors in fd[] and cfd[] should be valid.
+ * Return 0 on success, an errno on failure.
+ */
+static int
+spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
+			int cfd[2])
+{
+#ifdef HAVE_POSIX_SPAWNP
+	int				i;
+	posix_spawn_file_actions_t	file_actions;
+
+	posix_spawn_file_actions_init(&file_actions);
+	if (cfd[0] != -1)
+		posix_spawn_file_actions_addclose(&file_actions, cfd[0]);
+	if (cfd[1] != -1)
+		posix_spawn_file_actions_addclose(&file_actions, cfd[1]);
+	for (i = 0; i < 3; ++i) {
+		if (fd[i] != -1) {
+			/* 0 must be stdin, 1 stdout, and 2 stderr */
+			posix_spawn_file_actions_adddup2(
+					&file_actions, fd[i], i);
+			posix_spawn_file_actions_addclose(
+					&file_actions, fd[i]);
+		}
+	}
+
+	return posix_spawnp(pid, argv[0], &file_actions, NULL, argv, NULL);
+
+#else	/* HAVE_POSIX_SPAWNP undefined: fork() and exec() */
+	*pid = fork();
+	if (*pid == -1)
+		return errno;
+	if (*pid == 0) {
+		/* the child */
+		int	i;
+		if (cfd[0] != -1)
+			close(cfd[0]);
+		if (cfd[1] != -1)
+			close(cfd[1]);
+		for (i = 0; i < 3; ++i) {
+			if (fd[i] != -1) {
+				if (dup2(fd[i], i) == -1)
+					return errno;
+				close(fd[i]);
+			}
+		}
+		if (execvp(argv[0], argv) == -1)
+			return errno;;
+	}
+
+	/* the parent */
+	return 0;
+#endif /* HAVE_POSIX_SPAWNP */
+}
+
+/*
  * Spawn the process argv[0] with the NULL-terminated arguments argv.
  * Search PATH for the command given in argv[0].
- * Write the output of the spawned process to the file descriptor fdout.
+ * Write the output of the spawned process to the open file descriptor fdout.
+ * Standard error is captured in a buffer and reported to the user.
+ * Return the process id in pid and a file descriptor in fderr from which
+ * to read stderr of the spawned process.
+ * Return 0 on success.
+ * On error, return -1, and output an error message.
+ */
+static int
+open_process(char *const argv[restrict], int fdout, int cd,
+		pid_t *pid, int *fderr)
+{
+	int		ret;
+	int		pd[2];
+	int		fd[3] = {-1, -1, -1};
+	int		cfd[2] = {cd, -1};
+
+	if (pipe(pd)) {
+		file_msg("Spawning %s, cannot create pipe: %s",
+				full_command(argv), strerror(errno));
+		return -1;
+	}
+
+	/* in the child, redirect stdout to fdout, stderr to the pipe */
+	fd[1] = fdout;
+	fd[2] = pd[1];
+	cfd[1] = pd[0];
+	/* and return the read end of the pipe for polling */
+	*fderr = pd[0];
+	if ((ret = spawn_process(pid, argv, fd, cfd))) {
+		file_msg("Error spawning process %s: %s",
+				full_command(argv), strerror(ret));
+		return -1;
+	}
+
+	close(pd[1]);		/* close the write end here */
+	close(fdout);
+	return 0;
+}
+
+/*
+ * If ignore_signal is given, close fderr, and wait for the process to
+ * terminate. Ignore SIGUSR1 in this case.
+ * Otherwise, poll fderr and output the first 255 bytes received on fderr.
+ * Wait for the process to terminate, reporting any signal.
+ * Return the exit status of the process.
+ */
+/*
+ * The process might either
+ * - have completed writing to the output file and terminated, or waiting to
+ *   write an error, or
+ * - be still running, writing output and probably waiting to write error, or
+ * - was terminated by us, the terminating signal and errors should be ignored.
+ * In the first case, the output file descriptor might have been closed by the
+ * process, or it is still open.
+ */
+static int
+poll_err_close(pid_t pid, int fderr, int ignore_signal)
+{
+	int		ret;
+	struct pollfd	fds;
+
+	fds.fd = fderr;
+	fds.events = POLLIN;		/* POLLHUP is anyhow reported */
+	fds.revents = 0;
+
+	if (ignore_signal) {
+		;
+	} else if (poll(&fds, 1, -1 /* no timeout */) < 0) {
+		file_msg("Error polling stderr: %s", strerror(errno));
+	} else {	/* 0 only possible if a timeout is given */
+		if (fds.revents & POLLIN) {
+			/* read the first 255 bytes, not more */
+			char		buf[256];
+			ssize_t		n = 0;
+			size_t		num = 0;
+
+			while ((n = read(fderr, buf+num, sizeof buf-1-num)) > 0
+					&& (num += n) < sizeof buf - 1)
+				;
+			if (num > 0) {
+				buf[num] = '\0';
+				file_msg("Error message from spawned process: "
+						"%s", buf);
+			}
+			if (n == -1) {
+				file_msg("Error reading error message: %s",
+						strerror(errno));
+			} else if (n == 0 && num == sizeof buf - 1) {
+				/* more data would be available;
+				 * Closing fderr causes SIGPIPE */
+				ignore_signal = SIGPIPE;
+			}
+		}
+		if (fds.revents & (POLLERR | POLLNVAL)) {
+			file_msg("Error polling stderr:%s%s%s",
+				fds.revents & POLLERR ? " POLLERR" : "",
+				fds.revents & POLLERR && fds.revents & POLLNVAL?
+						"," : "" ,
+				fds.revents & POLLNVAL ?
+					" file descriptor not open":"");
+		}
+	}
+
+	if (close(fderr))
+		file_msg("Error closing stderr: %s", strerror(errno));
+
+	if (waitpid(pid, &ret, 0) == -1) {
+		file_msg("Error waiting for spawned process: %s",
+				strerror(errno));
+		return -1;
+	}
+
+	if (WIFEXITED(ret)) {
+		ret = WEXITSTATUS(ret);
+	} else {
+		ret = WTERMSIG(ret);
+		if (ignore_signal && ret == ignore_signal)
+			ret = 0;
+		else
+			file_msg("Spawned process interrupted by signal %d",
+					ret); }
+	return ret;
+}
+
+/*
+ * Spawn the process argv[0] with the NULL-terminated arguments argv.
+ * Search PATH for the command given in argv[0].
+ * Write the output of the spawned process to the open file descriptor fdout,
+ * which shall be closed by the process.
  * Standard error is captured in a buffer and reported to the user.
  * Return 0 on success.
  * On error, return -1, and output an error message.
@@ -126,88 +337,68 @@ full_command(char *const argv[restrict])
 int
 spawn_writefd(char *const argv[restrict], int fdout)
 {
-	int		ret;
-	int		pd[2];
-	int		fd[3] = {-1, -1, -1};
-	pid_t		pid;
-	struct pollfd	fds;
+	int	fderr;
+	pid_t	pid;
+
+	if (open_process(argv, fdout, -1, &pid, &fderr) ||
+			poll_err_close(pid, fderr, 0))
+		return -1;
+	return 0;
+}
+
+int
+spawn_popen_r(char *const argv[restrict])
+{
+	int	fderr;
+	int	pd[2];
+	pid_t	pid;
 
 	if (pipe(pd)) {
 		file_msg("Command %s, cannot create pipe: %s",
 				full_command(argv), strerror(errno));
 		return -1;
 	}
-
-	/* In the child, redirect stdout to fdout, stderr to the pipe */
-	fd[1] = fdout;
-	fd[2] = pd[1];
-	if ((ret = spawn_process(&pid, argv, fd))) {
-		file_msg("Error spawning process '%s': %s",
-				full_command(argv), strerror(ret));
-		return -1;
-	}
-
-	close(pd[1]);		/* close the write end here */
-	fds.fd = pd[0];		/* and poll the read end */
-	fds.events = POLLIN | POLLOUT;
-	fds.revents = 0;
-
-	/* the first noticeable event from the child, even when it terminates
-	   without output, is a polling event, either POLLHUP or POLLIN */
-	ret = 0;
-	while (!(fds.revents & POLLHUP)) {
-		ret = poll(&fds, 1, -1 /* no timeout */);
-		if (ret < 0) {
-			file_msg("Command %s, polling error: %s",
-					full_command(argv), strerror(errno));
-			return -1;
-		}
-		/* stat > 0; stat == 0 not possible without timeout */
-		if (fds.revents & POLLIN) {
-			char		buf[256];
-			ssize_t		n = 0;
-			size_t		num = 0;
-
-			while ((n = read(pd[0], buf + num, sizeof buf - 1)) > 0
-					&& (num += n) < sizeof buf - 1)
-				;
-			if (num > 0) {
-				buf[num] = '\0';
-				file_msg("Error message from command %s: %s",
-						full_command(argv), buf);
-			} else if (n < 0) {
-				file_msg(
-					"Cannot read error message from %s: %s",
-					full_command(argv), strerror(errno));
-			}
-		}
-		if (fds.revents & POLLHUP)
-			break;
-		if (fds.revents & (POLLERR | POLLNVAL)) {
-			file_msg("Command %s, polling error:%s",
-					full_command(argv),
-					fds.revents & POLLERR ? " POLLERR" : "",
-					fds.revents &POLLNVAL? " POLLNVAL": "");
-			break;
-		}
-	}
-
-	if (close(pd[0])) {
-		file_msg("Error closing stderr to command %s: %s",
-				full_command(argv), strerror(errno));
-	}
-
-	if (waitpid(pid, &ret, 0) == -1) {
-		file_msg("Error waiting for completion of process %s: %s",
-				full_command(argv), strerror(errno));
-		return -1;
-	}
-
-	if (WIFEXITED(ret)) {
-		ret = WEXITSTATUS(ret);
+	if (open_process(argv, pd[1], pd[0], &pid, &fderr)) {
+		close(pd[0]);
+		pd[0] = -1;
 	} else {
-		file_msg("Command %s interrupted by signal %d",
-				full_command(argv), ret = WTERMSIG(ret));
+		add_info(pd[0], fderr, pid);
 	}
-	return ret;
+	close(pd[1]);
+
+	return pd[0];
+}
+
+
+/*
+ * Close the open file descriptor fdread.
+ * If data is still pending on fdread, terminate the process
+ * that writes to the other end of the pipe.
+ */
+int
+spawn_pclose_r(int fdread)
+{
+	int		fderr;
+	int		ignore_signal = 0;
+	pid_t		pid;
+	struct pollfd	fds;
+
+	if (retrieve_info(fdread, &fderr, &pid)) {
+		file_msg("Error retrieving process id of spawned process!");
+		file_msg("Can you reproduce this error?");
+		return -1;
+	}
+
+	/* check, whether the process still wants to write data to stdout */
+	fds.fd = fdread;
+	fds.events = POLLIN;
+	fds.revents = 0;
+	if (poll(&fds, 1, 0/* do not block */) < 0)
+		file_msg("Error polling stdout of spawned process: %s",
+				strerror(errno));
+	else
+		if (fds.revents & POLLIN)
+			kill(pid, ignore_signal = SIGUSR1);
+	close(fdread);
+	return poll_err_close(pid, fderr, ignore_signal);
 }

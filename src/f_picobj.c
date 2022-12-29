@@ -464,7 +464,7 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 	if (xf_stream->uncompress) {
 		/* a compressed file */
 
-		int	fd[2];
+		int	fd;
 		char	*args[4];
 
 		args[0] = xf_stream->uncompress[0];
@@ -472,21 +472,11 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 		args[2] = xf_stream->name_on_disk;
 		args[3] = NULL;
 
-		if (pipe(fd)) {
-			file_msg("Trying to uncompress %s, "
-						"cannot create pipe: %s",
-					xf_stream->name_on_disk,
-					strerror(errno));
+		if ((fd = spawn_popen_r(args)) == -1) {
+			xf_stream->fp = NULL;
 			return NULL;
 		}
-		if (spawn_writefd(args, fd[1])) {
-			/* spawn_writefd() already wrote error messages */
-			close(fd[0]);
-			close(fd[1]);
-			return NULL;
-		}
-		close(fd[1]);
-		if (!(xf_stream->fp = fdopen(fd[0], "r")))
+		if (!(xf_stream->fp = fdopen(fd, "r")))
 			file_msg("Cannot read uncompressed content of %s: %s",
 					xf_stream->name_on_disk,
 					strerror(errno));
@@ -517,13 +507,7 @@ close_stream(struct xfig_stream *restrict xf_stream)
 		return fclose(xf_stream->fp);
 	} else {
 		/* a pipe */
-		char	trash[BUFSIZ];
-		/* for a pipe, must read everything or
-		   we'll get a broken pipe message */
-		while (fread(trash, (size_t)1, (size_t)BUFSIZ, xf_stream->fp) ==
-				(size_t)BUFSIZ)
-			;
-		return fclose(xf_stream->fp);
+		return spawn_pclose_r(fileno(xf_stream->fp));
 	}
 }
 

@@ -25,4 +25,6 @@
 
 /* spawn the process argv[0], writing to the open file descriptor fdout */
 extern int	spawn_writefd(char *const argv[restrict], int fdout);
+extern int	spawn_popen_r(char *const argv[restrict]);
+extern int	spawn_pclose_r(int fdread);
 #endif
