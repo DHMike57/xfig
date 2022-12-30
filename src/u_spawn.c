@@ -240,69 +240,10 @@ open_process(char *const argv[restrict], int fdout, int cd,
 	return 0;
 }
 
-/*
- * If ignore_signal is given, close fderr, and wait for the process to
- * terminate. Ignore SIGUSR1 in this case.
- * Otherwise, poll fderr and output the first 255 bytes received on fderr.
- * Wait for the process to terminate, reporting any signal.
- * Return the exit status of the process.
- */
-/*
- * The process might either
- * - have completed writing to the output file and terminated, or waiting to
- *   write an error, or
- * - be still running, writing output and probably waiting to write error, or
- * - was terminated by us, the terminating signal and errors should be ignored.
- * In the first case, the output file descriptor might have been closed by the
- * process, or it is still open.
- */
 static int
-poll_err_close(pid_t pid, int fderr, int ignore_signal)
+closefderr_wait(pid_t pid, int fderr, int ignore_signal)
 {
-	int		ret;
-	struct pollfd	fds;
-
-	fds.fd = fderr;
-	fds.events = POLLIN;		/* POLLHUP is anyhow reported */
-	fds.revents = 0;
-
-	if (ignore_signal) {
-		;
-	} else if (poll(&fds, 1, -1 /* no timeout */) < 0) {
-		file_msg("Error polling stderr: %s", strerror(errno));
-	} else {	/* 0 only possible if a timeout is given */
-		if (fds.revents & POLLIN) {
-			/* read the first 255 bytes, not more */
-			char		buf[256];
-			ssize_t		n = 0;
-			size_t		num = 0;
-
-			while ((n = read(fderr, buf+num, sizeof buf-1-num)) > 0
-					&& (num += n) < sizeof buf - 1)
-				;
-			if (num > 0) {
-				buf[num] = '\0';
-				file_msg("Error message from spawned process: "
-						"%s", buf);
-			}
-			if (n == -1) {
-				file_msg("Error reading error message: %s",
-						strerror(errno));
-			} else if (n == 0 && num == sizeof buf - 1) {
-				/* more data would be available;
-				 * Closing fderr causes SIGPIPE */
-				ignore_signal = SIGPIPE;
-			}
-		}
-		if (fds.revents & (POLLERR | POLLNVAL)) {
-			file_msg("Error polling stderr:%s%s%s",
-				fds.revents & POLLERR ? " POLLERR" : "",
-				fds.revents & POLLERR && fds.revents & POLLNVAL?
-						"," : "" ,
-				fds.revents & POLLNVAL ?
-					" file descriptor not open":"");
-		}
-	}
+	int	ret;
 
 	if (close(fderr))
 		file_msg("Error closing stderr: %s", strerror(errno));
@@ -321,9 +262,72 @@ poll_err_close(pid_t pid, int fderr, int ignore_signal)
 			ret = 0;
 		else
 			file_msg("Spawned process interrupted by signal %d",
-					ret); }
+					ret);
+	}
 	return ret;
 }
+
+/*
+ * Poll fderr and output the first 255 bytes received on fderr.
+ * Continue reading until fderr is empty.
+ */
+static void
+poll_fderr(int fderr)
+{
+	struct pollfd	fds;
+
+	fds.fd = fderr;
+	fds.events = POLLIN;		/* POLLHUP is anyhow reported */
+	fds.revents = 0;
+
+	if (poll(&fds, 1, -1 /* no timeout */) < 0) {
+		file_msg("Error polling stderr: %s", strerror(errno));
+		return;
+	}
+	/* poll > 0; 0 only possible if a timeout is given */
+	if (fds.revents & POLLIN) {
+		/* read the first 255 bytes, not more */
+		char		buf[256];
+		ssize_t		n = 0;
+		size_t		num = 0;
+
+		while ((n = read(fderr, buf + num, sizeof buf - 1 - num)) > 0 &&
+				(num += n) < sizeof buf - 1)
+			;
+		if (num > 0) {
+			buf[num] = '\0';
+			file_msg("Error message from spawned process: %s", buf);
+		}
+		if (n == -1) {
+			file_msg("Error reading error message: %s",
+					strerror(errno));
+		} else if (n == 0 && num == sizeof buf - 1) {
+			/* more data is available; Read the rest,
+			   to not cause Broken pipe (SIGPIPE). */
+			while (read(fderr, buf, sizeof buf) > 0)
+				;
+		}
+	}
+	if (fds.revents & (POLLERR | POLLNVAL)) {
+		file_msg("Error polling stderr:%s%s%s",
+				fds.revents & POLLERR ? " POLLERR" : "",
+				fds.revents & POLLERR && fds.revents & POLLNVAL?
+					"," : "" ,
+				fds.revents & POLLNVAL ?
+					" file descriptor not open" : "");
+	}
+}
+
+
+/*
+ * A spawned process might either
+ * - have completed writing to the output file and terminated, or waiting to
+ *   write an error, or
+ * - be still running, writing output and probably waiting to write error, or
+ * - was terminated by us, the terminating signal and errors should be ignored.
+ * In the first case, the output file descriptor might have been closed by the
+ * process, or it is still open.
+ */
 
 /*
  * Spawn the process argv[0] with the NULL-terminated arguments argv.
@@ -331,8 +335,7 @@ poll_err_close(pid_t pid, int fderr, int ignore_signal)
  * Write the output of the spawned process to the open file descriptor fdout,
  * which shall be closed by the process.
  * Standard error is captured in a buffer and reported to the user.
- * Return 0 on success.
- * On error, return -1, and output an error message.
+ * Return the exit status of the spawned process, and output error messages.
  */
 int
 spawn_writefd(char *const argv[restrict], int fdout)
@@ -340,10 +343,10 @@ spawn_writefd(char *const argv[restrict], int fdout)
 	int	fderr;
 	pid_t	pid;
 
-	if (open_process(argv, fdout, -1, &pid, &fderr) ||
-			poll_err_close(pid, fderr, 0))
+	if (open_process(argv, fdout, -1, &pid, &fderr))
 		return -1;
-	return 0;
+	poll_fderr(fderr);
+	return closefderr_wait(pid, fderr, 0);
 }
 
 int
@@ -369,8 +372,9 @@ spawn_popen_r(char *const argv[restrict])
 	return pd[0];
 }
 
-
 /*
+ * Terminate the process that writes to the write end of fdread,
+ * and close the open file descriptor fdread.
  * Close the open file descriptor fdread.
  * If data is still pending on fdread, terminate the process
  * that writes to the other end of the pipe.
@@ -379,9 +383,7 @@ int
 spawn_pclose_r(int fdread)
 {
 	int		fderr;
-	int		ignore_signal = 0;
 	pid_t		pid;
-	struct pollfd	fds;
 
 	if (retrieve_info(fdread, &fderr, &pid)) {
 		file_msg("Error retrieving process id of spawned process!");
@@ -389,16 +391,15 @@ spawn_pclose_r(int fdread)
 		return -1;
 	}
 
-	/* check, whether the process still wants to write data to stdout */
-	fds.fd = fdread;
-	fds.events = POLLIN;
-	fds.revents = 0;
-	if (poll(&fds, 1, 0/* do not block */) < 0)
-		file_msg("Error polling stdout of spawned process: %s",
-				strerror(errno));
-	else
-		if (fds.revents & POLLIN)
-			kill(pid, ignore_signal = SIGUSR1);
+	/*
+	 * It was tried to poll fdread and check, whether the process still
+	 * wants to write data. However, for bunzip2 the pipe remained empty,
+	 * but bunzip2 issued an I/O error message (trying to be smart?)
+	 * Therefore, unconditionally send SIGHUP. If the process exited before,
+	 * the signal is ignored. SIGUSR1 was also tried, but unxz exited
+	 * with 1 and did not report terminatin by a signal.
+	 */
+	kill(pid, SIGHUP);
 	close(fdread);
-	return poll_err_close(pid, fderr, ignore_signal);
+	return closefderr_wait(pid, fderr, SIGHUP /* ignore this signal */);
 }
