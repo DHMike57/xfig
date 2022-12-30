@@ -199,7 +199,6 @@ file_on_disk(const char *restrict name, char **restrict found, size_t len,
 		/* Not found. Check, whether the file has one of the known
 		   compression suffices, but the uncompressed file
 		   exists on disk. */
-		*suffix = '\0';
 		if (i == filetypes_len && (suffix = strrchr(name, '.'))) {
 			for (i = 0; i < filetypes_len; ++i) {
 				if (!strcmp(suffix, filetypes[i][0])) {
