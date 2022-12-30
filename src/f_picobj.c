@@ -392,7 +392,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 
 	/* open the file and read a few bytes of the header to see what it is */
 	if ((fp = open_stream(abs_path, &pic_stream)) == NULL) {
-		file_msg("No such picture file: %s", abs_path);
+		file_msg("Could not open picture file %s", abs_path);
 		free_stream(&pic_stream);
 		return;
 	}
@@ -425,7 +425,8 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 	/* readfunc() expect an open file stream, positioned not at the
 	   start of the stream. The stream remains open after returning. */
 	if (headers[i].readfunc(pic, &pic_stream) != PicSuccess) {
-		file_msg("%s: Bad %s format", abs_path, headers[i].type);
+		file_msg("Errors occured when reading %s file %s",
+						headers[i].type, abs_path);
 	} else {
 		put_msg("Reading Picture object file...Done");
 	}
