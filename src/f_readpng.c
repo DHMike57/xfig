@@ -21,6 +21,7 @@
 #endif
 
 #include <png.h>
+#include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/X.h>		/* TrueColor, None */
@@ -33,6 +34,20 @@
 #include "w_msgpanel.h"		/* file_msg() */
 #include "w_setup.h"		/* PIX_PER_INCH */
 
+
+static void
+user_error_fn(png_structp png_ptr, png_const_charp error_msg)
+{
+	file_msg("libpng error: %s", error_msg);
+	png_longjmp(png_ptr, 1);
+}
+
+static void
+user_warning_fn(png_structp png_ptr, png_const_charp error_msg)
+{
+	(void)png_ptr;
+	file_msg("libpng warning: %s", error_msg);
+}
 
 int
 read_png(F_pic *pic, struct xfig_stream *restrict pic_stream)
@@ -56,7 +71,7 @@ read_png(F_pic *pic, struct xfig_stream *restrict pic_stream)
 
 	/* read the png file here */
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
-			(png_voidp)NULL, NULL, NULL);
+			(png_voidp)NULL, user_error_fn, user_warning_fn);
 	if (!png_ptr) {
 		return FileInvalid;
 	}
