@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2022 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -125,8 +125,10 @@ read_JPEG_file(FILE *file, F_pic *pic)
 	if (setjmp(setjmp_buffer)) {
 		/* an error has occured */
 		jpeg_destroy_decompress(&cinfo);
-		if (pic->pic_cache->bitmap != NULL)
+		if (pic->pic_cache->bitmap != NULL) {
 			free(pic->pic_cache->bitmap);
+			pic->pic_cache->bitmap = NULL;
+		}
 		return -1;
 	}
 	/* Now we can initialize the JPEG decompression object. */

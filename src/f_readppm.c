@@ -377,6 +377,7 @@ read_ppm(F_pic *pic, struct xfig_stream *restrict pic_stream)
 
 	if (stat != PicSuccess) {
 		free(pic->pic_cache->bitmap);
+		pic->pic_cache->bitmap = NULL;
 		return stat;
 	}
 
