@@ -472,7 +472,7 @@ open_stream(char *restrict name, struct xfig_stream *restrict xf_stream)
 		args[2] = xf_stream->name_on_disk;
 		args[3] = NULL;
 
-		if ((fd = spawn_popen_r(args)) == -1) {
+		if ((fd = spawn_popen(args, "r")) == -1) {
 			xf_stream->fp = NULL;
 			return NULL;
 		}
@@ -507,7 +507,7 @@ close_stream(struct xfig_stream *restrict xf_stream)
 		return fclose(xf_stream->fp);
 	} else {
 		/* a pipe */
-		return spawn_pclose_r(fileno(xf_stream->fp));
+		return spawn_pclose(fileno(xf_stream->fp));
 	}
 }
 

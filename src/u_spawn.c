@@ -155,12 +155,12 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 	posix_spawn_file_actions_t	file_actions;
 
 	posix_spawn_file_actions_init(&file_actions);
-	if (cfd[0] != -1)
+	if (cfd[0] > -1)
 		posix_spawn_file_actions_addclose(&file_actions, cfd[0]);
-	if (cfd[1] != -1)
+	if (cfd[1] > -1)
 		posix_spawn_file_actions_addclose(&file_actions, cfd[1]);
 	for (i = 0; i < 3; ++i) {
-		if (fd[i] != -1) {
+		if (fd[i] > -1) {
 			/* 0 must be stdin, 1 stdout, and 2 stderr */
 			posix_spawn_file_actions_adddup2(
 					&file_actions, fd[i], i);
@@ -178,12 +178,12 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 	if (*pid == 0) {
 		/* the child */
 		int	i;
-		if (cfd[0] != -1)
+		if (cfd[0] > -1)
 			close(cfd[0]);
-		if (cfd[1] != -1)
+		if (cfd[1] > -1)
 			close(cfd[1]);
 		for (i = 0; i < 3; ++i) {
-			if (fd[i] != -1) {
+			if (fd[i] > -1) {
 				if (dup2(fd[i], i) == -1)
 					return errno;
 				close(fd[i]);
@@ -201,7 +201,8 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 /*
  * Spawn the process argv[0] with the NULL-terminated arguments argv.
  * Search PATH for the command given in argv[0].
- * Write the output of the spawned process to the open file descriptor fdout.
+ * Redirect either stdin or stdout (childfd = 0 or 1) in the spawned process
+ * to the open file descriptor parentfd.
  * Standard error is captured in a buffer and reported to the user.
  * Return the process id in pid and a file descriptor in fderr from which
  * to read stderr of the spawned process.
@@ -209,7 +210,7 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
  * On error, return -1, and output an error message.
  */
 static int
-open_process(char *const argv[restrict], int fdout, int cd,
+open_process(char *const argv[restrict], int childfd, int parentfd, int cd,
 		pid_t *pid, int *fderr)
 {
 	int		ret;
@@ -224,7 +225,7 @@ open_process(char *const argv[restrict], int fdout, int cd,
 	}
 
 	/* in the child, redirect stdout to fdout, stderr to the pipe */
-	fd[1] = fdout;
+	fd[childfd] = parentfd;
 	fd[2] = pd[1];
 	cfd[1] = pd[0];
 	/* and return the read end of the pipe for polling */
@@ -236,7 +237,7 @@ open_process(char *const argv[restrict], int fdout, int cd,
 	}
 
 	close(pd[1]);		/* close the write end here */
-	close(fdout);
+	close(parentfd);
 	return 0;
 }
 
@@ -343,16 +344,18 @@ spawn_writefd(char *const argv[restrict], int fdout)
 	int	fderr;
 	pid_t	pid;
 
-	if (open_process(argv, fdout, -1, &pid, &fderr))
+	if (open_process(argv, 1, fdout, -1, &pid, &fderr))
 		return -1;
 	poll_fderr(fderr);
 	return closefderr_wait(pid, fderr, 0);
 }
 
 int
-spawn_popen_r(char *const argv[restrict])
+spawn_popen(char *const argv[restrict], const char *restrict type)
 {
 	int	fderr;
+	int	parent;
+	int	child;
 	int	pd[2];
 	pid_t	pid;
 
@@ -361,31 +364,36 @@ spawn_popen_r(char *const argv[restrict])
 				full_command(argv), strerror(errno));
 		return -1;
 	}
-	if (open_process(argv, pd[1], pd[0], &pid, &fderr)) {
-		close(pd[0]);
-		pd[0] = -1;
+	if (!strcmp(type, "r")) {
+		parent = 0;
+		child = 1;
 	} else {
-		add_info(pd[0], fderr, pid);
+		parent = 1;
+		child = 0;
 	}
-	close(pd[1]);
 
-	return pd[0];
+	if (open_process(argv, child, pd[child], pd[parent], &pid, &fderr)) {
+		close(pd[parent]);
+		pd[parent] = -1;
+	} else {
+		add_info(pd[parent], fderr, pid);
+	}
+	close(pd[child]);
+
+	return pd[parent];
 }
 
 /*
- * Terminate the process that writes to the write end of fdread,
- * and close the open file descriptor fdread.
- * Close the open file descriptor fdread.
- * If data is still pending on fdread, terminate the process
- * that writes to the other end of the pipe.
+ * Terminate the process that reads or writes to the other end of pd,
+ * and close pd.
  */
 int
-spawn_pclose_r(int fdread)
+spawn_pclose(int pd)
 {
 	int		fderr;
 	pid_t		pid;
 
-	if (retrieve_info(fdread, &fderr, &pid)) {
+	if (retrieve_info(pd, &fderr, &pid)) {
 		file_msg("Error retrieving process id of spawned process!");
 		file_msg("Can you reproduce this error?");
 		return -1;
@@ -400,6 +408,6 @@ spawn_pclose_r(int fdread)
 	 * with 1 and did not report terminatin by a signal.
 	 */
 	kill(pid, SIGHUP);
-	close(fdread);
+	close(pd);
 	return closefderr_wait(pid, fderr, SIGHUP /* ignore this signal */);
 }
