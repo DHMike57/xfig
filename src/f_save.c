@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -59,8 +59,8 @@ void init_write_tmpfile(void)
   write_tmpfile=1;
   /* save current file directory */
   strcpy(save_cur_dir, cur_file_dir);
-  /* and set to TMPDIR to preserver absolute paths of any imported pictures */
-  strcpy(cur_file_dir, TMPDIR);
+  /* and set to export dir to have correct paths of any imported pictures */
+  strcpy(cur_file_dir, cur_export_dir);
 }
 
 void end_write_tmpfile(void)
@@ -68,6 +68,25 @@ void end_write_tmpfile(void)
   write_tmpfile=0;
   /* restore current file directory */
   strcpy(cur_file_dir, save_cur_dir);
+}
+
+int
+write_fd(int fd)
+{
+	FILE	*fp;
+
+	if (!(fp = fdopen(fd, "wb"))) {
+		file_msg("Cannot create stream: %s", strerror(errno));
+		return -1;
+	}
+	num_object = 0;
+	/* write_objects() inserts picture paths relative to cur_file_dir */
+	if (write_objects(fp)) {
+		file_msg("An error occured during object export, probably: %s",
+				strerror(errno));
+		return -1;
+	}
+	return 0;
 }
 
 int write_file(char *file_name, Boolean update_recent)

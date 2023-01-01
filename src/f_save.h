@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -28,11 +28,12 @@ extern int	emergency_save(char *file_name);
 extern void	write_arc(FILE *fp, F_arc *a);
 extern void	write_compound(FILE *fp, F_compound *com);
 extern void	write_ellipse(FILE *fp, F_ellipse *e);
-extern void	write_fig_header(FILE *fp);
-extern int	write_file(char *file_name, Boolean update_recent);
 extern void	write_line(FILE *fp, F_line *l);
 extern void	write_spline(FILE *fp, F_spline *s);
 extern void	write_text(FILE *fp, F_text *t);
+extern void	write_fig_header(FILE *fp);
+extern int	write_file(char *file_name, Boolean update_recent);
+extern int	write_fd(int fd);
 extern void	end_write_tmpfile(void);
 extern void	init_write_tmpfile(void);
 
