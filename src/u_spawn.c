@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -201,8 +201,9 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 /*
  * Spawn the process argv[0] with the NULL-terminated arguments argv.
  * Search PATH for the command given in argv[0].
- * Redirect either stdin or stdout (childfd = 0 or 1) in the spawned process
- * to the open file descriptor parentfd.
+ * If either of the fd[i] is non-negative, redirect stdin (fd[0]) and/or stdout
+ * (fd[1]) in the spawned process to the open file descriptor fd[i].
+ * Close the file descriptor cd in the spawned process.
  * Standard error is captured in a buffer and reported to the user.
  * Return the process id in pid and a file descriptor in fderr from which
  * to read stderr of the spawned process.
@@ -210,12 +211,12 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
  * On error, return -1, and output an error message.
  */
 static int
-open_process(char *const argv[restrict], int childfd, int parentfd, int cd,
+open_process(char *const argv[restrict], int fd[2], int cd,
 		pid_t *pid, int *fderr)
 {
-	int		ret;
+	int		i;
 	int		pd[2];
-	int		fd[3] = {-1, -1, -1};
+	int		ffd[3] = {-1, -1, -1};
 	int		cfd[2] = {cd, -1};
 
 	if (pipe(pd)) {
@@ -224,20 +225,23 @@ open_process(char *const argv[restrict], int childfd, int parentfd, int cd,
 		return -1;
 	}
 
-	/* in the child, redirect stdout to fdout, stderr to the pipe */
-	fd[childfd] = parentfd;
-	fd[2] = pd[1];
+	/* for example, if fd[1] = fdout, redirect stdout to fdout */
+	for (i = 0; i < 2; ++i) {
+		if (fd[i] > -1)
+			ffd[i] = fd[i];
+	}
+	ffd[2] = pd[1];
 	cfd[1] = pd[0];
 	/* and return the read end of the pipe for polling */
 	*fderr = pd[0];
-	if ((ret = spawn_process(pid, argv, fd, cfd))) {
+	if ((i = spawn_process(pid, argv, ffd, cfd))) {
 		file_msg("Error spawning process %s: %s",
-				full_command(argv), strerror(ret));
+				full_command(argv), strerror(i));
 		return -1;
 	}
 
 	close(pd[1]);		/* close the write end here */
-	close(parentfd);
+	close(fd[i]);
 	return 0;
 }
 
@@ -271,6 +275,8 @@ closefderr_wait(pid_t pid, int fderr, int ignore_signal)
 /*
  * Poll fderr and output the first 255 bytes received on fderr.
  * Continue reading until fderr is empty.
+ * If a process did not write to stderr, anyhow a POLLHUP is detected when the
+ * process finishes.
  */
 static void
 poll_fderr(int fderr)
@@ -342,9 +348,10 @@ int
 spawn_writefd(char *const argv[restrict], int fdout)
 {
 	int	fderr;
+	int	fd[2] = {-1, fdout};
 	pid_t	pid;
 
-	if (open_process(argv, 1, fdout, -1, &pid, &fderr))
+	if (open_process(argv, fd, -1, &pid, &fderr))
 		return -1;
 	poll_fderr(fderr);
 	return closefderr_wait(pid, fderr, 0);
@@ -365,22 +372,24 @@ spawn_popen(char *const argv[restrict], const char *restrict type)
 		return -1;
 	}
 	if (!strcmp(type, "r")) {
-		parent = 0;
+		parent = pd[0];
+		pd[0] = -1;
 		child = 1;
 	} else {
-		parent = 1;
+		parent = pd[1];
+		pd[1] = -1;
 		child = 0;
 	}
 
-	if (open_process(argv, child, pd[child], pd[parent], &pid, &fderr)) {
-		close(pd[parent]);
-		pd[parent] = -1;
+	if (open_process(argv, pd, parent, &pid, &fderr)) {
+		close(parent);
+		parent = -1;
 	} else {
-		add_info(pd[parent], fderr, pid);
+		add_info(parent, fderr, pid);
 	}
 	close(pd[child]);
 
-	return pd[parent];
+	return parent;
 }
 
 /*
