@@ -380,6 +380,7 @@ spawn_popen_fd(char *const argv[restrict], const char *restrict type, int fd)
 				full_command(argv), strerror(errno));
 		return -1;
 	}
+	/* re-use pd as input to open_process */
 	if (!strcmp(type, "r")) {
 		parent = pd[0];
 		pd[0] = fd;
@@ -394,7 +395,18 @@ spawn_popen_fd(char *const argv[restrict], const char *restrict type, int fd)
 		close(parent);
 		parent = -1;
 	} else {
-		add_info(parent, fderr, pid);
+		/*
+		 * If output from the spawned process is consumed, the process
+		 * is finished when everything is read. Polling on fderr might
+		 * block forever, hence the process is signaled a SIGHUP.
+		 * However, if writing to the process, the process may still
+		 * work after having finished writing. Therefore, poll on fderr
+		 * in this case.
+		 */
+		if (child == 1)		/* read from the process */
+			add_info(parent, -fderr, pid);
+		else
+			add_info(parent, fderr, pid);
 	}
 	close(pd[child]);
 
@@ -441,8 +453,12 @@ spawn_pclose(int fd)
 	 * but bunzip2 issued an I/O error message (trying to be smart?)
 	 * Therefore, unconditionally send SIGHUP. If the process exited before,
 	 * the signal is ignored. SIGUSR1 was also tried, but unxz exited
-	 * with 1 and did not report terminatin by a signal.
+	 * with 1 and did not report termination by a signal.
 	 */
+	if (fderr > 0)
+		poll_fderr(fderr);
+	else
+		fderr *= -1;
 	kill(pid, SIGHUP);
 	close(fd);
 	return closefderr_wait(pid, fderr, SIGHUP /* ignore this signal */);
