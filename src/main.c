@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2021 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -699,6 +699,14 @@ main(int argc, char **argv)
 	/* if this is not writable and accessible, fail later, at a time
 	   when a temporary file is needed. */
     }
+    /*
+     * Xfig links into the ghostscript library, which in turn may call libpaper.
+     * After each call to gs two file descriptors to /etc/papersize remained
+     * open. Opening /etc/papersize can be avoided by setting an environment
+     * variable, see man (5) papersize or also
+     * https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=892490
+     */
+    setenv("PAPERSIZE", "a4", 0);
 
     /* ratio of Fig units to display resolution (80ppi) */
     /* might also be needed when updating a figure */
