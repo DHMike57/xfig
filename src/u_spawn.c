@@ -21,12 +21,11 @@
 #endif
 
 #include <errno.h>
-#include <fcntl.h>		/* open(), creat() */
 #include <poll.h>
 #include <unistd.h>		/* close() */
 #include <signal.h>		/* SIGPIPE */
 #include <stdio.h>
-#include <stdlib.h>		/* EXIT_SUCCESS */
+#include <stdlib.h>		/* malloc() */
 #include <string.h>		/* strerror() */
 #include <sys/stat.h>		/* mode_t, in the open() call */
 #include <sys/wait.h>
@@ -240,8 +239,12 @@ open_process(char *const argv[restrict], int fd[2], int cd,
 		return -1;
 	}
 
-	close(pd[1]);		/* close the write end here */
-	close(fd[i]);
+	/* close the write end of the pipe to stderr */
+	close(pd[1]);
+	/* and the file descriptors used by the spawned process */
+	for (i = 0; i < 2; ++i)
+		if (fd[i] > -1)
+			close(fd[i]);
 	return 0;
 }
 
@@ -357,8 +360,14 @@ spawn_writefd(char *const argv[restrict], int fdout)
 	return closefderr_wait(pid, fderr, 0);
 }
 
+/*
+ * Spawn a process and open a pipe, either for reading ("r") or for writing.
+ * Return a file desrciptor for reading the output of the process, or for
+ * writing to stdin of the process. If fd is non-negative, the process itself
+ * will read from fd ("r") or write to it.
+ */
 int
-spawn_popen(char *const argv[restrict], const char *restrict type)
+spawn_popen_fd(char *const argv[restrict], const char *restrict type, int fd)
 {
 	int	fderr;
 	int	parent;
@@ -373,11 +382,11 @@ spawn_popen(char *const argv[restrict], const char *restrict type)
 	}
 	if (!strcmp(type, "r")) {
 		parent = pd[0];
-		pd[0] = -1;
+		pd[0] = fd;
 		child = 1;
 	} else {
 		parent = pd[1];
-		pd[1] = -1;
+		pd[1] = fd;
 		child = 0;
 	}
 
@@ -393,16 +402,34 @@ spawn_popen(char *const argv[restrict], const char *restrict type)
 }
 
 /*
- * Terminate the process that reads or writes to the other end of pd,
- * and close pd.
+ * Spawn a process and open a pipe, either for reading ("r") or for writing.
+ * Return a file desrciptor for reading the output of the process, or for
+ * writing to stdin of the process.
+ * It is expected that the process needs to consume some data, or writes data
+ * ("r"), and terminates after a certain amount of data has been fed or been
+ * retrieved from it.
+ * Example:
+ *   fd = spawn_popen("date", "r");	char buf[256];
+ *   if (read(fd, buf, sizeof buf) < sizeof buf)
+ *		spawn_pclose(fd);
  */
 int
-spawn_pclose(int pd)
+spawn_popen(char *const argv[restrict], const char *restrict type)
+{
+	return spawn_popen_fd(argv, type, -1);
+}
+
+/*
+ * Terminate the process that reads or writes to the other end of fd,
+ * and close fd.
+ */
+int
+spawn_pclose(int fd)
 {
 	int		fderr;
 	pid_t		pid;
 
-	if (retrieve_info(pd, &fderr, &pid)) {
+	if (retrieve_info(fd, &fderr, &pid)) {
 		file_msg("Error retrieving process id of spawned process!");
 		file_msg("Can you reproduce this error?");
 		return -1;
@@ -417,6 +444,6 @@ spawn_pclose(int pd)
 	 * with 1 and did not report terminatin by a signal.
 	 */
 	kill(pid, SIGHUP);
-	close(pd);
+	close(fd);
 	return closefderr_wait(pid, fderr, SIGHUP /* ignore this signal */);
 }
