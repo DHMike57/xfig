@@ -348,10 +348,12 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	char	layers[PATH_MAX];
 	const char	dummy[] = "x";
 	char	*outfile, *name;
+	char	*save_file_dir;
 	char	*tmp_name = NULL;
 	char	*suf;
 	char	*args[36];
 	char	argbuf[5][16];
+	int	ret = 0;
 	int	a;	/* args counter */
 	int	b;	/* argbuf counter */
 	size_t	bufsize = sizeof argbuf[1];
@@ -374,9 +376,10 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	 * print_to_file is called from w_export.c where the current directory
 	 * is set to cur_export_dir, but write_file() writes picture paths
 	 * relative to cur_file_dir; Hence, for the spawned fig2dev command to
-	 * find the images, go there.
+	 * find the images, set cur_file_dir to cur_export_dir.
 	 */
-	change_directory(cur_file_dir);
+	save_file_dir = strdup(cur_file_dir);
+	strcpy(cur_file_dir, cur_export_dir);
 
 	/* if the user only wants the active layers, build that list */
 	build_layer_list(layers);
@@ -480,8 +483,8 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			size_t		len = strlen(outfile);
 
 			if (!(tmp_name = new_string(len + 4))) {
-				free(outfile);
-				return 1;
+				ret = 1;
+				goto free_outfile;
 			}
 
 			/* Options were already set above */
@@ -528,14 +531,13 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			/* now the text part */
 			/* add "_t" to the output filename */
 			if (!(tmp_name = new_string(len))) {
-				free(outfile);
-				return 1;
+				ret = 1;
+				goto free_outfile;
 			}
 			memcpy(tmp_name, outfile, len + 1);
 			if (!realloc(outfile, len + 3)) {
-				free(tmp_name);
-				free(outfile);
-				return 1;
+				ret = 1;
+				goto free_tmp_name;
 			}
 			strcpy(outfile + len, "_t");
 #ifdef I18N
@@ -589,16 +591,16 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 				size_t	len = strlen(outfile);
 				if (len - (suf-outfile) < 4 &&
 						!realloc(outfile, len + 5)) {
-					free(outfile);
-					return 1;
+					ret = 1;
+					goto free_outfile;
 				}
 				sprintf(suf, ".pdf");
 				args[++a] = outfile;
 			} else {
 				size_t	len = strlen(outfile);
 				if (!(realloc(outfile, len + 5))) {
-					free(outfile);
-					return 1;
+					ret = 1;
+					goto free_outfile;
 				}
 				strcpy(outfile + len, ".pdf");
 			}
@@ -724,11 +726,14 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	reset_cursor();
 
 	/* free tempnames */
+free_tmp_name:
 	if (tmp_name)
 		free(tmp_name);
+free_outfile:
+	strcpy(cur_file_dir, save_file_dir);
+	free(save_file_dir);
 	free(outfile);
-
-	return 0;
+	return ret;
 }
 
 void
