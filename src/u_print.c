@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -22,6 +22,7 @@
 #include "u_print.h"
 
 #include <errno.h>
+#include <fcntl.h>		/* creat(), open() */
 #ifdef I18N
 #include <locale.h>
 #endif
@@ -39,6 +40,8 @@
 #include "f_save.h"
 #include "f_util.h"
 #include "u_colors.h"
+#include "u_spawn.h"
+#include "u_create.h"		/* new_string */
 #include "w_cursor.h"
 #include "w_layers.h"
 #include "w_msgpanel.h"
@@ -132,13 +135,90 @@ write_tmpfigfile(char *tmpfile, size_t len, char *template)
 }
 
 /*
+ * Write the export language to args[2].
+ */
+static void
+start_argumentlist(char *arg[restrict], char *argbuf[restrict],
+		const size_t bufsize, int *restrict a, int *restrict b,
+		char *layers)
+{
+	/* a refers to the index of arg[], b to the index of argbuf[] */
+	*b = -1;
+	arg[0] = fig2dev_cmd;
+	arg[1] = "-L";
+	*a = 2;	/* arg[2] will be the output language */
+#ifdef I18N
+	if (appres.international)
+		arg[++*a] = appres.fig2dev_localize_option;
+#endif
+	if (appres.magnification < 99.99 | appres.magnification > 100.01) {
+		int	n;
+		arg[++*a] = "-m";
+		n = snprintf(argbuf[++*b], bufsize,
+				"%.4g", appres.magnification/100.);
+		arg[++*a] = argbuf[*b];
+		if ((size_t)n >= bufsize)
+			file_msg("Unable to write full magnification %.4g, "
+					"only %zd characters available",
+					appres.magnification/100., bufsize);
+	}
+	if (!print_all_layers) {
+		arg[++*a] = "-D";
+		arg[++*a] = layers;
+		if (bound_active_layers)
+			arg[++*a] = "-K";
+	}
+}
+
+static void
+border_arg(char *args[restrict], char *const argbuf[restrict],
+		const size_t bufsize, int *restrict a, int *restrict b,
+		int border)
+{
+	int	n;
+	args[++*a] = "-b";
+	n = snprintf(argbuf[++*b], bufsize, "%d", border);
+	args[++*a] = argbuf[*b];
+	if ((size_t)n >= bufsize)
+		file_msg("Border thickness %d incorrectly written: %s",
+				border, argbuf[*b]);
+}
+
+static int
+spawn_prcmd(char *const args[restrict], const char *restrict outfile)
+{
+	int	fd;
+	int	fdout;
+	int	stat;
+
+	if ((fdout = open(outfile, O_CREAT | O_WRONLY | O_TRUNC,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |
+					S_IROTH | S_IWOTH)) == -1) {
+		file_msg("Cannot open file %s: %s", outfile, strerror(errno));
+		return -1;
+	}
+
+	/* All the commands below do their own error reporting */
+
+	if ((fd = spawn_popen_fd(args, "w", fdout)) < 0) {
+		close(fdout);
+		return -1;
+	}
+	stat = write_fd(fd);
+	fd = spawn_pclose(fd);
+	if (stat || fd)
+		return -1;
+	return 0;
+}
+
+/*
  * Construct the initial portion of the conversion command string for
  * language lang and write it to cmd. Use the layer option given in layers.
  * Return the number of chars written to cmd.
  * This function mainly exists, because the #ifdef I18N etc. confused
  * the automatic indenting.
  */
-int
+static int
 start_exportcmd(char *cmd, char *lang, char *layers)
 {
 	int	n;
@@ -266,48 +346,50 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	      Boolean use_transp_backg, int border, char *grid)
 {
 	char	layers[PATH_MAX];
-	char	prcmd[2*PATH_MAX+200];
-	char	tmpcmd[255];
-	char	tmp_name[PATH_MAX];
-	char	tmp_fig_file[PATH_MAX];
-	char	*outfile, *name, *real_lang;
+	const char	dummy[] = "x";
+	char	*outfile, *name;
+	char	*tmp_name = NULL;
 	char	*suf;
-	int	n;
+	char	*args[36];
+	char	argbuf[5][16];
+	int	a;	/* args counter */
+	int	b;	/* argbuf counter */
+	size_t	bufsize = sizeof argbuf[1];
 
 	/* if file exists, ask if ok */
 	if (!ok_to_write(file, "EXPORT"))
-		return (1);
-
-	if (write_tmpfigfile(tmp_fig_file, sizeof(tmp_fig_file), "xfig-fig"))
 		return 1;
 
-	/* if the user only wants the active layers, build that list */
-	build_layer_list(layers);
-
-	outfile = strdup(shell_protect_string(file));
+	outfile = strdup(file);
 	if (strlen(cur_filename) == 0)
-		name = strdup(file);
+		name = file;
 	else
-		name = strdup(shell_protect_string(cur_filename));
+		name = cur_filename;
 
 	put_msg("Exporting to file \"%s\" in %s mode ...     ",
 			file, appres.landscape ? "LANDSCAPE" : "PORTRAIT");
 	app_flush();		/* make sure message gets displayed */
 
-	real_lang = lang_items[cur_exp_lang];
+	/*
+	 * print_to_file is called from w_export.c where the current directory
+	 * is set to cur_export_dir, but write_file() writes picture paths
+	 * relative to cur_file_dir; Hence, for the spawned fig2dev command to
+	 * find the images, go there.
+	 */
+	change_directory(cur_file_dir);
 
-	/* if lang is pspdf, call first with just "eps" */
-	if (cur_exp_lang == LANG_PSPDF)
-		real_lang = "eps";
-	/* for pspdftex start with "pstex" */
-	if (cur_exp_lang == LANG_PSPDFTEX)
-		real_lang = "pstex";
+	/* if the user only wants the active layers, build that list */
+	build_layer_list(layers);
 
 #ifdef I18N
 	/* set the numeric locale to C so we get decimal points for numbers */
 	setlocale(LC_NUMERIC, "C");
 #endif
-	n = start_exportcmd(prcmd, real_lang, layers);
+
+	start_argumentlist(args, (char **)argbuf, bufsize, &a, &b, layers);
+
+	/* args[2] points to the language */
+	args[2] = lang_items[cur_exp_lang];
 
 	/* Options common to PostScript, PDF and EPS output */
 	if (cur_exp_lang == LANG_PS || cur_exp_lang == LANG_PDF ||
@@ -315,40 +397,65 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		    cur_exp_lang == LANG_PDFTEX || cur_exp_lang == LANG_PSPDF ||
 		    cur_exp_lang == LANG_PSPDFTEX ) {
 
-		n += sprintf(prcmd + n, " -F -n %s", name);
+		args[++a] = "-F";
+		args[++a] = "-n";
+		args[++a] = name;
 
-		if (backgrnd[0])	/* must escape the #rrggbb color spec */
-			n += sprintf(prcmd + n, " -g \\%s", backgrnd);
+		if (backgrnd[0]) {
+			args[++a] = "-g";
+			args[++a] = backgrnd;
+		}
 
 		if (border > 0)
-			n += sprintf(prcmd + n, " -b %d", border);
+			border_arg(args, (char **)argbuf, bufsize,
+					&a, &b, border);
 
 		/* any grid spec */
-		if (grid[0] && strcasecmp(grid, "none") != 0)
-			n += sprintf(prcmd + n, " -G %s", grid);
+		if (grid[0] && strcasecmp(grid, "none") != 0) {
+			args[++a] = "-G";
+			args[++a] = grid;
+		}
 
 		/* Options common to PS and PDF in PS-mode (not EPS-mode) */
 		if (cur_exp_lang == LANG_PS ||
 				(cur_exp_lang == LANG_PDF && pdf_pagemode)) {
 
 			if (cur_exp_lang == LANG_PDF /* && pdf_pagemode */)
-				n += sprintf(prcmd + n, " -P");
+				args[++a] = "-P";
 
-			n += sprintf(prcmd + n, " -z %s %s",
-					paper_sizes[appres.papersize].sname,
-					appres.landscape ? "-l xxx" : "-p xxx");
-			if (xoff != 0)
-				n += sprintf(prcmd + n, " -x %d", xoff);
-			if (yoff != 0)
-				n += sprintf(prcmd + n, " -y %d", yoff);
+			args[++a] = "-z";
+			args[++a] = paper_sizes[appres.papersize].sname;
+			args[++a] = appres.landscape ? "-l" : "-p";
+			args[++a] = (char *)dummy;
+
+			if (xoff != 0) {
+				int	n;
+				args[++a] = "-x";
+				n = snprintf(argbuf[++b], bufsize, "%d", xoff);
+				args[++a] = argbuf[b];
+				if ((size_t)n >= bufsize)
+					file_msg("Too large x-shift %d, only "
+						 "%zd characters possible",
+							xoff, bufsize);
+			}
+			if (yoff != 0) {
+				int	n;
+				args[++a] = "-y";
+				n = snprintf(argbuf[++b], bufsize, "%d", xoff);
+				args[++a] = argbuf[b];
+				if ((size_t)n >= bufsize)
+					file_msg("Too large y-shift %d, only "
+						 "%zd characters possible",
+							yoff, bufsize);
+			}
 
 			if (appres.multiple) {
-				n += sprintf(prcmd + n," -M");
+				args[++a] = "-M";
 				if (appres.overlap)
-					n += sprintf(prcmd + n, " -O");
+					args[++a] = "-O";
 			} else {
 				if (!appres.flushleft)
-					n += sprintf(prcmd + n," -c");
+					args[++a] = "-c";
 			}
 		}
 
@@ -356,27 +463,30 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			/* see preview_items in w_export.c */
 			switch (preview_type) {
 			case 1:				/* ASCII preview */
-				n += sprintf(prcmd + n, " -A");
+				args[++a] = "-A";
 				break;
 			case 2:				/* color tiff preview */
-				n += sprintf(prcmd + n, " -C xxx");
+				args[++a] = "-C";
+				args[++a] = (char *)dummy;
 				break;
 			case 3:				/* monochrome tiff */
-				n += sprintf(prcmd + n, " -T");
+				args[++a] = "-T";
 				break;
 			}
 		}
-		sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
 
 		/* Languages which need a second or even third export. */
 		if (cur_exp_lang == LANG_PSPDFTEX) {
+			size_t		len = strlen(outfile);
+
+			if (!(tmp_name = new_string(len + 4))) {
+				free(outfile);
+				return 1;
+			}
 
 			/* Options were already set above */
 			/* first generate pstex postscript then pdftex PDF.  */
-			n += sprintf(prcmd + n, " %s", tmp_fig_file);
-
 			strsub(outfile, ".", "_", tmp_name, 1);
-			sprintf(prcmd + n, " %s", tmp_name);
 
 #ifdef I18N
 			/* reset to original locale */
@@ -384,111 +494,138 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 #endif
 
 			/* make it suitable for pstex. */
-			strcpy(tmpcmd, prcmd);
-			strcat(tmpcmd, ".eps");
-			(void) exec_prcmd(tmpcmd, "EXPORT of EPS part");
+			strcpy(tmp_name + len, ".eps");
+			args[2] = lang_items[LANG_PSTEX];
+			args[++a] = NULL;
+			spawn_prcmd(args, tmp_name);
 
 			/* make it suitable for pdftex. */
-			strsub(prcmd, "ps", "pdf", tmpcmd, 0);
-			strcat(tmpcmd, ".pdf");
-			(void) exec_prcmd(tmpcmd, "EXPORT of PDF part");
+			strcpy(tmp_name + len, ".pdf");
+			args[2] = lang_items[LANG_PDFTEX];
+			spawn_prcmd(args, tmp_name);
 
 			/* and then the tex code. */
 #ifdef I18N
 			setlocale(LC_NUMERIC, "C");
 #endif
-			n = start_exportcmd(prcmd, "pstex_t", layers);
-
-			sprintf(prcmd + n, " -p %s %s %s",
-					tmp_name, tmp_fig_file, outfile);
+			start_argumentlist(args, (char **)argbuf, bufsize,
+					&a, &b, layers);
+			args[2] = "pstex_t";
+			tmp_name[len] = '\0';
+			args[++a] = "-p";
+			args[++a] = tmp_name;
 
 		/* PSTEX and PDFTEX */
 		} else if (cur_exp_lang == LANG_PSTEX ||
 				cur_exp_lang == LANG_PDFTEX) {
+			size_t		len = strlen(outfile);
 
 			/* Options were already set above
 			    - output the first file */
-			sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
-
-			if (cur_exp_lang == LANG_PSTEX)
-				(void)exec_prcmd(prcmd, "EXPORT of EPS part");
-			else /* LANG_PDFTEX */
-				(void)exec_prcmd(prcmd, "EXPORT of PDF part");
+			args[++a] = NULL;
+			spawn_prcmd(args, outfile);
 
 			/* now the text part */
-			/* add "_t" to the output filename and put in tmp_name*/
-			strcpy(tmp_name, outfile);
-			strcat(tmp_name, "_t");
-			/* make it input the postscript/pdf part (-p option) */
+			/* add "_t" to the output filename */
+			if (!(tmp_name = new_string(len))) {
+				free(outfile);
+				return 1;
+			}
+			memcpy(tmp_name, outfile, len + 1);
+			if (!realloc(outfile, len + 3)) {
+				free(tmp_name);
+				free(outfile);
+				return 1;
+			}
+			strcpy(outfile + len, "_t");
 #ifdef I18N
 			setlocale(LC_NUMERIC, "C");
 #endif
-			n = start_exportcmd(prcmd, "pstex_t", layers);
-
-			n += sprintf(prcmd + n, " -p %s", outfile);
+			start_argumentlist(args, (char **)argbuf, bufsize,
+					&a, &b, layers);
+			args[2] = "pstex_t";
+			args[++a] = "-p";
+			args[++a] = tmp_name;
 
 			if (border > 0)
-				n += sprintf(prcmd + n, " -b %d", border);
-
-			sprintf(prcmd + n, " %s %s", tmp_fig_file, tmp_name);
+				border_arg(args, (char **)argbuf, bufsize,
+						&a, &b, border);
 
 		/* PSPDF */
 		} else if (cur_exp_lang == LANG_PSPDF) {
 
 			/* Output first file */
-			sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
+			args[2] = lang_items[LANG_EPS];
+			args[++a] = NULL;
+			spawn_prcmd(args, outfile);
 
-			(void) exec_prcmd(prcmd, "EXPORT of EPS part");
 #ifdef I18N
 			setlocale(LC_NUMERIC, "C");
 #endif
-			n = start_exportcmd(prcmd, lang_items[LANG_PDF],
-					layers);
+			start_argumentlist(args, (char **)argbuf, bufsize,
+					&a, &b, layers);
 
 			/* any grid spec */
-			if (grid[0] && strcasecmp(grid, "none") != 0)
-				n += sprintf(prcmd + n, " -G %s", grid);
+			if (grid[0] && strcasecmp(grid, "none") != 0) {
+				args[++a] = "-G";
+				args[++a] = grid;
+			}
 
 			if (border > 0)
-				n += sprintf(prcmd + n, " -b %d", border);
+				border_arg(args, (char **)argbuf, bufsize,
+						&a, &b, border);
+			args[++a] = "-F";
+			args[++a] = "-n";
+			args[++a] = name;
 
-			n += sprintf(prcmd + n, " -F -n %s", name);
-
-			if (backgrnd[0])
-				n += sprintf(prcmd + n, " -g \\%s", backgrnd);
+			if (backgrnd[0]) {
+				args[++a] = "-g";
+				args[++a] = backgrnd;
+			}
 
 			/* now change the output file name to xxx.pdf */
 			/* strip off current suffix, if any */
-			if ((suf = strrchr(outfile, '.')))
-				sprintf(suf, ".pdf'");
-			else
-				strcat(outfile, ".pdf'");
-
-			sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
+			if ((suf = strrchr(outfile, '.'))) {
+				size_t	len = strlen(outfile);
+				if (len - (suf-outfile) < 4 &&
+						!realloc(outfile, len + 5)) {
+					free(outfile);
+					return 1;
+				}
+				sprintf(suf, ".pdf");
+				args[++a] = outfile;
+			} else {
+				size_t	len = strlen(outfile);
+				if (!(realloc(outfile, len + 5))) {
+					free(outfile);
+					return 1;
+				}
+				strcpy(outfile + len, ".pdf");
+			}
 		}
 
 	} else if (cur_exp_lang == LANG_IBMGL) {
 
 		if (hpgl_specified_font)
-			n += sprintf(prcmd + n," -F");
+			args[++a] = "-F";
 
 		if (print_hpgl_pcl_switch)
-			n += sprintf(prcmd + n, " -k");
+			args[++a] = "-k";
 
-		n += sprintf(prcmd + n, " -z %s",
-				paper_sizes[appres.papersize].sname);
+		args[++a] = "-z";
+		args[++a] = paper_sizes[appres.papersize].sname;
 
 		if (!appres.landscape)
-			n += sprintf(prcmd + n, " -P");
-
-		sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
+			args[++a] = "-P";
 
 	} else if (cur_exp_lang == LANG_MAP) {
 
 		/* HTML map needs border option */
 		if (border > 0)
-			sprintf(prcmd + n, " -b %d", border);
-		sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
+			border_arg(args, (char **)argbuf, bufsize,
+					&a, &b, border);
+
+		args[++a] = outfile;
 
 	} else if (cur_exp_lang == LANG_PCX || cur_exp_lang == LANG_PNG ||
 			cur_exp_lang == LANG_TIFF || cur_exp_lang == LANG_XBM ||
@@ -506,8 +643,8 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 				   the background to the transparrent color */
 				if (use_transp_backg)
 					backgrnd = transparent;
-				n += sprintf(prcmd + n,
-						" -t \\%s", transparent);
+				args[++a] = "-t";
+				args[++a] = transparent;
 			}
 		} else if (cur_exp_lang == LANG_JPEG) {
 			/* set the image quality for JPEG export */
@@ -516,24 +653,32 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			 * sure, it stays in sync with the value for
 			 * jpeg_quality given in fig2dev/dev/genbitmaps.c
 			 */
-			if (appres.jpeg_quality != DEF_JPEG_QUALITY)
-				n += sprintf(prcmd + n,
-						" -q %d", appres.jpeg_quality);
+			if (appres.jpeg_quality != DEF_JPEG_QUALITY) {
+				args[++a] = "-q";
+				(void)snprintf(argbuf[++b], bufsize,
+						"%d", appres.jpeg_quality);
+				args[++a] = argbuf[b];
+			}
 		}
 
 		/* bitmap formats need border option */
 		if (border > 0)
-			n += sprintf(prcmd + n, " -b %d", border);
+			border_arg(args, (char **)argbuf, bufsize,
+					&a, &b, border);
 
-		if (appres.smooth_factor)
-			n += sprintf(prcmd + n, " -S %d", appres.smooth_factor);
+		if (appres.smooth_factor) {
+			args[++a] = "-S";
+			(void)snprintf(argbuf[++b], bufsize,
+					"%d", appres.smooth_factor);
+			args[++a] = argbuf[b];
+		}
 
-		n += sprintf(prcmd + n, " -F");
+		args[++a] = "-F";
 
-		if (backgrnd[0])	/* must escape the #rrggbb color spec */
-			n += sprintf(prcmd + n, " -g \\%s", backgrnd);
-
-		sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
+		if (backgrnd[0]) {
+			args[++a] = "-g";
+			args[++a] = backgrnd;
+		}
 
 	/* epic, eepic, eepicemu, latex, pictex */
 	} else if (cur_exp_lang == LANG_EPIC || cur_exp_lang == LANG_EEPIC ||
@@ -543,33 +688,24 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			cur_exp_lang == LANG_PICT2E ||
 			cur_exp_lang == LANG_TIKZ) {
 
-		sprintf(prcmd + n, " -E %d %s %s",
-				appres.encoding, tmp_fig_file, outfile);
+		args[++a] = "-E";
+		(void)snprintf(argbuf[++b], bufsize, "%d", appres.encoding);
 
 	/* TK or  PERL/TK */
 	} else if (cur_exp_lang == LANG_TK || cur_exp_lang == LANG_PTK) {
 
-		if (backgrnd[0])	/* must escape the #rrggbb color spec */
-			n += sprintf(prcmd + n, " -g \\%s", backgrnd);
-
-/*		sprintf(prcmd + n, " -z %s %s",
- *				paper_sizes[appres.papersize].sname,
- *				appres.landscape ? "-l xxx" : "-p xxx");
- */
-		sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
+		if (backgrnd[0]) {
+			args[++a] = "-g";
+			args[++a] = backgrnd;
+		}
 
 	} else if (cur_exp_lang == LANG_DXF) {
 
 		if (!appres.landscape)
-			n += sprintf(prcmd + n, " -P");
+			args[++a] = "-P";
 
-		sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
-
-	/* Everything else */
-	} else {
-
-		sprintf(prcmd + n, " %s %s", tmp_fig_file, outfile);
 	}
+	/* Nothing to do for everything else */
 
 	/* make a busy cursor */
 	set_temp_cursor(wait_cursor);
@@ -580,17 +716,18 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 #endif
 
 	/* now execute fig2dev */
-	if (exec_prcmd(prcmd, "EXPORT") == 0)
+	args[++a] = NULL;
+	if (!spawn_prcmd(args, outfile))
 		put_msg("Export to \"%s\" done", file);
 
 	/* and reset the cursor */
 	reset_cursor();
 
 	/* free tempnames */
-	free(name);
+	if (tmp_name)
+		free(tmp_name);
 	free(outfile);
 
-	remove(tmp_fig_file);
 	return 0;
 }
 
