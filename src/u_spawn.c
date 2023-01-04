@@ -240,7 +240,7 @@ open_process(char *const argv[restrict], int fd[2], int cd,
 	}
 
 	/* close the write end of the pipe to stderr */
-	close(pd[1]);
+	(void)close(pd[1]);
 	/* and the file descriptors used by the spawned process */
 	for (i = 0; i < 2; ++i)
 		if (fd[i] > -1)
@@ -328,16 +328,105 @@ poll_fderr(int fderr)
 	}
 }
 
-
 /*
- * A spawned process might either
- * - have completed writing to the output file and terminated, or waiting to
- *   write an error, or
- * - be still running, writing output and probably waiting to write error, or
- * - was terminated by us, the terminating signal and errors should be ignored.
- * In the first case, the output file descriptor might have been closed by the
- * process, or it is still open.
+ * Spawn command, with the argument arg. Search PATH for command.
+ * Silently consume any output to stdout or stderr from the command.
+ * Return 1 if the command exists, 0 if not or if an error occurs.
  */
+int
+spawn_exists(const char *restrict command, const char *restrict arg)
+{
+	int		ret;
+	int		pderr[2];
+	int		pdout[2];
+	int		ffd[3];
+	int		cfd[2];
+	pid_t		pid;
+	const char	*argv[3] = {command, arg, NULL};
+	struct pollfd	fds[2];
+
+	/* create the pipes */
+	if (pipe(pderr)) {
+		file_msg("Testing command %s, cannot create pipe: %s",
+				command, strerror(errno));
+		return 0;
+	}
+
+	if (pipe(pdout)) {
+		file_msg("Testing command %s, cannot create pipe: %s",
+				command, strerror(errno));
+		return 0;
+	}
+
+	/* redirect stdout and stderr in the process to our pipes */
+	ffd[0] = -1;
+	ffd[1] = pdout[1];
+	ffd[2] = pderr[1];
+	cfd[0] = pdout[0];
+	cfd[1] = pderr[0];
+
+	if (spawn_process(&pid, (char **)argv, ffd, cfd))
+		return 0;	/* return, if the command does not exist */
+
+	(void)close(pdout[1]);
+	(void)close(pderr[1]);
+
+	/* need to poll, cannot read from stdout and stderr at the same time */
+	fds[0].fd = pdout[0];
+	fds[1].fd = pderr[0];
+	fds[0].events = fds[1].events = POLLIN;	/* POLLHUP is anyhow reported */
+	fds[0].revents = fds[1].revents = 0;
+
+	while ((ret = poll(fds, 1, -1 /* no timeout */)) > 0) {
+		char	buf[256];
+
+		/* read all output */
+		if (fds[0].revents & POLLIN)
+			while (read(fds[0].fd, buf, sizeof buf) > 0)
+				;
+		if (fds[1].revents & POLLIN)
+			while (read(fds[1].fd, buf, sizeof buf) > 0)
+				;
+		/* a POLLHUP probably means that both outputs are closed */
+		if (fds[0].revents & POLLHUP || fds[1].revents & POLLHUP)
+			break;
+
+		if (fds[0].revents & (POLLERR | POLLNVAL))
+			file_msg("Error polling stdout of %s: %d",
+					command, fds[0].revents);
+		if (fds[1].revents & (POLLERR | POLLNVAL))
+			file_msg("Error polling stderr of %s: %d",
+					command, fds[1].revents);
+	}
+
+	if (ret < 0)
+		file_msg("Testing command %s, polling error: %s",
+				command, strerror(errno));
+	if (close(fds[0].fd))
+		file_msg("Testing command %s, error closing stderr: %s",
+				command, strerror(errno));
+	if (close(fds[1].fd))
+		file_msg("Testing command %s, error closing stdout: %s",
+				command, strerror(errno));
+
+	if (waitpid(pid, &ret, 0) == -1) {
+		file_msg("Error waiting for return of command %s: %s",
+				command, strerror(errno));
+		return 0;
+	}
+
+	if (WIFEXITED(ret)) {
+		ret = WEXITSTATUS(ret);
+	} else {
+		ret = WTERMSIG(ret);
+		file_msg("Command %s interrupted by signal %d", command, ret);
+	}
+
+	if (ret == 0)
+		return 1; /* command found */
+	else
+		return 0;
+}
 
 /*
  * Spawn the process argv[0] with the NULL-terminated arguments argv.

@@ -23,7 +23,7 @@
 #include "config.h"		/* restrict */
 #endif
 
-/* spawn the process argv[0], writing to the open file descriptor fdout */
+extern int	spawn_exists(const char *restrict cmd,const char *restrict arg);
 extern int	spawn_writefd(char *const argv[restrict], int fdout);
 extern int	spawn_popen_fd(char *const argv[restrict],
 				const char *restrict type, int fd);
