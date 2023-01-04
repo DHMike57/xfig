@@ -583,8 +583,8 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 	args[2] = xf_stream->name_on_disk;
 	args[3] = NULL;
 
-	/* spawn_writefd() gives sufficient error information */
-	ret = spawn_writefd(args, fd);
+	/* spawn_usefd() gives sufficient error information */
+	ret = spawn_usefd(args, -1, fd);
 	close(fd);
 
 	return ret;

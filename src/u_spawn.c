@@ -437,10 +437,10 @@ spawn_exists(const char *restrict command, const char *restrict arg)
  * Return the exit status of the spawned process, and output error messages.
  */
 int
-spawn_writefd(char *const argv[restrict], int fdout)
+spawn_usefd(char *const argv[restrict], int fdin, int fdout)
 {
 	int	fderr;
-	int	fd[2] = {-1, fdout};
+	int	fd[2] = {fdin, fdout};
 	pid_t	pid;
 
 	if (open_process(argv, fd, -1, &pid, &fderr))
