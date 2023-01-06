@@ -270,8 +270,11 @@ int _read_pcx(FILE *pcxfile, F_pic *pic)
 		} else {
 			/* ...or use neural net to reduce to 256 colors
 			   with palette */
-			if (!map_to_palette(pic))
+			if (!map_to_palette(pic)) {
+				free(pic->pic_cache->bitmap);
+				pic->pic_cache->bitmap = NULL;
 				return FileInvalid;
+			}
 		}
 		break;
 	}
