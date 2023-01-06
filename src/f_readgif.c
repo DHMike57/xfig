@@ -48,6 +48,7 @@
 #include "f_picobj.h"
 #include "f_readpcx.h"
 #include "u_colors.h"
+#include "u_spawn.h"
 #include "w_msgpanel.h"
 
 
@@ -84,42 +85,62 @@ struct {
 */
 
 
-
 int
 read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 {
 	char		buf[BUFSIZ];
-	const char	pcxname_fmt[] = "%s/xfig-pcx.XXXXXX";
-	char		pcxname_buf[128];
-	char		*pcxname = pcxname_buf;
-	char		*cmd_fmt;
-	char		*cmd = buf;
-	FILE		*giftopcx;
+	const char	*one[5];
+	const char	*two[3];
 	struct Cmap	localColorMap[MAX_COLORMAP_SIZE];
-	int		i, stat, fd;
+	int		i, mid, stat;
 	int		useGlobalColormap;
 	unsigned int	bitPixel, red, green, blue;
 	unsigned char	c;
 	char		version[4];
-	size_t		size;
 	struct xfig_stream	pcx;
 
 	if (!rewind_stream(pic_stream))
 		return FileInvalid;
 
-	/* command string to convert gif to pcx */
-	if (!system("{ giftopnm -version && ppmtopcx -version; } 2>/dev/null"))
-		cmd_fmt = "giftopnm -quiet | ppmtopcx -quiet >'%s'";
-	else if (!system("convert -version >/dev/null"))
-		cmd_fmt = "convert - pcx:'%s'";
-	else if (!system("gm -version >/dev/null"))
-		cmd_fmt = "gm convert - pcx:'%s'";
-	else {
+	/*
+	 * Set up the command to convert gif to pcx.
+	 */
+
+	if (spawn_exists("giftopnm", "-version") &&
+			spawn_exists("ppmtopcx", "-version")) {
+		/* command: giftopnm -quiet | ppmtopcx -quiet */
+		one[0] = "giftopnm";
+		two[0] = "ppmtopcx";
+		one[1] = two[1] = "-quiet";
+		one[2] = two[2] = NULL;
+
+	} else if (spawn_exists("convert", "-version")) {
+		/* command: convert - pcx:- */
+		one[0] = "convert";
+		one[1] = "-";
+		one[2] = "pcx:-";
+		one[3] = NULL;
+		two[0] = NULL;
+
+	} else if (spawn_exists("gm", "-version")) {
+		/* command: gm convert - pcx:- */
+		one[0] = "gm";
+		one[1] = "convert";
+		one[2] = "-";
+		one[3] = "pcx:-";
+		one[4] = NULL;
+		two[0] = NULL;
+
+	} else {
 		file_msg("Cannot read gif files.");
 		file_msg("To read gif files, install either the netpbm, or the "
 				"imagemagick, or the graphicsmagick package.");
 		return FileInvalid;
 	}
+
+	/*
+	 * Read transparency information.
+	 */
 
 	/* first read header to look for any transparent color extension */
 	if (!ReadOK(pic_stream->fp, buf, 6)) {
@@ -207,112 +228,51 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	/* save transparent indicator */
 	pic->pic_cache->transp = Gif89.transparent;
 
-	/* now call giftopnm and ppmtopcx */
 
-	/* make name for temp output file */
-	size = sizeof pcxname_fmt + strlen(TMPDIR) - 2;
-	if (size > sizeof pcxname_buf && (pcxname = malloc(size)) == NULL) {
-		file_msg("Out of memory.");
-		return FileInvalid;
-	}
-	if (sprintf(pcxname, pcxname_fmt, TMPDIR) < 0) {
-		i = errno;
-		file_msg("Unable to write temporary file path to string");
-		file_msg("Error: %s", strerror(i));
-		if (pcxname != pcxname_buf)
-			free(pcxname);
-		return FileInvalid;
-	}
-	if ((fd = mkstemp(pcxname)) == -1) {
-		file_msg("Cannot create temporary file\n");
-		if (pcxname != pcxname_buf)
-			free(pcxname);
-		return FileInvalid;
-	}
-	close(fd);
-
-	/* make command to convert gif to pcx */
-	size += strlen(cmd_fmt) - 2;	/* from above, size == sizeof pcxname */
-	if (size > sizeof buf && (cmd = malloc(size)) == NULL) {
-		file_msg("Out of memory.");
-		unlink(pcxname);
-		if (pcxname != pcxname_buf)
-			free(pcxname);
-		return FileInvalid;
-	}
-	if (sprintf(cmd, cmd_fmt, pcxname) < 0) {
-		i = errno;
-		file_msg("Cannot write command to convert gif to pcx.");
-		file_msg("Error: %s", strerror(i));
-		unlink(pcxname);
-		if (pcxname != pcxname_buf)
-			free(pcxname);
-		return FileInvalid;
-	}
-
-	giftopcx = popen(cmd, "w");
-	if (giftopcx == NULL) {
-		i = errno;
-		file_msg("Cannot open pipe to convert gif to pcx\n");
-		file_msg("Command: %s", cmd);
-		file_msg("Error: %s", strerror(i));
-		if (cmd != buf)
-			free(cmd);
-		unlink(pcxname);
-		if (pcxname != pcxname_buf)
-			free(pcxname);
-		return FileInvalid;
-	}
-
-	/* write the temporary pcx file */
-	rewind_stream(pic_stream);
-	while ((size = fread(buf, 1, sizeof buf, pic_stream->fp)) != 0)
-		fwrite(buf, size, 1, giftopcx);
-
-	if (pclose(giftopcx)) {
-		i = errno;
-		file_msg("Cannot convert gif to pcx\n");
-		file_msg("Command: %s", cmd);
-		file_msg("Error: %s", strerror(i));
-		if (cmd != buf)
-			free(cmd);
-		unlink(pcxname);
-		if (pcxname != pcxname_buf)
-			free(pcxname);
-		return FileInvalid;
-	}
-
-	if (cmd != buf)
-		free(cmd);
+	/*
+	 * Call the conversion program, or pipeline.
+	 */
 
 	/*
 	 * Construct a rudimentary struct xfig_stream that can be passed to
 	 * read_pcx(). Tell read_pcx() that the FILE pointer is positioned at
-	 * the start (*name == '\0') and that it is a regular file
+	 * * the start (*name == '\0') and that it is a regular file
 	 * (uncompress == NULL).
 	 * ATTENTION, requires knowledge of fields of struct xfig_stream.
+	 * Quite a kludge, really.
 	 */
 	pcx.name_buf[0] = '\0';
 	pcx.name = pcx.name_buf;
 	pcx.uncompress = NULL;
 
-	if ((pcx.fp = fopen(pcxname, "rb")) == NULL) {
-		file_msg("Cannot open temporary output file\n");
-		perror("Error");
-		unlink(pcxname);
-		if (pcxname != pcxname_buf)
-			free(pcxname);
-		return FileInvalid;
+	rewind_stream(pic_stream);
+	if (two[0]) {
+		/*
+		 * In which direction to set up the pipeline?
+		 * If from the end to the beginning, errors during setup are
+		 * well separated from error during data processing. In the
+		 * other direction, the first process might already have
+		 * finished working, and data is in the buffers. The first
+		 * element in the pipeline is already active, go forward.
+		 */
+		mid = spawn_popen_fd((char **)one, "r", fileno(pic_stream->fp));
+		i = spawn_popen_fd((char **)two, "r", mid);
+	} else {
+		i = spawn_popen_fd((char **)one, "r", fileno(pic_stream->fp));
 	}
 
-	/* now call read_pcx to read the pcx file */
+	pcx.fp = fdopen(i, "r");
+
 	stat = read_pcx(pic, &pcx);
 
-	/* remove temp file */
-	fclose(pcx.fp);
-	unlink(pcxname);
-	if (pcxname != pcxname_buf)
-		free(pcxname);
+	spawn_pclose(i);
+	if (two[0])
+		spawn_pclose(mid);
+
+
+	/*
+	 * Process the transparent color information.
+	 */
 
 	pic->pic_cache->subtype = T_PIC_GIF;
 	/* now match original transparent colortable index with possibly new

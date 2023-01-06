@@ -241,7 +241,7 @@ open_process(char *const argv[restrict], int fd[2], int cd,
 
 	/* close the write end of the pipe to stderr */
 	(void)close(pd[1]);
-	/* and the file descriptors used by the spawned process */
+	/* and the file descriptors passed to the spawned process */
 	for (i = 0; i < 2; ++i)
 		if (fd[i] > -1)
 			close(fd[i]);
@@ -431,10 +431,11 @@ spawn_exists(const char *restrict command, const char *restrict arg)
 /*
  * Spawn the process argv[0] with the NULL-terminated arguments argv.
  * Search PATH for the command given in argv[0].
- * Write the output of the spawned process to the open file descriptor fdout,
- * which shall be closed by the process.
+ * If either of the file descriptors fdin or fdout is non-negative,
+ * the spawned process reads from fdin and writes to fdout.
+ * Both must be open, if valid, and shall be closed.
  * Standard error is captured in a buffer and reported to the user.
- * Return the exit status of the spawned process, and output error messages.
+ * Return the exit status of the spawned process.
  */
 int
 spawn_usefd(char *const argv[restrict], int fdin, int fdout)
