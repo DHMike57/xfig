@@ -519,7 +519,15 @@ rewind_stream(struct xfig_stream *restrict xf_stream)
 
 	if (!xf_stream->uncompress) {
 		/* a regular file */
+		/* The file might be read with the raw system calls via its file
+		   descriptor, or with fread. Positioning of the stream and the
+		   file position is independent of each other. With rewind(),
+		   the stream might be at the beginning, but open() commences
+		   somwhere in the file. Likewise, lseek() does not necessarily
+		   set the stream to the beginning of the file.
+		   Do both. */
 		rewind(xf_stream->fp);
+		lseek(fileno(xf_stream->fp), 0, SEEK_SET);
 		return xf_stream->fp;
 	} else  {
 		/* a pipe */
