@@ -365,11 +365,15 @@ spawn_exists(const char *restrict command, const char *restrict arg)
 	cfd[0] = pdout[0];
 	cfd[1] = pderr[0];
 
-	if (spawn_process(&pid, (char **)argv, ffd, cfd))
-		return 0;	/* return, if the command does not exist */
-
+	ret = spawn_process(&pid, (char **)argv, ffd, cfd);
 	(void)close(pdout[1]);
 	(void)close(pderr[1]);
+
+	if (ret) {
+		(void)close(pdout[0]);
+		(void)close(pderr[0]);
+		return 0;	/* return, if the command does not exist */
+	}
 
 	/* need to poll, cannot read from stdout and stderr at the same time */
 	fds[0].fd = pdout[0];
