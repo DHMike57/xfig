@@ -593,8 +593,9 @@ uncompressed_content(struct xfig_stream *restrict xf_stream)
 
 	/* spawn_usefd() gives sufficient error information */
 	ret = spawn_usefd(args, -1, fd);
-	close(fd);
-
+	if (close(fd))
+		file_msg("Error closing temporary file %s: %s",
+				xf_stream->content, strerror(errno));
 	return ret;
 }
 
