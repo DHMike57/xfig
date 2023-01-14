@@ -54,9 +54,11 @@ Boolean	hpgl_specified_font;
 Boolean	pdf_pagemode;
 int	preview_type;
 
-static int	exec_prcmd(char *command, char *msg);
+
 static void	build_layer_list (char *layers);
 static void	append_group (char *list, char *num, int first, int last);
+static int	print_spawn_printcmd(const char *restrict file,
+			const char *restrict printer, char *restrict params);
 
 /*
  * Protect a string by enclosing it in apostrophes. Escape any apostrophes
@@ -104,34 +106,63 @@ shell_protect_string(char *string)
 }
 
 /*
- * Write all objects to a temporary fig file.
- * The temporary file is created in TMPDIR, using the template.
- * A random string of length seven is appended to template.
- * The name of the temporary file is returned in the string tmpfile.
- * The length of tmpfile must not exceed len.
+ * Break the string given in cmdline at spaces. Spaces quoted by a backslash are
+ * retained. Return the substrings in args.
+ * Occurences of %f in args are replaced by file.
+ * The size of the array args must be given in size.
+ * The array f must be of the same size as args.
+ * The string returned in arg[i] must be free()'d if f[i] is not 0.
+ * Return the number of arguments found in cmdline. If the number returned is
+ * larger than size, not the entire cmdline was parsed.
  */
 static int
-write_tmpfigfile(char *tmpfile, size_t len, char *template)
+cmdlinetoargarray(char *args[restrict], int size, char *restrict cmdline)
 {
-	int	fd;
+	int		i = 0;
+	char		*begin;
 
-	snprintf(tmpfile, len, "%s/%s.XXXXXX", TMPDIR, template);
-	warnexist = False;
-	if ((fd = mkstemp(tmpfile)) == -1) {
-		file_msg("Cannot open temp file %s: %s\n",
-				tmpfile, strerror(errno));
-		return -1;
+	if (!cmdline || cmdline[0] == '\0')
+		return i;
+
+	begin = cmdline;
+	while (*begin != '\0' && *begin == ' ')
+		++begin;
+
+	/* empty, or only spaces */
+	if (*begin == '\0')
+		return i;
+
+	while (*begin != '\0') {
+		char	*next = begin;
+		/* look for the next unqouted space */
+		while ((*next != '\0' && *next != ' ') || (*next == ' ' &&
+					next > begin && *(next - 1) == '\\')) {
+			if (*next == ' ') {/* next>begin && *(next-1) == '\\' */
+				*(next - 1) = ' ';
+				/* move forward, to overwrite the backslash */
+				memmove(begin + 1, begin, next - begin);
+				++begin;
+			}
+			++next;
+		}
+		/* next == ' ' || '\0' */
+		if (i < size)
+			args[i] = begin;
+
+		if (*next == '\0') {
+			begin = next;
+		} else {
+			begin = next + 1;
+			*next = '\0';
+		}
+
+		/* loop forward over consecutive spaces */
+		while (*begin != '\0' && *begin == ' ')
+			++begin;
+		++i;
 	}
-	close(fd);
 
-	init_write_tmpfile();
-	if (write_file(tmpfile, False)) {
-		end_write_tmpfile();
-		return -1;
-	}
-	end_write_tmpfile();
-
-	return 0;
+	return i;
 }
 
 /*
@@ -185,7 +216,7 @@ border_arg(char *args[restrict], char *const argbuf[restrict],
 }
 
 static int
-spawn_prcmd(char *const args[restrict], const char *restrict outfile)
+spawn_exportcommand(char *const args[restrict], const char *restrict outfile)
 {
 	int	fd;
 	int	fdout;
@@ -206,40 +237,11 @@ spawn_prcmd(char *const args[restrict], const char *restrict outfile)
 	}
 	stat = write_fd(fd);
 	fd = spawn_pclose(fd);
+	if (close(fdout))
+		file_msg("Cannnot close file %s: %s", outfile, strerror(errno));
 	if (stat || fd)
 		return -1;
 	return 0;
-}
-
-/*
- * Construct the initial portion of the conversion command string for
- * language lang and write it to cmd. Use the layer option given in layers.
- * Return the number of chars written to cmd.
- * This function mainly exists, because the #ifdef I18N etc. confused
- * the automatic indenting.
- */
-static int
-start_exportcmd(char *cmd, char *lang, char *layers)
-{
-	int	n;
-
-	n = sprintf(cmd, "%s -L %s", fig2dev_cmd, lang);
-#ifdef I18N
-	if (appres.international)
-		n += sprintf(cmd + n, " %s", appres.fig2dev_localize_option);
-#endif
-	if (appres.magnification < 99.99 | appres.magnification > 100.01)
-		n += sprintf(cmd + n, " -m %.4g", appres.magnification/100.);
-
-	/* add the -D list if user doesn't want all layers printed */
-	if (!print_all_layers) {
-		n += sprintf(cmd + n, " %s", layers);
-		/* if doesn't want bounding box of whole figure */
-		if (bound_active_layers)
-			n += sprintf(cmd + n, " -K");
-	}
-
-	return n;
 }
 
 void
@@ -250,73 +252,71 @@ print_to_printer(char *printer, char *backgrnd, float mag,
 	(void)mag;
 	(void)print_all_layers;
 	(void)bound_active_layers;
+	int	a, b;	/* argument counters */
 	char	layers[PATH_MAX];
-	char	syspr[2*PATH_MAX+200];
-	char	prcmd[2*PATH_MAX+200];
-	char	tmpcmd[255];
-	char	tmpfile[PATH_MAX];
-	char	*name;
-	int	n;
-
-	if (write_tmpfigfile(tmpfile, sizeof(tmpfile), "xfig-print"))
-		return;
+	char	*args[18];
+	char	argbuf[2][16];
 
 	/* if the user only wants the active layers, build that list */
 	build_layer_list(layers);
 
-	if (strlen(cur_filename) == 0)
-		name = tmpfile;
-	else
-		name = shell_protect_string(cur_filename);
+	/* fig2dev expects path names of included pictures relative
+	   to cur_file_dir */
+	change_directory(cur_file_dir);
 
-#ifdef I18N
-	/* set the numeric locale to C so we get decimal points for numbers */
-	setlocale(LC_NUMERIC, "C");
-#endif
-	n = start_exportcmd(tmpcmd, "ps", layers);
-	n += sprintf(tmpcmd + n, " -z %s -n %s %s",
-			paper_sizes[appres.papersize].sname, name,
-			appres.landscape ? "-l xxx" : "-p xxx");
+	start_argumentlist(args, (char **)argbuf, sizeof argbuf[1], &a, &b,
+			layers);
+	args[2] = "ps";		/* output language */
+
+	args[++a] = "-z";
+	args[++a] = paper_sizes[appres.papersize].sname;
+
+	if (strlen(cur_filename)) {
+		args[++a] = "-n";
+		args[++a] = cur_filename;
+	}
+	args[++a] = appres.landscape ? "-l" : "-p";
+	args[++a] = "xxx";
 
 	if (appres.correct_font_size)
-		n += sprintf(tmpcmd + n, " -F");
+		args[++a] = "-F";
 
 	if (!appres.multiple && !appres.flushleft)
-		n += sprintf(tmpcmd + n, " -c");
+		args[++a] = "-c";
 
 	if (appres.multiple)
-		n += sprintf(tmpcmd + n, " -M");
+		args[++a] = "-M";
 
-	if (grid[0] && strcasecmp(grid,"none") != 0)
-		n += sprintf(tmpcmd + n, " -G %s", grid);
+	if (grid[0] && strcasecmp(grid,"none") != 0) {
+		args[++a] = "-G";
+		args[++a] = grid;
+	}
 
-	if (backgrnd[0])		/* must escape the #rrggbb color spec */
-		n += sprintf(tmpcmd + n, " -g \\%s", backgrnd);
+	if (backgrnd[0]) {
+		args[++a] = "-g";
+		args[++a] = backgrnd;
+	}
 
-	/* make the print command with no filename (it will be in stdin) */
-	gen_print_cmd(syspr, "", printer, params);
+	args[++a] = NULL;
 
-	/* make up the whole translate/print command */
-	sprintf(prcmd, "%s %s | %s", tmpcmd, tmpfile, syspr);
-#ifdef I18N
-	/* reset to original locale */
-	setlocale(LC_NUMERIC, "");
-#endif /* I18N */
-
-	if (exec_prcmd(prcmd, "PRINT") == 0) {
+	/* Build up the pipeline from the end, catching printer errors */
+	/* These commands already report their errors */
+	if ((b = print_spawn_printcmd(NULL, printer, params)) > -1 &&
+			(a = spawn_popen_fd(args, "w", b)) > -1 &&
+			!write_fd(a) &&
+			!spawn_pclose(a) &&
+			!spawn_pclose(b)) {
 		if (emptyname(printer))
-			put_msg(
-	"Printing on default printer with %s paper size in %s mode ... done",
+			put_msg("Printing on default printer with %s paper size"
+					" in %s mode ... done",
 				paper_sizes[appres.papersize].sname,
 				appres.landscape ? "LANDSCAPE" : "PORTRAIT");
 		else
-			put_msg(
-	"Printing on \"%s\" with %s paper size in %s mode ... done",
+			put_msg("Printing on \"%s\" with %s paper size in %s "
+					"mode ... done",
 				printer, paper_sizes[appres.papersize].sname,
 				appres.landscape ? "LANDSCAPE" : "PORTRAIT");
 	}
-
-	remove(tmpfile);
 }
 
 static void
@@ -500,12 +500,12 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			strcpy(tmp_name + len, ".eps");
 			args[2] = lang_items[LANG_PSTEX];
 			args[++a] = NULL;
-			spawn_prcmd(args, tmp_name);
+			spawn_exportcommand(args, tmp_name);
 
 			/* make it suitable for pdftex. */
 			strcpy(tmp_name + len, ".pdf");
 			args[2] = lang_items[LANG_PDFTEX];
-			spawn_prcmd(args, tmp_name);
+			spawn_exportcommand(args, tmp_name);
 
 			/* and then the tex code. */
 #ifdef I18N
@@ -526,7 +526,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			/* Options were already set above
 			    - output the first file */
 			args[++a] = NULL;
-			spawn_prcmd(args, outfile);
+			spawn_exportcommand(args, outfile);
 
 			/* now the text part */
 			/* add "_t" to the output filename */
@@ -559,7 +559,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			/* Output first file */
 			args[2] = lang_items[LANG_EPS];
 			args[++a] = NULL;
-			spawn_prcmd(args, outfile);
+			spawn_exportcommand(args, outfile);
 
 #ifdef I18N
 			setlocale(LC_NUMERIC, "C");
@@ -719,8 +719,10 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 
 	/* now execute fig2dev */
 	args[++a] = NULL;
-	if (!spawn_prcmd(args, outfile))
+	if (!spawn_exportcommand(args, outfile))
 		put_msg("Export to \"%s\" done", file);
+	else
+		put_msg("Export to \"%s\" failed", file);
 
 	/* and reset the cursor */
 	reset_cursor();
@@ -734,6 +736,59 @@ free_outfile:
 	free(save_file_dir);
 	free(outfile);
 	return ret;
+}
+
+int
+print_spawn_printcmd(const char *restrict file, const char *restrict printer,
+		char *restrict params)
+{
+	int		a, n;
+	static int	lpcommand = -1;
+	char		*pargs[16];
+	char		**nargs = pargs;
+	const char	*lpcmd[2] = {"lp", "lpr"};
+	const char	*lparg[2] = {"-d", "-P"};
+
+	if (lpcommand == -1) {
+		if (!access("/usr/bin/lp", X_OK)) {
+			lpcommand = 1;
+		} else if (!access("/usr/bin/lpr", X_OK)) {
+			lpcommand = 2;
+		} else {
+			file_msg("Found neither \"lp\" nor \"lpr\" print "
+					"command in PATH");
+			lpcommand = 0;
+		}
+	}
+
+	if (!lpcommand)
+		return -2;
+
+	pargs[a = 0] = (char *)lpcmd[lpcommand - 1];
+	if (printer && printer[0] != '\0') {
+		pargs[++a] = (char *)lparg[lpcommand - 1];
+		pargs[++a] = (char *)printer;
+	}
+
+	++a;
+	n = cmdlinetoargarray(pargs + a , sizeof pargs/sizeof pargs[0] - a - 2,
+		       params);
+	if ((size_t)n > sizeof pargs/sizeof pargs[0] - a - 2) {
+		if (!(nargs = malloc(n * sizeof(char *)))) {
+			file_msg("Unable to print, running out of memory");
+			file_msg("Print parameters: %s", params);
+			return -1;
+		}
+		n = cmdlinetoargarray(nargs, n, params);
+	}
+	a += n - 1;		/* n might be 0 */
+
+	if (file && file[0] != '\0')
+		nargs[++a] = (char *)file;
+
+	nargs[++a] = NULL;
+
+	return spawn_popen(nargs, "w");
 }
 
 void
@@ -773,50 +828,6 @@ gen_print_cmd(char *cmd, char *file, char *printer, char *pr_params)
 		appres.landscape ? "LANDSCAPE" : "PORTRAIT");
     }
     app_flush();		/* make sure message gets displayed */
-}
-
-int
-exec_prcmd(char *command, char *msg)
-{
-	char	errfname[PATH_MAX];
-	FILE	*errfile;
-	char	str[400];
-	int	status, fd;
-
-	/* make temp filename for any errors */
-	snprintf(errfname, sizeof(errfname), "%s/xfig-export.XXXXXX", TMPDIR);
-	if ((fd = mkstemp(errfname)) == -1) {
-		file_msg("Can't open temp file %s: %s\n",
-				errfname, strerror(errno));
-		return 1;
-	}
-	close(fd);
-
-	/* direct any output from fig2dev to this file */
-	strcat(command, " 2> ");
-	strcat(command, errfname);
-	if (appres.DEBUG)
-		fprintf(stderr,"Execing: %s\n",command);
-	status=system(command);
-	if (status != 0) {
-		/* check if error file has anything in it */
-		if ((errfile = fopen(errfname, "r")) == NULL) {
-			file_msg("Error during %s. No messages available.",msg);
-		} else {
-			if (fgets(str,sizeof(str)-1,errfile) != NULL) {
-				rewind(errfile);
-				file_msg("Error during %s.  Messages:",msg);
-				while (fgets(str,sizeof(str)-1,errfile)!=NULL) {
-					/* remove trailing newlines */
-					str[strlen(str)-1] = '\0';
-					file_msg(" %s",str);
-				}
-			}
-		}
-		fclose(errfile);
-	}
-	remove(errfname);
-	return status;
 }
 
 /*
