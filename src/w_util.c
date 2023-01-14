@@ -1558,7 +1558,6 @@ make_grid_options(Widget parent, Widget put_below, Widget put_beside, char *mino
                            XtParseTranslationTable(text_translations));
 
 	FirstArg(XtNlabel, appres.INCHES? "inches" : "mm");
-	NextArg(XtNwidth, 60);
 	NextArg(XtNfromVert, put_below);
 	NextArg(XtNfromHoriz, *print_grid_major_text);
 	NextArg(XtNborderWidth, 0);
