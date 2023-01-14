@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2018 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -80,6 +80,7 @@ static Boolean	writing_batch=False;
 static char    *printer_names[MAX_PRINTERS];
 static int	parse_printcap(char **names);
 static int	numprinters;
+static int	print_command = 0;
 
 static Widget	beside;
 
@@ -99,7 +100,7 @@ static void	printer_select(Widget w, XtPointer new, XtPointer garbage);
 static void	switch_print_layers(Widget, XtPointer, XtPointer);
 
 static Widget	dismiss, print,
-		printer_text, param_text,
+		print_command_panel, printer_text, param_text,
 		clear_batch, print_batch,
 		num_batch,
 		printalltoggle, printactivetoggle, boundactivetoggle;
@@ -137,8 +138,13 @@ static XtActionsRec     prn_actions[] =
     {"UpdateMag", (XtActionProc) update_mag},
 };
 
+static const char	*print_command_items[] = {
+	" lp",
+	"lpr"
+};
 static void create_print_panel(Widget w);
 static void update_batch_count(void);
+
 
 static void
 print_panel_dismiss(Widget w, XButtonEvent *ev)
@@ -586,6 +592,17 @@ print_grid_major_select(Widget w, XtPointer new_grid_choice, XtPointer garbage)
 }
 
 static void
+print_command_select(Widget w, XtPointer data, XtPointer garbage)
+{
+	(void)w; (void)garbage;
+	ptr_int		cmd = {data};
+
+	FirstArg(XtNlabel, XtName(w));
+	SetValues(print_command_panel);
+	print_command = cmd.val;
+}
+
+static void
 printer_select(Widget w, XtPointer new_printer, XtPointer garbage)
 {
 	(void)w; (void)garbage;
@@ -963,9 +980,37 @@ void create_print_panel(Widget w)
 				&print_grid_unit_label,
 				print_grid_major_select, print_grid_minor_select);
 
+	/* print command */
+
+	FirstArg(XtNlabel, "   Print Command");
+	NextArg(XtNfromVert, below);
+	NextArg(XtNborderWidth, 0);
+	NextArg(XtNtop, XtChainTop);
+	NextArg(XtNbottom, XtChainTop);
+	NextArg(XtNleft, XtChainLeft);
+	NextArg(XtNright, XtChainLeft);
+	beside = XtCreateManagedWidget("printcommand_label", labelWidgetClass,
+					    print_panel, Args, ArgCount);
+
+	FirstArg(XtNlabel, print_command_items[print_command]);
+	NextArg(XtNfromHoriz, beside);
+	NextArg(XtNfromVert, below);
+	NextArg(XtNborderWidth, INTERNAL_BW);
+	NextArg(XtNleftBitmap, menu_arrow);
+	NextArg(XtNtop, XtChainTop);
+	NextArg(XtNbottom, XtChainTop);
+	NextArg(XtNleft, XtChainLeft);
+	NextArg(XtNright, XtChainLeft);
+	print_command_panel = XtCreateManagedWidget("printcommand",
+			menuButtonWidgetClass, print_panel, Args, ArgCount);
+	make_pulldown_menu((char **)print_command_items,
+			XtNumber(print_command_items), -1, "",
+			print_command_panel, print_command_select);
+
 	/* printer name */
 
-	FirstArg(XtNlabel, "         Printer");
+	FirstArg(XtNlabel, "Printer");
+	NextArg(XtNfromHoriz, print_command_panel);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1068,7 +1113,7 @@ void create_print_panel(Widget w)
 	 * job parameters in a resource, e.g.:	 *param*string: -K2
 	 */
 
-	FirstArg(XtNwidth, 200);
+	FirstArg(XtNwidth, 320);
 	NextArg(XtNfromVert, printer_text);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNeditType, XawtextEdit);
