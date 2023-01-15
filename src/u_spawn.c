@@ -43,8 +43,9 @@ static struct process_info {
 	int			fd;
 	int			fderr;
 	pid_t			pid;
+	char			type;
 	struct process_info	*next;
-} process_info = { -1, 0, -1, NULL };
+} process_info = { -1, 0, -1, '\0', NULL };
 
 static struct process_info *const first = &process_info;
 
@@ -54,12 +55,13 @@ static struct process_info *const first = &process_info;
  * The elements are identified based on the file descriptor fd.
  */
 static void
-add_info(int fd, int fderr, pid_t pid)
+add_info(int fd, int fderr, pid_t pid, char type)
 {
 	if (first->fd == -1) {
 		first->fd = fd;
 		first->fderr = fderr;
 		first->pid = pid;
+		first->type = type;
 	} else {
 		struct process_info	*info = first;
 		while (info->next)
@@ -70,6 +72,7 @@ add_info(int fd, int fderr, pid_t pid)
 		info->fd = fd;
 		info->fderr = fderr;
 		info->pid = pid;
+		info->type = type;
 		info->next = NULL;
 	}
 }
@@ -79,16 +82,18 @@ add_info(int fd, int fderr, pid_t pid)
  * Outputs: fderr, pid
  */
 static int
-retrieve_info(int fd, int *fderr, pid_t *pid)
+retrieve_info(int fd, int *fderr, pid_t *pid, char *type)
 {
 	if (first->fd == fd) {
 		*fderr = first->fderr;
 		*pid = first->pid;
+		*type = first->type;
 		if (first->next) {
 			struct process_info	*info = first->next;
 			first->fd = info->fd;
 			first->fderr = info->fderr;
 			first->pid = info->pid;
+			first->type = info->type;
 			first->next = info->next;
 			free(info);
 		} else {
@@ -107,6 +112,7 @@ retrieve_info(int fd, int *fderr, pid_t *pid)
 		if (info->fd == fd) {
 			*fderr = info->fderr;
 			*pid = info->pid;
+			*type = info->type;
 			prev->next = info->next;
 			free(info);
 			return 0;
@@ -487,17 +493,13 @@ spawn_popen_fd(char *const argv[restrict], const char *restrict type, int fd)
 		parent = -1;
 	} else {
 		/*
-		 * If output from the spawned process is consumed, the process
-		 * is finished when everything is read. Polling on fderr might
-		 * block forever, hence the process is signaled a SIGHUP.
-		 * However, if writing to the process, the process may still
-		 * work after having finished writing. Therefore, poll on fderr
-		 * in this case.
+		 * The closing procedure differs, depending on whether data is
+		 * written to the spawned process or read from it.
 		 */
-		if (child == 1)		/* read from the process */
-			add_info(parent, -fderr, pid);
+		if (child == 1)
+			add_info(parent, fderr, pid, 'r');
 		else
-			add_info(parent, fderr, pid);
+			add_info(parent, fderr, pid, 'w');
 	}
 	close(pd[child]);
 
@@ -527,10 +529,11 @@ spawn_popen(char *const argv[restrict], const char *restrict type)
 int
 spawn_pclose(int fd)
 {
+	char		type;
 	int		fderr;
 	pid_t		pid;
 
-	if (retrieve_info(fd, &fderr, &pid)) {
+	if (retrieve_info(fd, &fderr, &pid, &type)) {
 		file_msg("Error retrieving process id of spawned process!");
 		file_msg("Can you reproduce this error?");
 		return -1;
@@ -544,7 +547,7 @@ spawn_pclose(int fd)
 	 * the signal is ignored. SIGUSR1 was also tried, but unxz exited
 	 * with 1 and did not report termination by a signal.
 	 */
-	if (fderr > 0)
+	if (type == 'w')
 		poll_fderr(fderr);
 	else
 		fderr *= -1;
