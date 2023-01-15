@@ -51,7 +51,8 @@ static char	save_cur_dir[PATH_MAX];
 static void	write_arrows(FILE *fp, F_arrow *f, F_arrow *b);
 static void	write_comments (FILE *fp, char *com);
 static void	write_colordefs (FILE *fp);
-static int	write_objects (FILE *fp);
+static int	write_objects(FILE *fp);
+static int	write_objects_close(FILE *fp);
 
 
 void init_write_tmpfile(void)
@@ -81,12 +82,7 @@ write_fd(int fd)
 	}
 	num_object = 0;
 	/* write_objects() inserts picture paths relative to cur_file_dir */
-	if (write_objects(fp)) {
-		file_msg("An error occured during object export, probably: %s",
-				strerror(errno));
-		return -1;
-	}
-	return 0;
+	return write_objects(fp);
 }
 
 int write_file(char *file_name, Boolean update_recent)
@@ -102,7 +98,7 @@ int write_file(char *file_name, Boolean update_recent)
 	return (-1);
     }
     num_object = 0;
-    if (write_objects(fp)) {
+    if (write_objects_close(fp)) {
 	file_msg("Error writing file %s, %s", file_name, strerror(errno));
 	beep();
 	exit (2);
@@ -122,7 +118,7 @@ int write_file(char *file_name, Boolean update_recent)
 /* for fig2dev */
 
 
-int
+static int
 write_objects(FILE *fp)
 {
     F_arc	   *a;
@@ -172,14 +168,28 @@ write_objects(FILE *fp)
     /* reset to original locale */
     setlocale(LC_NUMERIC, "");
 #endif  /* I18N */
-    if (ferror(fp)) {
+
+    /* The written data is either accessed by the stream or a file descriptor.
+       Closing the file descriptor withoug flushing the stream first might leave
+       unwritten data in the stream buffer. */
+    if (fflush(fp) == EOF) {
+	file_msg("Error exporting objects: %s", strerror(errno));
+	return errno;
+    } else {
+	return 0;
+    }
+}
+
+static int
+write_objects_close(FILE *fp)
+{
+    if (write_objects(fp) || ferror(fp)) {
 	fclose(fp);
 	return (-1);
     }
+
     if (fclose(fp) == EOF)
 	return (-1);
-
-
     return (0);
 }
 
@@ -610,7 +620,7 @@ int emergency_save(char *file_name)
     /* first close any open compounds */
     close_all_compounds();
     num_object = 0;
-    if (write_objects(fp))
+    if (write_objects_close(fp))
 	return (-1);
     if (file_name[0] != '/') {
 	(void) fprintf(stderr, "xfig: %d object(s) saved in \"%s/%s\"\n",
