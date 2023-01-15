@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <unistd.h>		/* close() */
-#include <signal.h>		/* SIGPIPE */
+#include <signal.h>		/* SIGHUP */
 #include <stdio.h>
 #include <stdlib.h>		/* malloc() */
 #include <string.h>		/* strerror() */
@@ -250,13 +250,17 @@ open_process(char *const argv[restrict], int fd[2], int cd,
 	return 0;
 }
 
-static int
-closefderr_wait(pid_t pid, int fderr, int ignore_signal)
+static void
+closefderr(int fderr)
 {
-	int	ret;
-
 	if (close(fderr))
 		file_msg("Error closing stderr: %s", strerror(errno));
+}
+
+static int
+wait_pid(pid_t pid, int ignore_signal)
+{
+	int	ret;
 
 	if (waitpid(pid, &ret, 0) == -1) {
 		file_msg("Error waiting for spawned process: %s",
@@ -284,7 +288,7 @@ closefderr_wait(pid_t pid, int fderr, int ignore_signal)
  * process finishes.
  */
 static void
-poll_fderr(int fderr)
+poll_fderr(int fderr, int timeout)
 {
 	struct pollfd	fds;
 
@@ -292,11 +296,14 @@ poll_fderr(int fderr)
 	fds.events = POLLIN;		/* POLLHUP is anyhow reported */
 	fds.revents = 0;
 
-	if (poll(&fds, 1, -1 /* no timeout */) < 0) {
+	timeout = poll(&fds, 1, timeout); /* re-use timeout as return code */
+	if (timeout == 0) {
+		return;
+	} else if (timeout < 0) {
 		file_msg("Error polling stderr: %s", strerror(errno));
 		return;
 	}
-	/* poll > 0; 0 only possible if a timeout is given */
+	/* poll > 0 */
 	if (fds.revents & POLLIN) {
 		/* read the first 255 bytes, not more */
 		char		buf[256];
@@ -452,8 +459,9 @@ spawn_usefd(char *const argv[restrict], int fdin, int fdout)
 
 	if (open_process(argv, fd, -1, &pid, &fderr))
 		return -1;
-	poll_fderr(fderr);
-	return closefderr_wait(pid, fderr, 0);
+	poll_fderr(fderr, -1);
+	closefderr(fderr);
+	return wait_pid(pid, 0);
 }
 
 /*
@@ -539,19 +547,35 @@ spawn_pclose(int fd)
 		return -1;
 	}
 
-	/*
-	 * It was tried to poll fdread and check, whether the process still
-	 * wants to write data. However, for bunzip2 the pipe remained empty,
-	 * but bunzip2 issued an I/O error message (trying to be smart?)
-	 * Therefore, unconditionally send SIGHUP. If the process exited before,
-	 * the signal is ignored. SIGUSR1 was also tried, but unxz exited
-	 * with 1 and did not report termination by a signal.
-	 */
-	if (type == 'w')
-		poll_fderr(fderr);
-	else
-		fderr *= -1;
-	(void)kill(pid, SIGHUP);
-	(void)close(fd);
-	return closefderr_wait(pid, fderr, SIGHUP /* ignore this signal */);
+	/* Closing procedures differ for reading and writing pipes. */
+	if (type == 'w') {
+		if (close(fd))
+			file_msg("Error closing connection to spawned process:"
+					" %s", strerror(errno));
+		poll_fderr(fderr, -1);
+		closefderr(fderr);
+		return wait_pid(pid, 0);
+	} else { /* type == 'r' */
+		int		ret;
+		struct pollfd	pfds = {fd, POLLIN, 0};
+
+		/*
+		 * The pipe might be closed prematurely, e.g., when reading only
+		 * the first bytes of the header to determine the image type. In
+		 * that case, kill the process. SIGUSR1 was also tried, but unxz
+		 * exited with 1 and did not report termination by a signal.
+		 */
+		poll_fderr(fderr, 0);
+		ret = poll(&pfds, 1, 0);
+		if (ret < 0 || (ret > 0 && pfds.revents & POLLIN
+						&& !(pfds.revents & POLLHUP))) {
+			(void)kill(pid, ret = SIGHUP);
+		} /* else: ret == 0 */
+		ret = wait_pid(pid, ret);
+		closefderr(fderr);
+		if (close(fd))
+			file_msg("Error closing connection to spawned process:"
+					" %s", strerror(errno));
+		return ret;
+	}
 }
