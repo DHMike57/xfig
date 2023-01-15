@@ -455,6 +455,7 @@ spawn_usefd(char *const argv[restrict], int fdin, int fdout)
  * Return a file desrciptor for reading the output of the process, or for
  * writing to stdin of the process. If fd is non-negative, the process itself
  * will read from fd ("r") or write to it.
+ * Return -1 in case of error.
  */
 int
 spawn_popen_fd(char *const argv[restrict], const char *restrict type, int fd)
@@ -507,12 +508,10 @@ spawn_popen_fd(char *const argv[restrict], const char *restrict type, int fd)
  * Spawn a process and open a pipe, either for reading ("r") or for writing.
  * Return a file desrciptor for reading the output of the process, or for
  * writing to stdin of the process.
- * It is expected that the process needs to consume some data, or writes data
- * ("r"), and terminates after a certain amount of data has been fed or been
- * retrieved from it.
+ * Return -1 in case of error.
  * Example:
  *   fd = spawn_popen("date", "r");	char buf[256];
- *   if (read(fd, buf, sizeof buf) < sizeof buf)
+ *   if (read(fd,buf,sizeof buf) < sizeof buf && read(fd,buf,sizeof buf) == 0)
  *		spawn_pclose(fd);
  */
 int
