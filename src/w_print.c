@@ -139,8 +139,8 @@ static XtActionsRec     prn_actions[] =
 };
 
 static const char	*print_command_items[] = {
-	" lp",
-	"lpr"
+	" lp",	/* print_command == 0 */
+	"lpr"	/* print_command == 1 */
 };
 static void create_print_panel(Widget w);
 static void update_batch_count(void);
@@ -208,8 +208,9 @@ do_print(Widget w)
 	    }
 	    /* make a #rrggbb string from the background color */
 	    make_rgb_string(export_background_color, backgrnd);
-	    print_to_printer(printer_val, backgrnd, appres.magnification,
-				print_all_layers, bound_active_layers, grid, cmd);
+	    print_to_printer(print_command, printer_val, backgrnd,
+			    appres.magnification, print_all_layers,
+			    bound_active_layers, grid, cmd);
 	}
 }
 

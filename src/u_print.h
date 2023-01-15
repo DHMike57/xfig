@@ -27,9 +27,9 @@ extern Boolean	print_hpgl_pcl_switch;
 extern Boolean	hpgl_specified_font;
 extern Boolean	pdf_pagemode;
 extern int	preview_type;
-extern void	print_to_printer(char *printer, char *backgrnd, float mag,
-			Boolean print_all_layers, Boolean bound_active_layers,
-			char *grid, char *params);
+extern void	print_to_printer(int lpcommand, char *printer, char *backgrnd,
+			float mag, Boolean print_all_layers,
+			Boolean bound_active_layers, char *grid, char *params);
 extern int	print_to_file(char *file, int xoff, int yoff, char *backgrnd,
 			char *transparent, Boolean use_transp_backg, int border,
 			char *grid);

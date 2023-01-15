@@ -57,7 +57,7 @@ int	preview_type;
 
 static void	build_layer_list (char *layers);
 static void	append_group (char *list, char *num, int first, int last);
-static int	print_spawn_printcmd(const char *restrict file,
+static int	print_spawn_printcmd(int lpcommand, const char *restrict file,
 			const char *restrict printer, char *restrict params);
 
 /*
@@ -245,7 +245,7 @@ spawn_exportcommand(char *const args[restrict], const char *restrict outfile)
 }
 
 void
-print_to_printer(char *printer, char *backgrnd, float mag,
+print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 		Boolean print_all_layers, Boolean bound_active_layers,
 		char *grid, char *params)
 {
@@ -301,7 +301,7 @@ print_to_printer(char *printer, char *backgrnd, float mag,
 
 	/* Build up the pipeline from the end, catching printer errors */
 	/* These commands already report their errors */
-	if ((b = print_spawn_printcmd(NULL, printer, params)) > -1 &&
+	if ((b = print_spawn_printcmd(lpcommand, NULL, printer, params)) > -1 &&
 			(a = spawn_popen_fd(args, "w", b)) > -1 &&
 			!write_fd(a) &&
 			!spawn_pclose(a) &&
@@ -739,34 +739,20 @@ free_outfile:
 }
 
 int
-print_spawn_printcmd(const char *restrict file, const char *restrict printer,
-		char *restrict params)
+print_spawn_printcmd(int lpcommand, const char *restrict file,
+			const char *restrict printer, char *restrict params)
 {
 	int		a, n;
-	static int	lpcommand = -1;
 	char		*pargs[16];
 	char		**nargs = pargs;
+	/* to correspond to print_command_items[] in w_print.c */
 	const char	*lpcmd[2] = {"lp", "lpr"};
 	const char	*lparg[2] = {"-d", "-P"};
 
-	if (lpcommand == -1) {
-		if (!access("/usr/bin/lp", X_OK)) {
-			lpcommand = 1;
-		} else if (!access("/usr/bin/lpr", X_OK)) {
-			lpcommand = 2;
-		} else {
-			file_msg("Found neither \"lp\" nor \"lpr\" print "
-					"command in PATH");
-			lpcommand = 0;
-		}
-	}
 
-	if (!lpcommand)
-		return -2;
-
-	pargs[a = 0] = (char *)lpcmd[lpcommand - 1];
+	pargs[a = 0] = (char *)lpcmd[lpcommand];
 	if (printer && printer[0] != '\0') {
-		pargs[++a] = (char *)lparg[lpcommand - 1];
+		pargs[++a] = (char *)lparg[lpcommand];
 		pargs[++a] = (char *)printer;
 	}
 
