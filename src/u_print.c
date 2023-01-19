@@ -253,6 +253,7 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 	(void)print_all_layers;
 	(void)bound_active_layers;
 	int	a, b;	/* argument counters */
+	int	stat;
 	char	layers[PATH_MAX];
 	char	*args[18];
 	char	argbuf[2][16];
@@ -301,11 +302,18 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 
 	/* Build up the pipeline from the end, catching printer errors */
 	/* These commands already report their errors */
-	if ((b = print_spawn_printcmd(lpcommand, NULL, printer, params)) > -1 &&
-			(a = spawn_popen_fd(args, "w", b)) > -1 &&
-			!write_fd(a) &&
-			!spawn_pclose(a) &&
-			!spawn_pclose(b)) {
+	a = b = stat = -1;
+	if ((b = print_spawn_printcmd(lpcommand, NULL, printer, params)) > -1)
+		a = spawn_popen_fd(args, "w", b);
+	else
+		return;
+	if (a > -1) {
+		stat = write_fd(a);
+	} else {
+		(void)spawn_pclose(b);
+		return;
+	}
+	if (stat) {
 		if (emptyname(printer))
 			put_msg("Printing on default printer with %s paper size"
 					" in %s mode ... done",
@@ -317,6 +325,8 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 				printer, paper_sizes[appres.papersize].sname,
 				appres.landscape ? "LANDSCAPE" : "PORTRAIT");
 	}
+	(void)spawn_pclose(a);
+	(void)spawn_pclose(b);
 }
 
 static void
