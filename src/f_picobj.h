@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -58,6 +58,7 @@ extern int	external_path(char **rel_or_abs_path, size_t size,
 #define	ABSOLUTE_PATH(internal)	(*(internal) == '/' && *((internal)+1) == '/' \
 			|| *(internal) == '~' ? (internal) + 1 : (internal))
 
+extern void	init_stream(struct xfig_stream *restrict xf_stream);
 extern FILE	*open_stream(char *restrict name,
 				struct xfig_stream *restrict xf_stream);
 extern int	close_stream(struct xfig_stream *restrict xf_stream);

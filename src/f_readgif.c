@@ -45,7 +45,7 @@
 
 #include "resources.h"		/* PATH_MAX */
 #include "object.h"
-#include "f_picobj.h"
+#include "f_picobj.h"		/* init_stream() */
 #include "f_readpcx.h"
 #include "u_colors.h"
 #include "u_spawn.h"
@@ -97,7 +97,9 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	unsigned int	bitPixel, red, green, blue;
 	unsigned char	c;
 	char		version[4];
-	struct xfig_stream	pcx;
+	/* the contents of this stream is copied to pic_stream, and closed
+	   outside of this function; therefore, static */
+	static struct xfig_stream	pcx;
 
 	if (!rewind_stream(pic_stream))
 		return FileInvalid;
@@ -234,14 +236,13 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	 */
 
 	/*
-	 * Construct a rudimentary struct xfig_stream that can be passed to
-	 * read_pcx(). Tell read_pcx() that the FILE pointer is positioned at
-	 * the start (*name == '\0'). Call spawn_pclose(), which otherwise is
-	 * called by close_stream().
-	 * Quite a kludge, really.
+	 * Construct a struct xfig_stream because read_pcx() expects one.
+	 * Tell read_pcx() that the FILE pointer is positioned at the
+	 * start (*name == '\0'). Close this stream and swap in our new stream
+	 * to the one passed to us, which is then closed by the caller.
 	 */
-	pcx.name_buf[0] = '\0';
-	pcx.name = pcx.name_buf;
+	init_stream(&pcx);
+	pcx.name[0] = '\0';
 
 	rewind_stream(pic_stream);
 	if (two[0]) {
@@ -262,10 +263,16 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	pcx.fp = fdopen(i, "r");
 
 	stat = read_pcx(pic, &pcx);
+	close_stream(pic_stream);
+	free_stream(pic_stream);
 
-	spawn_pclose(i);
 	if (two[0])
 		spawn_pclose(mid);
+
+	init_stream(pic_stream);
+	pic_stream->fp = pcx.fp;
+	/* set uncompress to anything, not NULL, to indicate it is a pipe */
+	pic_stream->uncompress = &pic_stream->name;
 
 
 	/*
