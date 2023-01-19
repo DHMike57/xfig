@@ -57,53 +57,7 @@ int	preview_type;
 
 static void	build_layer_list (char *layers);
 static void	append_group (char *list, char *num, int first, int last);
-static int	print_spawn_printcmd(int lpcommand, const char *restrict file,
-			const char *restrict printer, char *restrict params);
 
-/*
- * Protect a string by enclosing it in apostrophes. Escape any apostrophes
- * in the string with a backslash ('\').
- * Beware!  The string returned by this function is static and is
- * reused the next time the function is called!
- */
-static char *
-shell_protect_string(char *string)
-{
-	static char *buf = 0;
-	static int buflen = 0;
-	int len = 2 * strlen(string) + 1;
-	char *cp, *cp2;
-
-	if (strlen(string) == 0)
-		return string;
-
-	if (! buf) {
-		buf = XtMalloc(len);
-		buflen = len;
-	}
-	else if (buflen < len) {
-		buf = XtRealloc(buf, len);
-		buflen = len;
-	}
-
-	cp2 = buf;
-	*cp2++ = '\'';
-	for (cp = string; *cp; cp++) {
-		if (*cp == '\'') {
-			/* an apostrophe in the string, close quotes,
-			   add \' and open again */
-			*cp2++ = '\'';
-			*cp2++ = '\\';
-			*cp2++ = '\'';
-		}
-		*cp2++ = *cp;
-	}
-	*cp2++ = '\'';
-
-	*cp2 = '\0';
-
-	return(buf);
-}
 
 /*
  * Break the string given in cmdline at spaces. Spaces quoted by a backslash are
@@ -327,6 +281,7 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 	}
 	(void)spawn_pclose(a);
 	(void)spawn_pclose(b);
+	app_flush();		/* make sure message gets displayed */
 }
 
 static void
@@ -779,51 +734,14 @@ print_spawn_printcmd(int lpcommand, const char *restrict file,
 	}
 	a += n - 1;		/* n might be 0 */
 
-	if (file && file[0] != '\0')
+	if (file && file[0] != '\0') {
 		nargs[++a] = (char *)file;
-
-	nargs[++a] = NULL;
-
-	return spawn_popen(nargs, "w");
-}
-
-void
-gen_print_cmd(char *cmd, char *file, char *printer, char *pr_params)
-{
-    if (emptyname(printer)) {	/* send to default printer */
-#if (defined(SYSV) || defined(SVR4)) && !defined(BSDLPR)
-	sprintf(cmd, "lp %s %s",
-		pr_params,
-		shell_protect_string(file));
-#else
-	sprintf(cmd, "%s %s %s",
-		access("/usr/bin/lp", X_OK)?"lpr":"lp",
-		pr_params,
-		shell_protect_string(file));
-#endif /* (defined(SYSV) || defined(SVR4)) && !defined(BSDLPR) */
-	put_msg("Printing on default printer with %s paper size in %s mode ...     ",
-		paper_sizes[appres.papersize].sname,
-		appres.landscape ? "LANDSCAPE" : "PORTRAIT");
-    } else {
-#if (defined(SYSV) || defined(SVR4)) && !defined(BSDLPR)
-	sprintf(cmd, "lp %s -d%s %s",
-		pr_params,
-		shell_protect_string(printer),
-		shell_protect_string(file));
-#else
-	sprintf(cmd, "%s %s %s%s %s",
-		access("/usr/bin/lp", X_OK)?"lpr":"lp",
-		pr_params,
-		access("/usr/bin/lp", X_OK)?"-P":"-d",
-		shell_protect_string(printer),
-		shell_protect_string(file));
-#endif /* (defined(SYSV) || defined(SVR4)) && !defined(BSDLPR) */
-	put_msg("Printing on \"%s\" with %s paper size in %s mode ...     ",
-		shell_protect_string(printer),
-		paper_sizes[appres.papersize].sname,
-		appres.landscape ? "LANDSCAPE" : "PORTRAIT");
-    }
-    app_flush();		/* make sure message gets displayed */
+		nargs[++a] = NULL;
+		return spawn_usefd(nargs, -1, -1);
+	} else {
+		nargs[++a] = NULL;
+		return spawn_popen(nargs, "w");
+	}
 }
 
 /*

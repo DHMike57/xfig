@@ -191,9 +191,9 @@ do_print(Widget w)
 	get_grid_spec(grid, print_grid_minor_text, print_grid_major_text);
 
 	if (batch_exists) {
-	    gen_print_cmd(cmd,batch_file,printer_val,param_val);
-	    if (system(cmd) != 0)
-		file_msg("Error during PRINT");
+		if (print_spawn_printcmd(print_command, batch_file,
+						printer_val, param_val))
+			file_msg("Error during PRINT");
 	    /* clear the batch file and the count */
 	    do_clear_batch(w);
 	} else {
