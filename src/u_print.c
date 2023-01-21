@@ -170,11 +170,25 @@ border_arg(char *args[restrict], char *const argbuf[restrict],
 }
 
 static int
-spawn_exportcommand(char *const args[restrict], const char *restrict outfile)
+spawn_export_to_fd(char *const args[restrict], int fdout)
 {
 	int	fd;
-	int	fdout;
 	int	stat;
+
+	/* all these commands do their own error reporting */
+	if ((fd = spawn_popen_fd(args, "w", fdout)) < 0)
+		return -1;
+	stat = write_fd(fd);
+	fd = spawn_pclose(fd);
+	if (stat || fd)
+		return -1;
+	return 0;
+}
+
+static int
+spawn_exportcommand(char *const args[restrict], const char *restrict outfile)
+{
+	int	fdout;
 
 	if ((fdout = open(outfile, O_CREAT | O_WRONLY | O_TRUNC,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |
@@ -183,18 +197,13 @@ spawn_exportcommand(char *const args[restrict], const char *restrict outfile)
 		return -1;
 	}
 
-	/* All the commands below do their own error reporting */
-
-	if ((fd = spawn_popen_fd(args, "w", fdout)) < 0) {
-		close(fdout);
+	if (spawn_export_to_fd(args, fdout)) {
+		(void)close(fdout);
 		return -1;
 	}
-	stat = write_fd(fd);
-	fd = spawn_pclose(fd);
+
 	if (close(fdout))
 		file_msg("Cannnot close file %s: %s", outfile, strerror(errno));
-	if (stat || fd)
-		return -1;
 	return 0;
 }
 
@@ -267,7 +276,7 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 		(void)spawn_pclose(b);
 		return;
 	}
-	if (stat) {
+	if (!stat) {
 		if (emptyname(printer))
 			put_msg("Printing on default printer with %s paper size"
 					" in %s mode ... done",
