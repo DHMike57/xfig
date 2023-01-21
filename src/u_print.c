@@ -58,6 +58,7 @@ int	preview_type;
 static void	build_layer_list (char *layers);
 static void	append_group (char *list, char *num, int first, int last);
 
+#define	ARGBUF_SIZE	16
 
 /*
  * Break the string given in cmdline at spaces. Spaces quoted by a backslash are
@@ -123,9 +124,8 @@ cmdlinetoargarray(char *args[restrict], int size, char *restrict cmdline)
  * Write the export language to args[2].
  */
 static void
-start_argumentlist(char *arg[restrict], char *argbuf[restrict],
-		const size_t bufsize, int *restrict a, int *restrict b,
-		char *layers)
+start_argumentlist(char *arg[restrict], char argbuf[restrict][ARGBUF_SIZE],
+		int *restrict a, int *restrict b, char *layers)
 {
 	/* a refers to the index of arg[], b to the index of argbuf[] */
 	*b = -1;
@@ -139,13 +139,13 @@ start_argumentlist(char *arg[restrict], char *argbuf[restrict],
 	if (appres.magnification < 99.99 | appres.magnification > 100.01) {
 		int	n;
 		arg[++*a] = "-m";
-		n = snprintf(argbuf[++*b], bufsize,
+		n = snprintf(argbuf[++*b], ARGBUF_SIZE,
 				"%.4g", appres.magnification/100.);
 		arg[++*a] = argbuf[*b];
-		if ((size_t)n >= bufsize)
+		if (n >= ARGBUF_SIZE)
 			file_msg("Unable to write full magnification %.4g, "
-					"only %zd characters available",
-					appres.magnification/100., bufsize);
+					"only %d characters available",
+					appres.magnification/100., ARGBUF_SIZE);
 	}
 	if (!print_all_layers) {
 		arg[++*a] = "-D";
@@ -188,27 +188,26 @@ addargs_postscript(char *args[restrict], const char *grid,
 
 	if (grid[0] && strcasecmp(grid,"none") != 0) {
 		args[++a] = "-G";
-		args[++a] = grid;
+		args[++a] = (char *)grid;
 	}
 
 	if (backgrnd[0]) {
 		args[++a] = "-g";
-		args[++a] = backgrnd;
+		args[++a] = (char *)backgrnd;
 	}
 
 	args[++a] = NULL;
 }
 
 static void
-border_arg(char *args[restrict], char *const argbuf[restrict],
-		const size_t bufsize, int *restrict a, int *restrict b,
-		int border)
+border_arg(char *args[restrict], char argbuf[const restrict][ARGBUF_SIZE],
+		int *restrict a, int *restrict b, int border)
 {
 	int	n;
 	args[++*a] = "-b";
-	n = snprintf(argbuf[++*b], bufsize, "%d", border);
+	n = snprintf(argbuf[++*b], ARGBUF_SIZE, "%d", border);
 	args[++*a] = argbuf[*b];
-	if ((size_t)n >= bufsize)
+	if (n >= ARGBUF_SIZE)
 		file_msg("Border thickness %d incorrectly written: %s",
 				border, argbuf[*b]);
 }
@@ -263,7 +262,7 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 	int	stat;
 	char	layers[PATH_MAX];
 	char	*args[18];
-	char	argbuf[2][16];
+	char	argbuf[2][ARGBUF_SIZE];
 
 	/* if the user only wants the active layers, build that list */
 	build_layer_list(layers);
@@ -272,8 +271,7 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 	   to cur_file_dir */
 	change_directory(cur_file_dir);
 
-	start_argumentlist(args, (char **)argbuf, sizeof argbuf[1], &a, &b,
-			layers);
+	start_argumentlist(args, argbuf, &a, &b, layers);
 
 	addargs_postscript(args, grid, backgrnd);
 
@@ -319,7 +317,7 @@ print_to_batchfile(int fdout, const char *restrict backgrnd,
 	int	a, b;	/* argument counters */
 	char	layers[PATH_MAX];
 	char	*args[18];
-	char	argbuf[2][16];
+	char	argbuf[2][ARGBUF_SIZE];
 
 	/* if the user only wants the active layers, build that list */
 	build_layer_list(layers);
@@ -328,8 +326,7 @@ print_to_batchfile(int fdout, const char *restrict backgrnd,
 	   to cur_file_dir */
 	change_directory(cur_file_dir);
 
-	start_argumentlist((char **)args, argbuf, sizeof argbuf[1], &a, &b,
-			layers);
+	start_argumentlist(args, argbuf, &a, &b, layers);
 
 	addargs_postscript(args, grid, backgrnd);
 
@@ -362,23 +359,27 @@ strsub(char *prcmd, char *find, char *repl, char *result, int global)
 	strcpy(result, prcmd);
 }
 
-/* xoff, yoff, and border are in postscript points (1/72 inch) */
+/*
+ * Export to the current output language cur_exp_lang.
+ * Return 0 on success.
+ * xoff, yoff, and border are in postscript points (1/72 inch)
+ */
 int
-print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
+print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	      Boolean use_transp_backg, int border, char *grid)
 {
-	char	layers[PATH_MAX];
+	char		layers[PATH_MAX];
 	const char	dummy[] = "x";
-	char	*outfile, *name;
-	char	*save_file_dir;
-	char	*tmp_name = NULL;
-	char	*suf;
-	char	*args[36];
-	char	argbuf[5][16];
-	int	ret = 0;
-	int	a;	/* args counter */
-	int	b;	/* argbuf counter */
-	size_t	bufsize = sizeof argbuf[1];
+	char		*outfile, *name;
+	char		*save_file_dir;
+	char		*tmp_name = NULL;
+	char		*suf;
+	char		*args[36];
+	char		argbuf[5][ARGBUF_SIZE];
+	int		ret = 0;
+	int		a;	/* args counter */
+	int		b;	/* argbuf counter */
+	size_t		bufsize = sizeof argbuf[1];
 
 	/* if file exists, ask if ok */
 	if (!ok_to_write(file, "EXPORT"))
@@ -395,7 +396,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	app_flush();		/* make sure message gets displayed */
 
 	/*
-	 * print_to_file is called from w_export.c where the current directory
+	 * print_export is called from w_export.c where the current directory
 	 * is set to cur_export_dir, but write_file() writes picture paths
 	 * relative to cur_file_dir; Hence, for the spawned fig2dev command to
 	 * find the images, set cur_file_dir to cur_export_dir.
@@ -411,7 +412,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	setlocale(LC_NUMERIC, "C");
 #endif
 
-	start_argumentlist(args, (char **)argbuf, bufsize, &a, &b, layers);
+	start_argumentlist(args, argbuf, &a, &b, layers);
 
 	/* args[2] points to the language */
 	args[2] = lang_items[cur_exp_lang];
@@ -432,8 +433,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		}
 
 		if (border > 0)
-			border_arg(args, (char **)argbuf, bufsize,
-					&a, &b, border);
+			border_arg(args, argbuf, &a, &b, border);
 
 		/* any grid spec */
 		if (grid[0] && strcasecmp(grid, "none") != 0) {
@@ -533,8 +533,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 #ifdef I18N
 			setlocale(LC_NUMERIC, "C");
 #endif
-			start_argumentlist(args, (char **)argbuf, bufsize,
-					&a, &b, layers);
+			start_argumentlist(args, argbuf, &a, &b, layers);
 			args[2] = "pstex_t";
 			tmp_name[len] = '\0';
 			args[++a] = "-p";
@@ -543,7 +542,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		/* PSTEX and PDFTEX */
 		} else if (cur_exp_lang == LANG_PSTEX ||
 				cur_exp_lang == LANG_PDFTEX) {
-			size_t		len = strlen(outfile);
+			size_t	len = strlen(outfile);
 
 			/* Options were already set above
 			    - output the first file */
@@ -565,15 +564,13 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 #ifdef I18N
 			setlocale(LC_NUMERIC, "C");
 #endif
-			start_argumentlist(args, (char **)argbuf, bufsize,
-					&a, &b, layers);
+			start_argumentlist(args, argbuf, &a, &b, layers);
 			args[2] = "pstex_t";
 			args[++a] = "-p";
 			args[++a] = tmp_name;
 
 			if (border > 0)
-				border_arg(args, (char **)argbuf, bufsize,
-						&a, &b, border);
+				border_arg(args, argbuf, &a, &b, border);
 
 		/* PSPDF */
 		} else if (cur_exp_lang == LANG_PSPDF) {
@@ -586,8 +583,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 #ifdef I18N
 			setlocale(LC_NUMERIC, "C");
 #endif
-			start_argumentlist(args, (char **)argbuf, bufsize,
-					&a, &b, layers);
+			start_argumentlist(args, argbuf, &a, &b, layers);
 			args[2] = lang_items[LANG_PDF];
 
 			/* any grid spec */
@@ -597,8 +593,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			}
 
 			if (border > 0)
-				border_arg(args, (char **)argbuf, bufsize,
-						&a, &b, border);
+				border_arg(args, argbuf, &a, &b, border);
 			args[++a] = "-F";
 			args[++a] = "-n";
 			args[++a] = name;
@@ -653,8 +648,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 
 		/* HTML map needs border option */
 		if (border > 0)
-			border_arg(args, (char **)argbuf, bufsize,
-					&a, &b, border);
+			border_arg(args, argbuf, &a, &b, border);
 
 		args[++a] = outfile;
 
@@ -694,8 +688,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 
 		/* bitmap formats need border option */
 		if (border > 0)
-			border_arg(args, (char **)argbuf, bufsize,
-					&a, &b, border);
+			border_arg(args, argbuf, &a, &b, border);
 
 		if (appres.smooth_factor) {
 			args[++a] = "-S";

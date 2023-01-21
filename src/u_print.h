@@ -34,7 +34,7 @@ extern int	print_to_batchfile(int fdout, const char *restrict backgrnd,
 extern void	print_to_printer(int lpcommand, char *printer, char *backgrnd,
 			float mag, Boolean print_all_layers,
 			Boolean bound_active_layers, char *grid, char *params);
-extern int	print_to_file(char *file, int xoff, int yoff, char *backgrnd,
+extern int	print_export(char *file, int xoff, int yoff, char *backgrnd,
 			char *transparent, Boolean use_transp_backg, int border,
 			char *grid);
 extern void	make_rgb_string (int color, char *rgb_string);
