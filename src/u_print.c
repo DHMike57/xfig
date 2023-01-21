@@ -540,6 +540,7 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 #endif
 			start_argumentlist(args, (char **)argbuf, bufsize,
 					&a, &b, layers);
+			args[2] = lang_items[LANG_PDF];
 
 			/* any grid spec */
 			if (grid[0] && strcasecmp(grid, "none") != 0) {
@@ -563,21 +564,27 @@ print_to_file(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			/* strip off current suffix, if any */
 			if ((suf = strrchr(outfile, '.'))) {
 				size_t	len = strlen(outfile);
-				if (len - (suf-outfile) < 4 &&
-						!realloc(outfile, len + 5)) {
-					ret = 1;
-					goto free_outfile;
+				if (len - (suf-outfile) < 4) {
+					if (!(tmp_name = realloc(outfile,
+								len + 5))) {
+					       ret = 1;
+					       goto free_outfile;
+				       }
+				} else {
+					tmp_name = outfile;
 				}
-				sprintf(suf, ".pdf");
-				args[++a] = outfile;
-			} else {
+				sprintf(tmp_name + (suf - outfile), ".pdf");
+			} else {	/* no suffix, add one */
 				size_t	len = strlen(outfile);
-				if (!(realloc(outfile, len + 5))) {
+				if (!(tmp_name = realloc(outfile, len + 5))) {
 					ret = 1;
 					goto free_outfile;
 				}
-				strcpy(outfile + len, ".pdf");
+				strcpy(tmp_name + len, ".pdf");
 			}
+			if (tmp_name != outfile)
+				outfile = tmp_name;
+			tmp_name = NULL;  /* otherwise double-free */
 		}
 
 	} else if (cur_exp_lang == LANG_IBMGL) {
