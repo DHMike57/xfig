@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -1665,9 +1665,9 @@ convert_gridstr(Widget widget, float mult)
 	FirstArg(XtNstring, &sval);
 	GetValues(widget);
 	/* don't convert anything if "none" */
-	if (strcasecmp(sval, "none") == 0)
+	if (sval[0] == '\0' || strcasecmp(sval, "none") == 0)
 	    return;
-	if (sscanf(sval,"%lf/%lf", &numer, &denom) == 2) {
+	if (sscanf(sval, "%lf/%lf", &numer, &denom) == 2) {
 	    value = numer/denom*mult;
 	} else {
 	    /* not fraction, just convert to metric */
