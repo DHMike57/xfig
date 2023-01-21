@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -681,77 +681,6 @@ safe_strcpy(char *p1, char *p2)
 	*p1++ = *p2++;
     *p1 = '\0';
     return c1;
-}
-
-/* gunzip file if necessary */
-
-Boolean
-uncompress_file(char *name)
-{
-    char	    plainname[PATH_MAX];
-    char	    dirname[PATH_MAX];
-    char	    tmpfile[PATH_MAX];
-    char	    unc[PATH_MAX+20];	/* temp buffer for uncompress/gunzip command */
-    char	   *c;
-    struct stat	    status;
-
-    strcpy(tmpfile, name);		/* save original name */
-    strcpy(plainname, name);
-    c = strrchr(plainname, '.');
-    if (c) {
-      if (strcmp(c, ".gz") == 0 || strcmp(c, ".Z") == 0 || strcmp(c, ".z") == 0)
-	*c = '\0';
-    }
-
-    if (stat(name, &status)) {    /* first see if file exists AS NAMED */
-      /* no, try without .gz etc suffix */
-      strcpy(name, plainname);
-      if (stat(name, &status)) {
-	/* no, try with a .z */
-	sprintf(name, "%s.z", plainname);
-	if (stat(name, &status)) {
-	  /* no, try with .Z suffix */
-	  sprintf(name, "%s.Z", plainname);
-	  if (stat(name, &status)) {
-	    /* no, try .gz */
-	    sprintf(name, "%s.gz", plainname);
-	    if (stat(name, &status)) {
-	      /* none of the above, return original name and False status */
-	      strcpy(name, tmpfile);
-	      return False;
-	    }
-	  }
-	}
-      }
-    }
-    /* file doesn't have .gz etc suffix anymore, return modified name */
-    if (strcmp(name, plainname) == 0) return True;
-
-    strcpy(dirname, name);
-    c = strrchr(dirname, '/');
-    if (c) *c = '\0';
-    else strcpy(dirname, ".");
-
-    if (access(dirname, W_OK) == 0) {  /* OK - the directory is writable */
-      sprintf(unc, "gunzip -q %s", name);
-      if (system(unc) != 0)
-	file_msg("Couldn't uncompress the file: \"%s\"", unc);
-      strcpy(name, plainname);
-    } else {  /* the directory is not writable */
-      /* create a path to TMPDIR in case we need to uncompress a read-only file to there */
-      c = strrchr(plainname, '/');
-      if (c)
-	  sprintf(tmpfile, "%s%s", TMPDIR, c);
-      else
-	  sprintf(tmpfile, "%s/%s", TMPDIR, plainname);
-      sprintf(unc, "gunzip -q -c %s > %s", name, tmpfile);
-      if (system(unc) != 0)
-	  file_msg("Couldn't uncompress the file: \"%s\"", unc);
-      file_msg ("Uncompressing file %s in %s because it is in a read-only directory",
-		name, TMPDIR);
-      strcpy(name, tmpfile);
-    }
-    return True;
 }
 
 /*************************************************************/

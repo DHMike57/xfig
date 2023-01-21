@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -41,7 +41,7 @@
 #include "d_spline.h"
 #include "e_update.h"
 #include "f_picobj.h"
-#include "f_util.h"
+#include "f_util.h"		/* remap_imagecolors() */
 #include "u_bound.h"
 #include "u_colors.h"
 #include "u_create.h"
@@ -213,16 +213,16 @@ to bring them up-to-date.
 int
 read_fig(char *file_name, F_compound *obj, Boolean merge, int xoff, int yoff, fig_settings *settings)
 {
-    FILE	   *fp;
-    int		    status;
+	FILE			*fp;
+	struct xfig_stream	fig_stream;
+	int			status;
 
-    read_file_name = file_name;
-    first_file_msg = True;
-    if (uncompress_file(file_name) == False)
-	return ENOENT;		/* doesn't exist */
-    if ((fp = fopen(file_name, "r")) == NULL)
-	return errno;
-    else {
+	read_file_name = file_name;
+	first_file_msg = True;
+	init_stream(&fig_stream);
+	if (!(fp = open_stream(file_name, &fig_stream)))
+		return BAD_FORMAT;
+
 	if (!update_figs)
 	    put_msg("Reading objects from \"%s\" ...", file_name);
 #ifdef I18N
@@ -234,11 +234,11 @@ read_fig(char *file_name, F_compound *obj, Boolean merge, int xoff, int yoff, fi
 	/* reset to original locale */
 	setlocale(LC_NUMERIC, "");
 #endif  /* I18N */
-	fclose(fp);
+	(void)close_stream(&fig_stream);
+	free_stream(&fig_stream);
 	/* so subsequent file_msg() calls don't print wrong file name */
 	first_file_msg = False;
 	return status;
-    }
 }
 
 static int

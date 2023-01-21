@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -30,7 +30,6 @@ extern XftColor	image_cells[MAX_COLORMAP_SIZE];
 extern char	*xf_basename(char *filename);
 extern int	 emptyfigure(void);
 extern char	*safe_strcpy(char *p1, char *p2);
-extern Boolean	 uncompress_file(char *name);
 extern char	*build_command(char *program, char *filename);
 extern Boolean	 map_to_palette(F_pic *pic);
 extern Boolean	 dimline_components(F_compound *dimline, F_line **line,

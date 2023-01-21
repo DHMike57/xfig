@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -49,7 +49,6 @@ typedef struct {
 	int	transparent;
 } fig_settings;
 
-extern Boolean	 uncompress_file(char *name);
 extern int	 read_figc(char *file_name, F_compound *obj, Boolean merge,
 	Boolean remapimages, int xoff, int yoff, fig_settings *settings);
 extern int	 read_fig(char *file_name, F_compound *obj, Boolean merge,

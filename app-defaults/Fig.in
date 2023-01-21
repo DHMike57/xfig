@@ -64,7 +64,7 @@ Fig*unitbox.font:		6x13
 Fig*Font:			7x13bold
 
 ! filename mask for the file popup browser
-Fig*file_panel*mask*string:	*.fig *.fig.gz *.fig.[Zz]
+Fig*file_panel*mask*string:	*.fig *.fig.*
 
 ! default export language
 Fig.exportLanguage:		eps
