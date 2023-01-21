@@ -29,6 +29,8 @@ extern Boolean	pdf_pagemode;
 extern int	preview_type;
 extern int	print_spawn_printcmd(int lpcommand, const char *restrict file,
 			const char *restrict printer, char *restrict params);
+extern int	print_to_batchfile(int fdout, const char *restrict backgrnd,
+			const char *restrict grid);
 extern void	print_to_printer(int lpcommand, char *printer, char *backgrnd,
 			float mag, Boolean print_all_layers,
 			Boolean bound_active_layers, char *grid, char *params);

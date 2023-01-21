@@ -21,6 +21,8 @@
 #endif
 #include "w_print.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,6 +76,7 @@ void	do_print(Widget w), do_print_batch(Widget w);
 DeclareStaticArgs(15);
 
 static char	print_msg[] = "PRINT";
+static int	fdbatch;
 static int	num_batch_figures=0;
 static Boolean	writing_batch=False;
 #define MAX_PRINTERS 1000		/* for those systems using lprng :-) */
@@ -194,8 +197,10 @@ do_print(Widget w)
 		if (print_spawn_printcmd(print_command, batch_file,
 						printer_val, param_val))
 			file_msg("Error during PRINT");
+	    put_msg("Printed batch file %s", batch_file);
 	    /* clear the batch file and the count */
 	    do_clear_batch(w);
+	    app_flush();
 	} else {
 	    strcpy(cmd, param_val);
 	    /* see if the user wants the filename in the param list (%f) */
@@ -309,12 +314,7 @@ update_figure_size(void)
 void
 do_print_batch(Widget w)
 {
-	FILE	*infp,*outfp;
-	char	tmp_exp_file[PATH_MAX];
-	char	str[255];
 	char	backgrnd[10], grid[80];
-	int	fd;
-	int	save_exp_lang;
 
 	if (writing_batch || emptyfigure_msg(print_msg))
 		return;
@@ -323,18 +323,25 @@ do_print_batch(Widget w)
 	/* this could happen if the user presses the button too fast */
 	writing_batch = True;
 
-	/* make a temporary name to write this figure to */
-	snprintf(tmp_exp_file, sizeof(tmp_exp_file), "%s/xfig-exp.XXXXXX",
-		TMPDIR);
-
 	if (batch_exists != True) {
+		int	flags;
 		/* make a temporary name to write the batch stuff to */
 		sprintf(batch_file, "%s/xfig-batch.XXXXXX", TMPDIR);
-		if ((fd = mkstemp(batch_file)) == -1) {
-			file_msg("Error creating temporary file");
+		if ((fdbatch = mkstemp(batch_file)) == -1) {
+			file_msg("Error creating temporary file %s: %s",
+					batch_file, strerror(errno));
 			return;
 		}
-		close(fd);
+		if ((flags = fcntl(fdbatch, F_GETFL)) == -1 ||
+				fcntl(fdbatch, F_SETFL, flags & O_APPEND)==-1) {
+			flags = errno;
+			(void)close(fdbatch);
+			(void)unlink(batch_file);
+			file_msg("Cannot append to batch file %s: %s",
+					batch_file, strerror(flags));
+			return;
+		}
+
 		batch_exists = True;
 	}
 	if (!print_popup)
@@ -349,37 +356,19 @@ do_print_batch(Widget w)
 	/* make a #rrggbb string from the background color */
 	make_rgb_string(export_background_color, backgrnd);
 
-	if ((fd = mkstemp(tmp_exp_file)) == -1) {
-		file_msg("Error creating temporary file");
-		return;
-	}
-	close(fd);
-
 	/* get grid params and assemble into fig2dev parm */
 	get_grid_spec(grid, print_grid_minor_text, print_grid_major_text);
 
-	save_exp_lang = cur_exp_lang;
-	cur_exp_lang = LANG_PS;
-	print_to_file(tmp_exp_file, 0,0, backgrnd, NULL, False, 0, grid);
-	cur_exp_lang = save_exp_lang;
-	put_msg("Appending to batch file \"%s\" (%s mode) ... done",
-		    batch_file, appres.landscape ? "LANDSCAPE" : "PORTRAIT");
-	app_flush();		/* make sure message gets displayed */
-
-	/* now append that to the batch file */
-	if ((infp = fopen(tmp_exp_file, "rb")) == NULL) {
-		file_msg("Error during PRINT - cannot open temporary file to read");
-		return;
+	if (!print_to_batchfile(fdbatch, backgrnd, grid)) {
+		(void)fsync(fdbatch);
+		put_msg("Appending to batch file %s (%s mode) ... done",
+				batch_file,
+				appres.landscape ? "LANDSCAPE" : "PORTRAIT");
+		app_flush();		/* make sure message gets displayed */
+	} else {
+		file_msg("Error during PRINT - cannot append to batch file %s",
+				batch_file);
 	}
-	if ((outfp = fopen(batch_file, "ab")) == NULL) {
-		file_msg("Error during PRINT - cannot open print file to append");
-		return;
-	}
-	while (fgets(str,255,infp) != NULL)
-		(void) fputs(str,outfp);
-	fclose(infp);
-	fclose(outfp);
-	remove(tmp_exp_file);
 	/* count this batch figure */
 	num_batch_figures++ ;
 	/* and update the label widget */
@@ -393,7 +382,12 @@ do_clear_batch(Widget w)
 {
 	(void)w;
 
-	unlink(batch_file);
+	if (close(fdbatch))
+		file_msg("Error closing batch file %s: %s", batch_file,
+				strerror(errno));
+	if (unlink(batch_file))
+		file_msg("Error removing batch file %s: %s", batch_file,
+				strerror(errno));
 	batch_exists = False;
 	num_batch_figures = 0;
 	/* update the label widget */

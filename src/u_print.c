@@ -155,6 +155,50 @@ start_argumentlist(char *arg[restrict], char *argbuf[restrict],
 	}
 }
 
+/*
+ * Add up to 15 arguments for postscript output, starting from 2,
+ * making a total of 17 arguments.
+ */
+static void
+addargs_postscript(char *args[restrict], const char *grid,
+			const char *backgrnd)
+{
+	int	a;
+
+	args[a = 2] = "ps";		/* output language */
+
+	args[++a] = "-z";
+	args[++a] = paper_sizes[appres.papersize].sname;
+
+	if (strlen(cur_filename)) {
+		args[++a] = "-n";
+		args[++a] = cur_filename;
+	}
+	args[++a] = appres.landscape ? "-l" : "-p";
+	args[++a] = "xxx";
+
+	if (appres.correct_font_size)
+		args[++a] = "-F";
+
+	if (!appres.multiple && !appres.flushleft)
+		args[++a] = "-c";
+
+	if (appres.multiple)
+		args[++a] = "-M";
+
+	if (grid[0] && strcasecmp(grid,"none") != 0) {
+		args[++a] = "-G";
+		args[++a] = grid;
+	}
+
+	if (backgrnd[0]) {
+		args[++a] = "-g";
+		args[++a] = backgrnd;
+	}
+
+	args[++a] = NULL;
+}
+
 static void
 border_arg(char *args[restrict], char *const argbuf[restrict],
 		const size_t bufsize, int *restrict a, int *restrict b,
@@ -230,38 +274,8 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 
 	start_argumentlist(args, (char **)argbuf, sizeof argbuf[1], &a, &b,
 			layers);
-	args[2] = "ps";		/* output language */
 
-	args[++a] = "-z";
-	args[++a] = paper_sizes[appres.papersize].sname;
-
-	if (strlen(cur_filename)) {
-		args[++a] = "-n";
-		args[++a] = cur_filename;
-	}
-	args[++a] = appres.landscape ? "-l" : "-p";
-	args[++a] = "xxx";
-
-	if (appres.correct_font_size)
-		args[++a] = "-F";
-
-	if (!appres.multiple && !appres.flushleft)
-		args[++a] = "-c";
-
-	if (appres.multiple)
-		args[++a] = "-M";
-
-	if (grid[0] && strcasecmp(grid,"none") != 0) {
-		args[++a] = "-G";
-		args[++a] = grid;
-	}
-
-	if (backgrnd[0]) {
-		args[++a] = "-g";
-		args[++a] = backgrnd;
-	}
-
-	args[++a] = NULL;
+	addargs_postscript(args, grid, backgrnd);
 
 	/* Build up the pipeline from the end, catching printer errors */
 	/* These commands already report their errors */
@@ -291,6 +305,40 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 	(void)spawn_pclose(a);
 	(void)spawn_pclose(b);
 	app_flush();		/* make sure message gets displayed */
+}
+
+/*
+ * Write postscript ouptput to fdout.
+ * Return 0 on success.
+ * Report errors using file_msg().
+ */
+int
+print_to_batchfile(int fdout, const char *restrict backgrnd,
+				const char *restrict grid)
+{
+	int	a, b;	/* argument counters */
+	char	layers[PATH_MAX];
+	char	*args[18];
+	char	argbuf[2][16];
+
+	/* if the user only wants the active layers, build that list */
+	build_layer_list(layers);
+
+	/* fig2dev expects path names of included pictures relative
+	   to cur_file_dir */
+	change_directory(cur_file_dir);
+
+	start_argumentlist((char **)args, argbuf, sizeof argbuf[1], &a, &b,
+			layers);
+
+	addargs_postscript(args, grid, backgrnd);
+
+	b = 0;
+	if ((a = spawn_popen_fd(args, "w", fdout)) > -1) {
+		b = write_fd(a);
+		a = spawn_pclose(a);
+	}
+	return  a | b;
 }
 
 static void
