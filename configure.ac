@@ -190,13 +190,6 @@ AC_CHECK_DECL([REG_NOERROR],[],
 	[AC_DEFINE([REG_NOERROR], 0,dnl
 		[Define to 0 if not provided by regex.h.])],dnl
 	[[#include <regex.h>]])
-# The option --allow-multiple-definition is aquivalent to -z muldefs.
-# The latter would not error out, e.g., "-z NoTeXisting" does only
-# produce a warning, not an error, on gnu ld.
-# KEEP IN SYNC with the actual link flags in tests/Makefile.am!
-AX_CHECK_LINK_FLAG([-Wl,--allow-multiple-definition])dnl
-AM_CONDITIONAL([ALLOW_MULTIPLE_DEFINITION],
-	[test "x$ax_cv_check_ldflags___Wl___allow_multiple_definition" = xyes])dnl
 
 # Checks for library functions.
 # The setlocale seems to be broken, grep HAVE_SETLOCALE, setlocale

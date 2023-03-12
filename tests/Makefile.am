@@ -41,15 +41,13 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -I$(oldincludedir)/freetype2 $(XCPPFLAGS)
 
-if ALLOW_MULTIPLE_DEFINITION
-AM_LDFLAGS = -Wl,--allow-multiple-definition $(XLDFLAGS)
+AM_LDFLAGS = $(XLDFLAGS)
 LDADD = $(top_builddir)/src/libxfig.a $(XLIBS)
 
 check_PROGRAMS = test1 test2 test3 test4
 
 $(top_builddir)/src/libxfig.a:
 	cd $(top_builddir)/src && $(MAKE) $(AM_MAKEFLAGS) libxfig.a
-endif
 
 check-local: atconfig $(TESTSUITE) atlocal
 	$(SHELL) '$(TESTSUITE)' ASAN_OPTIONS=leak_check_at_exit=0 \

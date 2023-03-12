@@ -37,7 +37,7 @@ DISTCLEANFILES = splash.xbm splash.xpm version.xbm
 
 bin_PROGRAMS = xfig
 
-xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
+xfig_files = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	d_ellipse.c d_ellipse.h d_line.c d_line.h d_picobj.c d_picobj.h \
 	d_regpoly.c d_regpoly.h d_spline.c d_spline.h d_subspline.c \
 	d_subspline.h d_text.c d_text.h dirstruct.h e_addpt.c e_addpt.h \
@@ -51,7 +51,7 @@ xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	f_load.c f_load.h f_neuclrtab.c f_neuclrtab.h f_picobj.c f_picobj.h \
 	f_read.c f_readeps.c f_readgif.c f_read.h f_readold.c f_readpcx.c \
 	f_readpcx.h f_readppm.c f_readxbm.c f_save.c f_save.h f_util.c \
-	f_util.h f_wrpcx.c main.c main.h mode.c mode.h object.c object.h \
+	f_util.h f_wrpcx.c main.h mode.c mode.h object.c object.h \
 	paintop.h resources.c resources.h u_bound.c u_bound.h u_colors.c \
 	u_colors.h u_create.c u_create.h u_drag.c u_drag.h u_draw.c \
 	u_draw.h u_elastic.c u_elastic.h u_error.c u_error.h u_fonts.c \
@@ -76,40 +76,47 @@ xfig_SOURCES = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	xfig_math.h
 
 if HAVE_JPEG
-xfig_SOURCES += f_readjpg.c
+xfig_files += f_readjpg.c
 endif
 
 if HAVE_PNG
-xfig_SOURCES += f_readpng.c f_wrpng.c
+xfig_files += f_readpng.c f_wrpng.c
 endif
 
 if HAVE_TIFF
-xfig_SOURCES += f_readtif.c
+xfig_files += f_readtif.c
 endif
 
 if USE_XPM
-xfig_SOURCES += f_readxpm.c
+xfig_files += f_readxpm.c
 endif
 
 if USE_SPLASH
-xfig_SOURCES += splash.xpm
+xfig_files += splash.xpm
 endif
 
 if I18N
-xfig_SOURCES += w_i18n.c w_i18n.h
+xfig_files += w_i18n.c w_i18n.h
 endif
 
 if !XAW3D1_5E
-xfig_SOURCES += w_menuentry.c w_menuentry.h \
+xfig_files += w_menuentry.c w_menuentry.h \
 	SmeBSB.h SmeCascade.c SmeCascade.h SmeCascadeP.h \
 	SimpleMenu.c SmeBSB.c SmeBSBP.h
 endif
 
+xfig_SOURCES = $(xfig_files) main.c
+
 EXTRA_DIST = u_draw_spline.c
 
-# Create a convenience library. Unit tests are linked with libxfig.a.
+# Create a convenience library for the unit tests.
+# Unit tests provide a main() function and are linked to this convenience
+# library. Replace the original main() for the xfig binary with xfigmain().
+xfigmain.c: main.c
+	$(SED) '/^main(/ s/main/xfigmain/' "$(srcdir)/main.c" >$@
+
 check_LIBRARIES = libxfig.a
-libxfig_a_SOURCES = $(xfig_SOURCES)
+libxfig_a_SOURCES = $(xfig_files) xfigmain.c
 libxfig_a_LIBADD = $(LIBOBJS)
 
 # These files depend on PACKAGE_VERSION, which is
