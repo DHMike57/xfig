@@ -128,11 +128,6 @@ typedef struct f_arrow {
 	float ht;
 } F_arrow;
 
-/*****************/
-/* Xft Font      */
-/*****************/
-
-typedef XftFont	*F_font;
 
 /******************/
 /* Ellipse object */
@@ -273,7 +268,7 @@ typedef struct f_line {
 	char *comments;
 	struct f_line *next;
 } F_line;
-
+
 /***************/
 /* Text object */
 /***************/
@@ -304,7 +299,7 @@ typedef struct f_text {
 	int base_x;		/* x-position of the baseline text marker */
 	int base_y;		/* y-position of the baseline text marker */
 	int pen_style;
-	F_font xftfont;
+	XftFont *xftfont;
 	struct f_pos top;	/* position of top text marker - unfortunately,
 				   not equal to rotbb[0] */
 	struct f_pos offset;	/* offset to glyph continuing cstring */
