@@ -382,8 +382,6 @@ static XtResource application_resources[] = {
        XtOffset(appresPtr, euc_encoding), XtRBoolean, (caddr_t) & true},
     {"localeEncoding", "LocaleEncoding", XtRBoolean, sizeof(Boolean),
        XtOffset(appresPtr, locale_encoding), XtRBoolean, (caddr_t) & true},
-    {"latinKeyboard", "Latinkeyboard", XtRBoolean, sizeof(Boolean),
-       XtOffset(appresPtr, latin_keyboard), XtRBoolean, (caddr_t) & false},
     {"alwaysUseFontSet", "AlwaysUseFontSet", XtRBoolean, sizeof(Boolean),
        XtOffset(appresPtr, always_use_fontset), XtRBoolean, (caddr_t) & false},
     {"fixedFontSet", "FontSet", XtRFontSet, sizeof(XFontSet),

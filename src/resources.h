@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -248,7 +248,6 @@ typedef struct _appres {
     String	 font_menu_language;
     Boolean	 euc_encoding;
     Boolean	 locale_encoding;
-    Boolean	 latin_keyboard;
     Boolean	 always_use_fontset;
     XFontSet	 fixed_fontset;
     int		 fontset_size;

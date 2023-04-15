@@ -2443,8 +2443,7 @@ make_window_text(F_text *t)
     font_image_panel(new_psflag ? psfont_menu_bitmaps[new_t->font + 1] :
 		latexfont_menu_bitmaps[new_t->font], "Font", &font_panel);
 #ifdef I18N
-    str_panel(new_t->cstring, "Text", &text_panel, 220, True,
-	      appres.latin_keyboard);
+    str_panel(new_t->cstring, "Text", &text_panel, 220, True, True);
 #else
     str_panel(new_t->cstring, "Text", &text_panel, 220, True, False);
 #endif /* I18N */
