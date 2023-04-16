@@ -6,7 +6,7 @@ AC_COPYRIGHT([FIG : Facility for Interactive Generation of figures
 Copyright (c) 1985-1988 by Supoj Sutanthavibul
 Parts Copyright (c) 1989-2015 by Brian V. Smith
 Parts Copyright (c) 1991 by Paul King
-Parts Copyright (c) 2016-2022 by Thomas Loimer
+Parts Copyright (c) 2016-2023 by Thomas Loimer
 
 Any party obtaining a copy of these files is granted, free of charge, a
 full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,7 +19,7 @@ and this permission notice remain intact.
 ])
 
 # configure.ac
-# Author: Thomas Loimer, 2016-2021
+# Author: Thomas Loimer, 2016-2023
 
 dnl The minimum autoconf version to process this file. In version 2.60,
 dnl the directory variables changed, see info autoconf, section 4.8.3.
@@ -153,6 +153,20 @@ AC_CHECK_HEADER([tiffio.h],
     [], [AC_INCLUDES_DEFAULT])
 AM_CONDITIONAL([HAVE_TIFF], [test $ac_cv_header_tiffio_h = yes && \
 	test "x$ac_cv_search_TIFFOpen" != xno])dnl
+
+# Check for iconv.h. If found, try to compile and link a custom-made
+# test program. On Darwin, iconv.h typedef's iconv() to libiconv(). Therefore,
+# one cannot use AC_SEARCH_LIBS to search for the iconv symbol, but must use a
+# test program that includes iconv.h.
+AC_CHECK_HEADER([iconv.h],
+    [TL_SEARCH_LIBS_SOURCE([iconv], [iconv], [],
+	[#include <iconv.h>
+	int main(void)
+	{char *a; return iconv(0, &a, (size_t*)a, &a, (size_t*)a);}])dnl
+    AS_IF([test "$tl_cv_search_source_iconv" != no],
+	[AC_DEFINE([HAVE_ICONV], 1,
+	    [Define to 1 if you have the <iconv.h> header and libiconv.])])],
+    [], [AC_INCLUDES_DEFAULT])
 
 # First check for jpeg, png and tiff-libraries, only then for ghostscript.
 # One report indicated that, on Darwin, the other way round "-ljpeg -lpng
