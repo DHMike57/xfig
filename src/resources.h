@@ -253,9 +253,7 @@ typedef struct _appres {
     int		 fontset_size;
     String	 xim_input_style;
     String	 fig2dev_localize_option;
-#ifdef I18N_USE_PREEDIT
     String	 text_preedit;
-#endif  /* I18N_USE_PREEDIT */
 #endif  /* I18N */
 
 }		appresStruct, *appresPtr;

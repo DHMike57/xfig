@@ -394,10 +394,8 @@ static XtResource application_resources[] = {
        XtOffset(appresPtr, xim_input_style), XtRString, (caddr_t) "OffTheSpot"},
     {"fig2devLocalizeOption", "Fig2devLocalizeOption", XtRString, sizeof(char *),
        XtOffset(appresPtr, fig2dev_localize_option), XtRString, (caddr_t) "-j"},
-#ifdef I18N_USE_PREEDIT
     {"textPreedit", "TextPreedit", XtRString, sizeof(char *),
        XtOffset(appresPtr, text_preedit), XtRString, (caddr_t) ""},
-#endif /* I18N_USE_PREEDIT */
 #endif  /* I18N */
 };
 

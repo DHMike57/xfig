@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -32,9 +32,7 @@
 #endif
 #include <unistd.h>
 #include <fontconfig/fontconfig.h>
-#ifdef I18N_USE_PREEDIT
-#include <sys/wait.h>  /* waitpid() */
-#endif
+#include <sys/wait.h>		/* waitpid() */
 #include <X11/keysym.h>
 #include <X11/IntrinsicP.h>    /* includes X11/Xlib.h, which includes X11/X.h */
 #include <X11/Xft/Xft.h>
@@ -153,12 +151,10 @@ static int	save_base_x, save_base_y;
 
 static void	xim_set_spot();
 
-#ifdef I18N_USE_PREEDIT
 static pid_t	preedit_pid = -1;
 static char	preedit_filename[PATH_MAX] = "";
 static void	open_preedit_proc(), close_preedit_proc(), paste_preedit_proc();
 static Boolean	is_preedit_running();
-#endif  /* I18N_USE_PREEDIT */
 #endif  /* I18N */
 
 /********************************************************/
@@ -178,7 +174,6 @@ text_drawing_selected(void)
     canvas_rightbut_proc = null_proc;
     set_mousefun("position cursor", "", "", "", "", "");
 #ifdef I18N
-#ifdef I18N_USE_PREEDIT
     if (appres.international && strlen(appres.text_preedit) != 0) {
       if (is_preedit_running()) {
 	canvas_middlebut_proc = paste_preedit_proc;
@@ -189,7 +184,6 @@ text_drawing_selected(void)
 	set_mousefun("position cursor", "", "open pre-edit", "", "", "");
       }
     }
-#endif  /* I18N_USE_PREEDIT */
 #endif  /* I18N */
     reset_action_on();
     clear_mousefun_kbd();
@@ -1426,7 +1420,6 @@ xim_set_spot(int x, int y)
   }
 }
 
-#ifdef I18N_USE_PREEDIT
 static Boolean
 is_preedit_running(void)
 {
@@ -1516,6 +1509,5 @@ paste_preedit_proc(int x, int y)
   text_drawing_selected();
   draw_mousefun_canvas();
 }
-#endif  /* I18N_USE_PREEDIT */
 
 #endif /* I18N */

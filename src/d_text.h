@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -35,8 +35,6 @@ extern XIC	xim_ic;
 extern Boolean	xim_active;
 extern Boolean	xim_initialize(Widget w);
 extern void	xim_set_ic_geometry(XIC ic, int width, int height);
-#ifdef I18N_USE_PREEDIT
 extern void	kill_preedit();
-#endif  /* I18N_USE_PREEDIT */
 #endif  /* I18N */
 extern void text_drawing_selected (void);

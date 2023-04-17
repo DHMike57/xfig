@@ -231,10 +231,7 @@ AC_ARG_ENABLE(i18n, [AS_HELP_STRING([--disable-i18n],
 	[disable internationalization features (default: enable)])],
     [],[enableval=yes])dnl
 AS_IF([test "x$enableval" = xyes],
-    [AC_DEFINE([I18N], 1,
-	[Define to enable internationalization features.])dnl
-    AC_DEFINE([I18N_USE_PREEDIT], 1,
-	[Define to use preediting with i18n.])])
+    [AC_DEFINE([I18N], 1, [Define to enable internationalization features.])])
 AM_CONDITIONAL([I18N], [test "x$enableval" = xyes])dnl
 
 AC_ARG_WITH(gsexe, [AS_HELP_STRING([--with-gsexe=<name>],
