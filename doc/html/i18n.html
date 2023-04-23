@@ -7,23 +7,19 @@
 
 <body>
 <a href="contents.html"><img src="images/xfig-title.png"
-  alt="XFIG Users Manual" border=0></a>
+  alt="XFIG Users Manual" border="0"></a>
 
 <hr>
 
 <h1>Internationalization (Using Japanese, Korean, etc.)</h1>
 
-<b>xfig 3.2.X</b> and <b>fig2dev 3.2.X</b> include code for internationalization,
+<b>Xfig</b> and <b>fig2dev</b> include code for internationalization,
 and it is possible to put characters of Japanese
 and some another languages in texts.
-At now, it is known to worked under Japanese and Korean.
+At now, it is known to have worked under Japanese and Korean.
 <p>
-Additional informations about this may available at
-<a href="http://member.nifty.ne.jp/tsato/xfig/">
-<i>http://member.nifty.ne.jp/tsato/xfig/</i></a>.
 Send any questions or comments about this internationalization facility to
 <a href="mailto:VEF00200@nifty.ne.jp"><i>VEF00200@nifty.ne.jp (T.Sato)</i></a>.
-
 <p>
 <hr>
 
@@ -31,8 +27,7 @@ Send any questions or comments about this internationalization facility to
 <li><a href="#environment">Environment</a>
 <li><a href="#install">Installation</a>
 <ul>
-<li><a href="#install-xfig">Install <b>xfig</b></a>
-<li><a href="#install-fig2dev">Install <b>fig2dev</b></a>
+<li><a href="#install-fig2dev">Fig2dev</a>
 </ul>
 <li><a href="#startup">Startup</a>
 <li><a href="#input-text">Entering Text</a>
@@ -72,49 +67,14 @@ These facilities may be implemented as a single program.
 
 <h2><a name="install">Installation</a></h2>
 
-<h3><a name="install-xfig">Install <b>xfig</b></a></h3>
+<h3><a name="install-fig2dev">Fig2dev</a></h3>
 
-<ol>
-<li>Get <a href="installation.html"><b>xfig.3.2.5d.tar.gz</b></a>
-and <i>gunzip</i> and <i>untar</i> it.
-
-<p>
-<li>Uncomment &quot;<tt>#define I18N</tt>&quot;
-in <tt>xfig.3.2.5d/Imakefile</tt> (remove the <tt>XCOMM</tt> comment).
-
-<p>
-<li>If your C library supports the required locale,
-remove <tt>-DSETLOCALE</tt> from the definition of <tt>I18N_DEFS</tt>
-in the <tt>Imakefile</tt>.
-If your C library doesn't support the required locale,
-make sure that <tt>-DSETLOCALE</tt> is specified.
-
-<p>
-<li><a href="installation.html">Compile and install</a>
-<b>xfig</b> in the usual way.
-</ol>
-
-<h3><a name="install-fig2dev">Install <b>fig2dev</b></a></h3>
-
-<ol>
-<li>Get <a href="installation.html"><b>transfig.3.2.5e.tar.gz</b></a>
-and <i>gunzip</i> and <i>untar</i> it.
-
-<p>
-<li>Uncomment &quot;<tt>#define I18N</tt>&quot;
-in <tt>transfig.3.2.5e/fig2dev/Imakefile</tt> (remove the <tt>XCOMM</tt> comment).
-
-<p>
-<li>If you want to install files like <tt>japanese.ps</tt>
-to a directory other than <tt>/usr/local/lib/fig2dev</tt>,
-modify the definition of <tt>FIG2DEV_LIBDIR</tt> and <tt>I18N_DEV_DEFS</tt>
-in the <tt>Imakefile</tt>.
-
-<p>
-<li><a href="installation.html">Compile and install</a>
-<b>TransFig</b> (<b>fig2dev</b>) in the usual way.
-</ol>
-
+For postscript and bitmap outputs it may be necessary to have files like
+<tt>japanese.ps</tt> in its default location, usually
+<tt>/usr/locale/share/fig2dev/i18n/</tt>, or in the location pointed to by the
+<tt>FIG2DEV_LIBDIR</tt> environment variable.
+The file <tt>japanese.ps</tt> defines composite fonts to use with Times-Roman
+and Times-Roman Bold.
 
 <h2><a name="startup">Startup</a></h2>
 
@@ -132,20 +92,7 @@ to specify the <i>input method</i> to be used.
 (<b>Canna</b> or <b>Wnn</b>, for example)
 and an <i>input method</i> (<b>kinput2</b> or <b>htt</b>, for example)
 is available.
-
-<p>
-<li>Type &quot;<kbd>xfig -international</kbd>&quot;.
-<p>
-Without the <tt>-international</tt> option,
-<b>xfig</b> will work as normal (no internationalization).
-If you put &quot;<tt>Fig.international: true</tt>&quot;
-into your <a href="#resource">resource file</a>,
-<tt>-international</tt> option may omitted.
-<p>
-<b>N.B.</b> If you run <b>fig2dev</b> standalone you must use the <tt>-j</tt> option
-to enable internationalization.
 </ol>
-
 
 <h2><a name="input-text">Entering Text</a></h2>
 
@@ -174,7 +121,7 @@ The <i>input style</i> may be selected from
 The <i>input style</i> to be used
 may be selected with the <tt>inputStyle</tt> resource
 or the <tt>-inputStyle</tt> option.
-For example, <tt>xfig -international -inputStyle OverTheSpot</tt>
+For example, <tt>xfig -inputStyle OverTheSpot</tt>
 will select <i>Over the Spot</i> as the input style.
 <p>
 <dl>
@@ -396,13 +343,6 @@ to avoid using JPEG library distributed with IRIX.
 <tr><td>RedHat Linux 5.2, 6.0   <td>XFree86          <td>hanIM, ami<tr>
 </table>
 </center>
-
-<p>
-<dl>
-<dt>SEE ALSO:
-<dd><a href="http://pantheon.yale.edu/~jshin/faq/">Hangul and Internet in Korea FAQ</a><br>
-<a href="http://nuclina.hoseo.ac.kr/ps/">Hangul and Printing</a>
-</dl>
 
 <p>
 <hr>
