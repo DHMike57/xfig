@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -51,14 +51,12 @@ launch_refman(Widget w, XtPointer closure, XtPointer call_data)
 
 	/* first check if at least the index file is installed */
 	sprintf(filename, "%s/html/index.html", XFIGDOCDIR);
-#ifdef I18N
 	if (appres.international && getenv("LANG")) {
 	  /* check localized file ($XFIGDOCDIR/html/$LANG/index.html) first */
 	  snprintf(filename, PATH_MAX, "%s/html/%s/index.html", XFIGDOCDIR, getenv("LANG"));
 	  if (!check_docfile(filename))
 	    sprintf(filename, "%s/html/index.html", XFIGDOCDIR);
 	}
-#endif /* I18N */
 	launch_viewer(filename, "Launching Web browser for html pages", cur_browser);
 }
 

@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -182,11 +182,9 @@ lookfont(int fnum, int size)
 	Boolean		found;
 	struct xfont   *newfont, *nf, *oldnf;
 
-#ifdef I18N
 	char **mcharset;
 	int ncharset;
 	char *defstr;
-#endif
 
 	if (fnum == DEFAULT)
 	    fnum = 0;			/* pass back the -normal font font */
@@ -257,9 +255,7 @@ lookfont(int fnum, int size)
 		strcat(template,"%d-*-*-*-*-*-");
 		/* add ISO8859 (if not Symbol font or ZapfDingbats) to font name in non-international mode */
 		if (
-#ifdef I18N
 		    !appres.international &&
-#endif
 		    strstr(template,"ymbol") == NULL &&
 		    strstr(template,"ingbats") == NULL)
 			strcat(template,"ISO8859-*");
@@ -273,9 +269,7 @@ lookfont(int fnum, int size)
 		strcat(template,"%d-*-*-*-*-*-");
 		/* add ISO8859 (if not Symbol font or ZapfDingbats) to font name in non-international mode */
 		if (
-#ifdef I18N
 		    !appres.international &&
-#endif
 		    strstr(template,"ymbol") == NULL &&
 		    strstr(template,"ingbats") == NULL)
 			strcat(template,"ISO8859-*");
@@ -300,13 +294,11 @@ lookfont(int fnum, int size)
 		return roman_font;
 	    set_temp_cursor(wait_cursor);
 	    fontst = XLoadQueryFont(tool_d, fn);
-#ifdef I18N
             /* create fontsets for all fonts but Symbol and Dingbats */
 	    if (appres.international &&
                 strstr(fn,"ymbol") == NULL &&
 		strstr(fn,"ingbats") == NULL)
 		  fontset = XCreateFontSet(tool_d, fn, &mcharset, &ncharset, &defstr);
-#endif
 	    reset_cursor();
 	    if (fontst == NULL) {
 		/* doesn't exist, see if substituting "condensed" for "narrow" will match */
@@ -441,7 +433,6 @@ textsize(XFontStruct *fstruct, int n, char *s)
     int		    dir, asc, desc;
     XCharStruct	    overall;
 
-#ifdef I18N
     if (appres.international) {
       extern void i18n_text_extents(); /* w_i18n.h */
       i18n_text_extents(fstruct, s, n, &dir, &asc, &desc, &overall);
@@ -450,7 +441,6 @@ textsize(XFontStruct *fstruct, int n, char *s)
       ret.descent = ZOOM_FACTOR * overall.descent;
       return (ret);
     }
-#endif  /* I18N */
     XTextExtents(fstruct, s, n, &dir, &asc, &desc, &overall);
     ret.length = ZOOM_FACTOR * overall.width;
     ret.ascent = ZOOM_FACTOR * overall.ascent;

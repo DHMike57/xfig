@@ -23,9 +23,7 @@
 
 #include <errno.h>
 #include <fcntl.h>		/* creat(), open() */
-#ifdef I18N
 #include <locale.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -132,10 +130,8 @@ start_argumentlist(char *arg[restrict], char argbuf[restrict][ARGBUF_SIZE],
 	arg[0] = fig2dev_cmd;
 	arg[1] = "-L";
 	*a = 2;	/* arg[2] will be the output language */
-#ifdef I18N
 	if (appres.international)
 		arg[++*a] = appres.fig2dev_localize_option;
-#endif
 	if (appres.magnification < 99.99 | appres.magnification > 100.01) {
 		int	n;
 		arg[++*a] = "-m";
@@ -407,10 +403,8 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	/* if the user only wants the active layers, build that list */
 	build_layer_list(layers);
 
-#ifdef I18N
 	/* set the numeric locale to C so we get decimal points for numbers */
 	setlocale(LC_NUMERIC, "C");
-#endif
 
 	start_argumentlist(args, argbuf, &a, &b, layers);
 
@@ -513,10 +507,8 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			/* first generate pstex postscript then pdftex PDF.  */
 			strsub(outfile, ".", "_", tmp_name, 1);
 
-#ifdef I18N
 			/* reset to original locale */
 			setlocale(LC_NUMERIC, "");
-#endif
 
 			/* make it suitable for pstex. */
 			strcpy(tmp_name + len, ".eps");
@@ -530,9 +522,7 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			spawn_exportcommand(args, tmp_name);
 
 			/* and then the tex code. */
-#ifdef I18N
 			setlocale(LC_NUMERIC, "C");
-#endif
 			start_argumentlist(args, argbuf, &a, &b, layers);
 			args[2] = "pstex_t";
 			tmp_name[len] = '\0';
@@ -561,9 +551,7 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 				goto free_tmp_name;
 			}
 			strcpy(outfile + len, "_t");
-#ifdef I18N
 			setlocale(LC_NUMERIC, "C");
-#endif
 			start_argumentlist(args, argbuf, &a, &b, layers);
 			args[2] = "pstex_t";
 			args[++a] = "-p";
@@ -580,9 +568,7 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			args[++a] = NULL;
 			spawn_exportcommand(args, outfile);
 
-#ifdef I18N
 			setlocale(LC_NUMERIC, "C");
-#endif
 			start_argumentlist(args, argbuf, &a, &b, layers);
 			args[2] = lang_items[LANG_PDF];
 
@@ -734,10 +720,8 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 	/* make a busy cursor */
 	set_temp_cursor(wait_cursor);
 
-#ifdef I18N
 	/* reset to original locale */
 	setlocale(LC_NUMERIC, "");
-#endif
 
 	/* now execute fig2dev */
 	args[++a] = NULL;

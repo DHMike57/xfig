@@ -140,8 +140,6 @@ static void	turn_on_blinking_cursor(int x, int y);
 static void	turn_off_blinking_cursor(void);
 static void	move_blinking_cursor(int x, int y);
 
-#ifdef I18N
-
 XIM		xim_im = NULL;
 XIC		xim_ic = NULL;
 XIMStyle	xim_style = 0;
@@ -155,7 +153,6 @@ static pid_t	preedit_pid = -1;
 static char	preedit_filename[PATH_MAX] = "";
 static void	open_preedit_proc(), close_preedit_proc(), paste_preedit_proc();
 static Boolean	is_preedit_running();
-#endif  /* I18N */
 
 /********************************************************/
 /*							*/
@@ -173,7 +170,6 @@ text_drawing_selected(void)
     canvas_leftbut_proc = init_text_input;
     canvas_rightbut_proc = null_proc;
     set_mousefun("position cursor", "", "", "", "", "");
-#ifdef I18N
     if (appres.international && strlen(appres.text_preedit) != 0) {
       if (is_preedit_running()) {
 	canvas_middlebut_proc = paste_preedit_proc;
@@ -184,7 +180,6 @@ text_drawing_selected(void)
 	set_mousefun("position cursor", "", "open pre-edit", "", "", "");
       }
     }
-#endif  /* I18N */
     reset_action_on();
     clear_mousefun_kbd();
 
@@ -394,10 +389,8 @@ overlay_text_input(int x, int y)
 
     base_x = cur_x;
     base_y = cur_y;
-#ifdef I18N
     save_base_x = base_x;
     save_base_y = base_y;
-#endif /* I18N */
 
     if (is_newline) {	/* working settings already set */
 	is_newline = False;
@@ -470,10 +463,8 @@ init_text_input(int x, int y)
 	/* set origin where mouse was clicked */
 	base_x = orig_x = x;
 	base_y = orig_y = y;
-#ifdef I18N
 	save_base_x = base_x;
 	save_base_y = base_y;
-#endif /* I18N */
 
 	/* set working settings from ind panel */
 	if (is_newline) {	/* working settings already set from previous text */
@@ -545,10 +536,8 @@ init_text_input(int x, int y)
 	base_x = cur_t->base_x;
 	base_y = cur_t->base_y;
 	length = cur_t->length;
-#ifdef I18N
 	save_base_x = base_x;
 	save_base_y = base_y;
-#endif /* I18N */
 
 	/* set origin to base of this text so newline will go there */
 	orig_x = base_x;
@@ -776,14 +765,12 @@ initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by)
     rcur_y = cur_y;
 
     turn_on_blinking_cursor(cur_x, cur_y);
-#ifdef I18N
     if (xim_ic != NULL) {
       put_msg("Ready for text input (from keyboard with input-method)");
       XSetICFocus(xim_ic);
       xim_active = True;
       xim_set_spot(cur_x, cur_y);
     }
-#endif /* I18N */
 }
 
 static void
@@ -791,10 +778,8 @@ terminate_char_handler(void)
 {
     turn_off_blinking_cursor();
     cr_proc = NULL;
-#ifdef I18N
     if (xim_ic != NULL) XUnsetICFocus(xim_ic);
     xim_active = False;
-#endif /* I18N */
 }
 
 void
@@ -1181,9 +1166,7 @@ move_blinking_cursor(int x, int y)
     draw_cursor(cursor_x, cursor_y);
     cursor_on = 1;
     cursor_is_moving = 0;
-#ifdef I18N
     if (xim_active) xim_set_spot(x, y);
-#endif /* I18N */
 }
 
 /*
@@ -1234,8 +1217,6 @@ reload_text_fstruct(F_text *t)
 /*		Internationalization utility procedures		*/
 /*								*/
 /****************************************************************/
-
-#ifdef I18N
 
 static void
 GetPreferredGeomerty(XIC ic, char *name, XRectangle **area)
@@ -1350,10 +1331,10 @@ xim_initialize(Widget w)
   if (xim_style != preferred_style && *modifier_list != '\0' &&
 	!strstr(modifier_list,"@im=local") &&
 	!strstr(modifier_list,"@im=none")) {
-    fprintf(stderr, "xfig: this input-method doesn't support %s input style\n",
+    fprintf(stderr, "xfig: this input-method does not support %s input style\n",
 	    appres.xim_input_style);
     if (xim_style == 0) {
-      fprintf(stderr, "xfig: it don't support ROOT input style, too...\n");
+      fprintf(stderr, "xfig: it does not support ROOT input style, too...\n");
       return False;
     } else {
       fprintf(stderr, "xfig: using ROOT or NONE input style instead.\n");
@@ -1466,10 +1447,10 @@ open_preedit_proc(int x, int y)
     set_temp_cursor(wait_cursor);
     preedit_pid = fork();
     if (preedit_pid == -1) {  /* cannot fork */
-        fprintf(stderr, "Can't fork the process: %s\n", strerror(errno));
+        fprintf(stderr, "Cannot fork the process: %s\n", strerror(errno));
     } else if (preedit_pid == 0) {  /* child process; execute xfig-preedit */
         execlp(appres.text_preedit, appres.text_preedit, preedit_filename, NULL);
-        fprintf(stderr, "Can't execute %s\n", appres.text_preedit);
+        fprintf(stderr, "Cannot execute %s\n", appres.text_preedit);
         exit(-1);
     } else {  /* parent process; wait until xfig-preedit is up */
         for (i = 0; i < 10 && !is_preedit_running(); i++) sleep(1);
@@ -1477,7 +1458,7 @@ open_preedit_proc(int x, int y)
     if (is_preedit_running())
 	put_msg("Pre-edit window opened");
     else
-	put_msg("Can't open pre-edit window");
+	put_msg("Cannot open pre-edit window");
     reset_cursor();
   }
   text_drawing_selected();
@@ -1504,10 +1485,8 @@ paste_preedit_proc(int x, int y)
     fclose(fp);
     put_msg("Text pasted from pre-edit window");
   } else {
-    put_msg("Can't get text from pre-edit window");
+    put_msg("Cannot get text from pre-edit window");
   }
   text_drawing_selected();
   draw_mousefun_canvas();
 }
-
-#endif /* I18N */

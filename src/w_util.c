@@ -39,9 +39,7 @@
 #include "resources.h"
 #include "mode.h"
 #include "object.h"
-#ifdef I18N
 #include "d_text.h"
-#endif /* I18N */
 #include "e_placelib.h"
 #include "f_util.h"
 #include "u_colors.h"
@@ -1323,10 +1321,8 @@ check_for_resize(Widget tool, XButtonEvent *event, String *params, Cardinal *npa
     TOOL_WD = xc->width;
     TOOL_HT = xc->height;
     resize_all(CANVAS_WD + dx, CANVAS_HT + dy);
-#ifdef I18N
     if (xim_ic != NULL)
       xim_set_ic_geometry(xim_ic, CANVAS_WD, CANVAS_HT);
-#endif /* I18N */
 }
 
 /* resize whole shebang given new canvas size (width,height) */

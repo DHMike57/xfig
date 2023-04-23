@@ -227,13 +227,6 @@ AS_IF([test "x$enableval" = xyes],
     [AC_DEFINE([ARROWS4TO14], 1,
 	 [Define to use arrow types 4 to 14 (22 arrows).])])dnl
 
-AC_ARG_ENABLE(i18n, [AS_HELP_STRING([--disable-i18n],
-	[disable internationalization features (default: enable)])],
-    [],[enableval=yes])dnl
-AS_IF([test "x$enableval" = xyes],
-    [AC_DEFINE([I18N], 1, [Define to enable internationalization features.])])
-AM_CONDITIONAL([I18N], [test "x$enableval" = xyes])dnl
-
 AC_ARG_WITH(gsexe, [AS_HELP_STRING([--with-gsexe=<name>],
        [specify filename or path of the ghostscript executable (default: gs);
  empty string, "", to avoid calling the executable])],

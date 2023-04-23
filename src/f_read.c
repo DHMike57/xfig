@@ -29,9 +29,7 @@
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
-#ifdef I18N
 #include <locale.h>
-#endif
 #include <X11/Xft/Xft.h>
 
 #include "resources.h"
@@ -225,15 +223,11 @@ read_fig(char *file_name, F_compound *obj, Boolean merge, int xoff, int yoff, fi
 
 	if (!update_figs)
 	    put_msg("Reading objects from \"%s\" ...", file_name);
-#ifdef I18N
 	/* set the numeric locale to C so we get decimal points for numbers */
 	setlocale(LC_NUMERIC, "C");
-#endif  /* I18N */
 	status = readfp_fig(fp, obj, merge, xoff, yoff, settings);
-#ifdef I18N
 	/* reset to original locale */
 	setlocale(LC_NUMERIC, "");
-#endif  /* I18N */
 	(void)close_stream(&fig_stream);
 	free_stream(&fig_stream);
 	/* so subsequent file_msg() calls don't print wrong file name */

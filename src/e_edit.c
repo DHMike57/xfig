@@ -2442,11 +2442,7 @@ make_window_text(F_text *t)
     /* make the popup font menu */
     font_image_panel(new_psflag ? psfont_menu_bitmaps[new_t->font + 1] :
 		latexfont_menu_bitmaps[new_t->font], "Font", &font_panel);
-#ifdef I18N
     str_panel(new_t->cstring, "Text", &text_panel, 220, True, True);
-#else
-    str_panel(new_t->cstring, "Text", &text_panel, 220, True, False);
-#endif /* I18N */
 }
 
 static void
@@ -4340,10 +4336,8 @@ str_panel(char *string, char *name, Widget *pi_x, int width, Boolean size_to_wid
     NextArg(XtNbottom, XtChainBottom);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainRight);
-#ifdef I18N
     if (!appres.international || !international)
       NextArg(XtNinternational, False);
-#endif /* I18N */
     *pi_x = XtCreateManagedWidget(textname, asciiTextWidgetClass, form, Args, ArgCount);
 
     /* make CR do nothing for now */

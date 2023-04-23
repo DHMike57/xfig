@@ -22,9 +22,7 @@
 #include "f_save.h"
 
 #include <errno.h>
-#ifdef I18N
 #include <locale.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -135,10 +133,8 @@ write_objects(FILE *fp)
 
     if (!update_figs)
 	put_msg("Writing . . .");
-#ifdef I18N
     /* set the numeric locale to C so we get decimal points for numbers */
     setlocale(LC_NUMERIC, "C");
-#endif  /* I18N */
     write_fig_header(fp);
     for (a = objects.arcs; a != NULL; a = a->next) {
 	num_object++;
@@ -164,10 +160,8 @@ write_objects(FILE *fp)
 	num_object++;
 	write_text(fp, t);
     }
-#ifdef I18N
     /* reset to original locale */
     setlocale(LC_NUMERIC, "");
-#endif  /* I18N */
 
     /* The written data is either accessed by the stream or a file descriptor.
        Closing the file descriptor withoug flushing the stream first might leave

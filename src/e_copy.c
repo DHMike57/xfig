@@ -22,9 +22,7 @@
 #include "e_copy.h"
 
 #include <stdio.h>
-#ifdef I18N
 #include <locale.h>
-#endif
 
 #include "resources.h"
 #include "mode.h"
@@ -145,10 +143,8 @@ init_copy_to_scrap(F_line *p, int type, int x, int y, int px, int py)
 
     if ((fp=open_cut_file())==NULL)
 	return;
-#ifdef I18N
     /* set the numeric locale to C so we get decimal points for numbers */
     setlocale(LC_NUMERIC, "C");
-#endif  /* I18N */
     write_fig_header(fp);
 
     switch (type) {
@@ -178,16 +174,12 @@ init_copy_to_scrap(F_line *p, int type, int x, int y, int px, int py)
 	break;
     default:
 	fclose(fp);
-#ifdef I18N
 	/* reset to original locale */
 	setlocale(LC_NUMERIC, "");
-#endif  /* I18N */
 	return;
     }
-#ifdef I18N
     /* reset to original locale */
     setlocale(LC_NUMERIC, "");
-#endif  /* I18N */
     put_msg("Object copied to scrapfile %s",cut_buf_name);
     fclose(fp);
 }

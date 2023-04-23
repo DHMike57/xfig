@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -55,17 +55,12 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 
-#ifdef I18N
 #include "w_i18n.h"
-#endif
 #include "xfig_math.h"
 
-
-#ifdef I18N
 #define XDrawString		i18n_draw_string
 #define XDrawImageString	i18n_draw_image_string
 #define XTextExtents		i18n_text_extents
-#endif  /* I18N */
 
 
 /* ---------------------------------------------------------------------- */
@@ -370,14 +365,12 @@ XRotPaintAlignedString(Display *dpy, XFontStruct *font, float angle, Drawable dr
 	hot_y=0;
     else if (align==BLEFT || align==BCENTRE || align==BRIGHT)
 	hot_y= -(float)item->rows_in/2*style.magnify;
-#ifdef I18N
     else if (is_i18n_font(font)) {
 	int dir, asc, desc;
 	XCharStruct overall;
 	XTextExtents(font, text, strlen(text), &dir, &asc, &desc, &overall);
 	hot_y= -((float)item->rows_in/2-(float)overall.descent)*style.magnify;
       }
-#endif  /* I18N */
     else
 	hot_y= -((float)item->rows_in/2-(float)font->descent)*style.magnify;
 
@@ -613,7 +606,7 @@ XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable, GC 
 	return 1;
 
     str3=my_strtok(str1, str2);
-#ifdef I18N
+
     if (is_i18n_font(font)) {
       XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc, &overall);
 
@@ -630,7 +623,6 @@ XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable, GC 
       else
 	  yp=y;
     }
-#endif  /* I18N */
 
     /* loop through each section in the string */
     do {
@@ -890,12 +882,10 @@ static RotatedTextItem
 	return NULL;
 
     /* overall font height */
-#ifdef I18N
     if (is_i18n_font(font))
       height=overall.ascent+overall.descent;
     else
-#endif  /* I18N */
-    height=font->ascent+font->descent;
+      height=font->ascent+font->descent;
 
     /* dimensions horizontal text will have */
     item->cols_in=item->max_width;
@@ -934,12 +924,10 @@ static RotatedTextItem
     /* draw text horizontally */
 
     /* start at top of bitmap */
-#ifdef I18N
     if (is_i18n_font(font))
       yp=overall.ascent;
     else
-#endif  /* I18N */
-    yp=font->ascent;
+      yp=font->ascent;
 
     str1=strdup(text);
     if (str1==NULL)
@@ -964,13 +952,11 @@ static RotatedTextItem
 	XDrawString(dpy, canvas, font_gc, xp, yp, str3, strlen(str3));
 
 	/* keep a note of corner positions of this string */
-#ifdef I18N
 	if (is_i18n_font(font))
 	  item->corners_y[ic]=((float)(yp-overall.ascent)-(float)item->rows_in/2)
 	    *style.magnify;
 	else
-#endif /* I18N */
-	item->corners_x[ic]=((float)xp-(float)item->cols_in/2)*style.magnify;
+	  item->corners_x[ic]=((float)xp-(float)item->cols_in/2)*style.magnify;
 	item->corners_y[ic]=((float)(yp-font->ascent)-(float)item->rows_in/2)
 	    *style.magnify;
 	item->corners_x[ic+1]=item->corners_x[ic];
@@ -1368,16 +1354,3 @@ static XImage
     /* return big image */
     return I_out;
 }
-
-
-
-/* ---------------------------------------------------------------------- */
-
-
-/**************************************************************************/
-/* Calculate the bounding box some text will have when painted            */
-/* XPoint                                                                 */
-/* *XRotTextExtents(XFontStruct *font, float angle, int x, int y,         */
-/*                  char *text, int align)                                */
-/*     -- intentionally deleted (Thomas Loimer, 2018-09-18) --            */
-/**************************************************************************/

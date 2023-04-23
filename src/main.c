@@ -40,9 +40,7 @@
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
 #include <X11/xpm.h>
-#ifdef I18N
 #include <X11/keysym.h>
-#endif
 #ifdef USE_TAB		/* input extensions for an input tablet */
 #include <X11/extensions/XInput.h>
 #endif
@@ -372,8 +370,6 @@ static XtResource application_resources[] = {
       XtOffset(appresPtr, autorefresh), XtRBoolean, (caddr_t) & false},
     {"write_bak", "Refresh",   XtRBoolean, sizeof(Boolean),
       XtOffset(appresPtr, write_bak), XtRBoolean, (caddr_t) & true},
-
-#ifdef I18N
     {"international", "International", XtRBoolean, sizeof(Boolean),
        XtOffset(appresPtr, international), XtRBoolean, (caddr_t) & false},
     {"fontMenulanguage", "Language", XtRString, sizeof(char *),
@@ -396,7 +392,6 @@ static XtResource application_resources[] = {
        XtOffset(appresPtr, fig2dev_localize_option), XtRString, (caddr_t) "-j"},
     {"textPreedit", "TextPreedit", XtRString, sizeof(char *),
        XtOffset(appresPtr, text_preedit), XtRString, (caddr_t) ""},
-#endif  /* I18N */
 };
 
 /*
@@ -516,10 +511,8 @@ static XrmOptionDescRec options[] =
     {"-userunit", ".userunit", XrmoptionSepArg, 0},
     {"-axislines", ".axislines", XrmoptionSepArg, "pink"},
     {"-zoom", ".zoom", XrmoptionSepArg, 0},
-#ifdef I18N
     {"-international", ".international", XrmoptionNoArg, "True"},
     {"-inputStyle", ".inputStyle", XrmoptionSepArg, 0},
-#endif  /* I18N */
 };
 
 static char *help_list[] = {
@@ -626,10 +619,8 @@ static char *help_list[] = {
 	"[-visual <visual>] ",
 	"[-write_bak] ",
 	"[-zoom <zoom scale>] ",
-#ifdef I18N
 	"[-international] ",
 	"[-inputStyle <OffTheSpot|OverTheSpot|Root>] ",
-#endif /* I18N */
 	"  [file] ",
 	NULL } ;
 
@@ -803,10 +794,8 @@ main(int argc, char **argv)
 	}
     }
 
-#ifdef I18N
     setlocale(LC_ALL, "");
     XtSetLanguageProc(NULL, NULL, NULL);
-#endif  /* I18N */
 
     /*
      * save the command line arguments
@@ -908,7 +897,6 @@ main(int argc, char **argv)
 	else
 		setup_icons_big();
 
-#ifdef I18N
     /************************************************************/
     /* if the international option has been set, set the locale */
     /************************************************************/
@@ -916,7 +904,6 @@ main(int argc, char **argv)
     if (appres.international)
       (void) sprintf(&tool_name[strlen(tool_name)], " [locale: %s]",
 		     setlocale(LC_CTYPE, NULL));
-#endif  /* I18N */
 
     /* get the number of colormap cells for the screen */
     tool_cells = CellsOfScreen(tool_s);
@@ -1168,13 +1155,11 @@ main(int argc, char **argv)
     /* create some global bitmaps like arrows, etc */
     create_bitmaps();
 
-#ifdef I18N
     if (appres.international) {
       xim_initialize(canvas_sw);
       if (xim_ic != NULL)
 	xim_set_ic_geometry(xim_ic, CANVAS_WD, CANVAS_HT);
     }
-#endif  /* I18N */
 
     /* make sure we have the most current colormap */
     if (!swapped_cmap)
@@ -1567,10 +1552,12 @@ notablet:
 
     }
 
-#ifdef I18N
-    /* I use this code instead of XtAppMainLoop(), bacause there was
+    /* all finished with setup */
+    put_msg("READY. Select a mode or load a file");
+
+    /* I use this code instead of XtAppMainLoop() because there was
          a problem when used with kinput2.
-	 It is probably not good idea to mix calls of XtDispatchEvent()
+	 It is probably not a good idea to mix calls of XtDispatchEvent()
 	 and canvas_selected(), but I couldn't find a better solution. -T.S.
     */
     if (xim_ic != NULL) {
@@ -1598,10 +1585,6 @@ notablet:
 	}
       }
     }
-#endif  /* I18N */
-
-    /* all finished with setup */
-    put_msg("READY. Select a mode or load a file");
 
     /*******************************************************/
     /* Main loop when there is no input tablet and no I18N */

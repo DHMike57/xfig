@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -31,9 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef I18N
 #include <locale.h>
-#endif
 #include <X11/Xlib.h>
 
 #include "resources.h"
@@ -137,20 +135,16 @@ read_pdf(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	 * the environment, because read_pdf might be called from readfp_fig(),
 	 * which temporarily sets and needs the C locale.
 	 */
-#ifdef I18N
 	savelocale = setlocale(LC_NUMERIC, NULL);
 	if (strlen(savelocale) < sizeof locale)
 		strcpy(locale, savelocale);
 
 	if (strcmp(locale, "C") && strcmp(locale, "POSIX"))
 		setlocale(LC_NUMERIC, "C");
-#endif
 	if (scan_mediabox(pic_stream->content, &llx, &lly, &urx, &ury))
 		gs_mediabox(pic_stream->content, &llx, &lly, &urx, &ury);
-#ifdef I18N
 	if (strcmp(locale, "C") && strcmp(locale, "POSIX"))
 		setlocale(LC_NUMERIC, locale);
-#endif
 
 	/* provide A4 or Letter bounding box, if reading /MediaBox fails */
 	correct_boundingbox(&llx, &lly, &urx, &ury, "/MediaBox");

@@ -16,6 +16,9 @@
  *
  */
 
+#ifndef D_TEXT_H
+#define D_TEXT_H
+
 #if defined HAVE_CONFIG_H && !defined VERSION
 #include "config.h"
 #endif
@@ -30,11 +33,11 @@ extern void	finish_text_input(int x, int y, int shift);
 extern void	reload_text_fstruct(F_text *t);
 extern void	reload_text_fstructs(void);
 
-#ifdef I18N
 extern XIC	xim_ic;
 extern Boolean	xim_active;
 extern Boolean	xim_initialize(Widget w);
 extern void	xim_set_ic_geometry(XIC ic, int width, int height);
 extern void	kill_preedit();
-#endif  /* I18N */
-extern void text_drawing_selected (void);
+extern void	text_drawing_selected (void);
+
+#endif

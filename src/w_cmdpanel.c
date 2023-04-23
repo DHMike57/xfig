@@ -38,6 +38,7 @@
 #include "mode.h"
 #include "object.h"
 
+#include "d_text.h"
 #include "e_delete.h"
 #include "f_load.h"
 #include "f_read.h"
@@ -81,9 +82,6 @@
 #ifndef XAW3D1_5E
 #include "w_menuentry.h"
 #endif
-#ifdef I18N
-#include "d_text.h"
-#endif  /* I18N */
 
 /* internal features and definitions */
 
@@ -613,9 +611,7 @@ quit(Widget w, XtPointer closure, XtPointer call_data)
 
 void goodbye(Boolean abortflag)
 {
-#ifdef I18N
     kill_preedit();
-#endif  /* I18N */
     /* delete the cut buffer only if it is in a temporary directory */
     if (strncmp(cut_buf_name, TMPDIR, strlen(TMPDIR)) == 0)
 	unlink(cut_buf_name);
@@ -959,10 +955,8 @@ change_orient()
 
     /* the figure has been modified */
     set_modifiedflag();
-#ifdef I18N
     if (xim_ic != NULL)
       xim_set_ic_geometry(xim_ic, CANVAS_WD, CANVAS_HT);
-#endif /* I18N */
 }
 
 /*

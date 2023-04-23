@@ -4,7 +4,7 @@
 # Copyright (c) 1985-1988 by Supoj Sutanthavibul
 # Parts Copyright (c) 1989-2015 by Brian V. Smith
 # Parts Copyright (c) 1991 by Paul King
-# Parts Copyright (c) 2016-2020 by Thomas Loimer
+# Parts Copyright (c) 2016-2023 by Thomas Loimer
 #
 # Any party obtaining a copy of these files is granted, free of charge, a
 # full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -73,7 +73,7 @@ xfig_files = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	w_print.h w_rottext.c w_rottext.h w_rulers.c w_rulers.h w_setup.c \
 	w_setup.h w_snap.c w_snap.h w_srchrepl.c w_srchrepl.h w_style.c \
 	w_style.h w_util.c w_util.h w_zoom.c w_zoom.h splash.xbm version.xbm \
-	xfig_math.h
+	xfig_math.h w_i18n.c w_i18n.h
 
 if HAVE_JPEG
 xfig_files += f_readjpg.c
@@ -93,10 +93,6 @@ endif
 
 if USE_SPLASH
 xfig_files += splash.xpm
-endif
-
-if I18N
-xfig_files += w_i18n.c w_i18n.h
 endif
 
 if !XAW3D1_5E

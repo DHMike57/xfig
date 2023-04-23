@@ -181,7 +181,7 @@ Fig.internalborderwidth:	1
 
 Fig.save8bit:	true
 
-! If xfig is compiled with I18N option, you may want to uncomment following lines.
+! For internationalization, you may want to uncomment following lines.
 !
 !Fig.international: true
 !Fig.localeEncoding: true

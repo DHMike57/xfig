@@ -243,7 +243,6 @@ typedef struct _appres {
     Boolean	 autorefresh;		/* automatically redraw figure when file has changed */
     Boolean	 write_bak;		/* automatically rename current to .bak when saving */
 
-#ifdef I18N
     Boolean	 international;
     String	 font_menu_language;
     Boolean	 euc_encoding;
@@ -254,7 +253,6 @@ typedef struct _appres {
     String	 xim_input_style;
     String	 fig2dev_localize_option;
     String	 text_preedit;
-#endif  /* I18N */
 
 }		appresStruct, *appresPtr;
 extern appresStruct appres;

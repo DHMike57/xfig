@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -22,9 +22,7 @@
 #include "e_delete.h"
 
 #include <errno.h>
-#ifdef I18N
 #include <locale.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -186,10 +184,8 @@ init_delete_to_scrap(F_line *p, int type, int x, int y, int px, int py)
 
     if ((fp=open_cut_file())==NULL)
 	return;
-#ifdef I18N
     /* set the numeric locale to C so we get decimal points for numbers */
     setlocale(LC_NUMERIC, "C");
-#endif  /* I18N */
     write_fig_header(fp);
 
     switch (type) {
@@ -231,16 +227,12 @@ init_delete_to_scrap(F_line *p, int type, int x, int y, int px, int py)
 	break;
     default:
 	fclose(fp);
-#ifdef I18N
 	/* reset to original locale */
 	setlocale(LC_NUMERIC, "");
-#endif  /* I18N */
 	return;
     }
-#ifdef I18N
     /* reset to original locale */
     setlocale(LC_NUMERIC, "");
-#endif  /* I18N */
     put_msg("Object deleted to scrapfile %s",cut_buf_name);
     fclose(fp);
 }
