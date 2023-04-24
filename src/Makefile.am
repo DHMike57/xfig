@@ -53,7 +53,8 @@ xfig_files = d_arcbox.c d_arcbox.h d_arc.c d_arc.h d_box.c d_box.h \
 	f_readpcx.h f_readppm.c f_readxbm.c f_save.c f_save.h f_util.c \
 	f_util.h f_wrpcx.c main.h mode.c mode.h object.c object.h \
 	paintop.h resources.c resources.h u_bound.c u_bound.h u_colors.c \
-	u_colors.h u_create.c u_create.h u_drag.c u_drag.h u_draw.c \
+	u_colors.h u_convert.c u_convert.h u_create.c u_create.h \
+	u_drag.c u_drag.h u_draw.c \
 	u_draw.h u_elastic.c u_elastic.h u_error.c u_error.h u_fonts.c \
 	u_fonts.h u_free.c u_free.h u_geom.c u_geom.h u_ghostscript.c u_list.c \
 	u_list.h u_markers.c u_markers.h u_pan.c u_pan.h u_print.c u_print.h \

@@ -207,7 +207,8 @@ AC_CHECK_DECL([REG_NOERROR],[],
 
 # Checks for library functions.
 # The setlocale seems to be broken, grep HAVE_SETLOCALE, setlocale
-AC_CHECK_FUNCS_ONCE([getcwd setlocale strerror posix_spawnp])
+# If nl_langinfo() is found, langinfo.h is assumed to exist.
+AC_CHECK_FUNCS_ONCE([getcwd nl_langinfo setlocale strerror posix_spawnp])
 AC_REPLACE_FUNCS([isascii strstr strchr strrchr strcasecmp strncasecmp \
 	strdup strndup])
 
