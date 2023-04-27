@@ -54,6 +54,7 @@
 #include "f_util.h"
 #include "u_bound.h"
 #include "u_colors.h"
+#include "u_convert.h"
 #include "u_create.h"
 #include "u_draw.h"
 #include "u_fonts.h"
@@ -2474,9 +2475,9 @@ get_new_text_values(void)
     if (new_t->cstring)
 	free(new_t->cstring);
     /* get the text string itself */
-    new_t->cstring = strdup(panel_get_value(text_panel));
+    new_t->cstring = conv_utf8strdup(panel_get_value(text_panel));
     /* get any comments */
-    new_t->comments = strdup(panel_get_value(comments_panel));
+    new_t->comments = conv_utf8strdup(panel_get_value(comments_panel));
     textextents(new_t);
     /* now set the font for this zoom scale */
     reload_text_fstruct(new_t);
@@ -4323,7 +4324,7 @@ str_panel(char *string, char *name, Widget *pi_x, int width, Boolean size_to_wid
     if (nlines > 4)	/* limit to displaying 4 lines and show scrollbars */
 	nlines = 4;
     FirstArg(XtNfromVert, below);
-    NextArg(XtNstring, string);
+    NextArg(XtNstring, conv_strutf8dup(string));
     NextArg(XtNinsertPosition, strlen(string));
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNeditType, XawtextEdit);
@@ -4338,6 +4339,8 @@ str_panel(char *string, char *name, Widget *pi_x, int width, Boolean size_to_wid
     NextArg(XtNright, XtChainRight);
     if (!appres.international || !international)
       NextArg(XtNinternational, False);
+    else
+      NextArg(XtNinternational, True);
     *pi_x = XtCreateManagedWidget(textname, asciiTextWidgetClass, form, Args, ArgCount);
 
     /* make CR do nothing for now */
