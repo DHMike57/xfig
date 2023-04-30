@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -26,6 +26,7 @@
 #include "d_spline.h"
 #include "f_read.h"
 #include "u_colors.h"
+#include "u_convert.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_free.h"
@@ -476,6 +477,7 @@ read_1_3_textobject(FILE *fp)
     int		    n;
     int		    dum;
     char	    buf[512];
+    char	    s[512];	/* must be same size as buf */
     //PR_SIZE	    tx_dim;
 
     if ((t = create_text()) == NULL)
@@ -494,32 +496,29 @@ read_1_3_textobject(FILE *fp)
 	return (NULL);
     }
 
-    /* Note using strlen(buf) here will waste a few bytes, as the
-       various text attributes are counted into this length too. */
-    if ((t->cstring = new_string(strlen(buf))) == NULL)
-        return (NULL);
-
     /* ascent and length will be recalculated later */
     n = sscanf(buf, " %d %d %d %d %d %d %d %[^\n]",
 		&t->font, &dum, &dum, &t->ascent, &t->length,
-		&t->base_x, &t->base_y, t->cstring);
+		&t->base_x, &t->base_y, s);
     if (n != 8) {
 	file_msg("Incomplete text data");
+	free(t);
+	return (NULL);
+    }
+    if (!(t->cstring = conv_utf8strdup(s))) {
+	free(t);
+	return NULL;
+    }
+    if (t->cstring[0] == '\0') {
 	free(t->cstring);
 	free((char *) t);
+	file_msg("Empty text string at line %d.", line_no);
 	return (NULL);
     }
 
     /* The size field was not used in version 1.3.
        Set it to the height, as a crude estimate. */
     t->size = t->ascent;
-
-    if (!strlen(t->cstring)) {
-	free(t->cstring);
-	free((char *) t);
-	file_msg("Empty text string at line %d.", line_no);
-	return (NULL);
-    }
 
     /* get the font */
     t->zoom = zoomscale;

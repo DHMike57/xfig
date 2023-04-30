@@ -42,6 +42,7 @@
 #include "f_util.h"		/* remap_imagecolors() */
 #include "u_bound.h"
 #include "u_colors.h"
+#include "u_convert.h"
 #include "u_create.h"
 #include "u_fonts.h"
 #include "u_free.h"
@@ -104,6 +105,7 @@ static char	*comments[MAXCOMMENTS];	/* comments saved for current object */
 static int	numcom;			/* current comment index */
 static Boolean	com_alloc = False;	/* whether or not the comment array
 					   has been initialized */
+static int	file_is_utf8 = 0;	/* whether the file is utf-8 encoded */
 static int	TFX;			/* true for 1.4TFX protocol */
 static int	proto;			/* file protocol*10 */
 static float	fproto, xfigproto;	/* floating values for protocol of
@@ -239,7 +241,6 @@ static int
 readfp_fig(FILE *fp, F_compound *obj, Boolean merge, int xoff, int yoff, fig_settings *settings)
 {
     int		    status;
-    int		    i;
     int		    resolution;
     char	    versstring[10];
 
@@ -258,10 +259,13 @@ readfp_fig(FILE *fp, F_compound *obj, Boolean merge, int xoff, int yoff, fig_set
     /* reset comment number */
     numcom = 0;
     /* initialize the comment array */
-    if (!com_alloc)
-	for (i=0; i<MAXCOMMENTS; i++)
-	    comments[i] = (char *) NULL;
-    com_alloc = True;
+    if (!com_alloc) {
+	int	i;
+	for (i = 0; i < MAXCOMMENTS; ++i)
+	    comments[i] = NULL;
+	com_alloc = True;
+    }
+    file_is_utf8 = 0;
     memset(obj, 0, COMOBJ_SIZE);
     line_no = 1;
     /* read the version header line (e.g. #FIG 3.2) */
@@ -297,6 +301,15 @@ readfp_fig(FILE *fp, F_compound *obj, Boolean merge, int xoff, int yoff, fig_set
 	    if (read_line(fp) < 0) {
 		file_msg("No Portrait/Landscape specification");
 		return read_return(BAD_FORMAT);		/* error */
+	    }
+	    if (proto == 32 && numcom > 0 &&
+				!strcmp(comments[0], "encoding: UTF-8")) {
+		    int		i = 0;
+		    file_is_utf8 = 1;
+		    free(comments[0]);
+		    while (++i < numcom)
+			    comments[i - 1] = comments[i];
+		    comments[--numcom] = NULL;
 	    }
 	    settings->landscape = (strncasecmp(buf,"landscape",9) == 0);
 
@@ -1490,14 +1503,18 @@ read_textobject(FILE *fp)
     if (strlen(s) <= 1) {
 	s[0]=' ';s[1]=0;
     }
-    /* skip first blank from input file by starting at s[1] */
-    if ((t->cstring = new_string(strlen(&s[1]))) == NULL) {
-	free((char *) t);
-	numcom=0;
+
+    /* copy string to text object;
+       skip first blank from input file by starting at s[1] */
+    if (file_is_utf8)
+	t->cstring = strdup(s + 1);
+    else
+	t->cstring = conv_utf8strdup(s + 1);
+    if (t->cstring == NULL) {
+	free(t);
+	numcom = 0;
 	return NULL;
     }
-    /* copy string to text object */
-    (void) strcpy(t->cstring, &s[1]);
 
     if (!update_figs) {
 	/* calculate the actual length and height of the string in fig units */
@@ -1558,6 +1575,12 @@ attach_comments(void)
     }
     /* reset comment number */
     numcom = 0;
+    if (!file_is_utf8 && len > 0) {
+	    char	*utf8;
+	    utf8 = conv_utf8strdup(comp);
+	    free(comp);
+	    comp = utf8;
+    }
     return comp;
 }
 

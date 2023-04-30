@@ -150,16 +150,13 @@ convert(char **restrict out, char *restrict in, iconv_t	lcd)
 	char	*outpos;
 #define Err_mem		"Running out of memory"
 
-	if (need_conversion == 0) {
+	if (need_conversion == 0 || in[0] == '\0') {
 		 *out = strdup(in);
 		 return;
 	}
 
 	/* This precludes encodings with characters containing '\0'. */
 	inlen = strlen(in);
-
-	if (inlen == 0)
-		return;
 
 	/* allocate a large enough output buffer */
 	out_size = inlen > 8 ? 2 * inlen : 16;
