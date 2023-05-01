@@ -9,6 +9,14 @@ NEW FEATURES:
 	o Relative, not absolute paths to embedded picture files are written
 	  to .fig files. This makes it easier to move and share .fig files.
 
+CHANGES:
+	o Fig files are saved as utf-8 encoded unicode and all bytes, except
+	  backslash, are printed as is. Backslashes are escaped by a second
+	  backslash. The second line of generated fig files is exactly
+	  "#encoding: UTF-8".
+	  Previously, bytes with a value larger than expressable with 7 bits
+	  were printed as backslash-escaped three-digit octal value.
+
 BUGS FIXED:
 	Ticket numbers refer to https://sourceforge.net/p/mcj/tickets/#.
 	o Compounds keep their their size after editing or updating, ticket #51.

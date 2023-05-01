@@ -237,9 +237,10 @@ void write_fig_header(FILE *fp)
 	/* V3.2 */
 	fprintf(fp, "%s  Produced by xfig version %s\n",
 		file_header, PACKAGE_VERSION);
-	fprintf(fp, appres.landscape? "Landscape\n": "Portrait\n");
-	fprintf(fp, appres.flushleft? "Flush left\n": "Center\n");
-	fprintf(fp, appres.INCHES? "Inches\n": "Metric\n");
+	fputs("#encoding: UTF-8\n", fp);
+	fputs(appres.landscape? "Landscape\n": "Portrait\n", fp);
+	fputs(appres.flushleft? "Flush left\n": "Center\n", fp);
+	fputs(appres.INCHES? "Inches\n": "Metric\n", fp);
 	fprintf(fp, "%s\n", paper_sizes[appres.papersize].sname);
 	fprintf(fp, "%.2f\n", appres.magnification);
 	fprintf(fp, "%s\n", appres.multiple? "Multiple": "Single");
