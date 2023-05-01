@@ -1232,8 +1232,6 @@ correctfontsize	boolean	false	\-correctfontsize
 debug	boolean	false	\-debug
 depth	integer	*	\-depth
 dontswitchcmap	boolean	false	\-dontswitchcmap
-euc_encoding	boolean	false	(n/a)
-locale_encoding	boolean	false	(n/a)
 exportLanguage	string	eps	\-exportLanguage
 export_margin	integer	0	\-export_margin
 flipvisualhints	boolean	false	\-flipvisualhints

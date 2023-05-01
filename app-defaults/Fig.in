@@ -182,7 +182,6 @@ Fig.internalborderwidth:	1
 ! For internationalization, you may want to uncomment following lines.
 !
 !Fig.international: true
-!Fig.localeEncoding: true
 !Fig.alwaysUseFontSet: true
 
 ! Note that you shouldn't remove the following "Fig*international: false".

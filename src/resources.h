@@ -243,8 +243,6 @@ typedef struct _appres {
 
     Boolean	 international;
     String	 font_menu_language;
-    Boolean	 euc_encoding;
-    Boolean	 locale_encoding;
     Boolean	 always_use_fontset;
     XFontSet	 fixed_fontset;
     int		 fontset_size;
