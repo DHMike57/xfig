@@ -130,8 +130,6 @@ start_argumentlist(char *arg[restrict], char argbuf[restrict][ARGBUF_SIZE],
 	arg[0] = fig2dev_cmd;
 	arg[1] = "-L";
 	*a = 2;	/* arg[2] will be the output language */
-	if (appres.international)
-		arg[++*a] = appres.fig2dev_localize_option;
 	if (appres.magnification < 99.99 | appres.magnification > 100.01) {
 		int	n;
 		arg[++*a] = "-m";

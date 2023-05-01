@@ -386,8 +386,6 @@ static XtResource application_resources[] = {
        XtOffset(appresPtr, fontset_size), XtRImmediate, (caddr_t)0 },
     {"inputStyle", "InputStyle", XtRString, sizeof(char *),
        XtOffset(appresPtr, xim_input_style), XtRString, (caddr_t) "OffTheSpot"},
-    {"fig2devLocalizeOption", "Fig2devLocalizeOption", XtRString, sizeof(char *),
-       XtOffset(appresPtr, fig2dev_localize_option), XtRString, (caddr_t) "-j"},
     {"textPreedit", "TextPreedit", XtRString, sizeof(char *),
        XtOffset(appresPtr, text_preedit), XtRString, (caddr_t) ""},
 };

@@ -250,7 +250,6 @@ typedef struct _appres {
     XFontSet	 fixed_fontset;
     int		 fontset_size;
     String	 xim_input_style;
-    String	 fig2dev_localize_option;
     String	 text_preedit;
 
 }		appresStruct, *appresPtr;
