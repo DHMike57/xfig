@@ -360,8 +360,6 @@ static XtResource application_resources[] = {
       XtOffset(appresPtr, correct_font_size), XtRBoolean, (caddr_t) & true},
     {"encoding", "Encoding", XtRInt, sizeof(int),
       XtOffset(appresPtr, encoding), XtRImmediate, (caddr_t) 1},
-    {"save8bit", "Save8bit",   XtRBoolean, sizeof(Boolean),
-      XtOffset(appresPtr, save8bit), XtRBoolean, (caddr_t) & false},
     {"write_v40", "Format",   XtRBoolean, sizeof(Boolean),
       XtOffset(appresPtr, write_v40), XtRBoolean, (caddr_t) & false},
     {"crosshair", "Crosshair",   XtRBoolean, sizeof(Boolean),

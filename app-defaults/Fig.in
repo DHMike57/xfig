@@ -179,8 +179,6 @@ Fig.internalborderwidth:	1
 !
 !Fig*keyFile:	~/.xfig.Compose-key
 
-Fig.save8bit:	true
-
 ! For internationalization, you may want to uncomment following lines.
 !
 !Fig.international: true

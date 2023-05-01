@@ -537,7 +537,7 @@ void write_spline(FILE *fp, F_spline *s)
 
 void write_text(FILE *fp, F_text *t)
 {
-    int		    l, len;
+    size_t	    l, len;
     unsigned char   c;
 
     if (t->length == 0)
@@ -552,16 +552,14 @@ void write_text(FILE *fp, F_text *t)
 			t->flags, t->height, t->length,
 			t->base_x, t->base_y);
     len = strlen(t->cstring);
-    for (l=0; l<len; l++) {
+    for (l = 0; l < len; ++l) {
 	c = t->cstring[l];
 	if (c == '\\')
-	    fprintf(fp,"\\\\");	 /* escape a '\' with another one */
-	else if (c < 0x80 || appres.save8bit)
-	    putc(c,fp);  /* normal 7-bit ASCII */
+	    fputs("\\\\", fp);	 /* escape a '\' with another one */
 	else
-	    fprintf(fp, "\\%o", c);  /* 8-bit, make \xxx (octal) */
+	    putc(c,fp);
     }
-    fprintf(fp,"\\001\n");	      /* finish off with '\001' string */
+    fputs("\\001\n", fp);	      /* finish off with '\001' string */
 }
 
 /* write any arrow heads */

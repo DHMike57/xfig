@@ -45,6 +45,10 @@ Description of the Fig Format Follows
 (1) The very first line is a comment line containing the name and version:
 	#FIG 3.2
 
+    The second line is a comment line indicating the encoding,
+	#encoding: UTF-8
+    Important: The line must be exactly as above, no other encodings.
+
     The character # at the first column of a line indicates that the line
     is a comment line which will be preserved when the Fig file is read in.
     The user may edit them with the popup editor.
@@ -520,16 +524,13 @@ Description of the Fig Format Follows
 					 If sub_type = 1, it is the lower
 					 center.  Otherwise it is the lower
 					 right corner of the string.)
-	char	string[]		(ASCII characters; starts after a blank
-					 character following the last number and
-					 ends before the sequence '\001'.  This
-					 sequence is not part of the string.
-					 Characters above octal 177 are
-					 represented by \xxx where xxx is the
-					 octal value.  This permits fig files to
-					 be edited with 7-bit editors and sent
-					 by e-mail without data loss.
-					 Note that the string may contain '\n'.)
+	char	string[]		(UTF-8 encoded unicode string; starts
+					 after a blank character following the
+					 last number and ends before the
+					 sequence '\001'.  This sequence is not
+					 part of the string.  Backslashes must
+					 be escaped by a second backlash.  Note
+					 that the string may contain newlines.)
 
     The font_flags field is defined as follows:
 
