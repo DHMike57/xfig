@@ -688,17 +688,6 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 			args[++a] = backgrnd;
 		}
 
-	/* epic, eepic, eepicemu, latex, pictex */
-	} else if (cur_exp_lang == LANG_EPIC || cur_exp_lang == LANG_EEPIC ||
-			cur_exp_lang == LANG_EEPICEMU ||
-			cur_exp_lang == LANG_LATEX ||
-			cur_exp_lang == LANG_PICTEX ||
-			cur_exp_lang == LANG_PICT2E ||
-			cur_exp_lang == LANG_TIKZ) {
-
-		args[++a] = "-E";
-		(void)snprintf(argbuf[++b], bufsize, "%d", appres.encoding);
-
 	/* TK or  PERL/TK */
 	} else if (cur_exp_lang == LANG_TK || cur_exp_lang == LANG_PTK) {
 
