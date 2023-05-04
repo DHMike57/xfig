@@ -370,8 +370,6 @@ static XtResource application_resources[] = {
        XtOffset(appresPtr, international), XtRBoolean, (caddr_t) & false},
     {"fontMenulanguage", "Language", XtRString, sizeof(char *),
        XtOffset(appresPtr, font_menu_language), XtRString, (caddr_t) ""},
-    {"alwaysUseFontSet", "AlwaysUseFontSet", XtRBoolean, sizeof(Boolean),
-       XtOffset(appresPtr, always_use_fontset), XtRBoolean, (caddr_t) & false},
     {"fixedFontSet", "FontSet", XtRFontSet, sizeof(XFontSet),
        XtOffset(appresPtr, fixed_fontset), XtRString,
        (caddr_t) "-*-times-medium-r-normal--16-*-*-*-*-*-*-*,"
