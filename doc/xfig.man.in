@@ -202,15 +202,6 @@ Cause popup information balloons to be delayed by
 milliseconds.  The default is 500 milliseconds.
 .\"-------
 .At
-.BR \-bol [ d ]
-.I font
-.Ap
-Cause the font used for displaying the file name and
-confirmation messages to be
-.I font
-(default = 8x13bold).
-.\"-------
-.At
 .BR \-butt [ on ]
 .I font
 .Ap
@@ -1223,7 +1214,6 @@ allownegcoords	boolean	true	\-allownegcoords (true),
 autorefresh	boolean false	\-autorefresh
 axislines	string	pink	\-axislines
 balloon_delay	integer	500 (ms)	\-balloon_delay
-boldFont	string	8x13bold	\-bold
 but_per_row	integer	2	\-but_per_row
 buttonFont	string	6x13	\-button
 canvasbackground	string	white	\-cbg

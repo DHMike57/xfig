@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Sun Nov 27 15:41:19 2022 -->
+<!-- CreationDate: Tue Jun 13 20:26:27 2023 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -133,14 +133,6 @@ balloons to be delayed by <i>msec</i> milliseconds. The
 default is 500 milliseconds.</p>
 
 
-<p style="margin-left:11%; margin-top: 1em"><b>&minus;bol</b>[<b>d</b>]
-<i>font</i></p>
-
-<p style="margin-left:22%;">Cause the font used for
-displaying the file name and confirmation messages to be
-<i>font</i> (default = 8x13bold).</p>
-
-
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;butt</b>[<b>on</b>]
 <i>font</i></p>
 
@@ -242,16 +234,6 @@ lines on the canvas. The default is to show them.</p>
 a private colormap if there aren&rsquo;t enough colors
 available in the default colormap. See also
 <b>&minus;max_image_colors.</b></p>
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>&minus;enc</b>[<b>oding</b>]
-<i>encoding</i></p>
-
-<p style="margin-left:22%;">Encode character set using
-<i>encoding</i> when exporting LaTeX text. The default is 1.
-This is used for the ISO-8859 encoding of character sets.
-Allowed values are 0 (no encoding), 1 (ISO-8859-1) or 2
-(ISO-8859-2).</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;exportL</b>[<b>anguage</b>]
@@ -1997,24 +1979,6 @@ to the command line arguments:</p>
 <td width="25%">
 
 
-<p>boldFont</p></td>
-<td width="12%">
-
-
-<p>string</p></td>
-<td width="25%">
-
-
-<p>8x13bold</p></td>
-<td width="32%">
-
-
-<p>&minus;bold</p></td></tr>
-<tr valign="top" align="left">
-<td width="6%"></td>
-<td width="25%">
-
-
 <p>but_per_row</p></td>
 <td width="12%">
 
@@ -2154,78 +2118,6 @@ to the command line arguments:</p>
 
 
 <p>&minus;dontswitchcmap</p></td></tr>
-<tr valign="top" align="left">
-<td width="6%"></td>
-<td width="25%">
-
-
-<p>euc_encoding</p></td>
-<td width="12%">
-
-
-<p>boolean</p></td>
-<td width="25%">
-
-
-<p>false</p></td>
-<td width="32%">
-
-
-<p>(n/a)</p></td></tr>
-<tr valign="top" align="left">
-<td width="6%"></td>
-<td width="25%">
-
-
-<p>locale_encoding</p></td>
-<td width="12%">
-
-
-<p>boolean</p></td>
-<td width="25%">
-
-
-<p>false</p></td>
-<td width="32%">
-
-
-<p>(n/a)</p></td></tr>
-<tr valign="top" align="left">
-<td width="6%"></td>
-<td width="25%">
-
-
-<p>encoding</p></td>
-<td width="12%">
-
-
-<p>integer</p></td>
-<td width="25%">
-
-
-<p>1</p></td>
-<td width="32%">
-
-
-<p>&minus;encoding</p></td></tr>
-<tr valign="top" align="left">
-<td width="6%"></td>
-<td width="25%">
-
-
-<p>save8bit</p></td>
-<td width="12%">
-
-
-<p>boolean</p></td>
-<td width="25%">
-
-
-<p>false</p></td>
-<td width="32%">
-
-
-<p>(n/a)</p></td></tr>
 <tr valign="top" align="left">
 <td width="6%"></td>
 <td width="25%">

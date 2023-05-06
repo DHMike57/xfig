@@ -79,7 +79,6 @@
 
 /* EXPORTS */
 
-XFontStruct	*bold_font;
 XFontStruct	*roman_font;
 XFontStruct	*button_font;
 XftFont		*mono_font;
@@ -105,8 +104,6 @@ void init_font(void)
     XftResult	    res;
     double	    dbl;
 
-    if (appres.boldFont == NULL || *appres.boldFont == '\0')
-	appres.boldFont = BOLD_FONT;
     if (appres.normalFont == NULL || *appres.normalFont == '\0')
 	appres.normalFont = NORMAL_FONT;
     if (appres.buttonFont == NULL || *appres.buttonFont == '\0')
@@ -142,11 +139,6 @@ void init_font(void)
 	appres.normalFont = "fixed";
     } /* now loop to load "fixed" */
     hidden_text_length = 4 * roman_font->max_bounds.width;
-    if ((bold_font = XLoadQueryFont(tool_d, appres.boldFont)) == 0) {
-	file_msg("Can't load font: %s, using %s\n",
-		appres.boldFont, appres.normalFont);
-	bold_font = XLoadQueryFont(tool_d, appres.normalFont);
-    }
     if ((button_font = XLoadQueryFont(tool_d, appres.buttonFont)) == 0) {
 	file_msg("Can't load font: %s, using %s\n",
 		appres.buttonFont, appres.normalFont);
@@ -159,8 +151,6 @@ void init_font(void)
 		    button_font->fid);
 	fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
 		    roman_font->fid);
-	fprintf(stderr, "bold_font: %s, fid: %lu\n", appres.boldFont,
-		    bold_font->fid);
 	XftNameUnparse(pattern, buf, 230);
 	fprintf(stderr, "mono_font: %s\n", buf);
     }

@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -220,8 +220,7 @@ init_depth_panel(Widget parent)
     NextArg(XtNright, XtChainLeft);
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
-    NextArg(XtNfont, bold_font);
-    NextArg(XtNlabel, "  ");
+    NextArg(XtNlabel, " ");
     NextArg(XtNsensitive, (gray_layers? False : True));	/* make opposite button sens */
     NextArg(XtNstate, gray_layers);	/* initial state */
     NextArg(XtNradioData, 1);		/* when this is pressed the value is 1 */
@@ -260,8 +259,7 @@ init_depth_panel(Widget parent)
     NextArg(XtNright, XtChainLeft);
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
-    NextArg(XtNfont, bold_font);
-    NextArg(XtNlabel, "  ");
+    NextArg(XtNlabel, " ");
     NextArg(XtNsensitive, (gray_layers? True : False));	/* make opposite button sens */
     NextArg(XtNstate, !gray_layers);	/* initial state */
     NextArg(XtNradioData, 2);		/* when this is pressed the value is 2 */

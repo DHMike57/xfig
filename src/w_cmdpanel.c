@@ -322,7 +322,6 @@ init_main_menus(Widget tool, char *filename)
     FirstArg(XtNlabel, filename);
     NextArg(XtNfromHoriz, cmd_form);
     NextArg(XtNhorizDistance, -INTERNAL_BW);
-    NextArg(XtNfont, bold_font);
     NextArg(XtNjustify, XtJustifyLeft);
     NextArg(XtNwidth, NAMEPANEL_WD);
     NextArg(XtNheight, CMD_BUT_HT+INTERNAL_BW);

@@ -266,8 +266,7 @@ popup_query(int query_type, char *message)
     query_form = XtCreateManagedWidget("query_form", formWidgetClass,
 				       query_popup, Args, ArgCount);
 
-    FirstArg(XtNfont, bold_font);
-    NextArg(XtNborderWidth, 0);
+    FirstArg(XtNborderWidth, 0);
     NextArg(XtNlabel, message);
     query_message = XtCreateManagedWidget("message", labelWidgetClass,
 					  query_form, Args, ArgCount);

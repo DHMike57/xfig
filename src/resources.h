@@ -151,7 +151,6 @@ typedef struct _appres {
     Boolean	 write_v40;		/* flag to save figure in V4.0 format */
     Boolean	 allownegcoords;	/* allow negative x/y coordinates for panning */
     int		 balloon_delay;		/* delay (ms) before balloon pops up on */
-    char	*boldFont;
     char	*browser;		/* browser for viewing html docs */
     int		 but_per_row;		/* number of buttons wide for the mode panel */
     char	*buttonFont;

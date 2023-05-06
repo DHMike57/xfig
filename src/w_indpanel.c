@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -1458,8 +1458,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNfromVert, label);
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
-    NextArg(XtNfont, bold_font);
-    NextArg(XtNlabel, "  ");
+    NextArg(XtNlabel, " ");
     NextArg(XtNbitmap, (use_abs_arrowvals?check_pm:null_check_pm));
     NextArg(XtNsensitive, (use_abs_arrowvals?False:True));	/* make opposite button sens */
     NextArg(XtNstate, use_abs_arrowvals); /* initial state */
@@ -1508,8 +1507,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
-    NextArg(XtNfont, bold_font);
-    NextArg(XtNlabel, "  ");
+    NextArg(XtNlabel, " ");
     NextArg(XtNbitmap, (use_abs_arrowvals?null_check_pm:check_pm));
     NextArg(XtNsensitive, (use_abs_arrowvals?True:False));	/* make opposite button sens */
     NextArg(XtNstate, !use_abs_arrowvals); /* initial state */
@@ -2342,7 +2340,6 @@ void popup_nval_panel(ind_sw_info *isw)
 
 	FirstArg(XtNwidth, 20);
 	NextArg(XtNheight, 20);
-	NextArg(XtNfont, bold_font);
 	NextArg(XtNfromVert, below);
 	if ( integral_zoom ) {
 	    NextArg(XtNbitmap, check_pm);
