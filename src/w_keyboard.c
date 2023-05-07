@@ -4,7 +4,7 @@
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -26,6 +26,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -427,12 +428,15 @@ create_keyboard_panel()
         Ctrl<Key>p:   PriorKeyboardHistory()\n\
         <Key>Up:      PriorKeyboardHistory()\n";
 
-  keyboard_panel = XtVaCreatePopupShell("keyboard_menu", transientShellWidgetClass, tool,
-					XtNtitle, "Keyboard Input", NULL);
+  keyboard_panel = XtVaCreatePopupShell("keyboard_menu",
+			transientShellWidgetClass, tool,
+			XtNtitle, "Keyboard Input", XtNtitleEncoding, XA_STRING,
+			NULL);
   keyboard_form = XtVaCreateManagedWidget("form", formWidgetClass, keyboard_panel,
 					  XtNdefaultDistance, 0, NULL);
 
   FirstArg(XtNlabel, "Shift => Button2; Control => Button3");
+  NextArg(XtNinternational, False);
   NextArg(XtNjustify, XtJustifyLeft);
   NextArg(XtNborderWidth, 0);
   NextArg(XtNtop, XtChainTop);
@@ -443,6 +447,7 @@ create_keyboard_panel()
 				     keyboard_form, Args, ArgCount);
 
   FirstArg(XtNlabel, "Coordinate:");
+  NextArg(XtNinternational, False);
   NextArg(XtNjustify, XtJustifyLeft);
   NextArg(XtNborderWidth, 0);
   NextArg(XtNtop, XtChainTop);
@@ -456,6 +461,7 @@ create_keyboard_panel()
   str = malloc(80);
   str[0] = 0;
   FirstArg(XtNstring, str);
+  NextArg(XtNinternational, False);
   NextArg(XtNinsertPosition, strlen(str));
   NextArg(XtNeditType, XawtextEdit);
   NextArg(XtNfromHoriz, label);

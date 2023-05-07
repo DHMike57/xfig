@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2007 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -187,6 +187,7 @@ init_canvas(Widget tool)
     DeclareArgs(12);
 
     FirstArg(XtNlabel, "");
+    NextArg(XtNinternational, False);
     NextArg(XtNwidth, CANVAS_WD);
     NextArg(XtNheight, CANVAS_HT);
     NextArg(XtNborderWidth, 0);
@@ -845,12 +846,14 @@ create_mode_panel(void)
   int i;
 
   draw_panel = XtVaCreatePopupShell("draw_menu", transientShellWidgetClass, tool,
-				    XtNtitle, "Drawing Modes", NULL);
+				    XtNtitle, "Drawing Modes",
+				    XtNtitleEncoding, XA_STRING, NULL);
   draw_form = XtVaCreateManagedWidget("form", formWidgetClass, draw_panel,
 				    XtNdefaultDistance, 0, NULL);
 
   edit_panel = XtVaCreatePopupShell("edit_menu", transientShellWidgetClass, tool,
-				    XtNtitle, "Editing Modes", NULL);
+				    XtNtitle, "Editing Modes",
+				    XtNtitleEncoding, XA_STRING, NULL);
   edit_form = XtVaCreateManagedWidget("form", formWidgetClass, edit_panel,
 				    XtNdefaultDistance, 0, NULL);
 
@@ -870,7 +873,7 @@ create_mode_panel(void)
       wd = icon->width;
     }
     entry = XtVaCreateManagedWidget("button", commandWidgetClass, form,
-			    XtNlabel, "", XtNresizable, False,
+			    XtNlabel, "", XtNinternational, False, XtNresizable, False,
 			    XtNtop, XawChainTop, XtNbottom, XawChainTop,
 			    XtNleft, XawChainLeft, XtNright, XawChainLeft,
 			    XtNwidth, icon->width, XtNheight, icon->height,

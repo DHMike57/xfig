@@ -1993,6 +1993,7 @@ set_autorefresh(void)
 	XtUnmanageChild(msg_panel);
 	if (!refresh_indicator) {
 	    FirstArg(XtNlabel, "Autorefresh Mode");
+	    NextArg(XtNinternational, False);
 	    NextArg(XtNfromVert, cmd_form);
 	    NextArg(XtNborderWidth, 0);
 	    NextArg(XtNbackground, getpixel(RED));

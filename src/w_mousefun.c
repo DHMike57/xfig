@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -86,6 +86,7 @@ init_mousefun(Widget tool)
     NextArg(XtNbackgroundPixmap, NULL);
     NextArg(XtNmappedWhenManaged, False);
     NextArg(XtNlabel, "");
+    NextArg(XtNinternational, False);
     NextArg(XtNleft, XtChainLeft);	/* chain so doesn't resize */
     NextArg(XtNright, XtChainLeft);
     NextArg(XtNtop, XtChainTop);
@@ -172,6 +173,7 @@ mouse_balloon(void)
 					Args, ArgCount);
 	FirstArg(XtNborderWidth, 0);
 	NextArg(XtNlabel, "Shows which mouse buttons\nare active in each mode");
+	NextArg(XtNinternational, False);
 	balloon_label = XtCreateManagedWidget("label", labelWidgetClass,
 				box, Args, ArgCount);
 

@@ -33,6 +33,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>	/* XtResizeWidget() */
+#include <X11/Xatom.h>		/* XA_STRING */
 #include <X11/Xft/Xft.h>
 
 #include "figx.h"
@@ -252,6 +253,7 @@ popup_query(int query_type, char *message)
     NextArg(XtNy, yposn);
     NextArg(XtNborderWidth, POPUP_BW);
     NextArg(XtNtitle, "Xfig: Query");
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
     query_popup = XtCreatePopupShell("query_popup", transientShellWidgetClass,
 				     tool, Args, ArgCount);
@@ -268,6 +270,7 @@ popup_query(int query_type, char *message)
 
     FirstArg(XtNborderWidth, 0);
     NextArg(XtNlabel, message);
+    NextArg(XtNinternational, appres.international);
     query_message = XtCreateManagedWidget("message", labelWidgetClass,
 					  query_form, Args, ArgCount);
 
@@ -279,12 +282,14 @@ popup_query(int query_type, char *message)
 
     if (query_type == QUERY_ALLPARTCAN) {
 	NextArg(XtNlabel, "Save All ");
+	NextArg(XtNinternational, False);
 	query_all = XtCreateManagedWidget("all", commandWidgetClass,
 				      query_form, Args, ArgCount);
 	XtAddCallback(query_all, XtNcallback, accept_all, (XtPointer) NULL);
 	ArgCount = 4;
 	NextArg(XtNhorizDistance, 25);
 	NextArg(XtNlabel, "Save Part");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, query_all);
 	query_part = XtCreateManagedWidget("part", commandWidgetClass,
 					 query_form, Args, ArgCount);
@@ -296,6 +301,7 @@ popup_query(int query_type, char *message)
     } else if (query_type == QUERY_OK) {
 	/* just OK button */
 	NextArg(XtNlabel, " Ok  ");
+	NextArg(XtNinternational, False);
 	query_yes = XtCreateManagedWidget("ok", commandWidgetClass,
 				query_form, Args, ArgCount);
 	/* just use the accept_yes callback because the caller only gets one result anyway */
@@ -305,6 +311,7 @@ popup_query(int query_type, char *message)
 	/* yes/no or yes/no/cancel */
 
 	NextArg(XtNlabel, " Yes  ");
+	NextArg(XtNinternational, False);
 	query_yes = XtCreateManagedWidget("yes", commandWidgetClass,
 				query_form, Args, ArgCount);
 	XtAddCallback(query_yes, XtNcallback, accept_yes, (XtPointer) NULL);
@@ -313,6 +320,7 @@ popup_query(int query_type, char *message)
 	    ArgCount = 4;
 	    NextArg(XtNhorizDistance, 25);
 	    NextArg(XtNlabel, "  No  ");
+	    NextArg(XtNinternational, False);
 	    NextArg(XtNfromHoriz, query_yes);
 	    query_no = XtCreateManagedWidget("no", commandWidgetClass,
 				query_form, Args, ArgCount);
@@ -332,6 +340,7 @@ popup_query(int query_type, char *message)
     if (query_type == QUERY_YESCAN || query_type == QUERY_YESNOCAN ||
 	query_type == QUERY_ALLPARTCAN) {
 	    NextArg(XtNlabel, "Cancel");
+	    NextArg(XtNinternational, False);
 	    query_cancel = XtCreateManagedWidget("cancel", commandWidgetClass,
 						query_form, Args, ArgCount);
 	    XtAddCallback(query_cancel, XtNcallback, accept_cancel, (XtPointer) NULL);
@@ -472,6 +481,7 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
     GetValues(pop_form);
 
     FirstArg(XtNlabel, name);
+    NextArg(XtNinternational, False);
     label = XtCreateManagedWidget("color_menu_label", labelWidgetClass,
 				    pop_form, Args, ArgCount);
 
@@ -560,6 +570,7 @@ make_color_popup_menu(Widget parent, char *name, XtCallbackProc callback, Boolea
 
     /* make the cancel button */
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, viewp);
     entry = XtCreateManagedWidget(buf, commandWidgetClass, pop_form,
 				      Args, ArgCount);
@@ -809,6 +820,7 @@ MakeSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget b
 
     /* first the ascii widget to the left of the spinner controls */
     FirstArg(XtNstring, string);
+    NextArg(XtNinternational, False);
     NextArg(XtNwidth, width);
     NextArg(XtNleftMargin, 4);
     NextArg(XtNeditType, XawtextEdit);
@@ -1192,6 +1204,7 @@ CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, W
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
 	NextArg(XtNborderWidth, 0);
+	NextArg(XtNinternational, False);
 	form = XtCreateWidget(widget_name, formWidgetClass, parent, Args, ArgCount);
 
 	FirstArg(XtNradioData, 1);
@@ -1216,6 +1229,7 @@ CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, W
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	toggle = XtCreateManagedWidget("toggle", toggleWidgetClass,
 					form, Args, ArgCount);
 	/* user wants widget ID */
@@ -1232,6 +1246,7 @@ CreateCheckbutton(char *label, char *widget_name, Widget parent, Widget below, W
 			&idum, &idum, &udum, &check_ht, &udum, &udum);
 
 	FirstArg(XtNlabel, label);
+	NextArg(XtNinternational, False);
 	NextArg(XtNheight, check_ht+4);	/* make label as tall as the check mark */
 	NextArg(XtNjustify, XtJustifyLeft);
 	NextArg(XtNborderWidth, 0);
@@ -1480,6 +1495,7 @@ make_grid_options(Widget parent, Widget put_below, Widget put_beside, char *mino
 	}
 
 	FirstArg(XtNlabel, "Minor");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, put_below);
 	NextArg(XtNfromHoriz, put_beside);
 	NextArg(XtNhorizDistance, 4);
@@ -1497,6 +1513,7 @@ make_grid_options(Widget parent, Widget put_below, Widget put_beside, char *mino
 
 	/* text widget for user to type in minor grid spacing */
 	FirstArg(XtNstring, minor_grid_value);
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, 50);
 	NextArg(XtNleftMargin, 4);
 	NextArg(XtNfromVert, put_below);
@@ -1516,6 +1533,7 @@ make_grid_options(Widget parent, Widget put_below, Widget put_beside, char *mino
                            XtParseTranslationTable(text_translations));
 
 	FirstArg(XtNlabel, "Major");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, put_below);
 	NextArg(XtNfromHoriz, *print_grid_minor_text);
 	NextArg(XtNhorizDistance, 8);
@@ -1534,6 +1552,7 @@ make_grid_options(Widget parent, Widget put_below, Widget put_beside, char *mino
 	/* text widget for user to type in major grid spacing */
 
 	FirstArg(XtNstring, major_grid_value);
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, 50);
 	NextArg(XtNleftMargin, 4);
 	NextArg(XtNfromVert, put_below);
@@ -1553,6 +1572,7 @@ make_grid_options(Widget parent, Widget put_below, Widget put_beside, char *mino
                            XtParseTranslationTable(text_translations));
 
 	FirstArg(XtNlabel, appres.INCHES? "inches" : "mm");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, put_below);
 	NextArg(XtNfromHoriz, *print_grid_major_text);
 	NextArg(XtNborderWidth, 0);

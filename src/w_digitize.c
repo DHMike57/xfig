@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -123,6 +123,7 @@ create_digitize_panel(void)
 	/* Title */
 
 	FirstArg(XtNlabel, "Digitize to file(s)");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -134,6 +135,7 @@ create_digitize_panel(void)
 	/* File prefix */
 
 	FirstArg(XtNlabel, "Filename prefix");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 8);
 	NextArg(XtNborderWidth, 0);
@@ -166,6 +168,7 @@ create_digitize_panel(void)
                            XtParseTranslationTable(text_translations));
 
 	FirstArg(XtNlabel, "     Starting #");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -190,6 +193,7 @@ create_digitize_panel(void)
 	/* label for suffix */
 
 	FirstArg(XtNlabel, "Filename suffix");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -221,6 +225,7 @@ create_digitize_panel(void)
                            XtParseTranslationTable(text_translations));
 
 	FirstArg(XtNlabel, "        Example");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -231,6 +236,7 @@ create_digitize_panel(void)
 					digitize_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, "                        ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNborderWidth, 0);
@@ -242,6 +248,7 @@ create_digitize_panel(void)
 					digitize_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, "  For each line");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -277,6 +284,7 @@ create_digitize_panel(void)
 	/* label - "Append to file" */
 
 	FirstArg(XtNlabel, "Append to file ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNfromHoriz, appendtoggle);
@@ -312,6 +320,7 @@ create_digitize_panel(void)
 	/* label - "Create new file" */
 
 	FirstArg(XtNlabel, "Create new file");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNfromHoriz, newfiletoggle);
@@ -325,6 +334,7 @@ create_digitize_panel(void)
 	/* Done button */
 
 	FirstArg(XtNlabel, "Done");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 10);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -339,6 +349,7 @@ create_digitize_panel(void)
 	/* Cancel button */
 
 	FirstArg(XtNlabel, "Cancel");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 10);
 	NextArg(XtNfromHoriz, done_but);

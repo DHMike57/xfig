@@ -5,7 +5,7 @@
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1994 by Bill Taylor
  *       "Enter Compound" written by Bill Taylor (bill@mainstream.com) 1994
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -34,6 +34,7 @@
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -257,6 +258,7 @@ popup_close_compound(void)
     NextArg(XtNx, xposn-40);
     NextArg(XtNy, yposn-65);
     NextArg(XtNtitle, "Xfig: Close Compound");
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
     close_compound_popup = XtCreatePopupShell("close_compound_popup",
 				transientShellWidgetClass, tool, Args, ArgCount);
@@ -264,6 +266,7 @@ popup_close_compound(void)
 				       close_compound_popup, (XtPointer) NULL, 0);
 
     FirstArg(XtNlabel, "Close This Compound");
+    NextArg(XtNinternational, False);
     close_compoundw = XtCreateManagedWidget("close_compound",
 					commandWidgetClass, close_compound_form,
 					Args, ArgCount);
@@ -271,6 +274,7 @@ popup_close_compound(void)
 		      (XtEventHandler)close_compound, (XtPointer) NULL);
 
     FirstArg(XtNlabel, "Close All Compounds");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, close_compoundw);
     close_compound_allw = XtCreateManagedWidget("close_all_compounds",
 				commandWidgetClass, close_compound_form,

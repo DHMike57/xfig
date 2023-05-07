@@ -5,7 +5,7 @@
  * Parts Copyright (c) 1990 by Digital Equipment Corporation. All Rights Reserved.
  * Parts Copyright (c) 1990 by Digital Equipment Corporation
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -319,6 +319,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     } else {
 	FirstArg(XtNlabel, "     Existing");
     }
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNtop, XtChainTop);
@@ -361,6 +362,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     /* label for filename mask */
 
     FirstArg(XtNlabel, "Filename Mask");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, file_viewport);
     NextArg(XtNtop, XtChainBottom);
@@ -373,6 +375,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     /* text widget for the filename mask */
 
     FirstArg(XtNeditType, XawtextEdit);
+    NextArg(XtNinternational, appres.international);
     NextArg(XtNleftMargin, 4);
     NextArg(XtNheight, char_ht * 2);
     NextArg(XtNscrollHorizontal, XawtextScrollWhenNeeded);
@@ -396,6 +399,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
 	file_msg("No files in directory?");
 
     FirstArg(XtNlabel, "  Current Dir");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, *mask_w);
     NextArg(XtNtop, XtChainBottom);
@@ -406,6 +410,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
 			      parent, Args, ArgCount);
 
     FirstArg(XtNstring, dir);
+    NextArg(XtNinternational, appres.international);
     NextArg(XtNleftMargin, 4);
     NextArg(XtNinsertPosition, strlen(dir));
     NextArg(XtNheight, char_ht * 2);
@@ -427,6 +432,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     /* directory alternatives */
 
     FirstArg(XtNlabel, "  Directories");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, *dir_w);
     NextArg(XtNtop, XtChainBottom);
@@ -438,6 +444,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
 
     /* put a Home button to the left of the list of directories */
     FirstArg(XtNlabel, "Home");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, dir_alt);
     NextArg(XtNfromHoriz, dir_alt);
     NextArg(XtNhorizDistance, -(char_wd * 5));
@@ -452,6 +459,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     /* put a button for showing/hiding hidden files below the Home button */
 
     FirstArg(XtNlabel, show_hidden? "Hide Hidden": "Show Hidden");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, home);
     NextArg(XtNfromHoriz, dir_alt);
     NextArg(XtNhorizDistance, (int) -(char_wd * 10.5));
@@ -479,6 +487,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
 					 parent, Args, ArgCount);
 
     FirstArg(XtNlist, file_list);
+    NextArg(XtNinternational, appres.international);
     /* for file panel use only one column */
     if (file_panel) {
 	NextArg(XtNdefaultColumns, 1);
@@ -491,6 +500,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
 			   XtParseTranslationTable(list_panel_translations));
 
     FirstArg(XtNlist, dir_list);
+    NextArg(XtNinternational, appres.international);
     *dlist_w = XtCreateManagedWidget("dir_list_panel", figListWidgetClass,
 				     dir_viewport, Args, ArgCount);
     XtOverrideTranslations(*dlist_w,
@@ -504,6 +514,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     }
 
     FirstArg(XtNlabel, "Rescan");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, dir_viewport);
     NextArg(XtNvertDistance, 15);
     NextArg(XtNborderWidth, INTERNAL_BW);

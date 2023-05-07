@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#include <X11/IntrinsicP.h>
+#include <X11/Xatom.h>			/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -695,6 +695,7 @@ void create_print_panel(Widget w)
 	FirstArg(XtNx, xposn+50);
 	NextArg(XtNy, yposn+50);
 	NextArg(XtNtitle, "Xfig: Print menu");
+	NextArg(XtNtitleEncoding, XA_STRING);
 	NextArg(XtNcolormap, tool_cm);
 	print_popup = XtCreatePopupShell("print_popup",
 					 transientShellWidgetClass,
@@ -709,6 +710,7 @@ void create_print_panel(Widget w)
 	/* start with the picture of the printer */
 
 	FirstArg(XtNlabel, "   ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, printer_ic.width);
 	NextArg(XtNheight, printer_ic.height);
 	NextArg(XtNborderWidth, 0);
@@ -730,6 +732,7 @@ void create_print_panel(Widget w)
 	SetValues(image);
 
 	FirstArg(XtNlabel, "Print to PostScript Printer");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, image);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -740,6 +743,7 @@ void create_print_panel(Widget w)
 					print_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, " Magnification %");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, image);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -763,6 +767,7 @@ void create_print_panel(Widget w)
 	/* Fit Page to the right of the magnification window */
 
 	FirstArg(XtNlabel, "Fit to Page");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, image);
 	NextArg(XtNfromHoriz, mag_spinner);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -785,6 +790,7 @@ void create_print_panel(Widget w)
 		(float)(ux-lx)/mult*appres.magnification/100.0,unit,
 		(float)(uy-ly)/mult*appres.magnification/100.0,unit);
 	FirstArg(XtNlabel, buf);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, image);
 	NextArg(XtNfromHoriz, fitpage);
 	NextArg(XtNhorizDistance, 5);
@@ -799,6 +805,7 @@ void create_print_panel(Widget w)
 	/* paper size */
 
 	FirstArg(XtNlabel, "      Paper Size");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, fitpage);
 	NextArg(XtNtop, XtChainTop);
@@ -809,6 +816,7 @@ void create_print_panel(Widget w)
 					 print_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, paper_sizes[appres.papersize].fname);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNfromVert, fitpage);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -834,6 +842,7 @@ void create_print_panel(Widget w)
 	/* Orientation */
 
 	FirstArg(XtNlabel, "     Orientation");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, print_papersize_panel);
 	NextArg(XtNtop, XtChainTop);
@@ -851,6 +860,7 @@ void create_print_panel(Widget w)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	print_orient_panel = XtCreateManagedWidget(
 			orient_items[(int)appres.landscape],
 			menuButtonWidgetClass, print_panel, Args, ArgCount);
@@ -858,6 +868,7 @@ void create_print_panel(Widget w)
 				      print_orient_panel, orient_select);
 
 	FirstArg(XtNlabel, "Justification");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromHoriz, print_orient_panel);
 	NextArg(XtNfromVert, print_papersize_panel);
@@ -869,6 +880,7 @@ void create_print_panel(Widget w)
 					 print_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, just_items[appres.flushleft? 1 : 0]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, just_lab);
 	NextArg(XtNfromVert, print_papersize_panel);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -886,6 +898,7 @@ void create_print_panel(Widget w)
 	/* multiple/single page */
 
 	FirstArg(XtNlabel, "           Pages");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, print_just_panel);
 	NextArg(XtNtop, XtChainTop);
@@ -896,6 +909,7 @@ void create_print_panel(Widget w)
 					 print_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, multiple_pages[appres.multiple? 1:0]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNfromVert, print_just_panel);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -911,6 +925,7 @@ void create_print_panel(Widget w)
 				    print_multiple_panel, multiple_select);
 
 	FirstArg(XtNlabel, overlap_pages[appres.overlap? 1:0]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, print_multiple_panel);
 	NextArg(XtNfromVert, print_just_panel);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -928,6 +943,7 @@ void create_print_panel(Widget w)
 	/* background color */
 
 	FirstArg(XtNlabel, "Background");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, print_overlap_panel);
 	NextArg(XtNfromVert, print_just_panel);
 	NextArg(XtNborderWidth, 0);
@@ -947,6 +963,7 @@ void create_print_panel(Widget w)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	print_background_panel = XtCreateManagedWidget("background",
 					   menuButtonWidgetClass,
 					   print_panel, Args, ArgCount);
@@ -960,6 +977,7 @@ void create_print_panel(Widget w)
 					NO_TRANSP, INCL_BACKG);
 	/* grid options */
 	FirstArg(XtNlabel, "            Grid");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, print_background_panel);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -978,6 +996,7 @@ void create_print_panel(Widget w)
 	/* print command */
 
 	FirstArg(XtNlabel, "   Print Command");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -988,6 +1007,7 @@ void create_print_panel(Widget w)
 					    print_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, print_command_items[print_command]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1005,6 +1025,7 @@ void create_print_panel(Widget w)
 	/* printer name */
 
 	FirstArg(XtNlabel, "Printer");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, print_command_panel);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
@@ -1030,6 +1051,7 @@ void create_print_panel(Widget w)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	printer_text = XtCreateManagedWidget("printer", asciiTextWidgetClass,
 					     print_panel, Args, ArgCount);
 
@@ -1079,6 +1101,7 @@ void create_print_panel(Widget w)
 	    strcat(buf," ");
 	if (numprinters > 0) {
 	    FirstArg(XtNlabel, buf);
+	    NextArg(XtNinternational, False);
 	    NextArg(XtNfromHoriz, printer_text);
 	    NextArg(XtNfromVert, below);
 	    NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1095,6 +1118,7 @@ void create_print_panel(Widget w)
 	}
 
 	FirstArg(XtNlabel, "Print Job Params");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, printer_text);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1118,6 +1142,7 @@ void create_print_panel(Widget w)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	param_text = XtCreateManagedWidget("job_params", asciiTextWidgetClass,
 					     print_panel, Args, ArgCount);
 
@@ -1125,6 +1150,7 @@ void create_print_panel(Widget w)
 			       XtParseTranslationTable(print_translations));
 
 	FirstArg(XtNlabel, "Figures in batch");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, param_text);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1135,6 +1161,7 @@ void create_print_panel(Widget w)
 					    print_panel, Args, ArgCount);
 	FirstArg(XtNwidth, 30);
 	NextArg(XtNlabel, "  0");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, param_text);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1146,6 +1173,7 @@ void create_print_panel(Widget w)
 					     print_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, "Dismiss");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, num_batch);
 	NextArg(XtNvertDistance, 10);
 	NextArg(XtNhorizDistance, 6);
@@ -1168,6 +1196,7 @@ void create_print_panel(Widget w)
 	/* print buttons */
 
 	FirstArg(XtNlabel, "Print FIGURE\nto Printer");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, num_batch);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNresize, False);	/* must not allow resize because the label changes */
@@ -1185,6 +1214,7 @@ void create_print_panel(Widget w)
 			  (XtEventHandler)do_print, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, "Print FIGURE\nto Batch");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, num_batch);
 	NextArg(XtNfromHoriz, print);
 	NextArg(XtNheight, 35);
@@ -1201,6 +1231,7 @@ void create_print_panel(Widget w)
 			  (XtEventHandler)do_print_batch, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, "Clear\nBatch");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, num_batch);
 	NextArg(XtNfromHoriz, print_batch);
 	NextArg(XtNheight, 35);
@@ -1420,6 +1451,7 @@ make_layer_choice(char *label_all, char *label_active, Widget parent, Widget bel
 	NextArg(XtNinternalWidth, 1);
 	NextArg(XtNinternalHeight, 1);
 	NextArg(XtNlabel, "  ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNsensitive, (print_all_layers? False : True)); /* make opposite button sens */
 	NextArg(XtNstate, print_all_layers);	/* initial state */
 	NextArg(XtNradioData, 1);		/* when this is pressed the value is 1 */
@@ -1431,6 +1463,7 @@ make_layer_choice(char *label_all, char *label_active, Widget parent, Widget bel
 	/* label - " XXXX all layers" */
 
 	FirstArg(XtNlabel, label_all);
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromHoriz, printalltoggle);
 	NextArg(XtNtop, XtChainTop);
@@ -1451,6 +1484,7 @@ make_layer_choice(char *label_all, char *label_active, Widget parent, Widget bel
 	NextArg(XtNinternalWidth, 1);
 	NextArg(XtNinternalHeight, 1);
 	NextArg(XtNlabel, "  ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNsensitive, (print_all_layers? True : False)); /* make opposite button sens */
 	NextArg(XtNstate, !print_all_layers);	/* initial state */
 	NextArg(XtNradioData, 2);		/* when this is pressed the value is 2 */
@@ -1463,6 +1497,7 @@ make_layer_choice(char *label_all, char *label_active, Widget parent, Widget bel
 	/* label - "XXXX only active" */
 
 	FirstArg(XtNlabel, label_active);
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, printalltoggle);
 	NextArg(XtNfromHoriz, printactivetoggle);
@@ -1492,6 +1527,7 @@ make_layer_choice(char *label_all, char *label_active, Widget parent, Widget bel
 					(XtPointer) NULL);
 
 	FirstArg(XtNlabel, "Boundary only active layers");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, printalltoggle);
 	NextArg(XtNfromHoriz, boundactivetoggle);

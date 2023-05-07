@@ -4,7 +4,7 @@
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1998 by Stephane Mancini
- * Parts Copyright (c) 2016-2021 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -37,6 +37,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xatom.h>		/* XA_STRING */
 #include <X11/Xft/Xft.h>
 
 #include "figx.h"
@@ -629,6 +630,7 @@ create_library_panel(void)
     FirstArg(XtNx, xposn);
     NextArg(XtNy, yposn + 50);
     NextArg(XtNtitle, "Select an object or library");
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
     library_popup = XtCreatePopupShell("library_menu",
 				     transientShellWidgetClass,
@@ -640,6 +642,7 @@ create_library_panel(void)
 			 XtParseTranslationTable(library_translations));
 
     FirstArg(XtNlabel, "Load a Library");
+    NextArg(XtNinternational, False);
     NextArg(XtNwidth, MAIN_WIDTH-4);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNtop, XtChainTop);
@@ -649,6 +652,7 @@ create_library_panel(void)
 
     /* label for Library */
     FirstArg(XtNlabel, "Library:");
+    NextArg(XtNinternational, False);
     NextArg(XtNjustify, XtJustifyLeft);
     NextArg(XtNfromVert, title);
     NextArg(XtNborderWidth, 0);
@@ -669,6 +673,7 @@ create_library_panel(void)
 	/* make long label to fill out panel */
 	FirstArg(XtNlabel, "000000000000000000000000000000000000000000000000");
     }
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, library_label);
     NextArg(XtNfromVert, title);
     NextArg(XtNborderWidth, INTERNAL_BW);
@@ -691,6 +696,7 @@ create_library_panel(void)
 
     /* Status indicator label */
     FirstArg(XtNlabel, " Status:");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, library_menu_button);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNtop, XtChainTop);
@@ -704,6 +710,7 @@ create_library_panel(void)
 
     FirstArg(XtNwidth, MAIN_WIDTH-77);
     NextArg(XtNstring, "None loaded");
+    NextArg(XtNinternational, False);
     NextArg(XtNeditType, XawtextRead);	/* read-only */
     NextArg(XtNdisplayCaret, FALSE);	/* don't want to see the ^ cursor */
     NextArg(XtNheight, 30);		/* make room for scrollbar if necessary */
@@ -721,6 +728,7 @@ create_library_panel(void)
     /* button to stop loading library */
 
     FirstArg(XtNlabel,"  Stop  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNsensitive, False);	/* disabled to start */
     NextArg(XtNfromVert, status_label);
     NextArg(XtNborderWidth, 0);
@@ -734,6 +742,7 @@ create_library_panel(void)
 		    (XtEventHandler) library_stop, (XtPointer) NULL);
 
     FirstArg(XtNlabel,"Selected object:");
+    NextArg(XtNinternational, False);
     NextArg(XtNresize, False);
     NextArg(XtNfromVert, stop);
     NextArg(XtNborderWidth, 0);
@@ -745,6 +754,7 @@ create_library_panel(void)
 			      library_form, Args, ArgCount);
 
     FirstArg(XtNlabel, " ");
+    NextArg(XtNinternational, False);
     NextArg(XtNresize, False);
     NextArg(XtNwidth, MAIN_WIDTH-130);
     NextArg(XtNfromHoriz, beside);
@@ -760,6 +770,7 @@ create_library_panel(void)
 
     /* make a label and pulldown to choose list or icon view */
     FirstArg(XtNlabel, "View:");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, put_cur_obj);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNtop, XtChainTop);
@@ -771,6 +782,7 @@ create_library_panel(void)
 
 
     FirstArg(XtNlabel, appres.icon_view? "Icon View":"List View");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNfromVert, put_cur_obj);
     NextArg(XtNtop, XtChainTop);
@@ -790,6 +802,7 @@ create_library_panel(void)
     /* label and pulldown to choose size of icons */
 
     FirstArg(XtNlabel, "Icon size:");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, sel_view_button);
     NextArg(XtNhorizDistance, 10);
     NextArg(XtNfromVert, put_cur_obj);
@@ -803,6 +816,7 @@ create_library_panel(void)
 
     sprintf(buf, "%4d", appres.library_icon_size);
     FirstArg(XtNlabel, buf);
+    NextArg(XtNinternational, False);
     NextArg(XtNsensitive, appres.icon_view? True: False); /* sensitive only if icon view */
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNfromVert, put_cur_obj);
@@ -928,6 +942,7 @@ create_library_panel(void)
     NextArg(XtNbottom, XtChainBottom);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainRight);
+    NextArg(XtNinternational, False);
     object_list = XtCreateManagedWidget("object_list", figListWidgetClass,
 					list_viewport, Args, ArgCount);
     /* install the empty list */
@@ -941,6 +956,7 @@ create_library_panel(void)
     /* make a label for the preview canvas */
 
     FirstArg(XtNlabel, "Object preview");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, list_viewport);
     NextArg(XtNvertDistance, 40);
     NextArg(XtNwidth, LIB_PREVIEW_SIZE+2);
@@ -955,6 +971,7 @@ create_library_panel(void)
     /* and a label for the object name */
 
     FirstArg(XtNlabel," ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, list_viewport);
     NextArg(XtNfromVert,lib_preview_label);
     NextArg(XtNwidth, LIB_PREVIEW_SIZE+2);
@@ -982,6 +999,7 @@ create_library_panel(void)
     FirstArg(XtNfromHoriz, list_viewport);
     NextArg(XtNfromVert, lib_obj_label);
     NextArg(XtNlabel, "");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 1);
     NextArg(XtNbackgroundPixmap, preview_lib_pixmap);
     NextArg(XtNwidth, LIB_PREVIEW_SIZE);
@@ -997,6 +1015,7 @@ create_library_panel(void)
 
     /* now a place for the library object comments */
     FirstArg(XtNlabel, "Object comments:");
+    NextArg(XtNinternational, False);
     NextArg(XtNwidth, MAIN_WIDTH-6);
     NextArg(XtNfromVert, object_form);
     NextArg(XtNtop, XtChainBottom);
@@ -1015,10 +1034,12 @@ create_library_panel(void)
     NextArg(XtNheight, 50);
     NextArg(XtNscrollHorizontal, XawtextScrollWhenNeeded);
     NextArg(XtNscrollVertical, XawtextScrollWhenNeeded);
+    NextArg(XtNinternational, appres.international);
     object_comments = XtCreateManagedWidget("object_comments", asciiTextWidgetClass,
 					  library_form, Args, ArgCount);
 
     FirstArg(XtNlabel, "   Cancel    ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, object_comments);
     NextArg(XtNvertDistance, 10);
     NextArg(XtNheight, 25);
@@ -1034,6 +1055,7 @@ create_library_panel(void)
 		    (XtEventHandler) library_cancel, (XtPointer) NULL);
 
     FirstArg(XtNlabel, "Select object");
+    NextArg(XtNinternational, False);
     NextArg(XtNsensitive, False);			/* no library loaded yet */
     NextArg(XtNfromVert, object_comments);
     NextArg(XtNvertDistance, 10);
@@ -1106,6 +1128,7 @@ make_library_menu(Widget parent, char *name, struct lib_rec **librec, int num)
 #endif /* XAW3D1_5E */
 		NextArg(XtNleftBitmap, diamond_pixmap);
 	    }
+	    NextArg(XtNinternational, False);
 #ifndef XAW3D1_5E
 	    entry = XtCreateManagedWidget(menu_name, smeCascadeObjectClass,
 					  menu, Args, ArgCount);

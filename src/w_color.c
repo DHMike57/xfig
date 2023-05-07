@@ -5,7 +5,7 @@
  * Parts Copyright 1990,1992 Richard Hesketh
  *          Computing Lab. University of Kent at Canterbury, UK
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Pixel Grab color lookup Copyright 1993, David Koblas (koblas@netcom.com)
  * and Copyright 1995, 1996 Torsten Martinsen (bullestock@dk-online.dk)
@@ -347,6 +347,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 
 	/* make the OK button */
 	FirstArg(XtNlabel, "  Ok  ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, cancel);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNtop, XtChainTop);
@@ -377,6 +378,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 						form, Args, ArgCount);
 
 		FirstArg(XtNlabel, (i==0)? "Edit Pen": "Edit Fill");
+		NextArg(XtNinternational, False);
 		NextArg(XtNwidth, 70);
 		/* make it so that only one of the edit buttons are pressed */
 		if (i)
@@ -398,11 +400,13 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		NextArg(XtNfromVert, mixedEdit[i]);
 		NextArg(XtNvertDistance, 2);
 		NextArg(XtNresize, False);
+		NextArg(XtNinternational, False);
 		mixedColor[i] = XtCreateManagedWidget("mixedColor", labelWidgetClass,
 						mixedForm[i], Args, ArgCount);
 
 		strcpy(str,"#000000");
 		FirstArg(XtNstring, str);
+		NextArg(XtNinternational, False);
 		NextArg(XtNinsertPosition, strlen(str));
 		NextArg(XtNeditType, XawtextEdit);
 		NextArg(XtNwidth, 70);
@@ -424,6 +428,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	/********************************/
 
 	FirstArg(XtNlabel, "Standard Colors");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, mixedForm[0]);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -483,11 +488,13 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 		    } else {	/* on a monochrome system give short colornames */
 			NextArg(XtNlabel, colorNames[i+1].shrt);
 		    }
+		    NextArg(XtNinternational, False);
 		    NextArg(XtNwidth, STD_COL_W);
 		} else {				/* it's the default color */
 		    NextArg(XtNforeground, getpixel(CANVAS_BG));
 		    NextArg(XtNbackground, getpixel(DEFAULT));
 		    NextArg(XtNlabel, colorNames[0].shrt);
+		    NextArg(XtNinternational, False);
 		    NextArg(XtNwidth, STD_COL_W*2+4);
 		}
 		NextArg(XtNfromVert, below);
@@ -513,6 +520,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	/* make a label for the color memories */
 
 	FirstArg(XtNlabel, "User Defined Colors");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, stdForm);
 	NextArg(XtNfromHoriz, mixedForm[0]);
 	NextArg(XtNtop, XtChainTop);
@@ -525,6 +533,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	/* label to show count of colors actually in use */
 
 	FirstArg(XtNlabel, "x In use");
+	NextArg(XtNinternational, False);
 	NextArg(XtNforeground, getpixel(GREEN4));
 	NextArg(XtNfromVert, stdForm);
 	NextArg(XtNfromHoriz, userLabel);
@@ -584,6 +593,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	/* now the add/delete color buttons */
 
 	FirstArg(XtNlabel, "Add Color");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, userViewport);
 	NextArg(XtNtop, XtChainBottom);
 	NextArg(XtNbottom, XtChainBottom);
@@ -595,6 +605,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 			  (XtEventHandler) add_color, (XtPointer) 0);
 
 	FirstArg(XtNlabel, "Lookup and Add");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, addColor);
 	NextArg(XtNfromVert, userViewport);
 	NextArg(XtNtop, XtChainBottom);
@@ -609,6 +620,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	/* start new row of buttons */
 
 	FirstArg(XtNlabel, "Delete");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, addColor);
 	NextArg(XtNtop, XtChainBottom);
 	NextArg(XtNbottom, XtChainBottom);
@@ -620,6 +632,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 			  (XtEventHandler) del_color, (XtPointer) 0);
 
 	FirstArg(XtNlabel, "UnDelete");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, delColor);
 	NextArg(XtNfromVert, addColor);
 	NextArg(XtNtop, XtChainBottom);
@@ -632,6 +645,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 			  (XtEventHandler) undel_color, (XtPointer) 0);
 
 	FirstArg(XtNlabel, "Delete Unused");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, undelColor);
 	NextArg(XtNfromVert, addColor);
 	NextArg(XtNtop, XtChainBottom);
@@ -662,6 +676,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	NextArg(XtNheight, SCROLL_W);
 	NextArg(XtNborderWidth, 2);
 	NextArg(XtNlabel, "");
+	NextArg(XtNinternational, False);
 	redLocked = XtCreateManagedWidget("redLocked", labelWidgetClass,
 						mixingForm, Args, ArgCount);
 	XtOverrideTranslations(redLocked,
@@ -671,6 +686,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	NextArg(XtNborderWidth, 2);
 	NextArg(XtNlabel, "");
 	NextArg(XtNfromHoriz, redLocked);
+	NextArg(XtNinternational, False);
 	greenLocked = XtCreateManagedWidget("greenLocked", labelWidgetClass,
 						mixingForm, Args, ArgCount);
 	XtOverrideTranslations(greenLocked,
@@ -680,6 +696,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	NextArg(XtNborderWidth, 2);
 	NextArg(XtNlabel, "");
 	NextArg(XtNfromHoriz, greenLocked);
+	NextArg(XtNinternational, False);
 	blueLocked = XtCreateManagedWidget("blueLocked", labelWidgetClass,
 						mixingForm, Args, ArgCount);
 	XtOverrideTranslations(blueLocked,
@@ -687,6 +704,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 
 
 	FirstArg(XtNlabel, "Lock");
+	NextArg(XtNinternational, False);
 	NextArg(XtNheight, SCROLL_W);
 	NextArg(XtNborderWidth, 2);
 	NextArg(XtNfromHoriz, blueLocked);
@@ -740,6 +758,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	XtSetSensitive(lockedScroll, False);
 
 	FirstArg(XtNlabel, "H");
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, SCROLL_W);
 	NextArg(XtNheight, SCROLL_W);
 	NextArg(XtNborderWidth, 2);
@@ -747,6 +766,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	hueLabel = XtCreateManagedWidget("hueLabel", labelWidgetClass,
 						mixingForm, Args, ArgCount);
 	FirstArg(XtNlabel, "S");
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, SCROLL_W);
 	NextArg(XtNheight, SCROLL_W);
 	NextArg(XtNborderWidth, 2);
@@ -754,6 +774,7 @@ void create_color_panel(Widget form, Widget label, Widget cancel, ind_sw_info *i
 	satLabel = XtCreateManagedWidget("satLabel", labelWidgetClass,
 						mixingForm, Args, ArgCount);
 	FirstArg(XtNlabel, "V");
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, SCROLL_W);
 	NextArg(XtNheight, SCROLL_W);
 	NextArg(XtNborderWidth, 2);
@@ -1338,6 +1359,7 @@ create_cell(int indx)
     colorMemory[indx] = XtVaCreateManagedWidget("colorMemory",
 	labelWidgetClass, userBox,
 	XtNlabel, labl,
+	XtNinternational, False,
 	XtNforeground, getpixel(CANVAS_BG),
 	XtNbackground, (all_colors_available?
 		user_color[indx].pixel: getpixel(DEFAULT)),

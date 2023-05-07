@@ -26,6 +26,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xatom.h>		/* XA_STRING */
 #include <locale.h>
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
@@ -87,14 +88,14 @@ init_fontmenu(Widget tool)
     register MenuItemRec *mi;
     XtTranslations  pane_actions;
 
-    DeclareArgs(8);
+    DeclareArgs(9);
 
     first_fontmenu = True;
 
     FirstArg(XtNborderWidth, POPUP_BW);
     NextArg(XtNmappedWhenManaged, False);
     NextArg(XtNtitle, "Xfig: Font menu");
-
+    NextArg(XtNtitleEncoding, XA_STRING);
     ps_fontmenu = XtCreatePopupShell("ps_font_menu",
 				     transientShellWidgetClass, tool,
 				     Args, ArgCount);
@@ -181,6 +182,7 @@ init_fontmenu(Widget tool)
     NextArg(XtNinternalHeight, 0);
     NextArg(XtNborderWidth, INTERNAL_BW);
     NextArg(XtNresize, False);	/* don't allow resize */
+    NextArg(XtNinternational, False);
 
     for (i = 0; i < NUM_FONTS + 1; ++i) {
 	mi = &ps_fontmenu_items[i];
@@ -191,6 +193,7 @@ init_fontmenu(Widget tool)
     }
     /* Cancel */
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, ps_fontpanes);
     NextArg(XtNhorizDistance, 4);
     NextArg(XtNtop, XtChainTop);
@@ -204,6 +207,7 @@ init_fontmenu(Widget tool)
 
     /* button to switch to the LaTeX fonts */
     FirstArg(XtNlabel, " Use LaTex Fonts ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, ps_fontpanes);
     NextArg(XtNfromHoriz, ps_cancel);
     NextArg(XtNhorizDistance, 10);
@@ -225,6 +229,7 @@ init_fontmenu(Widget tool)
     NextArg(XtNinternalHeight, 0);
     NextArg(XtNborderWidth, INTERNAL_BW);
     NextArg(XtNresize, False);	/* don't allow resize */
+    NextArg(XtNinternational, False);
 
     for (i = 0; i < NUM_LATEX_FONTS; ++i) {
 	mi = &latex_fontmenu_items[i];
@@ -235,6 +240,7 @@ init_fontmenu(Widget tool)
     }
     /* Cancel */
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, latex_fontpanes);
     NextArg(XtNhorizDistance, 4);
     NextArg(XtNtop, XtChainTop);
@@ -248,6 +254,7 @@ init_fontmenu(Widget tool)
 
     /* button to switch to the PostScript fonts */
     FirstArg(XtNlabel, " Use PostScript Fonts ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, latex_fontpanes);
     NextArg(XtNfromHoriz, latex_cancel);
     NextArg(XtNhorizDistance, 10);

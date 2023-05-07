@@ -30,6 +30,7 @@
 #include <X11/Xlib.h>		/* includes X11/X.h */
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
+#include <X11/Xatom.h>		/* XA_STRING */
 #include <X11/Xft/Xft.h>
 
 #include "figx.h"
@@ -320,6 +321,7 @@ init_main_menus(Widget tool, char *filename)
     /* now setup the filename label widget to the right of the command menu buttons */
 
     FirstArg(XtNlabel, filename);
+    NextArg(XtNinternational, appres.international);
     NextArg(XtNfromHoriz, cmd_form);
     NextArg(XtNhorizDistance, -INTERNAL_BW);
     NextArg(XtNjustify, XtJustifyLeft);
@@ -360,6 +362,7 @@ create_main_menu(int menu_num, Widget beside)
 	NextArg(XtNvertDistance, 0);
 	NextArg(XtNhorizDistance, -INTERNAL_BW);
 	NextArg(XtNlabel, menu->label);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNmenuName, menu->menu_name);
 	/* make button to popup each menu */
@@ -398,6 +401,7 @@ rebuild_file_menu(Widget menu)
 	for (j = 0; j < MAX_RECENT_FILES; j++) {
 	    sprintf(id, "%1d", j + 1);
 	    FirstArg(XtNvertSpace, 10);
+	    NextArg(XtNinternational, appres.international);
 #ifndef XAW3D1_5E
 	    NextArg(XtNunderline, 0); /* underline # digit */
 	    entry = XtCreateWidget(id, figSmeBSBObjectClass, menu, Args, ArgCount);
@@ -451,6 +455,7 @@ create_menu_item(main_menu_info *menup)
 	    } else {
 		/* normal menu entry */
 		FirstArg(XtNvertSpace, 10);
+		NextArg(XtNinternational, False);
 		/* leave space for the checkmark bitmap */
 		if (menup->menu[i].checkmark) {
 		    NextArg(XtNleftMargin, 12);
@@ -541,6 +546,7 @@ cmd_balloon(Widget w, XtPointer closure, XtPointer call_data)
 	/* put left/right mouse button labels as message */
 	FirstArg(XtNborderWidth, 0);
 	NextArg(XtNlabel, menu->hint);
+	NextArg(XtNinternational, False);
 	balloons_label = XtCreateManagedWidget("label", labelWidgetClass,
 				    box, Args, ArgCount);
 
@@ -1047,6 +1053,7 @@ create_global_panel(Widget w)
 	XtTranslateCoords(tool, (Position) 0, (Position) 0, &xposn, &yposn);
 
 	FirstArg(XtNtitle, "Xfig: Global Settings");
+	NextArg(XtNtitleEncoding, XA_STRING);
 	NextArg(XtNx, xposn+50);
 	NextArg(XtNy, yposn+50);
 	NextArg(XtNcolormap, tool_cm);
@@ -1089,6 +1096,7 @@ create_global_panel(Widget w)
 			Args, ArgCount);
 
 	FirstArg(XtNlabel,"Delay (ms):");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -1119,6 +1127,7 @@ create_global_panel(Widget w)
 			&global.showaxislines, 0, 0);
 
 	FirstArg(XtNlabel, "Freehand drawing resolution");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1133,6 +1142,7 @@ create_global_panel(Widget w)
 	below = freehand;
 
 	FirstArg(XtNlabel, "Recently used files        ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1159,6 +1169,7 @@ create_global_panel(Widget w)
 			global_panel, below, cur_pdfviewer, 340);
 
 	FirstArg(XtNlabel, "Cancel");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNheight, 25);
@@ -1173,6 +1184,7 @@ create_global_panel(Widget w)
 			  (XtEventHandler) global_panel_cancel, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, "  Ok  ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNfromHoriz, beside);
@@ -1201,6 +1213,7 @@ CreateLabelledAscii(Widget *text_widg, char *label, char *widg_name, Widget pare
     Widget	 lab_widg;
 
     FirstArg(XtNlabel, label);
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNjustify, XtJustifyLeft);
     NextArg(XtNborderWidth, 0);
@@ -1212,6 +1225,7 @@ CreateLabelledAscii(Widget *text_widg, char *label, char *widg_name, Widget pare
 					parent, Args, ArgCount);
 
     FirstArg(XtNstring, str);
+    NextArg(XtNinternational, False);
     NextArg(XtNinsertPosition, strlen(str));
     NextArg(XtNeditType, XawtextEdit);
     NextArg(XtNfromVert, below);
@@ -1399,6 +1413,7 @@ file_balloon(void)
 				filename_balloon_popup, Args, ArgCount);
 	FirstArg(XtNborderWidth, 0);
 	NextArg(XtNlabel, "Current filename");
+	NextArg(XtNinternational, False);
 	balloons_label = XtCreateManagedWidget("label", labelWidgetClass,
 				box, Args, ArgCount);
 	XtPopup(filename_balloon_popup,XtGrabNone);
@@ -1609,6 +1624,7 @@ popup_character_map(void)
 	    return;
 
 	FirstArg(XtNtitle, "Xfig: Character Map");
+	NextArg(XtNtitleEncoding, XA_STRING);
 	NextArg(XtNcolormap, tool_cm);
 	character_map_popup = XtCreatePopupShell("character_map_popup",
 					  transientShellWidgetClass,
@@ -1626,6 +1642,7 @@ popup_character_map(void)
 	sprintf(fname, "%s font characters:",
 			using_ps? ps_fontinfo[work_font+1].name: latex_fontinfo[work_font+1].name);
 	FirstArg(XtNlabel, fname);
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	charmap_font_label = below = XtCreateManagedWidget("charmap_font_label", labelWidgetClass,
 					 character_map_panel, Args, ArgCount);
@@ -1662,6 +1679,7 @@ popup_character_map(void)
 	}
 	/* close button */
 	FirstArg(XtNlabel, "Close");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, beside);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNheight, 25);

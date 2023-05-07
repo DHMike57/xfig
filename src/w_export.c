@@ -27,6 +27,7 @@
 #include <string.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -1165,6 +1166,7 @@ void create_export_panel(Widget w)
 	FirstArg(XtNx, xposn+50);
 	NextArg(XtNy, yposn+50);
 	NextArg(XtNtitle, "Xfig: Export menu");
+	NextArg(XtNtitleEncoding, XA_STRING);
 	NextArg(XtNcolormap, tool_cm);
 	NextArg(XtNallowShellResize, True);
 	export_popup = XtCreatePopupShell("export_popup",
@@ -1180,6 +1182,7 @@ void create_export_panel(Widget w)
 	/* The export language is first */
 
 	FirstArg(XtNlabel, "     Language");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -1189,6 +1192,7 @@ void create_export_panel(Widget w)
 					 export_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, lang_texts[cur_exp_lang]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, lang_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNtop, XtChainTop);
@@ -1207,6 +1211,7 @@ void create_export_panel(Widget w)
 	/* Magnification */
 
 	FirstArg(XtNlabel, "Magnification %");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, lang_panel);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1246,6 +1251,7 @@ void create_export_panel(Widget w)
 	   strncat(buf, "                                        ",39-i);
 
 	FirstArg(XtNlabel, buf);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, lang_panel);
 	NextArg(XtNfromHoriz, mag_spinner);
 	NextArg(XtNhorizDistance, 5);
@@ -1265,6 +1271,7 @@ void create_export_panel(Widget w)
 	/* the border margin and background color will appear depending on the export language */
 
 	FirstArg(XtNlabel, "Border Margin");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, layer_choice);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1288,6 +1295,7 @@ void create_export_panel(Widget w)
 	/* background color option for all bitmap export and PS/EPS */
 
 	FirstArg(XtNlabel, "Background");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, layer_choice);
 	NextArg(XtNfromHoriz, border_spinner);
 	NextArg(XtNhorizDistance, 8);
@@ -1300,6 +1308,7 @@ void create_export_panel(Widget w)
 					 export_panel, Args, ArgCount);
 
 	FirstArg(XtNfromVert, layer_choice);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, background_lab);
 	NextArg(XtNresize, False);
 	NextArg(XtNwidth, 80);
@@ -1321,6 +1330,7 @@ void create_export_panel(Widget w)
 
 	/* grid options */
 	FirstArg(XtNlabel, "Grid");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, border_lab);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1345,6 +1355,7 @@ void create_export_panel(Widget w)
 
 	/* label pagemode */
 	FirstArg(XtNlabel, "  Page mode");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_grid_label);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1372,6 +1383,7 @@ void create_export_panel(Widget w)
 
 	/* description to the right of the checkbox pagemode */
 	FirstArg(XtNlabel, "Crop to Bounding Box");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_grid_label);
 	NextArg(XtNfromHoriz, pdf_pagemode_checkbox);
 	NextArg(XtNborderWidth, 0);
@@ -1386,6 +1398,7 @@ void create_export_panel(Widget w)
 	/* choose a preview: none, ASCII, color tiff or monochrome tiff */
 	/* label preview*/
 	FirstArg(XtNlabel, "Add Preview");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_grid_label);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1397,6 +1410,7 @@ void create_export_panel(Widget w)
 
 	/* drop-down menu preview */
 	FirstArg(XtNlabel, preview_items[preview_type]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_grid_label);
 	NextArg(XtNfromHoriz, preview_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1426,6 +1440,7 @@ void create_export_panel(Widget w)
 					     export_panel, Args, ArgCount);
 	/* now a label */
 	FirstArg(XtNlabel, "Bitmap Options");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -1436,6 +1451,7 @@ void create_export_panel(Widget w)
 
 	/* Label for smoothing options */
 	FirstArg(XtNlabel, "Smoothing");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1447,6 +1463,7 @@ void create_export_panel(Widget w)
 
 	/* make a pulldown menu for smooth (No smoothing=1, Some=2, More=4) */
 	FirstArg(XtNlabel, smooth_choices[appres.smooth_factor==1? 0: appres.smooth_factor/2]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNfromHoriz, smooth_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1464,6 +1481,7 @@ void create_export_panel(Widget w)
 	/* transparent color option for GIF export */
 
 	FirstArg(XtNlabel, "GIF Transparent color");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNfromHoriz, smooth_menu_button);
 	NextArg(XtNborderWidth, 0);
@@ -1475,6 +1493,7 @@ void create_export_panel(Widget w)
 					 bitmap_form, Args, ArgCount);
 
 	FirstArg(XtNfromVert, below);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, transp_lab);
 	NextArg(XtNresize, False);
 	NextArg(XtNwidth, 80);
@@ -1496,6 +1515,7 @@ void create_export_panel(Widget w)
 
 	/* first label */
 	FirstArg(XtNlabel, "JPEG Image quality (%)");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNfromHoriz, smooth_menu_button);
 	NextArg(XtNborderWidth, 0);
@@ -1533,6 +1553,7 @@ void create_export_panel(Widget w)
 					     export_panel, Args, ArgCount);
 	/* paper size */
 	FirstArg(XtNlabel, " Paper Size");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -1542,6 +1563,7 @@ void create_export_panel(Widget w)
 					 postscript_form, Args, ArgCount);
 
 	FirstArg(XtNlabel, paper_sizes[appres.papersize].fname);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, papersize_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNresizable, True);
@@ -1566,7 +1588,7 @@ void create_export_panel(Widget w)
 	/* Fit Page */
 
 	FirstArg(XtNlabel, "Fit to Page");
-//	NextArg(XtNfromVert, below);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, export_papersize_panel);
 	NextArg(XtNhorizDistance, 9);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1582,6 +1604,7 @@ void create_export_panel(Widget w)
 	/* Landscape/Portrait Orientation */
 
 	FirstArg(XtNlabel, "Orientation");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_papersize_panel);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1592,6 +1615,7 @@ void create_export_panel(Widget w)
 					 postscript_form, Args, ArgCount);
 
 	FirstArg(XtNlabel, orient_items[(int)appres.landscape]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_papersize_panel);
 	NextArg(XtNfromHoriz, orient_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1608,6 +1632,7 @@ void create_export_panel(Widget w)
 	/* Justification */
 
 	FirstArg(XtNlabel, "Justification");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_papersize_panel);
 	NextArg(XtNfromHoriz, export_orient_panel);
 	NextArg(XtNborderWidth, 0);
@@ -1619,6 +1644,7 @@ void create_export_panel(Widget w)
 					 postscript_form, Args, ArgCount);
 
 	FirstArg(XtNlabel, just_items[appres.flushleft? 1 : 0]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_papersize_panel);
 	NextArg(XtNfromHoriz, just_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1636,6 +1662,7 @@ void create_export_panel(Widget w)
 	/* multiple/single page */
 
 	FirstArg(XtNlabel, "      Pages");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_orient_panel);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1646,6 +1673,7 @@ void create_export_panel(Widget w)
 					 postscript_form, Args, ArgCount);
 
 	FirstArg(XtNlabel, multiple_pages[appres.multiple? 1:0]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_orient_panel);
 	NextArg(XtNfromHoriz, multiple_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1663,6 +1691,7 @@ void create_export_panel(Widget w)
 	/* overlap/no-overlap for multiple page selection */
 
 	FirstArg(XtNlabel, overlap_pages[appres.overlap? 1:0]);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_orient_panel);
 	NextArg(XtNfromHoriz, export_multiple_panel);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1680,6 +1709,7 @@ void create_export_panel(Widget w)
 	/* X/Y offset choices */
 
 	FirstArg(XtNlabel, "     Offset");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_multiple_panel);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1689,6 +1719,7 @@ void create_export_panel(Widget w)
 	exp_off_lab = XtCreateManagedWidget("export_offset_label", labelWidgetClass,
 				     postscript_form, Args, ArgCount);
 	FirstArg(XtNlabel, "X = ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_multiple_panel);
 	NextArg(XtNfromHoriz, exp_off_lab);
 	NextArg(XtNhorizDistance, 5);
@@ -1700,6 +1731,7 @@ void create_export_panel(Widget w)
 	exp_xoff_lab = XtCreateManagedWidget("export_offset_lbl_x", labelWidgetClass,
 				     postscript_form, Args, ArgCount);
 	FirstArg(XtNwidth, 50);
+	NextArg(XtNinternational, False);
 	NextArg(XtNleftMargin, 4);
 	NextArg(XtNeditType, XawtextEdit);
 	NextArg(XtNstring, "0.0");
@@ -1715,6 +1747,7 @@ void create_export_panel(Widget w)
 	export_offset_x = XtCreateManagedWidget("export_offset_x", asciiTextWidgetClass,
 					     postscript_form, Args, ArgCount);
 	FirstArg(XtNfromHoriz, export_offset_x);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_multiple_panel);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNtop, XtChainTop);
@@ -1728,6 +1761,7 @@ void create_export_panel(Widget w)
 				-1, "", exp_xoff_unit_panel, exp_xoff_unit_select);
 
 	FirstArg(XtNlabel, "Y = ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, exp_xoff_unit_panel);
 	NextArg(XtNhorizDistance, 10);
 	NextArg(XtNfromVert, export_multiple_panel);
@@ -1739,6 +1773,7 @@ void create_export_panel(Widget w)
 	exp_yoff_lab = XtCreateManagedWidget("export_offset_lbl_y", labelWidgetClass,
 				     postscript_form, Args, ArgCount);
 	FirstArg(XtNwidth, 50);
+	NextArg(XtNinternational, False);
 	NextArg(XtNleftMargin, 4);
 	NextArg(XtNeditType, XawtextEdit);
 	NextArg(XtNstring, "0.0");
@@ -1754,6 +1789,7 @@ void create_export_panel(Widget w)
 	export_offset_y = XtCreateManagedWidget("export_offset_y", asciiTextWidgetClass,
 					     postscript_form, Args, ArgCount);
 	FirstArg(XtNfromHoriz, export_offset_y);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, export_multiple_panel);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNtop, XtChainTop);
@@ -1769,6 +1805,7 @@ void create_export_panel(Widget w)
 
 	/* (HPGL) PCL output option */
 	FirstArg(XtNlabel, "Issue PCL Command to use HPGL");  /* Label */
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, exp_off_lab);
 	NextArg(XtNtop, XtChainTop);
@@ -1791,6 +1828,7 @@ void create_export_panel(Widget w)
 	NextArg(XtNinternalWidth, 1);
 	NextArg(XtNinternalHeight, 1);
 	NextArg(XtNlabel, "  ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNstate, print_hpgl_pcl_switch);	/* initial state */
 	pcl_cmd_checkbox = XtCreateManagedWidget("pcl_cmd_checkbox",
 			toggleWidgetClass, postscript_form, Args, ArgCount);
@@ -1799,6 +1837,7 @@ void create_export_panel(Widget w)
 
 	/* (HPGL) Use 'SD' font command */
 	FirstArg(XtNlabel, "Use Specified Font");  /* Label */
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNfromVert, exp_off_lab);
 	NextArg(XtNfromHoriz, pcl_cmd_checkbox);
@@ -1821,6 +1860,7 @@ void create_export_panel(Widget w)
 	NextArg(XtNinternalWidth, 1);
 	NextArg(XtNinternalHeight, 1);
 	NextArg(XtNlabel, "  ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNstate, hpgl_specified_font);	/* initial state */
 	hpgl_font_checkbox = XtCreateManagedWidget("hpgl_font_checkbox",
 			toggleWidgetClass, postscript_form, Args, ArgCount);
@@ -1861,6 +1901,7 @@ void create_export_panel(Widget w)
 	/* next the default file name */
 
 	FirstArg(XtNlabel, " Default File");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -1870,6 +1911,7 @@ void create_export_panel(Widget w)
 					  bottom_section, Args, ArgCount);
 
 	FirstArg(XtNlabel, default_export_file);
+	NextArg(XtNinternational, appres.international);
 	NextArg(XtNfromHoriz, dfile_lab);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1880,6 +1922,7 @@ void create_export_panel(Widget w)
 					   bottom_section, Args, ArgCount);
 
 	FirstArg(XtNlabel, "  Output File");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, dfile_text);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1906,6 +1949,7 @@ void create_export_panel(Widget w)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainRight);
+	NextArg(XtNinternational, appres.international);
 	exp_selfile = XtCreateManagedWidget("file", asciiTextWidgetClass,
 					    bottom_section, Args, ArgCount);
 	XtOverrideTranslations(exp_selfile,
@@ -1929,6 +1973,7 @@ void create_export_panel(Widget w)
 
 	/* cancel button */
 	FirstArg(XtNlabel, "Cancel");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNhorizDistance, 25);
 	NextArg(XtNfromVert, below);
@@ -1945,6 +1990,7 @@ void create_export_panel(Widget w)
 			  (XtEventHandler) export_panel_cancel, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, "Export");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, cancel_but);
 	NextArg(XtNhorizDistance, 25);
 	NextArg(XtNfromVert, below);

@@ -30,6 +30,7 @@
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
+#include <X11/Xatom.h>		/* XA_STRING */
 #include <X11/Xft/Xft.h>
 
 #include "figx.h"
@@ -879,6 +880,7 @@ void create_file_panel(void)
 	FirstArg(XtNx, xposn+50);
 	NextArg(XtNy, yposn+50);
 	NextArg(XtNtitle, "Xfig: File menu");
+	NextArg(XtNtitleEncoding, XA_STRING);
 	NextArg(XtNcolormap, tool_cm);
 	file_popup = XtCreatePopupShell("file_popup",
 					transientShellWidgetClass,
@@ -890,6 +892,7 @@ void create_file_panel(void)
 					   file_popup, NULL, ZERO);
 
 	FirstArg(XtNlabel, "  File Status");
+	NextArg(XtNinternational, False);
 	NextArg(XtNjustify, XtJustifyLeft);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNresize, False);
@@ -901,6 +904,7 @@ void create_file_panel(void)
 					    file_panel, Args, ArgCount);
 	/* start with long label so length is enough - it will be reset by calling proc */
 	FirstArg(XtNlabel, "Not modified ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, file_stat_label);
 	NextArg(XtNjustify, XtJustifyLeft);
 	NextArg(XtNborderWidth, 0);
@@ -913,6 +917,7 @@ void create_file_panel(void)
 					    file_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, " # of Objects");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, file_status);
 	NextArg(XtNjustify, XtJustifyLeft);
 	NextArg(XtNborderWidth, 0);
@@ -924,6 +929,7 @@ void create_file_panel(void)
 					  file_panel, Args, ArgCount);
 
 	FirstArg(XtNwidth, 50);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, file_status);
 	NextArg(XtNfromHoriz, num_obj_label);
 	NextArg(XtNjustify, XtJustifyLeft);
@@ -937,6 +943,7 @@ void create_file_panel(void)
 					    file_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, "Figure Offset");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, num_objects);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -946,6 +953,7 @@ void create_file_panel(void)
 	figure_off = XtCreateManagedWidget("fig_offset_label", labelWidgetClass,
 				     file_panel, Args, ArgCount);
 	FirstArg(XtNlabel, "X");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, figure_off);
 	NextArg(XtNfromVert, num_objects);
 	NextArg(XtNborderWidth, 0);
@@ -969,6 +977,7 @@ void create_file_panel(void)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	fig_offset_x = XtCreateManagedWidget("fig_offset_x", asciiTextWidgetClass,
 					     file_panel, Args, ArgCount);
 	FirstArg(XtNfromHoriz, fig_offset_x);
@@ -978,6 +987,7 @@ void create_file_panel(void)
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
 	NextArg(XtNleftBitmap, menu_arrow);	/* use menu arrow for pull-down */
+	NextArg(XtNinternational, False);
 	file_xoff_unit_panel = XtCreateManagedWidget(offset_unit_items[appres.INCHES? 0: 1],
 				menuButtonWidgetClass, file_panel, Args, ArgCount);
 	make_pulldown_menu(offset_unit_items, XtNumber(offset_unit_items),
@@ -986,6 +996,7 @@ void create_file_panel(void)
 	/* put the Y offset below the X */
 
 	FirstArg(XtNlabel, "Y");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, figure_off);
 	NextArg(XtNfromVert, file_xoff_unit_panel);
 	NextArg(XtNborderWidth, 0);
@@ -1009,6 +1020,7 @@ void create_file_panel(void)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	fig_offset_y = XtCreateManagedWidget("fig_offset_y", asciiTextWidgetClass,
 					     file_panel, Args, ArgCount);
 	FirstArg(XtNfromHoriz, fig_offset_y);
@@ -1018,12 +1030,14 @@ void create_file_panel(void)
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
 	NextArg(XtNleftBitmap, menu_arrow);	/* use menu arrow for pull-down */
+	NextArg(XtNinternational, False);
 	file_yoff_unit_panel = XtCreateManagedWidget(offset_unit_items[appres.INCHES? 0: 1],
 				menuButtonWidgetClass, file_panel, Args, ArgCount);
 	make_pulldown_menu(offset_unit_items, XtNumber(offset_unit_items),
 				   -1, "", file_yoff_unit_panel, file_yoff_unit_select);
 
 	FirstArg(XtNlabel, " Current File");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, file_yoff_unit_panel);
 	NextArg(XtNjustify, XtJustifyLeft);
 	NextArg(XtNborderWidth, 0);
@@ -1035,6 +1049,7 @@ void create_file_panel(void)
 					  file_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, cur_filename);
+	NextArg(XtNinternational, appres.international);
 	NextArg(XtNfromVert, file_yoff_unit_panel);
 	NextArg(XtNfromHoriz, cfile_lab);
 	NextArg(XtNjustify, XtJustifyLeft);
@@ -1048,6 +1063,7 @@ void create_file_panel(void)
 					   file_panel, Args, ArgCount);
 
 	FirstArg(XtNlabel, "     Filename");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, cfile_lab);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -1065,6 +1081,7 @@ void create_file_panel(void)
 	NextArg(XtNheight, max_char_height(temp_font) * 2 + 4);
 	NextArg(XtNeditType, XawtextEdit);
 	NextArg(XtNstring, cur_filename);
+	NextArg(XtNinternational, appres.international);
 	NextArg(XtNinsertPosition, strlen(cur_filename));
 	NextArg(XtNfromHoriz, file);
 	NextArg(XtNfromVert, cfile_lab);
@@ -1106,12 +1123,14 @@ void create_file_panel(void)
 
 	/* a title */
 	FirstArg(XtNlabel, "Preview   ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
 	preview_label = XtCreateManagedWidget("preview_label", labelWidgetClass,
 					    preview_form, Args, ArgCount);
 
 	/* make a label for the figure size */
 	FirstArg(XtNlabel, " ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, preview_label);
 	NextArg(XtNborderWidth, 0);
 	preview_size = XtCreateManagedWidget("preview_size", labelWidgetClass,
@@ -1119,6 +1138,7 @@ void create_file_panel(void)
 
 	/* and one for the figure name in the preview */
 	FirstArg(XtNlabel, " ");
+	NextArg(XtNinternational, appres.international);
 	NextArg(XtNfromVert, preview_label);
 	NextArg(XtNborderWidth, 0);
 	preview_name = XtCreateManagedWidget("preview_name", labelWidgetClass,
@@ -1147,6 +1167,7 @@ void create_file_panel(void)
 
 	/* make a dummy label to fill the space until we put up the preview */
 	FirstArg(XtNlabel, "");
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, PREVIEW_CANVAS_W);
 	NextArg(XtNheight, PREVIEW_CANVAS_W);
 	dummy_label = XtCreateManagedWidget("dummy_label", labelWidgetClass,
@@ -1156,6 +1177,7 @@ void create_file_panel(void)
 	/* don't manage it yet until the panel is popped up */
 
 	FirstArg(XtNlabel, "");
+	NextArg(XtNinternational, False);
 	NextArg(XtNbackgroundPixmap, preview_port_pixmap);
 	NextArg(XtNhorizDistance, (PREVIEW_CANVAS_W-PREVIEW_CANVAS_H)/2+4); /* center */
 	NextArg(XtNvertDistance, 4);
@@ -1173,6 +1195,7 @@ void create_file_panel(void)
 	/* label for the figure comments */
 
 	FirstArg(XtNlabel, "Figure comments:");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, preview_widget_form);
 	below = XtCreateManagedWidget("comments_label", labelWidgetClass,
 					  preview_form, Args, ArgCount);
@@ -1191,11 +1214,13 @@ void create_file_panel(void)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, appres.international);
 	comments_widget = XtCreateManagedWidget("comments", asciiTextWidgetClass,
 					     preview_form, Args, ArgCount);
 
 	/* make cancel preview button */
 	FirstArg(XtNlabel, "Stop Preview");
+	NextArg(XtNinternational, False);
 	NextArg(XtNsensitive, False);
 	NextArg(XtNfromVert, comments_widget);
 	preview_stop = XtCreateManagedWidget("preview_stop", commandWidgetClass,
@@ -1208,6 +1233,7 @@ void create_file_panel(void)
 	/* now make buttons along the bottom */
 
 	FirstArg(XtNlabel, "Cancel");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNhorizDistance, 25);
 	NextArg(XtNfromVert, butbelow);
@@ -1227,6 +1253,7 @@ void create_file_panel(void)
 	   done in popup_saveas_panel, popup_open_panel, and popup_merge_panel */
 
 	FirstArg(XtNlabel, " Save ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNfromVert, butbelow);
 	NextArg(XtNfromHoriz, beside);
@@ -1243,6 +1270,7 @@ void create_file_panel(void)
 			  (XtEventHandler) do_save, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, " Open ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNfromVert, butbelow);
@@ -1259,6 +1287,7 @@ void create_file_panel(void)
 			  (XtEventHandler)load_request, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, "Merge ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNhorizDistance, 20);
 	NextArg(XtNfromVert, butbelow);
 	NextArg(XtNfromHoriz, beside);
@@ -1275,6 +1304,7 @@ void create_file_panel(void)
 			  (XtEventHandler)merge_request, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, "New xfig...");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNfromVert, butbelow);

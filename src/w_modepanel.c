@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -308,6 +308,7 @@ static Arg      button_args[] =
 						 * a multiple of three of
 						 * them */
      /* 6 */ {XtNbackgroundPixmap, (XtArgVal) NULL},
+     /* 7 */ {XtNinternational, (XtArgVal) False},
 };
 
 
@@ -415,6 +416,7 @@ init_mode_panel(Widget tool)
 		     INTERNAL_BW * (SW_PER_ROW - 1));
 	    NextArg(XtNborderWidth, 0);
 	    NextArg(XtNresize, False);
+	    NextArg(XtNinternational, False);
 	    NextArg(XtNheight, (MODEPANEL_SPACE + 1) / 2);
 	    NextArg(XtNlabel, "Drawing");
 	    d_label = XtCreateManagedWidget("label", labelWidgetClass,
@@ -562,6 +564,7 @@ mode_balloon(void)
 				Args, ArgCount);
 	FirstArg(XtNborderWidth, 0);
 	NextArg(XtNlabel, msw->modemsg);
+	NextArg(XtNinternational, False);
 	balloon_label = XtCreateManagedWidget("label", labelWidgetClass,
 				    box, Args, ArgCount);
 

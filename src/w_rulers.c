@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -28,7 +28,8 @@
 #include <string.h>
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
-#include <X11/IntrinsicP.h>
+#include <X11/Intrinsic.h>
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -368,6 +369,7 @@ init_unitbox(Widget tool)
     }
 
     FirstArg(XtNlabel, buf);
+    NextArg(XtNinternational, False);
     NextArg(XtNwidth, UNITBOX_WD);
     NextArg(XtNheight, RULER_WD);
     NextArg(XtNfromHoriz, topruler_sw);
@@ -473,6 +475,7 @@ unit_balloon(void)
 	    NextArg(XtNleftBitmap, mouse_l);	/* bitmap of mouse with left button pushed */
 	}
 	NextArg(XtNlabel, "Pan to (0,0)   ");
+	NextArg(XtNinternational, False);
 	balloon_label = XtCreateManagedWidget("l_label", labelWidgetClass,
 				    box, Args, ArgCount);
 	FirstArg(XtNborderWidth, 0);
@@ -482,6 +485,7 @@ unit_balloon(void)
 	    NextArg(XtNleftBitmap, mouse_r);	/* bitmap of mouse with right button pushed */
 	}
 	NextArg(XtNlabel, "Set Units/Scale");
+	NextArg(XtNinternational, False);
 	balloon_label = XtCreateManagedWidget("r_label", labelWidgetClass,
 				box, Args, ArgCount);
 	XtRealizeWidget(unit_balloon_popup);
@@ -757,6 +761,7 @@ popup_unit_panel(void)
     NextArg(XtNy, y_val);
     NextArg(XtNcolormap, tool_cm);
     NextArg(XtNtitle, "Xfig: Unit menu");
+    NextArg(XtNtitleEncoding, XA_STRING);
     unit_popup = XtCreatePopupShell("unit_popup",
 				    transientShellWidgetClass, tool,
 				    Args, ArgCount);
@@ -770,6 +775,7 @@ popup_unit_panel(void)
     unit_panel = XtCreateManagedWidget("unit_panel", formWidgetClass, unit_popup, NULL, 0);
 
     FirstArg(XtNborderWidth, 0);
+    NextArg(XtNinternational, False);
     label = XtCreateManagedWidget("         Unit/Scale settings          ",
 		labelWidgetClass, unit_panel, Args, ArgCount);
 
@@ -778,12 +784,14 @@ popup_unit_panel(void)
     rul_unit_setting = appres.INCHES ? True : False;
     FirstArg(XtNfromVert, label);
     NextArg(XtNborderWidth, 0);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget(" Ruler units", labelWidgetClass,
                                    unit_panel, Args, ArgCount);
 
     FirstArg(XtNfromVert, label);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNleftBitmap, menu_arrow);	/* use menu arrow for pull-down */
+    NextArg(XtNinternational, False);
     rul_unit_panel = XtCreateManagedWidget(rul_unit_items[cur_gridunit],
 				menuButtonWidgetClass, unit_panel, Args, ArgCount);
     below = rul_unit_panel;
@@ -794,12 +802,14 @@ popup_unit_panel(void)
 
     FirstArg(XtNfromVert, below);
     NextArg(XtNborderWidth, 0);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget("Figure units", labelWidgetClass,
                                    unit_panel, Args, ArgCount);
 
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNleftBitmap, menu_arrow);	/* use menu arrow for pull-down */
+    NextArg(XtNinternational, False);
     fig_unit_panel = XtCreateManagedWidget(fig_unit_items[(int) fig_unit_setting],
 				menuButtonWidgetClass, unit_panel, Args, ArgCount);
     below = fig_unit_panel;
@@ -811,6 +821,7 @@ popup_unit_panel(void)
     FirstArg(XtNfromVert, below);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNlabel, "   Unit name");
+    NextArg(XtNinternational, False);
     user_unit_lab = XtCreateManagedWidget("user_units",
                                 labelWidgetClass, unit_panel, Args, ArgCount);
 
@@ -820,6 +831,7 @@ popup_unit_panel(void)
     NextArg(XtNstring, cur_fig_units);
     NextArg(XtNeditType, XawtextEdit);
     NextArg(XtNwidth, 50);
+    NextArg(XtNinternational, False);
     user_unit_entry = XtCreateManagedWidget("unit_entry", asciiTextWidgetClass,
 					unit_panel, Args, ArgCount);
     XtOverrideTranslations(user_unit_entry,
@@ -837,12 +849,14 @@ popup_unit_panel(void)
 
     FirstArg(XtNfromVert, below);
     NextArg(XtNborderWidth, 0);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget("Figure scale", labelWidgetClass,
                                    unit_panel, Args, ArgCount);
 
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNleftBitmap, menu_arrow);	/* use menu arrow for pull-down */
+    NextArg(XtNinternational, False);
     fig_scale_panel = XtCreateManagedWidget(
 		    fig_scale_items[(int)fig_scale_setting],
 		    menuButtonWidgetClass, unit_panel, Args, ArgCount);
@@ -855,6 +869,7 @@ popup_unit_panel(void)
     FirstArg(XtNfromVert, below);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNlabel, "Scale factor");
+    NextArg(XtNinternational, False);
     scale_factor_lab = XtCreateManagedWidget("scale_factor",
                                 labelWidgetClass, unit_panel, Args, ArgCount);
 
@@ -863,6 +878,7 @@ popup_unit_panel(void)
     NextArg(XtNborderWidth, INTERNAL_BW);
     NextArg(XtNfromHoriz, scale_factor_lab);
     NextArg(XtNstring, buf);
+    NextArg(XtNinternational, False);
     NextArg(XtNeditType, XawtextEdit);
     NextArg(XtNwidth, 50);
     scale_factor_entry = XtCreateManagedWidget("factor_entry", asciiTextWidgetClass,
@@ -874,6 +890,7 @@ popup_unit_panel(void)
     /* standard set/cancel buttons */
 
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNborderWidth, INTERNAL_BW);
     cancel = XtCreateManagedWidget("cancel", commandWidgetClass,
@@ -882,6 +899,7 @@ popup_unit_panel(void)
 		      (XtEventHandler)unit_panel_cancel, (XtPointer) NULL);
 
     FirstArg(XtNlabel, " Set  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, cancel);
     NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1056,6 +1074,7 @@ init_topruler(Widget tool)
     FirstArg(XtNwidth, TOPRULER_WD);
     NextArg(XtNheight, TOPRULER_HT);
     NextArg(XtNlabel, "");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, mode_panel);
     NextArg(XtNhorizDistance, -INTERNAL_BW);
     NextArg(XtNfromVert, msg_panel);
@@ -1363,6 +1382,7 @@ init_sideruler(Widget tool)
     FirstArg(XtNwidth, SIDERULER_WD);
     NextArg(XtNheight, SIDERULER_HT);
     NextArg(XtNlabel, "");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, canvas_sw);
     NextArg(XtNfromVert, topruler_sw);
     NextArg(XtNvertDistance, -INTERNAL_BW);

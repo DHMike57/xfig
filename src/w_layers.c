@@ -147,6 +147,7 @@ init_depth_panel(Widget parent)
 
     /* a label */
     FirstArg(XtNlabel, "Depths   ");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -157,6 +158,7 @@ init_depth_panel(Widget parent)
     /* buttons to make all active, all inactive or toggle all */
 
     FirstArg(XtNlabel, "All On  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, label);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
@@ -174,6 +176,7 @@ init_depth_panel(Widget parent)
 #endif /* XAW3D1_5E */
 
     FirstArg(XtNlabel, "All Off ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
@@ -191,6 +194,7 @@ init_depth_panel(Widget parent)
 #endif /* XAW3D1_5E */
 
     FirstArg(XtNlabel, "Toggle  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
@@ -221,6 +225,7 @@ init_depth_panel(Widget parent)
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
     NextArg(XtNlabel, " ");
+    NextArg(XtNinternational, False);
     NextArg(XtNsensitive, (gray_layers? False : True));	/* make opposite button sens */
     NextArg(XtNstate, gray_layers);	/* initial state */
     NextArg(XtNradioData, 1);		/* when this is pressed the value is 1 */
@@ -239,6 +244,7 @@ init_depth_panel(Widget parent)
     NextArg(XtNleft, XtChainRight);
     NextArg(XtNright, XtChainRight);
     NextArg(XtNlabel, "Gray  ");
+    NextArg(XtNinternational, False);
     graylabel = below = XtCreateManagedWidget("graylabel", labelWidgetClass,
 				layer_form, Args, ArgCount);
 #ifndef XAW3D1_5E
@@ -260,6 +266,7 @@ init_depth_panel(Widget parent)
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
     NextArg(XtNlabel, " ");
+    NextArg(XtNinternational, False);
     NextArg(XtNsensitive, (gray_layers? True : False));	/* make opposite button sens */
     NextArg(XtNstate, !gray_layers);	/* initial state */
     NextArg(XtNradioData, 2);		/* when this is pressed the value is 2 */
@@ -275,6 +282,7 @@ init_depth_panel(Widget parent)
     NextArg(XtNfromVert, graytoggle);
     NextArg(XtNfromHoriz, blanktoggle);
     NextArg(XtNlabel, "Blank ");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainRight);
@@ -305,6 +313,7 @@ init_depth_panel(Widget parent)
 
     FirstArg(XtNborderWidth, 0);
     NextArg(XtNlabel, " Front ");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainRight);
@@ -342,6 +351,7 @@ init_depth_panel(Widget parent)
     FirstArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainRight);
     NextArg(XtNlabel, "");
+    NextArg(XtNinternational, False);
     layer_canvas = XtCreateManagedWidget("layer_canvas", labelWidgetClass,
 				layer_viewp, Args, ArgCount);
     /* label - "Back" */
@@ -349,6 +359,7 @@ init_depth_panel(Widget parent)
     FirstArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, layer_viewp);
     NextArg(XtNlabel, " Back  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainBottom);
     NextArg(XtNbottom, XtChainBottom);
     NextArg(XtNleft, XtChainRight);
@@ -861,6 +872,7 @@ layer_balloon(Widget w, XtPointer closure, XtPointer call_data)
 	if (popmsg) {
 		FirstArg(XtNborderWidth, 0);
 		NextArg(XtNlabel, popmsg);
+		NextArg(XtNinternational, False);
 		balloon_label = XtCreateManagedWidget("l_label", labelWidgetClass,
 					    box, Args, ArgCount);
 	} else {
@@ -868,11 +880,13 @@ layer_balloon(Widget w, XtPointer closure, XtPointer call_data)
 		FirstArg(XtNborderWidth, 0);
 		NextArg(XtNleftBitmap, mouse_l);	/* bitmap of mouse with left button pushed */
 		NextArg(XtNlabel, "Display or hide depth    ");
+		NextArg(XtNinternational, False);
 		balloon_label = XtCreateManagedWidget("l_label", labelWidgetClass,
 					    box, Args, ArgCount);
 		FirstArg(XtNborderWidth, 0);
 		NextArg(XtNleftBitmap, mouse_r);	/* bitmap of mouse with right button pushed */
 		NextArg(XtNlabel, "Set current depth to this");
+		NextArg(XtNinternational, False);
 		(void) XtCreateManagedWidget("r_label", labelWidgetClass,
 					box, Args, ArgCount);
 	}

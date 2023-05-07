@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2021 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -30,6 +30,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xatom.h>			/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -64,7 +65,7 @@ Boolean		first_lenmsg = True;
 #define		BUF_SIZE		500
 static char	prompt[BUF_SIZE];
 
-DeclareStaticArgs(12);
+DeclareStaticArgs(13);
 
 /* for the popup message (file_msg) window */
 
@@ -96,6 +97,7 @@ init_msg(Widget tool)
     NextArg(XtNwidth, MSGPANEL_WD);
     NextArg(XtNheight, MSGPANEL_HT);
     NextArg(XtNstring, "\0");
+    NextArg(XtNinternational, appres.international);
     NextArg(XtNfromVert, cmd_form);
     NextArg(XtNvertDistance, -INTERNAL_BW);
     NextArg(XtNborderWidth, INTERNAL_BW);
@@ -689,6 +691,7 @@ popup_file_msg(void)
 	NextArg(XtNy, 0);
 	NextArg(XtNcolormap, tool_cm);
 	NextArg(XtNtitle, "Xfig: Error messages");
+	NextArg(XtNtitleEncoding, XA_STRING);
 	file_msg_popup = XtCreatePopupShell("file_msg",
 					transientShellWidgetClass,
 					tool, Args, ArgCount);
@@ -710,12 +713,14 @@ popup_file_msg(void)
 	NextArg(XtNscrollVertical, XawtextScrollAlways);
 	NextArg(XtNright, XtChainRight);
 	NextArg(XtNbottom, XtChainBottom);
+	NextArg(XtNinternational, appres.international);
 	file_msg_win = XtCreateManagedWidget("file_msg_win", asciiTextWidgetClass,
 					     file_msg_panel, Args, ArgCount);
 	XtOverrideTranslations(file_msg_win,
 			   XtParseTranslationTable(file_msg2_translations));
 
 	FirstArg(XtNlabel, "Dismiss");
+	NextArg(XtNinternational, False);
 	NextArg(XtNheight, 25);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNfromVert, file_msg_win);
@@ -729,6 +734,7 @@ popup_file_msg(void)
 			  (XtEventHandler)file_msg_panel_dismiss, (XtPointer) NULL);
 
 	FirstArg(XtNlabel, "Clear");
+	NextArg(XtNinternational, False);
 	NextArg(XtNheight, 25);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNfromVert, file_msg_win);

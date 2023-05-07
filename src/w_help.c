@@ -29,6 +29,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>     /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -169,6 +170,7 @@ launch_about(Widget w, XtPointer closure, XtPointer call_data)
 	XtTranslateCoords(w, (Position) 0, (Position) 0, &x, &y);
 	FirstArg(XtNx, x);
 	NextArg(XtNy, y);
+	NextArg(XtNtitleEncoding, XA_STRING);
 	help_popup = XtCreatePopupShell("About Xfig",transientShellWidgetClass,
 				tool, Args, ArgCount);
 	XtOverrideTranslations(help_popup,
@@ -180,6 +182,7 @@ launch_about(Widget w, XtPointer closure, XtPointer call_data)
 				Args, ArgCount);
 	/* put the xfig icon in a label and another label saying which version this is */
 	FirstArg(XtNbitmap, fig_icon);
+	NextArg(XtNinternational, False);
 	NextArg(XtNinternalHeight, 0);
 	NextArg(XtNinternalWidth, 0);
 	NextArg(XtNborderWidth, 0);
@@ -196,12 +199,14 @@ launch_about(Widget w, XtPointer closure, XtPointer call_data)
 	strcat(info,"\n  See source files and man pages for other copyrights");
 
 	FirstArg(XtNlabel, info);
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromHoriz, icon);
 	NextArg(XtNhorizDistance, 20);
 	NextArg(XtNborderWidth, 0);
 	XtCreateManagedWidget("xfig_icon", labelWidgetClass, form, Args, ArgCount);
 
 	FirstArg(XtNlabel, " Ok ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, 50);
 	NextArg(XtNheight, 30);
 	NextArg(XtNfromVert, icon);

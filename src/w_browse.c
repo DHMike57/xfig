@@ -4,7 +4,7 @@
  * Copyright (c) 1995 Jim Daley (jdaley@cix.compulink.co.uk)
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -25,6 +25,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -241,6 +242,7 @@ void create_browse_panel(Widget w)
 	FirstArg(XtNx, xposn);
 	NextArg(XtNy, yposn + 50);
 	NextArg(XtNtitle, "Xfig: Browse files for picture import");
+	NextArg(XtNtitleEncoding, XA_STRING);
 	browse_popup = XtCreatePopupShell("xfig_browse_menu",
 					transientShellWidgetClass,
 					tool, Args, ArgCount);
@@ -251,6 +253,7 @@ void create_browse_panel(Widget w)
 					   browse_popup, NULL, ZERO);
 
 	FirstArg(XtNlabel, "     Filename");
+	NextArg(XtNinternational, False);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
@@ -264,6 +267,7 @@ void create_browse_panel(Widget w)
 	NextArg(XtNheight, max_char_height(temp_font) * 2 + 4);
 	NextArg(XtNeditType, "edit");
 	NextArg(XtNstring, browse_filename);
+	NextArg(XtNinternational, appres.international);
 	NextArg(XtNinsertPosition, strlen(browse_filename));
 	NextArg(XtNfromHoriz, file);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -295,6 +299,7 @@ void create_browse_panel(Widget w)
 	XtAugmentTranslations(browse_flist,
 			   XtParseTranslationTable(file_list_translations));
 	FirstArg(XtNlabel, " Close ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNvertDistance, 15);
 	NextArg(XtNhorizDistance, 25);
 	NextArg(XtNheight, 25);
@@ -310,6 +315,7 @@ void create_browse_panel(Widget w)
 
 
 	FirstArg(XtNlabel,  " Apply ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNfromHoriz, closebtn);
 	NextArg(XtNfromVert, below);

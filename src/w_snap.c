@@ -4,7 +4,7 @@
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 2004 by Chris Moller
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -1397,6 +1397,7 @@ init_snap_panel(parent)
 
   /* snap title label */
   FirstArg(XtNlabel, "Snap Mode");
+  NextArg(XtNinternational, False);
   NextArg(XtNtop, XtChainTop);
   NextArg(XtNborderWidth, 0);
   NextArg(XtNbottom, XtChainTop);
@@ -1407,6 +1408,7 @@ init_snap_panel(parent)
 
   /* snap mode indicator */
   FirstArg(XtNlabel, "None     ");
+  NextArg(XtNinternational, False);
   NextArg(XtNfromVert, dlabel);
   NextArg(XtNtop, XtChainTop);
   NextArg(XtNbottom, XtChainTop);

@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * This file Copyright (c) 2002 Stephane Mancini
  *
@@ -26,6 +26,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>	/* includes X11/Xlib.h */
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -766,6 +767,7 @@ init_manage_style_panel (void)
 {
     load_family_set (current_family_set);
     FirstArg (XtNtitle, "Xfig: Manage Styles");
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg (XtNcolormap, tool_cm);
 
     style_popup = XtCreatePopupShell ("style_manage_panel",
@@ -782,6 +784,7 @@ init_manage_style_panel (void)
 
     /* label for title - "Manage Styles" */
     FirstArg (XtNlabel, "Manage Styles");
+    NextArg(XtNinternational, False);
     NextArg (XtNborderWidth, 0);
     style_main_label =
 	XtCreateManagedWidget ("style_main_label", labelWidgetClass,
@@ -796,6 +799,7 @@ init_manage_style_panel (void)
 					       style_main_form, Args, ArgCount);
     /* Put family stuff */
     FirstArg (XtNlabel, "Family");
+    NextArg(XtNinternational, False);
     NextArg (XtNborderWidth, 0);
     style_family_label =
 	XtCreateManagedWidget ("style_family_label", labelWidgetClass,
@@ -814,6 +818,7 @@ init_manage_style_panel (void)
 	XtCreateManagedWidget ("style_family_list_viewport",
 			       viewportWidgetClass, style_family_form, Args, ArgCount);
     FirstArg (XtNlist, family_text);
+    NextArg(XtNinternational, appres.international);
     NextArg (XtNforceColumns, True);
     NextArg (XtNdefaultColumns, 1);
     NextArg (XtNallowVert, True);
@@ -827,6 +832,7 @@ init_manage_style_panel (void)
 			   XtParseTranslationTable (style_family_list_translations));
 
     FirstArg (XtNlabel, "Choice");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_family_list_viewport);
     NextArg (XtNborderWidth, 0);
     style_family_choice_label =
@@ -838,6 +844,7 @@ init_manage_style_panel (void)
     NextArg (XtNwidth, 180);
     NextArg (XtNheight, 30);
     NextArg (XtNstring, "\0");
+    NextArg(XtNinternational, appres.international);
     NextArg (XtNscrollHorizontal, XawtextScrollWhenNeeded);
     style_family_name = XtCreateManagedWidget ("style_family_name",
 					       asciiTextWidgetClass,
@@ -846,6 +853,7 @@ init_manage_style_panel (void)
 			    XtParseTranslationTable (style_family_name_translations));
 
     FirstArg (XtNlabel, "Add");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_family_name);
     style_add_family =
 	XtCreateManagedWidget ("style_add_family", commandWidgetClass,
@@ -854,6 +862,7 @@ init_manage_style_panel (void)
 		   (XtPointer) NULL);
 
     FirstArg (XtNlabel, "Delete");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_family_name);
     NextArg (XtNfromHoriz, style_add_family);
     style_delete_family = XtCreateManagedWidget ("style_delete_family",
@@ -871,6 +880,7 @@ init_manage_style_panel (void)
 					      formWidgetClass,
 					      style_family_form, Args, ArgCount);
     FirstArg (XtNlabel, "Style ");
+    NextArg(XtNinternational, False);
     NextArg (XtNborderWidth, 0);
     style_style_label =
 	XtCreateManagedWidget ("style_style_label", labelWidgetClass,
@@ -890,6 +900,7 @@ init_manage_style_panel (void)
 
 
     FirstArg (XtNlist, style_text);
+    NextArg(XtNinternational, appres.international);
     NextArg (XtNforceColumns, True);
     NextArg (XtNdefaultColumns, 1);
     style_style_list =
@@ -903,6 +914,7 @@ init_manage_style_panel (void)
 
 
     FirstArg (XtNlabel, "Choice");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_style_list_viewport);
     NextArg (XtNborderWidth, 0);
     style_style_choice_label =
@@ -914,6 +926,7 @@ init_manage_style_panel (void)
     NextArg (XtNwidth, 180);
     NextArg (XtNheight, 30);
     NextArg (XtNstring, "\0");
+    NextArg(XtNinternational, appres.international);
     NextArg (XtNscrollHorizontal, XawtextScrollWhenNeeded);
     style_style_name = XtCreateManagedWidget ("style_style_name",
 					      asciiTextWidgetClass,
@@ -922,6 +935,7 @@ init_manage_style_panel (void)
 			    XtParseTranslationTable (style_style_name_translations));
 
     FirstArg (XtNlabel, "Add");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_style_name);
     style_add_style =
 	XtCreateManagedWidget ("style_add_family", commandWidgetClass,
@@ -930,6 +944,7 @@ init_manage_style_panel (void)
 		   (XtPointer) NULL);
 
     FirstArg (XtNlabel, "Delete");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_style_name);
     NextArg (XtNfromHoriz, style_add_style);
     style_delete_style = XtCreateManagedWidget ("style_delete_family",
@@ -941,6 +956,7 @@ init_manage_style_panel (void)
     /* overall save/load/close buttons */
 
     FirstArg (XtNlabel, "Save settings");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_family_form);
     style_save_style = XtCreateManagedWidget ("style_save",
 					      commandWidgetClass,
@@ -949,6 +965,7 @@ init_manage_style_panel (void)
 		   (XtPointer) NULL);
 
     FirstArg (XtNlabel, "Reload settings");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromVert, style_family_form);
     NextArg (XtNfromHoriz, style_save_style);
     style_load_style = XtCreateManagedWidget ("style_load",
@@ -958,6 +975,7 @@ init_manage_style_panel (void)
 		   (XtPointer) NULL);
 
     FirstArg (XtNlabel, "Close");
+    NextArg(XtNinternational, False);
     NextArg (XtNfromHoriz, style_load_style);
     NextArg (XtNfromVert, style_family_form);
     style_close_style = XtCreateManagedWidget ("style_close",

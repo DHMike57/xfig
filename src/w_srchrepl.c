@@ -4,7 +4,7 @@
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
  * Parts Copyright (c) 1997 by T. Sato
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -57,6 +57,7 @@ There is currently no way to undo replace/update operations.
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>    /* includes X11/Xlib.h, which includes X11/X.h */
+#include <X11/Xatom.h>		/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -450,6 +451,7 @@ popup_search_panel(void)
     NextArg(XtNy, (Position) ry);
     NextArg(XtNcolormap, tool_cm);
     NextArg(XtNtitle, "Xfig: Search & Replace");
+    NextArg(XtNtitleEncoding, XA_STRING);
 
     search_panel = XtCreatePopupShell("search_panel",
 				transientShellWidgetClass, tool,
@@ -464,6 +466,7 @@ popup_search_panel(void)
     form = XtCreateManagedWidget("form", formWidgetClass, search_panel, NULL, 0) ;
 
     FirstArg(XtNlabel, "  Search for:");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
@@ -479,6 +482,7 @@ popup_search_panel(void)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, appres.international);
     search_text_widget = XtCreateManagedWidget("search_text", asciiTextWidgetClass,
 				form, Args, ArgCount);
     XtOverrideTranslations(search_text_widget,
@@ -487,6 +491,7 @@ popup_search_panel(void)
     /* search button */
 
     FirstArg(XtNlabel, "Search ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromHoriz, search_text_widget);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
@@ -505,6 +510,7 @@ popup_search_panel(void)
     NextArg(XtNvertDistance, 6);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNlabel, "Replace with:");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -529,6 +535,7 @@ popup_search_panel(void)
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, replace_text_widget);
     NextArg(XtNlabel, "Replace");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -541,6 +548,7 @@ popup_search_panel(void)
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, do_replace_button);
     NextArg(XtNlabel, "UPDATE  settings");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -555,6 +563,7 @@ popup_search_panel(void)
     /* make a label to report if no match for search */
 
     FirstArg(XtNlabel, "Enter search string and press \"Search\"");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNjustify, XtJustifyLeft);
     NextArg(XtNwidth, SEARCH_WIDTH);
@@ -581,6 +590,7 @@ popup_search_panel(void)
     NextArg(XtNbottom, XtChainBottom);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, appres.international);
     search_results_win = XtCreateManagedWidget("search_results_win", asciiTextWidgetClass,
 			form, Args, ArgCount);
     XtOverrideTranslations(search_results_win,
@@ -592,6 +602,7 @@ popup_search_panel(void)
 
     FirstArg(XtNfromVert, below);
     NextArg(XtNlabel, "Dismiss");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainBottom);
     NextArg(XtNbottom, XtChainBottom);
     NextArg(XtNleft, XtChainLeft);
@@ -634,6 +645,7 @@ popup_spell_check_panel(char **list, int nitems)
     NextArg(XtNy, (Position) y_val);
     NextArg(XtNcolormap, tool_cm);
     NextArg(XtNtitle, "Xfig: Misspelled words");
+    NextArg(XtNtitleEncoding, XA_STRING);
     spell_check_panel = XtCreatePopupShell("spell_check_panel",
 				transientShellWidgetClass,
 				tool, Args, ArgCount);
@@ -650,6 +662,7 @@ popup_spell_check_panel(char **list, int nitems)
     /* make a label to report either "No misspelled words" or "Misspelled words:" */
 
     FirstArg(XtNlabel, "Spell checker");
+    NextArg(XtNinternational, False);
     NextArg(XtNjustify, XtJustifyLeft);
     NextArg(XtNwidth, 375);
     NextArg(XtNheight, 20);
@@ -662,6 +675,7 @@ popup_spell_check_panel(char **list, int nitems)
 
     /* labels for list and correct word entry */
     FirstArg(XtNlabel, "Misspelled words    ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, spell_msg_win);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
@@ -672,6 +686,7 @@ popup_spell_check_panel(char **list, int nitems)
     below = label;
 
     FirstArg(XtNlabel, "Correction");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, spell_msg_win);
     NextArg(XtNfromHoriz, label);
     NextArg(XtNtop, XtChainTop);
@@ -697,6 +712,7 @@ popup_spell_check_panel(char **list, int nitems)
 
     /* now make the list widget */
     FirstArg(XtNlist, list);
+    NextArg(XtNinternational, appres.international);
     NextArg(XtNnumberStrings, nitems);
     NextArg(XtNforceColumns, True);		/* force to one column */
     NextArg(XtNdefaultColumns, 1);		/* ditto */
@@ -717,6 +733,7 @@ popup_spell_check_panel(char **list, int nitems)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, appres.international);
     correct_word = XtCreateManagedWidget("correct_word", asciiTextWidgetClass,
 				     form, Args, ArgCount);
 
@@ -729,6 +746,7 @@ popup_spell_check_panel(char **list, int nitems)
 
     /* now "Correct" button to the right */
     FirstArg(XtNlabel, "Correct");
+    NextArg(XtNinternational, False);
     NextArg(XtNsensitive, False);		/* start insensitive */
     NextArg(XtNfromVert, below);
     NextArg(XtNvertDistance, 1);
@@ -745,6 +763,7 @@ popup_spell_check_panel(char **list, int nitems)
     /* make a re-check spelling button at bottom of whole panel */
 
     FirstArg(XtNlabel, "Recheck");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, spell_viewport);
     NextArg(XtNsensitive, False);		/* insensitive to start */
     NextArg(XtNtop, XtChainBottom);
@@ -759,6 +778,7 @@ popup_spell_check_panel(char **list, int nitems)
     /* make dismiss button to the right of the recheck button */
 
     FirstArg(XtNlabel, "Dismiss");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, spell_viewport);
     NextArg(XtNfromHoriz, recheck_button);
     NextArg(XtNtop, XtChainBottom);
@@ -941,4 +961,3 @@ show_spell_msg(char *format,...)
   FirstArg(XtNlabel, tmpstr);
   SetValues(spell_msg_win);
 }
-

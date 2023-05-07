@@ -32,6 +32,7 @@
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>		/* includes X11/Xlib.h */
+#include <X11/Xatom.h>			/* XA_STRING */
 
 #include "figx.h"
 #include "resources.h"
@@ -531,6 +532,7 @@ static Arg	upd_args[] =
     /* 6 */ {XtNvertDistance, (XtArgVal) 0},
     /* 7 */ {XtNhorizDistance, (XtArgVal) 0},
     /* 8 */ {XtNlabel, (XtArgVal) " "},
+    /* 9 */ {XtNinternational, (XtArgVal) False},
 };
 
 static XtActionsRec ind_actions[] =
@@ -605,6 +607,7 @@ init_ind_panel(Widget tool)
     NextArg(XtNjustify, XtJustifyCenter);
     NextArg(XtNfont, button_font);
     NextArg(XtNlabel, "  Update \n  Control ");
+    NextArg(XtNinternational, False);
     NextArg(XtNinternalHeight, 0);
     upd_ctrl_lab = XtCreateManagedWidget("upd_ctrl_label", labelWidgetClass,
 			upd_ctrl, Args, ArgCount);
@@ -628,6 +631,7 @@ init_ind_panel(Widget tool)
     NextArg(XtNinternalWidth, UPD_INT);
     NextArg(XtNinternalHeight, UPD_INT);
     NextArg(XtNborderWidth, UPD_BORD);
+    NextArg(XtNinternational, False);
     set_upd = XtCreateManagedWidget("set_upd", commandWidgetClass,
 			upd_ctrl_btns, Args, ArgCount);
     XtAddEventHandler(set_upd, ButtonReleaseMask, False,
@@ -748,6 +752,7 @@ init_ind_panel(Widget tool)
 
 	/* now create the command button */
 	FirstArg(XtNlabel, " ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNwidth, sw->sw_width);
 	NextArg(XtNheight, DEF_IND_SW_HT);
 	NextArg(XtNresizable, False);
@@ -1061,6 +1066,7 @@ ind_balloon(void)
 	FirstArg(XtNborderWidth, 0);
 	sprintf(msg,"%s %s",isw->line1,isw->line2);
 	NextArg(XtNlabel, msg);
+	NextArg(XtNinternational, False);
 	balloon_label = XtCreateManagedWidget("label", labelWidgetClass,
 				    box, Args, ArgCount);
 
@@ -1426,6 +1432,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     FirstArg(XtNx, x_val);
     NextArg(XtNy, y_val);
     NextArg(XtNtitle, "Xfig: Arrow Size Panel");
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
 
     nval_popup = XtCreatePopupShell("set_nval_panel",
@@ -1446,6 +1453,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     FirstArg(XtNborderWidth, 0);
     NextArg(XtNresizable, True);
     NextArg(XtNlabel, "Arrow Size");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -1459,6 +1467,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
     NextArg(XtNlabel, " ");
+    NextArg(XtNinternational, False);
     NextArg(XtNbitmap, (use_abs_arrowvals?check_pm:null_check_pm));
     NextArg(XtNsensitive, (use_abs_arrowvals?False:True));	/* make opposite button sens */
     NextArg(XtNstate, use_abs_arrowvals); /* initial state */
@@ -1467,6 +1476,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     abstoggle = XtCreateManagedWidget("abstoggle", toggleWidgetClass, form, Args, ArgCount);
     XtAddCallback(abstoggle, XtNcallback, set_arrow_size_state, (XtPointer) NULL);
 
@@ -1479,6 +1489,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
     NextArg(XtNlabel, "Absolute   \nValues");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -1493,6 +1504,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNhorizDistance, 6);
     NextArg(XtNresizable, True);
     NextArg(XtNlabel, "Multiple of\nLine Width");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -1508,6 +1520,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNinternalWidth, 1);
     NextArg(XtNinternalHeight, 1);
     NextArg(XtNlabel, " ");
+    NextArg(XtNinternational, False);
     NextArg(XtNbitmap, (use_abs_arrowvals?null_check_pm:check_pm));
     NextArg(XtNsensitive, (use_abs_arrowvals?True:False));	/* make opposite button sens */
     NextArg(XtNstate, !use_abs_arrowvals); /* initial state */
@@ -1535,6 +1548,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget("Thickness ", labelWidgetClass, form, Args, ArgCount);
 
     /* make a spinner for Thickness = Multiple of line width */
@@ -1561,6 +1575,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget("  Width   ", labelWidgetClass, form, Args, ArgCount);
 
     /* make a spinner for Width = Multiple of line width */
@@ -1582,6 +1597,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget("  Length  ", labelWidgetClass, form, Args, ArgCount);
 
     /* make a spinner for Height = Multiple of line width */
@@ -1607,6 +1623,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
     /***************************************/
 
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNborderWidth, INTERNAL_BW);
     NextArg(XtNtop, XtChainTop);
@@ -1619,6 +1636,7 @@ void popup_arrowsize_panel(ind_sw_info *isw)
 		      (XtEventHandler) arrowsize_panel_cancel, (XtPointer) NULL);
 
     FirstArg(XtNlabel, " Set  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, cancel);
     NextArg(XtNborderWidth, INTERNAL_BW);
@@ -1766,6 +1784,7 @@ void popup_choice_panel(ind_sw_info *isw)
     /* make a title for the panel */
     sprintf(buf,"Xfig: %s %s Panel",isw->line1,isw->line2);
     NextArg(XtNtitle, buf);
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
 
     choice_popup = XtCreatePopupShell("set_choice_panel",
@@ -1798,12 +1817,14 @@ void popup_choice_panel(ind_sw_info *isw)
 	/* no, other */
 	sprintf(buf, "%s %s", isw->line1, isw->line2);
     }
+    NextArg(XtNinternational, False);
     label = XtCreateManagedWidget(buf, labelWidgetClass, form, Args, ArgCount);
 
     /* create the cancel button here, but only manage it if this is the color panel
        (we'll put it at the bottom for the others) */
 
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, label);	/* this will be changed for the non-color panels */
     NextArg(XtNresize, False);
     NextArg(XtNresizable, False);
@@ -1859,6 +1880,7 @@ void popup_choice_panel(ind_sw_info *isw)
 	/* create a title for the pattern section */
 	if (isw->func == I_FILLSTYLE && i == NUMSHADEPATS+NUMTINTPATS+1) {
 	    FirstArg(XtNlabel, "Patterns");
+	    NextArg(XtNinternational, False);
 	    NextArg(XtNfromVert, obeside);
 	    NextArg(XtNborderWidth, 0);
 	    NextArg(XtNtop, XtChainTop);
@@ -1882,6 +1904,7 @@ void popup_choice_panel(ind_sw_info *isw)
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
 	NextArg(XtNright, XtChainLeft);
+	NextArg(XtNinternational, False);
 	beside = XtCreateManagedWidget((String)" ", commandWidgetClass,
 				       form, Args, ArgCount);
 	obeside = beside;
@@ -1898,6 +1921,7 @@ void popup_choice_panel(ind_sw_info *isw)
 	FirstArg(XtNfromVert, beside);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNlabel, "Default dash length");
+	NextArg(XtNinternational, False);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
@@ -1917,6 +1941,7 @@ void popup_choice_panel(ind_sw_info *isw)
 	FirstArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNlabel, "    Default dot gap");
+	NextArg(XtNinternational, False);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
@@ -2062,6 +2087,7 @@ void popup_flags_panel(ind_sw_info *isw)
     FirstArg(XtNx, x_val);
     NextArg(XtNy, y_val);
     NextArg(XtNtitle, "Xfig: Text Flags Panel");
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
 
     nval_popup = XtCreatePopupShell("set_nval_panel",
@@ -2084,6 +2110,7 @@ void popup_flags_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     label = XtCreateManagedWidget(buf, labelWidgetClass, form, Args, ArgCount);
 
     /* make hidden text menu */
@@ -2094,6 +2121,7 @@ void popup_flags_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget("Hidden Flag", labelWidgetClass,
                                    form, Args, ArgCount);
 
@@ -2104,6 +2132,7 @@ void popup_flags_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     hidden_text_panel = XtCreateManagedWidget(
                  hidden_text_items[hidden_text_flag], menuButtonWidgetClass,
                                               form, Args, ArgCount);
@@ -2120,6 +2149,7 @@ void popup_flags_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget(" Rigid Flag", labelWidgetClass,
                                    form, Args, ArgCount);
 
@@ -2130,6 +2160,7 @@ void popup_flags_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     rigid_text_panel = XtCreateManagedWidget(
                    rigid_text_items[rigid_text_flag], menuButtonWidgetClass,
                                              form, Args, ArgCount);
@@ -2146,6 +2177,7 @@ void popup_flags_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     beside = XtCreateManagedWidget("   TeX Flag", labelWidgetClass,
                                    form, Args, ArgCount);
 
@@ -2156,6 +2188,7 @@ void popup_flags_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     special_text_panel = XtCreateManagedWidget(
                                       special_text_items[special_text_flag],
                                menuButtonWidgetClass, form, Args, ArgCount);
@@ -2165,6 +2198,7 @@ void popup_flags_panel(ind_sw_info *isw)
                                    special_text_panel, special_text_select);
 
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNborderWidth, INTERNAL_BW);
     NextArg(XtNtop, XtChainTop);
@@ -2177,6 +2211,7 @@ void popup_flags_panel(ind_sw_info *isw)
 		      (XtEventHandler) flags_panel_cancel, (XtPointer) NULL);
 
     FirstArg(XtNlabel, " Set  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, cancel);
     NextArg(XtNborderWidth, INTERNAL_BW);
@@ -2272,6 +2307,7 @@ void popup_nval_panel(ind_sw_info *isw)
     /* make a title for the panel */
     sprintf(buf,"Xfig: %s %s Panel",isw->line1,isw->line2);
     NextArg(XtNtitle, buf);
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
 
     nval_popup = XtCreatePopupShell("set_nval_panel",
@@ -2292,11 +2328,13 @@ void popup_nval_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     label = XtCreateManagedWidget(buf, labelWidgetClass, form, Args, ArgCount);
 
     FirstArg(XtNfromVert, label);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNlabel, "Value");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -2327,6 +2365,7 @@ void popup_nval_panel(ind_sw_info *isw)
     vdist = 4;
     if (strcasecmp(isw->line1,"zoom")==0) {
 	FirstArg(XtNlabel, " Fit to canvas ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 10);
 	NextArg(XtNborderWidth, INTERNAL_BW);
@@ -2347,6 +2386,7 @@ void popup_nval_panel(ind_sw_info *isw)
 	    NextArg(XtNbitmap, null_check_pm);
 	}
 	NextArg(XtNlabel, " ");
+	NextArg(XtNinternational, False);
 	NextArg(XtNstate, integral_zoom);
 	NextArg(XtNinternalWidth, 1);
 	NextArg(XtNinternalHeight, 1);
@@ -2358,6 +2398,7 @@ void popup_nval_panel(ind_sw_info *isw)
 				form, Args, ArgCount);
 
 	FirstArg(XtNlabel,"Integer zoom");
+	NextArg(XtNinternational, False);
 	NextArg(XtNheight, 18);
 	NextArg(XtNfromHoriz, zoomcheck);
 	NextArg(XtNhorizDistance, 2);
@@ -2374,6 +2415,7 @@ void popup_nval_panel(ind_sw_info *isw)
     }
 
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNvertDistance, vdist);
     NextArg(XtNborderWidth, INTERNAL_BW);
@@ -2387,6 +2429,7 @@ void popup_nval_panel(ind_sw_info *isw)
 		      (XtEventHandler) nval_panel_cancel, (XtPointer) NULL);
 
     FirstArg(XtNlabel, " Set  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, cancel);
     NextArg(XtNvertDistance, vdist);
@@ -2529,6 +2572,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     NextArg(XtNresize, False);
     NextArg(XtNresizable, False);
     NextArg(XtNtitle, "Xfig: Dimension Line Settings");
+    NextArg(XtNtitleEncoding, XA_STRING);
     NextArg(XtNcolormap, tool_cm);
 
     choice_popup = XtCreatePopupShell("set_dimline_panel",
@@ -2545,6 +2589,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     FirstArg(XtNborderWidth, 0);
     NextArg(XtNresizable, True);
     NextArg(XtNlabel, "Dimension Line Settings");
+    NextArg(XtNinternational, False);
     NextArg(XtNtop, XtChainTop);
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
@@ -2571,6 +2616,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     NextArg(XtNbottom, XtChainTop);
     NextArg(XtNleft, XtChainLeft);
     NextArg(XtNright, XtChainLeft);
+    NextArg(XtNinternational, False);
     exampline = XtCreateManagedWidget("", labelWidgetClass,
 				    form, Args, ArgCount);
     draw_cur_dimline();		/* this draws it into dimline_examp_pixmap */
@@ -2589,11 +2635,13 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* "Line" label */
     FirstArg(XtNlabel, "Line");
+    NextArg(XtNinternational, False);
     below = XtCreateManagedWidget("dimension_line_panel", labelWidgetClass,
 				    lineform, Args, ArgCount);
 
     /* thickness label */
     FirstArg(XtNlabel, "Thickness");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNhorizDistance, 4);
@@ -2608,6 +2656,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* Style label */
     FirstArg(XtNlabel, "Style    ");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNvertDistance, 4);
@@ -2618,6 +2667,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNbitmap, linestyle_pixmaps[dimline_style]);
+    NextArg(XtNinternational, False);
     dimline_style_panel = XtCreateManagedWidget("dimline_style", menuButtonWidgetClass,
 				    lineform, Args, ArgCount);
     below = dimline_style_panel;
@@ -2643,11 +2693,13 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* "Box" label */
     FirstArg(XtNlabel, "Box");
+    NextArg(XtNinternational, False);
     below = XtCreateManagedWidget("box_label", labelWidgetClass,
 				    boxform, Args, ArgCount);
 
     /* Thickness label */
     FirstArg(XtNlabel, "Thickness");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNhorizDistance, 4);
@@ -2681,11 +2733,13 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* "Arrows" label */
     FirstArg(XtNlabel, "Arrows");
+    NextArg(XtNinternational, False);
     below = XtCreateManagedWidget("arrow_label", labelWidgetClass,
 				    arrowform, Args, ArgCount);
 
     /* Types label */
     FirstArg(XtNlabel, "Types");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNhorizDistance, 4);
@@ -2696,6 +2750,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     FirstArg(XtNfromVert, below);
     NextArg(XtNfromHoriz, beside);
     NextArg(XtNlabel, "");
+    NextArg(XtNinternational, False);
     NextArg(XtNinternalWidth, 0);
     NextArg(XtNinternalHeight, 0);
     NextArg(XtNbitmap, arrow_pixmaps[dimline_leftarrow+1]);
@@ -2717,6 +2772,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     NextArg(XtNinternalWidth, 0);
     NextArg(XtNinternalHeight, 0);
     NextArg(XtNbitmap, arrow_pixmaps[dimline_rightarrow+1]);
+    NextArg(XtNinternational, False);
     right_arrow_type_panel = XtCreateManagedWidget("Arrowtype",
 				    menuButtonWidgetClass,
 				    arrowform, Args, ArgCount);
@@ -2729,6 +2785,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* Length label */
     FirstArg(XtNlabel, "Length");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNvertDistance, 6);
@@ -2744,6 +2801,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* Width label */
     FirstArg(XtNlabel, "Width ");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNhorizDistance, 4);
@@ -2771,6 +2829,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* "Ticks" label */
     FirstArg(XtNlabel, "Ticks");
+    NextArg(XtNinternational, False);
     below = XtCreateManagedWidget("ticks_label", labelWidgetClass,
 				    tickform, Args, ArgCount);
 
@@ -2781,6 +2840,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* Tick Thickness label */
     FirstArg(XtNlabel, "Thickness");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNhorizDistance, 4);
@@ -2806,11 +2866,13 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* "Text" label */
     FirstArg(XtNlabel, "Text");
+    NextArg(XtNinternational, False);
     below = XtCreateManagedWidget("text_label", labelWidgetClass,
 				    textform, Args, ArgCount);
 
     /* Font label */
     FirstArg(XtNlabel, "Font ");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNhorizDistance, 4);
@@ -2825,6 +2887,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     NextArg(XtNbitmap, dimline_psflag?
 			psfont_menu_bitmaps[dimline_font + 1] :
 			latexfont_menu_bitmaps[dimline_font]);
+    NextArg(XtNinternational, False);
     font_button = XtCreateManagedWidget("font", commandWidgetClass, textform, Args, ArgCount);
     XtAddCallback(font_button, XtNcallback, dimline_font_popup, (XtPointer) NULL);
 
@@ -2832,6 +2895,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* Size label */
     FirstArg(XtNlabel, "Size ");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNvertDistance, 4);
@@ -2852,6 +2916,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* String label */
     FirstArg(XtNlabel, "String");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNvertDistance, 6);
@@ -2877,6 +2942,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 
     /* Decimal places label */
     FirstArg(XtNlabel, "Decimal places");
+    NextArg(XtNinternational, False);
     NextArg(XtNborderWidth, 0);
     NextArg(XtNfromVert, below);
     NextArg(XtNhorizDistance, 26);
@@ -2902,6 +2968,7 @@ void popup_dimline_panel(ind_sw_info *isw)
     /***************************************/
 
     FirstArg(XtNlabel, "Cancel");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, textform);
     NextArg(XtNborderWidth, INTERNAL_BW);
     NextArg(XtNtop, XtChainTop);
@@ -2914,6 +2981,7 @@ void popup_dimline_panel(ind_sw_info *isw)
 		      (XtEventHandler) choice_panel_dismiss, (XtPointer) NULL);
 
     FirstArg(XtNlabel, " Ok  ");
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, textform);
     NextArg(XtNfromHoriz, cancel);
     NextArg(XtNhorizDistance, 10);
@@ -4891,6 +4959,7 @@ make_pulldown_menu_images(choice_info *entries, Cardinal nent, Pixmap *images, c
 	NextArg(XtNleftMargin, 32);
 	NextArg(XtNvertSpace, 80);		/* height 180% of font */
 	NextArg(XtNlabel, texts? texts[i] : "");
+	NextArg(XtNinternational, False);
 	sprintf(buf,"%d",i);
 	entry = XtCreateManagedWidget(buf, smeBSBObjectClass, pulldown_menu,
 				      Args, ArgCount);
