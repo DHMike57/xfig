@@ -1531,19 +1531,8 @@ void create_export_panel(Widget w)
 	NextArg(XtNright, XtChainLeft);
 	postscript_form = XtCreateWidget("postscript_form", formWidgetClass,
 					     export_panel, Args, ArgCount);
-	/* now a label */
-/*	FirstArg(XtNlabel, "PostScript Options");
-	NextArg(XtNborderWidth, 0);
-	NextArg(XtNtop, XtChainTop);
-	NextArg(XtNbottom, XtChainTop);
-	NextArg(XtNleft, XtChainLeft);
-	NextArg(XtNright, XtChainLeft);
-	below = ps_form_label = XtCreateManagedWidget("postscript_label", labelWidgetClass,
-					postscript_form, Args, ArgCount);
-*/
 	/* paper size */
 	FirstArg(XtNlabel, " Paper Size");
-//	NextArg(XtNfromVert, below);
 	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
@@ -1553,7 +1542,6 @@ void create_export_panel(Widget w)
 					 postscript_form, Args, ArgCount);
 
 	FirstArg(XtNlabel, paper_sizes[appres.papersize].fname);
-//	NextArg(XtNfromVert, below);
 	NextArg(XtNfromHoriz, papersize_lab);
 	NextArg(XtNborderWidth, INTERNAL_BW);
 	NextArg(XtNresizable, True);
