@@ -1688,11 +1688,11 @@ void create_export_panel(Widget w)
 	NextArg(XtNright, XtChainLeft);
 	exp_off_lab = XtCreateManagedWidget("export_offset_label", labelWidgetClass,
 				     postscript_form, Args, ArgCount);
-	FirstArg(XtNlabel, "X");
+	FirstArg(XtNlabel, "X = ");
 	NextArg(XtNfromVert, export_multiple_panel);
 	NextArg(XtNfromHoriz, exp_off_lab);
 	NextArg(XtNhorizDistance, 5);
-	NextArg(XtNborderWidth, 1);
+	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
@@ -1727,11 +1727,11 @@ void create_export_panel(Widget w)
 	make_pulldown_menu(offset_unit_items, XtNumber(offset_unit_items),
 				-1, "", exp_xoff_unit_panel, exp_xoff_unit_select);
 
-	FirstArg(XtNlabel, "Y");
+	FirstArg(XtNlabel, "Y = ");
 	NextArg(XtNfromHoriz, exp_xoff_unit_panel);
 	NextArg(XtNhorizDistance, 10);
 	NextArg(XtNfromVert, export_multiple_panel);
-	NextArg(XtNborderWidth, 1);
+	NextArg(XtNborderWidth, 0);
 	NextArg(XtNtop, XtChainTop);
 	NextArg(XtNbottom, XtChainTop);
 	NextArg(XtNleft, XtChainLeft);
