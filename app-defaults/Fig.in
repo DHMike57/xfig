@@ -1,9 +1,4 @@
-!
-! There is no need to use the "*customization: -color" anymore
-! Everyone has a color display so this is deprecated
-!
-
-!Don't change the following string - xfig uses it to determine
+! Do not change the following string - xfig uses it to determine
 ! if you have the newest app-defaults files installed
 
 Fig.version:			@VERSION@
@@ -13,7 +8,7 @@ Fig.version:			@VERSION@
 ! The following fixes a problem that some window managers have
 ! with xfig continually resizing itself
 
-Fig*AllowShellResize:		false
+Fig*AllowShellResize:		False
 
 ! Image editor - can edit imported image
 Fig.image_editor:		xdg-open
@@ -93,7 +88,7 @@ Fig.max_image_colors:		80
 
 ! information balloon settings
 ! show help balloons
-Fig.showballoons:		true
+Fig.showballoons:		True
 ! delay (milliseconds) before popping up info balloon
 Fig*balloon_delay:		500
 
@@ -179,20 +174,16 @@ Fig.internalborderwidth:	1
 !
 !Fig*keyFile:	~/.xfig.Compose-key
 
-! For internationalization, you may want to uncomment following lines.
+! If you only use ascii, you may want to uncomment the following line.
+! (latin1 may also work.)
 !
-!Fig.international: true
+!Fig.international: False
 
-! Note that you shouldn't remove the following "Fig*international: false".
-! It must be there to cancel any *international: true that may defined via xrdb.
-! This can cause problems on xfig even if the i18n facility is used.
+! Most widgets do not deal with international text.
+! They might render incorrectly if this is not set.
 
-Fig*international: false
+Fig*international: False
 
-! Uncomment following lines if you use i18n text.
-!
-!Fig*edit_panel*Text_text*international: true
-!Fig*edit_panel*inputMethod: xim
 
 Fig.translations: #override \n\
          <Key>: \n\

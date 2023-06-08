@@ -365,7 +365,7 @@ static XtResource application_resources[] = {
     {"write_bak", "Refresh",   XtRBoolean, sizeof(Boolean),
       XtOffset(appresPtr, write_bak), XtRBoolean, (caddr_t) & true},
     {"international", "International", XtRBoolean, sizeof(Boolean),
-       XtOffset(appresPtr, international), XtRBoolean, (caddr_t) & false},
+       XtOffset(appresPtr, international), XtRBoolean, (caddr_t) & true},
     {"fontMenulanguage", "Language", XtRString, sizeof(char *),
        XtOffset(appresPtr, font_menu_language), XtRString, (caddr_t) ""},
     {"fixedFontSet", "FontSet", XtRFontSet, sizeof(XFontSet),
@@ -497,6 +497,7 @@ static XrmOptionDescRec options[] =
     {"-axislines", ".axislines", XrmoptionSepArg, "pink"},
     {"-zoom", ".zoom", XrmoptionSepArg, 0},
     {"-international", ".international", XrmoptionNoArg, "True"},
+    {"-nointernational", ".international", XrmoptionNoArg, "False"},
     {"-inputStyle", ".inputStyle", XrmoptionSepArg, 0},
 };
 
@@ -603,7 +604,7 @@ static char *help_list[] = {
 	"[-visual <visual>] ",
 	"[-write_bak] ",
 	"[-zoom <zoom scale>] ",
-	"[-international] ",
+	"[-nointernational] ",
 	"[-inputStyle <OffTheSpot|OverTheSpot|Root>] ",
 	"  [file] ",
 	NULL } ;
@@ -881,13 +882,12 @@ main(int argc, char **argv)
 	else
 		setup_icons_big();
 
-    /************************************************************/
-    /* if the international option has been set, set the locale */
-    /************************************************************/
+    /*************************************************/
+    /* indicate if the international option is unset */
+    /*************************************************/
 
-    if (appres.international)
-      (void) sprintf(&tool_name[strlen(tool_name)], " [locale: %s]",
-		     setlocale(LC_CTYPE, NULL));
+    if (!appres.international)
+      (void)strcat(tool_name, " (ascii mode)");
 
     /* get the number of colormap cells for the screen */
     tool_cells = CellsOfScreen(tool_s);

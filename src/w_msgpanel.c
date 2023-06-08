@@ -97,7 +97,7 @@ init_msg(Widget tool)
     NextArg(XtNwidth, MSGPANEL_WD);
     NextArg(XtNheight, MSGPANEL_HT);
     NextArg(XtNstring, "\0");
-    NextArg(XtNinternational, appres.international);
+    NextArg(XtNinternational, False);
     NextArg(XtNfromVert, cmd_form);
     NextArg(XtNvertDistance, -INTERNAL_BW);
     NextArg(XtNborderWidth, INTERNAL_BW);
