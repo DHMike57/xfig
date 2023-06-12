@@ -442,7 +442,6 @@ dnl If doc/xfig_man.html.in is not present, simply touch it, e.g.
 dnl touch -r doc/FORMAT1.3 doc/xfig_man.html.in
 
 AC_CONFIG_FILES([Makefile
-		app-defaults/Fig
 		splash-image/spl_bckgnd.fig
 		src/Makefile
 		src/version.fig

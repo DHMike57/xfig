@@ -4,7 +4,7 @@
 # Copyright (c) 1985-1988 by Supoj Sutanthavibul
 # Parts Copyright (c) 1989-2015 by Brian V. Smith
 # Parts Copyright (c) 1991 by Paul King
-# Parts Copyright (c) 2016-2021 by Thomas Loimer
+# Parts Copyright (c) 2016-2023 by Thomas Loimer
 #
 # Any party obtaining a copy of these files is granted, free of charge, a
 # full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -17,21 +17,21 @@
 #
 #
 # Makefile.am
-# Author: Thomas Loimer, 2016-2021
+# Author: Thomas Loimer
 
 
 SUBDIRS = src doc tests
 
 dist_icon_DATA = xfig.png
 
-appdefault_DATA = app-defaults/Fig
+dist_appdefault_DATA = app-defaults/Fig
 
 dist_applications_DATA = xfig.desktop
 
 dist_compkeydb_DATA = CompKeyDB
 
 EXTRA_DIST = CHANGES FIGAPPS HACKING update-version_m4			\
-	app-defaults/Fig.in app-defaults/Fig-color.ad			\
+	app-defaults/Fig-color.ad					\
 	app-defaults/Fig-color.bisque app-defaults/Fig-color.blue.ad	\
 	app-defaults/Fig-color.classic.ad splash-image/bluemarble.png	\
 	splash-image/NOTES splash-image/spl_bckgnd.fig.in		\

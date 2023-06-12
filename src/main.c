@@ -1591,6 +1591,7 @@ notablet:
 static int
 setup_visual(int *argc_p, char **argv, Arg *args)
 {
+	extern String	fallback_resources[];	/* defined in fallback.c */
 	int	       i, n, cnt;
 	int	       count;		/* number of matches (only 1?) */
 	XPixmapFormatValues *pmf;
@@ -1602,7 +1603,7 @@ setup_visual(int *argc_p, char **argv, Arg *args)
 	 * retrieve the appropriate visual resource.
 	 */
 	tool = XtAppInitialize (&tool_app, "Fig", options, XtNumber (options), argc_p, argv,
-			       (String *) NULL, args, 0);
+			       fallback_resources, args, 0);
 	/* save important info */
 	tool_d = XtDisplay(tool);
 	tool_s = XtScreen(tool);
