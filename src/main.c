@@ -192,8 +192,6 @@ static XtResource application_resources[] = {
 	/* {name, class, type, size, offset, default type, &(default value)} */
     {"geometry",  "XtCGeometry",    XtRString,  sizeof(char *),
       XtOffset(appresPtr, geometry), XtRString, (caddr_t) NULL},
-    {"version",  "version",    XtRString,  sizeof(char *),
-      XtOffset(appresPtr,version), XtRString, (caddr_t) NULL},
     {"zoom", "Zoom", XtRFloat, sizeof(float),
       XtOffset(appresPtr, zoom), XtRFloat, (caddr_t) & Fone},
     {"allownegcoords", "NegativeCoordinates",   XtRBoolean, sizeof(Boolean),
@@ -1335,20 +1333,6 @@ main(int argc, char **argv)
 
     /* let things settle down */
     process_pending();
-
-    /* now that everything is up, check the version number in the app-defaults */
-    /*
-     * The app-defaults file did not change for ages, there are sane
-     * defaults provided, hence announcing an old version is more disruptive
-     * to the user than simply continuing with an old version.
-     */
-    if (!appres.version) {
-	file_msg("Either you have a very old app-defaults file installed (Fig),");
-	file_msg("or there is none installed at all.");
-	file_msg("You should install the correct version or you may lose some features.");
-	beep();
-	beep();
-    }
 
     /*****************************/
     /*  do the splash screen now */

@@ -217,8 +217,6 @@ typedef struct _appres {
     float	 userscale;		/* scale screen units to user units */
     char	*userunit;		/* user defined unit name */
     float	 zoom;			/* starting zoom scale */
-    char	*version;		/* version of the app-defaults file (compared with
-					   the version/patchlevel of xfig when starting */
     int		 export_margin;		/* size of border around figure for export */
     Boolean	 flipvisualhints;	/* switch left/right mouse indicator messages */
     Boolean	 rigidtext;

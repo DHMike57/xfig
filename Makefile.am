@@ -24,36 +24,30 @@ SUBDIRS = src doc tests
 
 dist_icon_DATA = xfig.png
 
-dist_appdefault_DATA = app-defaults/Fig
-
 dist_applications_DATA = xfig.desktop
 
 dist_compkeydb_DATA = CompKeyDB
 
 EXTRA_DIST = CHANGES FIGAPPS HACKING update-version_m4			\
-	app-defaults/Fig-color.ad					\
+	app-defaults/Fig app-defaults/Fig-color.ad			\
 	app-defaults/Fig-color.bisque app-defaults/Fig-color.blue.ad	\
 	app-defaults/Fig-color.classic.ad splash-image/bluemarble.png	\
 	splash-image/NOTES splash-image/spl_bckgnd.fig.in		\
 	splash-image/xfig_splash_logo.png
 
+# install and uninstall app-defaults/Fig
+install-data-local: $(srcdir)/app-defaults/Fig
+	$(MKDIR_P) "$(DESTDIR)$(appdefaultdir)" || exit 1
+	sed -e '/^[ \t]*[^!]/ s/^/!/' $(srcdir)/app-defaults/Fig \
+		>"$(DESTDIR)$(appdefaultdir)/Fig"
+uninstall-appdefault:
+	file='$(DESTDIR)$(appdefaultdir)/Fig'; test -f "$$file" && rm "$$file"
+
+uninstall_targets = uninstall-appdefault
+
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 config.h.in config.h.in~ configure
 
-# a fragment, to test compilation with different configure-flags
-compile-check: distdir
-	chmod u+w $(distdir)
-	mkdir $(distdir)/_build $(distdir)/_build/sub
-	cd $(distdir)/_build/sub \
-	&& ../../configure --srcdir=../.. --without-xfig-libraries --disable-jpeg \
-	&& $(MAKE) -j $(AM_MAKEFLAGS) \
-	&& $(MAKE) $(AM_MAKEFLAGS) check \
-	&& $(MAKE) $(AM_MAKEFLAGS) clean
-	cd $(distdir)/_build/sub \
-	../../configure --srcdir=../.. --without-xfig-libraries --disable-xpm --enable-xpm-icon \
-	&& $(MAKE) -j $(AM_MAKEFLAGS) \
-	&& $(MAKE) $(AM_MAKEFLAGS) check \
-	&& $(MAKE) $(AM_MAKEFLAGS) clean
-
+# distribute and install the Libraries
 xfig_librariesdir = Libraries
 
 if XFIG_LIBRARIES
@@ -79,7 +73,11 @@ install-data-hook:
 		&& chmod -R u+rwX "$(DESTDIR)$(pkgdatadir)" || exit 1; } \
 		|| :
 
-uninstall-local:
+uninstall-libraries:
 	test -d "$(DESTDIR)$(pkgdatadir)/$(xfig_librariesdir)" \
 	&& rm -rf "$(DESTDIR)$(pkgdatadir)/$(xfig_librariesdir)" || :
+
+uninstall_targets += uninstall-libraries
 endif
+
+uninstall-local: $(uninstall_targets)
