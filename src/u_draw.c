@@ -61,116 +61,136 @@ static Boolean add_closepoint(void);
 /************** ARRAY FOR ARROW SHAPES **************/
 
 struct _fpnt {
-		double x,y;
-	};
+	double x,y;
+};
 
 struct _arrow_shape {
-		int	numpts;		/* number of points in arrowhead */
-		int	tipno;		/* which point contains the tip */
-		int	numfillpts;	/* number of points to fill */
-		Boolean	simplefill;	/* if true, use points array to fill otherwise use fill_points array */
-		Boolean	clip;		/* if false, no clip area needed (e.g. for reverse triangle arrowhead) */
-		Boolean	half;		/* if true, arrowhead is half-wide and must be shifted to cover the line */
-		double	tipmv;		/* acuteness of tip (smaller angle, larger tipmv) */
-		struct	_fpnt points[6]; /* points in arrowhead */
-		struct	_fpnt fillpoints[6]; /* points to fill if not "simple" */
-	};
+	int	numpts;		/* number of points in arrowhead */
+	int	tipno;		/* which point contains the tip */
+	int	numfillpts;	/* number of points to fill */
+	Boolean	simplefill;	/* if true, use points array to fill otherwise
+				   use fill_points array */
+	Boolean	clip;		/* if false, no clip area needed
+				   (e.g. for reverse triangle arrowhead) */
+	Boolean	half;		/* if true, arrowhead is half-wide and must be
+				   shifted to cover the line */
+	double	tipmv;		/* acuteness of tip (smaller angle,
+						larger tipmv) */
+	struct	_fpnt points[6]; /* points in arrowhead */
+	struct	_fpnt fillpoints[6]; /* points to fill if not "simple" */
+};
 
 static struct _arrow_shape arrow_shapes[NUM_ARROW_TYPES] = {
 	/* number of points, index of tip, {datapairs} */
 	/* first point must be upper-left point of tail, then tip */
-
 	/* type 0 */
-	{ 3, 1, 0, True, True, False, 2.15, {{-1,0.5}, {0,0}, {-1,-0.5}}, {0}},
+	{ 3, 1, 0, True, True, False, 2.15,
+		{{-1,0.5}, {0.,0.}, {-1,-0.5}},
+		{{0.,0.}}},
 	/* place holder for what would be type 0 filled */
 	{ 0 },
 	/* type 1a simple triangle */
 	{ 4, 1, 0, True, True, False, 2.1,
-			{{-1.0,0.5}, {0.,0.}, {-1.0,-0.5}, {-1.0,0.5}}, {0}},
+		{{-1.0,0.5}, {0.,0.}, {-1.,-0.5}, {-1.0,0.5}},
+		{{0.,0.}}},
 	/* type 1b filled simple triangle*/
 	{ 4, 1, 0, True, True, False, 2.1,
-			{{-1.0,0.5}, {0.,0.}, {-1.0,-0.5}, {-1.0,0.5}}, {0}},
+		{{-1.0,0.5}, {0.,0.}, {-1.0,-0.5}, {-1.,0.5}},
+		{{0.,0.}}},
 	/* type 2a concave spearhead */
 	{ 5, 1, 0, True, True, False, 2.6,
-			{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
-			{0}},
+		{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
+		{{0.,0.}}},
 	/* type 2b filled concave spearhead */
 	{ 5, 1, 0, True, True, False, 2.6,
-			{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
-			{0}},
+		{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
+		{{0.,0.}}},
 	/* type 3a convex spearhead */
 	{ 5, 1, 0, True, True, False, 1.5,
-			{{-0.75,0.5},{0.,0.},{-0.75,-0.5},{-1.,0.},{-0.75,0.5}},
-			{0}},
+		{{-0.75,0.5},{0.,0.},{-0.75,-0.5},{-1.,0.},{-0.75,0.5}},
+		{{0.,0.}}},
 	/* type 3b filled convex spearhead */
 	{ 5, 1, 0, True, True, False, 1.5,
-			{{-0.75,0.5},{0.,0.},{-0.75,-0.5},{-1.,0.},{-0.75,0.5}},
-			{0}},
+		{{-0.75,0.5},{0.,0.},{-0.75,-0.5},{-1.,0.},{-0.75,0.5}},
+		{{0.,0.}}},
 	/* type 4a diamond */
 	{ 5, 1, 0, True, True, False, 1.15,
-			{{-0.5,0.5},{0.,0.},{-0.5,-0.5},{-1.0,0.},{-0.5,0.5}},
-			{0}},
+		{{-0.5,0.5},{0.,0.},{-0.5,-0.5},{-1.0,0.},{-0.5,0.5}},
+		{{0.,0.}}},
 	/* type 4b filled diamond */
 	{ 5, 1, 0, True, True, False, 1.15,
-			{{-0.5,0.5},{0.,0.},{-0.5,-0.5},{-1.0,0.},{-0.5,0.5}},
-			{0}},
+		{{-0.5,0.5},{0.,0.},{-0.5,-0.5},{-1.0,0.},{-0.5,0.5}},
+		{{0.,0.}}},
 	/* type 5a/b circle - handled in code */
-	{ 0, 0, 0, True, True, False, 0.0, {0}, {0}},
-	{ 0, 0, 0, True, True, False, 0.0, {0}, {0}},
+	{ 0, 0, 0, True, True, False, 0.0, {{0.,0.}}, {{0.,0.}}},
+	{ 0, 0, 0, True, True, False, 0.0, {{0.,0.}}, {{0.,0.}}},
 	/* type 6a/b half circle - handled in code */
-	{ 0, 0, 0, True, True, False, -1.0, {0}, {0}},
-	{ 0, 0, 0, True, True, False, -1.0, {0}, {0}},
+	{ 0, 0, 0, True, True, False, -1.0, {{0.,0.}}, {{0.,0.}}},
+	{ 0, 0, 0, True, True, False, -1.0, {{0.,0.}}, {{0.,0.}}},
 	/* type 7a square */
 	{ 5, 1, 0, True, True, False, 0.0,
-			{{-1.0,0.5},{0.,0.5},{0.,-0.5},{-1.0,-0.5},{-1.0,0.5}},
-			{0}},
+		{{-1.0,0.5},{0.,0.5},{0.,-0.5},{-1.0,-0.5},{-1.0,0.5}},
+		{{0.,0.}}},
 	/* type 7b filled square */
 	{ 5, 1, 0, True, True, False, 0.0,
-			{{-1.0,0.5},{0.,0.5},{0.,-0.5},{-1.0,-0.5},{-1.0,0.5}},
-			{0}},
+		{{-1.0,0.5},{0.,0.5},{0.,-0.5},{-1.0,-0.5},{-1.0,0.5}},
+		{{0.,0.}}},
 	/* type 8a reverse triangle */
 	{ 4, 1, 0, True, False, False, 0.0,
-			{{-1.0,0.},{0.,0.5},{0.,-0.5},{-1.0,0}}, {0}},
+		{{-1.0,0.}, {0.,0.5}, {0.,-0.5}, {-1.0,0}},
+		{{0.,0.}}},
 	/* type 8b filled reverse triangle */
 	{ 4, 1, 0, True, False, False, 0.0,
-			{{-1.0,0.},{0.,0.5},{0.,-0.5},{-1.0,0.}}, {0}},
+		{{-1.0,0.}, {0.,0.5}, {0.,-0.5}, {-1.0,0.}},
+		{{0.,0.}}},
 	/* type 9a top-half filled concave spearhead */
 	{ 5, 1, 3, False, True, False, 2.6,
-			{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
-			{{-1.25,-0.5},{0.,0.},{-1.,0.}}},
+		{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
+		{{-1.25,-0.5},{0.,0.},{-1.,0.}}},
 	/* type 9b bottom-half filled concave spearhead */
 	{ 5, 1, 3, False, True, False, 2.6,
-			{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
-			{{-1.25,0.5},{0.,0.},{-1,0}}},
+		{{-1.25,0.5},{0.,0.},{-1.25,-0.5},{-1.,0.},{-1.25,0.5}},
+		{{-1.25,0.5},{0.,0.},{-1,0}}},
 	/* type 10o top-half simple triangle */
 	{ 4, 1, 0, True, True, True, 2.5,
-			{{-1.0,0.5}, {0.,0.}, {-1.,0.0}, {-1.0,0.5}}, {0}},
+		{{-1.0,0.5}, {0.,0.}, {-1.,0.0}, {-1.0,0.5}},
+		{{0.,0.}}},
 	/* type 10f top-half filled simple triangle*/
 	{ 4, 1, 0, True, True, True, 2.5,
-			{{-1.0,0.5}, {0.,0.}, {-1.,0.0}, {-1.0,0.5}}, {0}},
+		{{-1.0,0.5}, {0.,0.}, {-1.,0.0}, {-1.0,0.5}},
+		{{0.,0.}}},
 	/* type 11o top-half concave spearhead */
 	{ 4, 1, 0, True, True, True, 3.5,
-			{{-1.25,0.5}, {0.,0.}, {-1.,0.}, {-1.25,0.5}}, {0}},
+		{{-1.25,0.5}, {0.,0.}, {-1.,0.}, {-1.25,0.5}},
+		{{0.,0.}}},
 	/* type 11f top-half filled concave spearhead */
 	{ 4, 1, 0, True, True, True, 3.5,
-			{{-1.25,0.5}, {0.,0.}, {-1.,0.}, {-1.25,0.5}}, {0}},
+		{{-1.25,0.5}, {0.,0.}, {-1.,0.}, {-1.25,0.5}},
+		{{0.,0.}}},
 	/* type 12o top-half convex spearhead */
 	{ 4, 1, 0, True, True, True, 2.5,
-			{{-0.75,0.5}, {0.,0.}, {-1.,0.}, {-0.75,0.5}}, {0}},
+		{{-0.75,0.5}, {0.,0.}, {-1.,0.}, {-0.75,0.5}},
+		{{0.,0.}}},
 	/* type 12f top-half filled convex spearhead */
 	{ 4, 1, 0, True, True, True, 2.5,
-			{{-0.75,0.5}, {0.,0.}, {-1.,0.}, {-0.75,0.5}}, {0}},
+		{{-0.75,0.5}, {0.,0.}, {-1.,0.}, {-0.75,0.5}},
+		{{0.,0.}}},
 	/* type 13a "wye" */
 	{ 3, 0, 0, True, True, False, -1.0,
-			{{0,0.5},{-1.0,0.},{0.,-0.5}}, {0}},
+		{{0,0.5},{-1.0,0.},{0.,-0.5}},
+		{{0.,0.}}},
 	/* type 13b bar */
-	{ 2, 1, 0, True, True, False, 0.0, {{0.,0.5},{0.,-0.5}}, {0}},
+	{ 2, 1, 0, True, True, False, 0.0,
+		{{0.,0.5},{0.,-0.5}},
+		{{0.,0.}}},
 	/* type 14a two-prong fork */
 	{ 4, 0, 0, True, True, False, -1.0,
-			{{0,0.5},{-1.0,0.5},{-1.0,-0.5},{0.,-0.5}}, {0}},
+		{{0,0.5},{-1.0,0.5},{-1.0,-0.5},{0.,-0.5}},
+		{{0.,0.}}},
 	/* type 14b backward two-prong fork */
 	{ 4, 1, 0, True, True, False, 0.0,
-			{{-1.0,0.5,},{0.,0.5},{0.,-0.5},{-1.0,-0.5}}, {0}},
+		{{-1.0,0.5,},{0.,0.5},{0.,-0.5},{-1.0,-0.5}},
+		{{0.,0.}}},
 };
 
 /************** POLYGON/CURVE DRAWING FACILITIES ****************/
