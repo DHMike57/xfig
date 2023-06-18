@@ -53,7 +53,7 @@ Widget		browse_selfile,	/* selected file widget */
 Boolean		browse_up;
 
 
-DeclareStaticArgs(12);
+DeclareStaticArgs(13);
 static Widget	cfile_lab;
 static Widget	closebtn, apply;
 static Widget	browse_parent;
