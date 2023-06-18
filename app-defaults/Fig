@@ -175,8 +175,8 @@ Fig*mode_panel.foreground:	black
 !	Fig*keyFile:	~/.xfig.Compose-key
 
 ! If you only use ascii (latin1 might also work),
-! you may want to uncomment the following line.
-!	Fig.international: False
+! you may want to set the following to False.
+Fig.international: True
 
 ! Most widgets do not deal with international text.
 ! They might render incorrectly if this is not set.
