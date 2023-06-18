@@ -179,7 +179,7 @@ splash.xbm: $(top_srcdir)/splash-image/spl_bckgnd.fig.in \
 #		# get rid of the newline starting now the pattern space
 #	# backslash - newline becomes newline - tab - tab
 #	# and surround the text with quotes, writing C strings
-FALLBACK_SCRIPT = '				\
+fallback_script = '				\
 	/^[ \t]*\(!\|$$\)/ d;			\
 	s/[ \t][ \t]*/ /g;			\
 	s/^ \| $$//g;				\
@@ -204,6 +204,6 @@ fallback.c: $(top_srcdir)/app-defaults/Fig
 	xrdb -version >/dev/null 2>/dev/null &&			\
 		xrdb -n -load $(top_srcdir)/app-defaults/Fig |		\
 		$(SED) -e 's/.*/\t"&",/;  /\\n/ s//\\&/g' >>$@ ||	\
-		$(SED) -e $(FALLBACK_SCRIPT) $(top_srcdir)/app-defaults/Fig >>$@
+		$(SED) -e $(fallback_script) $(top_srcdir)/app-defaults/Fig >>$@
 	echo "	NULL" >>$@
 	echo "};" >>$@
