@@ -201,9 +201,6 @@ fallback.c: $(top_srcdir)/app-defaults/Fig
 	echo "#include <stddef.h>" >>$@
 	echo "#include <X11/Intrinsic.h>" >>$@
 	echo "String	fallback_resources[] = {" >>$@
-	xrdb -version >/dev/null 2>/dev/null &&			\
-		xrdb -n -load $(top_srcdir)/app-defaults/Fig |		\
-		$(SED) -e 's/.*/\t"&",/;  /\\n/ s//\\&/g' >>$@ ||	\
-		$(SED) -e $(fallback_script) $(top_srcdir)/app-defaults/Fig >>$@
+	$(SED) -e $(fallback_script) $(top_srcdir)/app-defaults/Fig >>$@
 	echo "	NULL" >>$@
 	echo "};" >>$@
