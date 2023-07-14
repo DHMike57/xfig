@@ -24,26 +24,18 @@ SUBDIRS = src doc tests
 
 dist_icon_DATA = xfig.png
 
+dist_appdefault_DATA = app-defaults/Fig
+
 dist_applications_DATA = xfig.desktop
 
 dist_compkeydb_DATA = CompKeyDB
 
 EXTRA_DIST = CHANGES FIGAPPS HACKING update-version_m4			\
-	app-defaults/Fig app-defaults/Fig-color.ad			\
+	app-defaults/Fig-color.ad			\
 	app-defaults/Fig-color.bisque app-defaults/Fig-color.blue.ad	\
 	app-defaults/Fig-color.classic.ad splash-image/bluemarble.png	\
 	splash-image/NOTES splash-image/spl_bckgnd.fig.in		\
 	splash-image/xfig_splash_logo.png
-
-# install and uninstall app-defaults/Fig
-install-data-local: $(srcdir)/app-defaults/Fig
-	$(MKDIR_P) "$(DESTDIR)$(appdefaultdir)" || exit 1
-	sed -e '/^[ \t]*[^!]/ s/^/!/' $(srcdir)/app-defaults/Fig \
-		>"$(DESTDIR)$(appdefaultdir)/Fig"
-uninstall-appdefault:
-	file='$(DESTDIR)$(appdefaultdir)/Fig'; test -f "$$file" && rm "$$file"
-
-uninstall_targets = uninstall-appdefault
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 config.h.in config.h.in~ configure
 
@@ -73,11 +65,7 @@ install-data-hook:
 		&& chmod -R u+rwX "$(DESTDIR)$(pkgdatadir)" || exit 1; } \
 		|| :
 
-uninstall-libraries:
+uninstall-local:
 	test -d "$(DESTDIR)$(pkgdatadir)/$(xfig_librariesdir)" \
 	&& rm -rf "$(DESTDIR)$(pkgdatadir)/$(xfig_librariesdir)" || :
-
-uninstall_targets += uninstall-libraries
 endif
-
-uninstall-local: $(uninstall_targets)
