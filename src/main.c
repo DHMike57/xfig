@@ -1167,11 +1167,12 @@ main(int argc, char **argv)
 
 
     /* Set the input field to true to allow keyboard input */
-    wmhints = XGetWMHints(tool_d, tool_w);
-    wmhints->flags |= InputHint;/* add in input hint */
-    wmhints->input = True;
-    XSetWMHints(tool_d, tool_w, wmhints);
-    XFree((char *) wmhints);
+    if ((wmhints = XGetWMHints(tool_d, tool_w))) {
+	wmhints->flags |= InputHint;/* add in input hint */
+	wmhints->input = True;
+	XSetWMHints(tool_d, tool_w, wmhints);
+	XFree(wmhints);
+    }
 
     if (appres.RHS_PANEL) {	/* side button panel is on right size */
 	FirstArg(XtNfromHoriz, 0);
