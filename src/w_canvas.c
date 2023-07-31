@@ -223,6 +223,45 @@ void setup_canvas(void)
     reset_clip_window();
 }
 
+static Status
+get_input(XKeyPressedEvent *kpe, char **buf, int buf_size, int *len,
+		KeySym *key_sym)
+{
+	Status	status;
+	if (xim_ic != NULL) {
+		*len = Xutf8LookupString(xim_ic, kpe, *buf, buf_size, key_sym,
+					&status);
+		if (status == XLookupChars)
+			key_sym = 0;
+	} else {
+		*len = XLookupString(kpe, *buf, buf_size, key_sym, NULL);
+		if (*len > 0) {
+			if (*key_sym == 0)
+				status = XLookupChars;
+			else
+				status = XLookupBoth;
+		} else {
+			if (*key_sym == 0)
+				status = XLookupNone;
+			else
+				status = XLookupKeySym;
+		}
+	}
+
+	if (status == XBufferOverflow) {
+		if (buf_size != *len) {
+			*buf = malloc((size_t)len);
+			status = get_input(kpe, buf, *len, len, key_sym);
+		} else {
+			/* we are in the second call to get_input() above */
+			file_msg("Input buffer overflow, file %s, line %d.",
+							__FILE__, __LINE__);
+		}
+	}
+
+	return status;
+}
+
 void
 canvas_selected(Widget tool, XButtonEvent *event, String *params,
 		Cardinal *nparams)
@@ -484,50 +523,28 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 		} /* switch (key) */
 	  } else {		/* pan the canvas */
 		if (canvas_kbd_proc != null_proc ) {
-			int		len;
-			static int	buf_size = 8;
-			static char	storage[8];
-			static char	*buf = storage;
-			KeySym		key_sym;
 
 			if (key == XK_Left || key == XK_Right ||
 					key == XK_Home || key == XK_End) {
-				canvas_kbd_proc(buf, 0, key);
+				canvas_kbd_proc(NULL, 0, key);
+			} else {
+				int	len;
+				Status	status;
+				char	b[8];
+				char	*buf = b;
+				size_t	buf_size = sizeof b / sizeof b[0];
+				KeySym	key_sym;
 
-			} else if (xim_ic != NULL) {
-				Status		status;
-
-				len = Xutf8LookupString(xim_ic, kpe, buf,
-						buf_size, &key_sym, &status);
-				if (status == XBufferOverflow) {
-					buf_size = len;
-					buf = realloc(buf, (size_t)(len + 1));
-					len = Xutf8LookupString(xim_ic, kpe,
-							buf, buf_size, &key_sym,
-							&status);
-				}
-				switch (status) {
-				case XLookupChars:
-					canvas_kbd_proc(buf, len, (KeySym)0);
-					break;
-				case XLookupKeySym:
-				case XLookupBoth:
-					canvas_kbd_proc(buf, len, key_sym);
-					break;
-				case XBufferOverflow:
-					file_msg("xfig: buffer overflow, file %s, line %d.",
-							__FILE__, __LINE__);
-				case XLookupNone:
-				default:
+				status = get_input(kpe, &buf, (int)buf_size,
+						&len, &key_sym);
+				if (status == XLookupNone) {
+					if (buf != b)
+						free(buf);
 					break;
 				}
-
-			} else {	/* xim_ic == NULL */
-				static XComposeStatus	compose;
-				len = XLookupString(kpe, buf, buf_size,
-						&key_sym, &compose);
-				if (len > 0)
-					canvas_kbd_proc(buf, len, (KeySym)0);
+				canvas_kbd_proc(buf, len, key_sym);
+				if (buf != b)
+					free(buf);
 			}
 	    } else {		/* canvas_kbd_proc != null_proc */
 		/* Be cheeky... we aren't going to do anything, so pass the
