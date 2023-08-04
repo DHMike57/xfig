@@ -734,8 +734,6 @@ readComposeKey(void)
     char	   *p2;
     char	   *p3;
     long	    size;
-    int		    charfrom;
-    int		    charinto;
 
 
 /* Treat the compose key DB a different way.  In this order:
@@ -762,41 +760,48 @@ readComposeKey(void)
 	 }
 
      /* expand the ~ to the user's home directory */
-     else if (! strncmp(appres.keyFile, "~/", 2)) {
+     else if (!strncmp(appres.keyFile, "~/", 2)) {
 	 strcpy(line, getenv("HOME"));
-	 for (charinto = strlen(line), charfrom = 1;
-	      (line[charinto++] = appres.keyFile[charfrom++]); );
-       }
-    else
+	 strcat(line, appres.keyFile + 1);
+     } else
 	strcpy(line, appres.keyFile);
 
     if ((st = fopen(line, "r")) == NULL) {
-	allCompKey = NULL;
-	fprintf(stderr,"%cCan't open compose key file '%s',\n",007,line);
-	fprintf(stderr,"\tno multi-key sequences available\n");
+	file_msg("Unable to open compose key file '%s',", line);
+	file_msg("\tno multi-key sequences available.");
 	return;
     }
-    fseek(st, 0, 2);
+    fseek(st, 0L, SEEK_END);
     size = ftell(st);
-    fseek(st, 0, 0);
+    fseek(st, 0L, SEEK_SET);
 
     local_translations = (String) new_string(size);
 
     strcpy(local_translations, "");
     while (fgets(line, 250, st) != NULL) {
-	if (line[0] != '#') {
-	    strcat(local_translations, line);
-	    if ((p = strstr(line, "Multi_key")) != NULL) {
+	if (line[0] == '#')
+		continue;
+	strcat(local_translations, line);
+	if ((p = strstr(line, "Multi_key")) != NULL) {
 		char		buf[FC_UTF8_MAX_LEN + 1];
 
-		p1 = strstr(p, "<Key>") + strlen("<Key>");
-		p = strstr(p1, ",");
+		if ((p1 = strstr(p, "<Key>")) == NULL)
+			continue;
+		p1 += strlen("<Key>");
+		if ((p = strstr(p1, ",")) == NULL)
+			continue;
 		*p++ = '\0';
-		p2 = strstr(p, "<Key>") + strlen("<Key>");
-		p = strstr(p2, ":");
+		if ((p2 = strstr(p, "<Key>")) == NULL)
+		       continue;
+		p2 += strlen("<Key>");
+		if ((p = strstr(p2, ":")) == NULL)
+			continue;
 		*p++ = '\0';
-		p3 = strstr(p, "insert-string(") + strlen("insert-string(");
-		p = strstr(p3, ")");
+		if ((p3 = strstr(p, "insert-string(")) == NULL)
+		       continue;
+		p3 +=strlen("insert-string(");
+		if ((p = strstr(p3, ")")) == NULL)
+			continue;
 		*p++ = '\0';
 
 		if (!strncmp(p3, "0x", 2)) {
@@ -809,10 +814,10 @@ readComposeKey(void)
 		}
 
 		if (allCompKey == NULL) {
-		    allCompKey = (CompKey *) malloc(sizeof(CompKey));
+		    allCompKey = malloc(sizeof(CompKey));
 		    compKeyPtr = allCompKey;
 		} else {
-		    compKeyPtr->next = (CompKey *) malloc(sizeof(CompKey));
+		    compKeyPtr->next = malloc(sizeof(CompKey));
 		    compKeyPtr = compKeyPtr->next;
 		}
 		compKeyPtr->str = strdup(p3);
@@ -820,11 +825,11 @@ readComposeKey(void)
 		compKeyPtr->second = XStringToKeysym(p2);
 		compKeyPtr->next = NULL;
 	    }
-	}
     }
-
     fclose(st);
-
+    if (allCompKey == NULL)
+	    file_msg("Empty compose key database, "
+			    "no compose sequences available.");
 }
 #endif /* !NO_COMPKEYDB */
 
