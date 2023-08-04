@@ -21,9 +21,11 @@
 #endif
 #include "w_canvas.h"
 
+#include <inttypes.h>		/* SCNxLEAST32 */
 #include <limits.h>		/* INT_MIN, INT_MAX */
 #include <math.h>
 #include <stdio.h>
+#include <stdint.h>		/* uint_least32_t */
 #include <stdlib.h>
 #include <string.h>
 
@@ -91,13 +93,14 @@ String		local_translations = "";
 #ifndef NO_COMPKEYDB
 typedef struct _CompKey	CompKey;
 struct _CompKey {
-    unsigned char   key;
+    char            *str;
     unsigned char   first;
     unsigned char   second;
     CompKey	   *next;
 };
 static CompKey		*allCompKey = NULL;
 static void		readComposeKey(void);
+static int             getComposeKey(char **str, char compose_buf[2]);
 #endif /* NO_COMPKEYDB */
 
 static void		canvas_paste(Widget w, XKeyEvent *paste_event);
@@ -278,6 +281,7 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
     int		    rx, ry, cx, cy;
     unsigned int    mask;
     int    x, y;
+    static int	compose_key = 0;
 
     /* key on event type */
     switch (event->type) {
@@ -521,15 +525,29 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 			pan_origin();
 			break;
 		} /* switch (key) */
-	  } else {		/* pan the canvas */
+	  } else if (allCompKey && (key == XK_Multi_key ||
+				  key == XK_Meta_L || key == XK_Meta_R ||
+				  key == XK_Alt_L || key == XK_Alt_R)
+			  && action_on && cur_mode == F_TEXT) {
+		  compose_key = 1;
+		  setCompLED(1);
+		  break;
+	  } else {
 		if (canvas_kbd_proc != null_proc ) {
 
 			if (key == XK_Left || key == XK_Right ||
 					key == XK_Home || key == XK_End) {
+				if (compose_key) {
+					/* in case Meta was followed by
+					   cursor movement */
+					setCompLED(0);
+					compose_key = 0;
+				}
 				canvas_kbd_proc(NULL, 0, key);
 			} else {
 				int	len;
 				Status	status;
+				static char	compose_buf[2];
 				char	b[8];
 				char	*buf = b;
 				size_t	buf_size = sizeof b / sizeof b[0];
@@ -542,7 +560,41 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 						free(buf);
 					break;
 				}
-				canvas_kbd_proc(buf, len, key_sym);
+				/*
+				 * Provide for compose_key > 0, len == 0 because
+				 * modifier keys (e.g., shift) generate an event
+				 * and a key_sym, but do not return a string.
+				 */
+				if (compose_key == 1 && len == 1) {
+					/* first key of compose sequence */
+					compose_buf[0] = buf[0];
+					compose_key = 2;
+
+				} else if (compose_key == 2 && len > 0) {
+					if (len == 1) {
+						/* second key of compose sequence */
+						char	*str;
+						compose_buf[1] = buf[0];
+						if (!getComposeKey(&str, compose_buf)) {
+							canvas_kbd_proc(str, (int)strlen(str), (KeySym)0);
+						} else {
+							canvas_kbd_proc(compose_buf, 1, (KeySym)0);
+							canvas_kbd_proc(compose_buf + 1, 1, (KeySym)0);
+						}
+					} else {	/* len > 1 */
+						canvas_kbd_proc(compose_buf, 1, (KeySym)0);
+						canvas_kbd_proc(buf, len, key_sym);
+					}
+					setCompLED(0);
+					compose_key = 0;
+				} else {
+					canvas_kbd_proc(buf, len, key_sym);
+					if (compose_key == 1 && len > 1) {
+						/* invalid first compose key */
+						setCompLED(0);
+						compose_key = 0;
+					}
+				}
 				if (buf != b)
 					free(buf);
 			}
@@ -555,7 +607,7 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 		kpe->subwindow = 0;
 		XPutBackEvent(kpe->display,(XEvent *)kpe);
 	    }
-	  }		/* end pan the canvas */
+	  }
 	  break;
 	} /* event-type == KeyPress */
     } /* switch(event->type) */
@@ -652,6 +704,24 @@ canvas_paste(Widget w, XKeyEvent *paste_event)
 				get_canvas_clipboard, NULL, event_time);
 }
 
+static int
+getComposeKey(char **str, char compose_buf[2])
+{
+	CompKey	   *compKeyPtr = allCompKey;
+
+	while (compKeyPtr != NULL) {
+		if (compKeyPtr->first == (unsigned char)compose_buf[0] &&
+				compKeyPtr->second ==
+					(unsigned char)compose_buf[1]) {
+			*str = compKeyPtr->str;
+			return 0;
+		} else {
+			compKeyPtr = compKeyPtr->next;
+		}
+	}
+	return -1;
+}
+
 #ifndef NO_COMPKEYDB
 static void
 readComposeKey(void)
@@ -717,13 +787,7 @@ readComposeKey(void)
 	if (line[0] != '#') {
 	    strcat(local_translations, line);
 	    if ((p = strstr(line, "Multi_key")) != NULL) {
-		if (allCompKey == NULL) {
-		    allCompKey = (CompKey *) malloc(sizeof(CompKey));
-		    compKeyPtr = allCompKey;
-		} else {
-		    compKeyPtr->next = (CompKey *) malloc(sizeof(CompKey));
-		    compKeyPtr = compKeyPtr->next;
-		}
+		char		buf[FC_UTF8_MAX_LEN + 1];
 
 		p1 = strstr(p, "<Key>") + strlen("<Key>");
 		p = strstr(p1, ",");
@@ -735,13 +799,23 @@ readComposeKey(void)
 		p = strstr(p3, ")");
 		*p++ = '\0';
 
-		if (strlen(p3) == 1)
-		    compKeyPtr->key = *p3;
-		else {
-		    int x;
-		    sscanf(p3, "%i", &x);
-		    compKeyPtr->key = (char) x;
+		if (!strncmp(p3, "0x", 2)) {
+		    int			l;
+		    uint_least32_t	x;
+		    sscanf(p3, "%" SCNxLEAST32, &x);
+		    l = FcUcs4ToUtf8((FcChar32)x, (FcChar8 *)buf);
+		    buf[l] = '\0';
+		    p3 = buf;
 		}
+
+		if (allCompKey == NULL) {
+		    allCompKey = (CompKey *) malloc(sizeof(CompKey));
+		    compKeyPtr = allCompKey;
+		} else {
+		    compKeyPtr->next = (CompKey *) malloc(sizeof(CompKey));
+		    compKeyPtr = compKeyPtr->next;
+		}
+		compKeyPtr->str = strdup(p3);
 		compKeyPtr->first = XStringToKeysym(p1);
 		compKeyPtr->second = XStringToKeysym(p2);
 		compKeyPtr->next = NULL;
