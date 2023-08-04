@@ -90,7 +90,6 @@ String		local_translations = "";
 
 /*********************** LOCAL ************************/
 
-#ifndef NO_COMPKEYDB
 typedef struct _CompKey	CompKey;
 struct _CompKey {
     char            *str;
@@ -101,7 +100,6 @@ struct _CompKey {
 static CompKey		*allCompKey = NULL;
 static void		readComposeKey(void);
 static int             getComposeKey(char **str, char compose_buf[2]);
-#endif /* NO_COMPKEYDB */
 
 static void		canvas_paste(Widget w, XKeyEvent *paste_event);
 static void		popup_mode_panel(Widget widget, XButtonEvent *event,
@@ -207,9 +205,7 @@ init_canvas(Widget tool)
     canvas_kbd_proc = canvas_locmove_proc = null_proc;
     XtAugmentTranslations(canvas_sw,
 			   XtParseTranslationTable(canvas_translations));
-#ifndef NO_COMPKEYDB
     readComposeKey();
-#endif /* NO_COMPKEYDB */
 }
 
 void
@@ -722,7 +718,6 @@ getComposeKey(char **str, char compose_buf[2])
 	return -1;
 }
 
-#ifndef NO_COMPKEYDB
 static void
 readComposeKey(void)
 {
@@ -831,7 +826,6 @@ readComposeKey(void)
 	    file_msg("Empty compose key database, "
 			    "no compose sequences available.");
 }
-#endif /* !NO_COMPKEYDB */
 
 void
 setCompLED(int on)

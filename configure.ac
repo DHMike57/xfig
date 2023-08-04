@@ -367,14 +367,6 @@ AC_ARG_WITH(applicationsdir, AS_HELP_STRING([--with-applicationsdir=<path>],
     [], [withval='${datarootdir}/applications'])dnl
 AC_SUBST(applicationsdir, ["$withval"])dnl
 
-AC_ARG_WITH(compkeydb, [AS_HELP_STRING([--without-compkeydb],
-	[do not use Compose Key database file \
-		shipped with xfig (default: use)])],
-    [], [withval=yes])dnl
-AS_IF([test "x$withval" != xyes],dnl
-    [AC_DEFINE([NO_COMPKEYDB], 1,dnl
-	[Define to not use the Compose Key Database file shipped with xfig.])])
-
 AC_ARG_WITH(compkeydbdir, [AS_HELP_STRING([--with-compkeydbdir=<path>],
 	[specify directory for the compose key database file, CompKeyDB \
 		(default: $datadir/xfig)])],
