@@ -42,7 +42,7 @@
 #include "mode.h"
 #include "object.h"
 
-#include "d_text.h"
+#include "d_text.h"			/* char_handler(), xim_ic */
 #include "e_delete.h"
 #include "f_load.h"
 #include "f_read.h"
@@ -1615,8 +1615,8 @@ refresh_character_panel(void)
 	if (!character_map_popup)
 		return;
 	sprintf(fname, "%s font characters:",
-			using_ps ? ps_fontinfo[work_font+1].name :
-					latex_fontinfo[work_font+1].name);
+			using_ps ? ps_fontinfo[cur_ps_font+1].name :
+					latex_fontinfo[cur_latex_font+1].name);
 	/* change font name label */
 	FirstArg(XtNlabel, fname);
 	SetValues(charmap_font_label);
@@ -1719,7 +1719,7 @@ popup_character_map(void)
 					     character_map_popup, NULL, ZERO);
 
 	sprintf(fname, "%s font characters:",
-			using_ps? ps_fontinfo[work_font+1].name: latex_fontinfo[work_font+1].name);
+			using_ps? ps_fontinfo[cur_ps_font+1].name: latex_fontinfo[cur_latex_font+1].name);
 	FirstArg(XtNlabel, fname);
 	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);

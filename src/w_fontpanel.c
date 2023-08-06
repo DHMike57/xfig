@@ -35,6 +35,7 @@
 #include "figx.h"
 #include "resources.h"
 #include "u_fonts.h"		/* printer font names */
+#include "w_cmdpanel.h"		/* refresh_character_panel() */
 #include "w_color.h"
 #include "w_fontbits.h"
 #include "w_indpanel.h"
@@ -372,19 +373,30 @@ fontpane_select(Widget w, XtPointer closure, XtPointer call_data)
 {
 	(void)w;
 	(void)call_data;
-    MenuItemRec	   *mi = (MenuItemRec *) closure;
-    char	   *font_name = mi->label;
-    ptr_int	data = {mi->info};
+	Bool		refresh = False;
+	MenuItemRec	*mi = (MenuItemRec *) closure;
+	char		*font_name = mi->label;
+	ptr_int		data = {mi->info};
 
-    if (*flag_sel)
-	*font_ps_sel = data.val;
-    else
-	*font_latex_sel = data.val;
+	if (*flag_sel) {
+		if (*font_ps_sel != data.val) {
+			*font_ps_sel = data.val;
+			refresh = True;
+		}
+	} else {
+		if (*font_latex_sel != data.val) {
+			*font_latex_sel = data.val;
+			refresh = True;
+		}
+	}
 
-    put_msg("Font: %s", font_name);
-    /* put image of font in indicator window */
-    (*font_setimage) (font_widget);
-    XtPopdown(*flag_sel ? ps_fontmenu : latex_fontmenu);
+	if (refresh) {
+		refresh_character_panel();
+		put_msg("Font: %s", font_name);
+		/* put image of font in indicator window */
+		(*font_setimage) (font_widget);
+	}
+	XtPopdown(*flag_sel ? ps_fontmenu : latex_fontmenu);
 }
 
 static void
