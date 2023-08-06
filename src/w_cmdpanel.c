@@ -1616,7 +1616,7 @@ refresh_character_panel(void)
 		return;
 	sprintf(fname, "%s font characters:",
 			using_ps ? ps_fontinfo[cur_ps_font+1].name :
-					latex_fontinfo[cur_latex_font+1].name);
+					latex_fontinfo[cur_latex_font].name);
 	/* change font name label */
 	FirstArg(XtNlabel, fname);
 	SetValues(charmap_font_label);
