@@ -1711,7 +1711,8 @@ void
 popup_character_map(void)
 {
 	Widget		 beside, below;
-	unsigned	 i;
+	ptr_int		 p;
+	int		i;
 	int		 vertDist;
 	int		 width, height;
 	int		 x, y;
@@ -1766,7 +1767,7 @@ popup_character_map(void)
 	 * just before the XDraw..() loop.
 	 */
 	XSyncOn();	/* without sync, the glyphs do not appear */
-	for (i = 32; i <= LASTCHAR; ++i) {
+	for (p.val = 32; p.val <= LASTCHAR; ++p.val) {
 	    FirstArg(XtNlabel, "");
 	    NextArg(XtNresizable, True);
 	    NextArg(XtNwidth, width);
@@ -1774,21 +1775,21 @@ popup_character_map(void)
 	    NextArg(XtNfromVert, below);
 	    NextArg(XtNvertDistance, vertDist);
 	    NextArg(XtNfromHoriz, beside);
-	    beside = charcell[i] = XtCreateManagedWidget("char_button",
+	    beside = charcell[p.val] = XtCreateManagedWidget("char_button",
 				    commandWidgetClass, character_map_panel,
 				    Args, ArgCount);
-	    XtAddCallback(beside, XtNcallback, paste_char, (XtPointer) i);
+	    XtAddCallback(beside, XtNcallback, paste_char, (XtPointer)p.ptr);
 	    /* skip empty entries and 127 (delete) */
-	    if (i == 126) {
+	    if (p.val == 126) {
 		below = beside;
 		beside = (Widget) 0;
-		i += 33;
+		p.val += 33;
 		/* and make a gap */
 		vertDist *= 2;
-	    } else if ((i+1)%16 == 0 && i != LASTCHAR) {
+	    } else if ((p.val+1)%16 == 0 && p.val != LASTCHAR) {
 		below = beside;
 		beside = (Widget) 0;
-		if (i > 126 + 33 && i <= 126 + 33 + 16)
+		if (p.val > 126 + 33 && p.val <= 126 + 33 + 16)
 			vertDist /= 2;
 	    }
 	}
@@ -1827,16 +1828,12 @@ paste_char(Widget w, XtPointer client_data, XtPointer call_data)
 	(void)call_data;
 	int	len;
 	FcChar8	str[FC_UTF8_MAX_LEN];
-	union	{
-		XtPointer	ptr;
-		uint_least32_t	val;
-	}	ptr_val = {client_data};
-
+	ptr_int	i = {client_data};
 
     /* only allow during text input */
     if (canvas_kbd_proc != (void (*)())char_handler)
 	return;
-    len = FcUcs4ToUtf8(ptr_val.val, str);
+    len = FcUcs4ToUtf8((FcChar32)i.val, str);
     char_handler(str, len, (KeySym) 0);
 
 }
