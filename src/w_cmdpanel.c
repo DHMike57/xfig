@@ -22,15 +22,18 @@
 #include "w_cmdpanel.h"
 
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <X11/Xlib.h>		/* includes X11/X.h */
+#include <fontconfig/fontconfig.h>	/* FcUcs4ToUtf8() */
+#include <X11/Intrinsic.h>		/* XtWindowToWidget() */
+#include <X11/Xlib.h>			/* includes X11/X.h */
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
-#include <X11/Xatom.h>		/* XA_STRING */
+#include <X11/Xatom.h>			/* XA_STRING */
 #include <X11/Xft/Xft.h>
 
 #include "figx.h"
@@ -86,6 +89,13 @@
 
 /* internal features and definitions */
 
+/* Character map features */
+
+#define LASTCHAR 255
+#define CMAP_FONTSIZE 16
+
+static XftDraw		*xftdraw[LASTCHAR + 1];
+
 DeclareStaticArgs(12);
 
 #define menu_item_bitmap_width 9
@@ -138,6 +148,7 @@ static int	orig_paste_x,orig_paste_y;
 
 static Widget	character_map_popup = (Widget) 0;
 static Widget	character_map_panel, close_but;
+static Widget	charmap_font_label;
 
 #ifdef XAW3D1_5E
 #else
@@ -1559,46 +1570,113 @@ acc_load_recent_file(Widget w, XEvent *event, String *params, Cardinal *nparams)
     load_recent_file(w, (XtPointer) *params, (XtPointer) NULL);
 }
 
-static Widget charmap_font_label;
+/*
+ * Get the font dimensions for display in the current charmap.
+ * Allocates a new XftFont, free it (closefont() or XftFontClose()) after use.
+ */
+static void
+charmap_font_dimensions(XftFont **font, int *width, int *height, int *x, int *y)
+{
+	int	ascent, descent;
+	int	work_font = using_ps ? cur_ps_font : cur_latex_font;
 
-/* refresh character map (e.g. when user changes font) by changing the font label and font in the buttons */
+	*font = getfont(using_ps, work_font, CMAP_FONTSIZE, 0);
+	textmaxheight(using_ps, work_font, CMAP_FONTSIZE, &ascent, &descent);
+	ascent /= ZOOM_FACTOR;
+	descent /= ZOOM_FACTOR;
+	*x = textlength(*font, (XftChar8 *)"W", 1);
+	*height = max2((ascent + descent + 1) / 2, 6);
+	*height += ascent + descent;
+	*width = max2((*x + 1) / 2, 4);
+	*width += *x;
+	*x = (*width - *x) / 2;
+	*y = (*height + ascent + descent + 1) / 2 - descent;
+}
+
+
+/*
+ * refresh character map (e.g. when user changes font) by changing
+ * the font label and font in the buttons
+ */
 
 void
 refresh_character_panel(void)
 {
-	int	     nchildren, i;
+	Boolean		resize = True;
+	int		width, height;
+	int		w, h;
+	int		x, y;
+	unsigned     i;
 	char	     fname[80];
-	XFontStruct *font;
-	WidgetList   children;
+	XftFont    *work_xftfont;
+	XftColor	xft_bg;
+	XColor		x_bg;
 
 	if (!character_map_popup)
-	    return;
+		return;
 	sprintf(fname, "%s font characters:",
-			using_ps? ps_fontinfo[work_font+1].name: latex_fontinfo[work_font+1].name);
+			using_ps ? ps_fontinfo[work_font+1].name :
+					latex_fontinfo[work_font+1].name);
 	/* change font name label */
 	FirstArg(XtNlabel, fname);
 	SetValues(charmap_font_label);
 
-	/* get the buttons (children) of the form */
-	FirstArg(XtNnumChildren, &nchildren);
-	NextArg(XtNchildren, &children);
-	GetValues(character_map_panel);
-	/* get the current font */
-	font = lookfont(work_font, 12);
-	FirstArg(XtNfont, font);
-	/* loop over all but the last button, which is the close button */
-	for (i=0; i<nchildren-1; i++) {
-	   if (XtClass(*children) == commandWidgetClass)
-		SetValues(*children);
-	   children++;
+	FirstArg(XtNwidth, &w);
+	NextArg(XtNheight, &h);
+	NextArg(XtNbackground, &x_bg.pixel);
+	GetValues(XtWindowToWidget(tool_d, XftDrawDrawable(xftdraw[33])));
+
+	/* get the background color */
+	XQueryColor(tool_d, tool_cm, &x_bg);
+	xtoxftcolor(&xft_bg, &x_bg);
+
+	/* and the (possibly) new dimensions */
+	charmap_font_dimensions(&work_xftfont, &width, &height, &x, &y);
+	if (w == width && h == height) {
+		resize = False;
+	} else {
+		/* re-use the arguments further below */
+		if (w == width) {
+			FirstArg(XtNheight, height);
+		 } else {
+			FirstArg(XtNwidth, width);
+			if (h != height)
+				NextArg(XtNheight, height);
+		 }
 	}
+
+	XSyncOn();	/* Widgets seem to be drawn more reliably */
+	for (i = 32; i <= LASTCHAR; ++i) {
+		if (resize) {
+			Window	cell = XftDrawDrawable(xftdraw[i]);
+
+			SetValues(XtWindowToWidget(tool_d, cell));
+			XftDrawDestroy(xftdraw[i]);
+			xftdraw[i] = XftDrawCreate(tool_d, cell, tool_v,
+						tool_cm);
+		}
+		XftDrawRect(xftdraw[i], &xft_bg,
+				0, 0, (unsigned)width, (unsigned)height);
+		XftDrawString8(xftdraw[i], xftcolor + BLACK, work_xftfont,
+				x, y, (FcChar8 *)&i, 1);
+		if (i == 126)
+			i += 33;
+	}
+	XSyncOff();
+	XftFontClose(tool_d, work_xftfont);
 }
 
 static void
 character_panel_close(void)
 {
+	int	i;
 	XtDestroyWidget(character_map_popup);
 	character_map_popup = (Widget) 0;
+	for (i = 32; i <= LASTCHAR; ++i) {
+		XftDrawDestroy(xftdraw[i]);
+		if (i == 126)
+			i += 33;
+	}
 }
 
 /*
@@ -1607,17 +1685,18 @@ character_panel_close(void)
  * Activated from the View/Character Map menu
  */
 
-#define LASTCHAR 255
-
 void
 popup_character_map(void)
 {
 	Widget		 beside, below;
-	XFontStruct	*font;
-	intptr_t	 i;
+	Widget		 charcell[LASTCHAR + 1];
+	unsigned	 i;
 	int		 vertDist;
-	char		 fname[80], chr[2];
+	int		 width, height;
+	int		 x, y;
+	char		 fname[80];
 	static Boolean	 actions_added=False;
+	XftFont		*work_xftfont;
 
 	/* only allow one copy */
 	if (character_map_popup)
@@ -1644,39 +1723,50 @@ popup_character_map(void)
 	FirstArg(XtNlabel, fname);
 	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
-	charmap_font_label = below = XtCreateManagedWidget("charmap_font_label", labelWidgetClass,
-					 character_map_panel, Args, ArgCount);
-	/* get the font */
-	font = lookfont(work_font, 12);
+	charmap_font_label = below = XtCreateManagedWidget("charmap_font_label",
+				labelWidgetClass, character_map_panel,
+				Args, ArgCount);
+
+	/* get the font and font dimensions */
+	charmap_font_dimensions(&work_xftfont, &width, &height, &x, &y);
+	vertDist = height / 6;
+
 	beside = (Widget) 0;
-	vertDist = 3;
-	chr[1] = '\0';
-	for (i=32; i<=LASTCHAR; i++) {
-	    chr[0] = (char) i;
-	    FirstArg(XtNlabel, chr);
-	    NextArg(XtNfont, font);
-	    NextArg(XtNwidth, 20);
-	    NextArg(XtNheight, 20);
+
+	/*
+	 * The sync is especially necessary for the XftDraw() call further
+	 * below, otherwise glyphs do not appear.
+	 * If placed here, the first cells (usually the digits) seem to appear
+	 * more reliably then if the XSyncOn() call is placed further below
+	 * just before the XDraw..() loop.
+	 */
+	XSyncOn();	/* without sync, the glyphs do not appear */
+	for (i = 32; i <= LASTCHAR; ++i) {
+	    FirstArg(XtNlabel, "");
+	    NextArg(XtNwidth, width);
+	    NextArg(XtNheight, height);
 	    NextArg(XtNfromVert, below);
 	    NextArg(XtNvertDistance, vertDist);
 	    NextArg(XtNfromHoriz, beside);
-	    beside = XtCreateManagedWidget("char_button", commandWidgetClass,
-					     character_map_panel, Args, ArgCount);
-	    /* add callback to paste character into current text */
+	    beside = charcell[i] = XtCreateManagedWidget("char_button",
+				    commandWidgetClass, character_map_panel,
+				    Args, ArgCount);
 	    XtAddCallback(beside, XtNcallback, paste_char, (XtPointer) i);
 	    /* skip empty entries and 127 (delete) */
-	    if (i==126) {
+	    if (i == 126) {
 		below = beside;
 		beside = (Widget) 0;
 		i += 33;
 		/* and make a gap */
-		vertDist = 10;
+		vertDist *= 2;
 	    } else if ((i+1)%16 == 0 && i != LASTCHAR) {
 		below = beside;
 		beside = (Widget) 0;
-		vertDist = 3;
+		if (i > 126 + 33 && i <= 126 + 33 + 16)
+			vertDist /= 2;
 	    }
 	}
+
 	/* close button */
 	FirstArg(XtNlabel, "Close");
 	NextArg(XtNinternational, False);
@@ -1689,7 +1779,19 @@ popup_character_map(void)
 	XtAddEventHandler(close_but, ButtonReleaseMask, False,
 			  (XtEventHandler) character_panel_close, (XtPointer) NULL);
 	XtPopup(character_map_popup, XtGrabNone);
+
 	(void) XSetWMProtocols(tool_d, XtWindow(character_map_popup), &wm_delete_window, 1);
+
+	for (i = 32; i <= LASTCHAR; ++i) {
+		xftdraw[i] = XftDrawCreate(tool_d, XtWindow(charcell[i]),
+					tool_v, tool_cm);
+		XftDrawString8(xftdraw[i], xftcolor + BLACK, work_xftfont,
+					x, y, (FcChar8 *)&i, 1);
+		if (i == 126)
+			i += 33;
+	}
+	XSyncOff();
+	XftFontClose(tool_d, work_xftfont);
 }
 
 static void
@@ -1697,17 +1799,20 @@ paste_char(Widget w, XtPointer client_data, XtPointer call_data)
 {
 	(void)w;
 	(void)call_data;
+	int	len;
+	FcChar8	str[FC_UTF8_MAX_LEN];
 	union	{
 		XtPointer	ptr;
-		unsigned char	val;
+		uint_least32_t	val;
 	}	ptr_val = {client_data};
 
-    unsigned char chr = ptr_val.val;
 
     /* only allow during text input */
     if (canvas_kbd_proc != (void (*)())char_handler)
 	return;
-    char_handler(&chr, 1, (KeySym) 0);
+    len = FcUcs4ToUtf8(ptr_val.val, str);
+    char_handler(str, len, (KeySym) 0);
+
 }
 
 /* add or remove a checkmark to a menu entry to show that it
