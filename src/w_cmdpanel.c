@@ -29,7 +29,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fontconfig/fontconfig.h>	/* FcUcs4ToUtf8() */
-#include <X11/Intrinsic.h>		/* XtWindowToWidget() */
 #include <X11/Xlib.h>			/* includes X11/X.h */
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
@@ -95,6 +94,7 @@
 #define CMAP_FONTSIZE 16
 
 static XftDraw		*xftdraw[LASTCHAR + 1];
+static Widget		charcell[LASTCHAR + 1];
 
 DeclareStaticArgs(12);
 
@@ -1624,7 +1624,7 @@ refresh_character_panel(void)
 	FirstArg(XtNwidth, &w);
 	NextArg(XtNheight, &h);
 	NextArg(XtNbackground, &x_bg.pixel);
-	GetValues(XtWindowToWidget(tool_d, XftDrawDrawable(xftdraw[33])));
+	GetValues(charcell[33]);
 
 	/* get the background color */
 	XQueryColor(tool_d, tool_cm, &x_bg);
@@ -1648,12 +1648,10 @@ refresh_character_panel(void)
 	XSyncOn();	/* Widgets seem to be drawn more reliably */
 	for (i = 32; i <= LASTCHAR; ++i) {
 		if (resize) {
-			Window	cell = XftDrawDrawable(xftdraw[i]);
-
-			SetValues(XtWindowToWidget(tool_d, cell));
+			SetValues(charcell[i]);
 			XftDrawDestroy(xftdraw[i]);
-			xftdraw[i] = XftDrawCreate(tool_d, cell, tool_v,
-						tool_cm);
+			xftdraw[i] = XftDrawCreate(tool_d,
+					XtWindow(charcell[i]), tool_v, tool_cm);
 		}
 		XftDrawRect(xftdraw[i], &xft_bg,
 				0, 0, (unsigned)width, (unsigned)height);
@@ -1689,7 +1687,6 @@ void
 popup_character_map(void)
 {
 	Widget		 beside, below;
-	Widget		 charcell[LASTCHAR + 1];
 	unsigned	 i;
 	int		 vertDist;
 	int		 width, height;
