@@ -1643,6 +1643,9 @@ refresh_character_panel(int ps_sel, int font_sel)
 	if (w == width && h == height) {
 		resize = False;
 	} else {
+		XtUnmapWidget(character_map_panel);
+		/* inhibit resizing of the parent as long as children change */
+		XawFormDoLayout(character_map_panel, False);
 		/* re-use the arguments further below */
 		if (w == width) {
 			FirstArg(XtNheight, height);
@@ -1653,14 +1656,27 @@ refresh_character_panel(int ps_sel, int font_sel)
 		 }
 	}
 
-	XSyncOn();	/* Widgets seem to be drawn more reliably */
 	for (i = 32; i <= LASTCHAR; ++i) {
 		if (resize) {
 			SetValues(charcell[i]);
 			XftDrawDestroy(xftdraw[i]);
+		}
+		if (i == 126)
+			i += 33;
+	}
+
+	if (resize) {
+		XawFormDoLayout(character_map_panel, True);
+		XtMapWidget(character_map_panel);
+		app_flush();
+	}
+
+	/* first make sure the widgets are available in the correct size,
+	 * only then paint on them (client-side) with Xft fonts */
+	for (i = 32; i <= LASTCHAR; ++i) {
+		if (resize)
 			xftdraw[i] = XftDrawCreate(tool_d,
 					XtWindow(charcell[i]), tool_v, tool_cm);
-		}
 		XftDrawRect(xftdraw[i], &xft_bg,
 				0, 0, (unsigned)width, (unsigned)height);
 		XftDrawString8(xftdraw[i], xftcolor + BLACK, work_xftfont,
@@ -1668,7 +1684,7 @@ refresh_character_panel(int ps_sel, int font_sel)
 		if (i == 126)
 			i += 33;
 	}
-	XSyncOff();
+
 	XftFontClose(tool_d, work_xftfont);
 }
 
@@ -1709,6 +1725,7 @@ popup_character_map(void)
 
 	FirstArg(XtNtitle, "Xfig: Character Map");
 	NextArg(XtNtitleEncoding, XA_STRING);
+	NextArg(XtNallowShellResize, True);
 	NextArg(XtNcolormap, tool_cm);
 	character_map_popup = XtCreatePopupShell("character_map_popup",
 					  transientShellWidgetClass,
@@ -1751,6 +1768,7 @@ popup_character_map(void)
 	XSyncOn();	/* without sync, the glyphs do not appear */
 	for (i = 32; i <= LASTCHAR; ++i) {
 	    FirstArg(XtNlabel, "");
+	    NextArg(XtNresizable, True);
 	    NextArg(XtNwidth, width);
 	    NextArg(XtNheight, height);
 	    NextArg(XtNfromVert, below);
