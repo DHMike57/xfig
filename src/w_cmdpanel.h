@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -65,7 +65,7 @@ extern int	num_main_menus(void);
 extern Widget	create_menu_item(main_menu_info *menup);
 extern void	refresh_view_menu(void);
 extern void	popup_character_map(void);
-extern void	refresh_character_panel(void);
+extern void	refresh_character_panel(int ps_sel, int font_sel);
 extern void     init_main_menus(Widget tool, char *filename);
 
 extern void goodbye (Boolean abortflag);

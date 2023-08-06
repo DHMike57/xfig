@@ -474,9 +474,6 @@ init_text_input(int x, int y)
 	    work_fontsize = cur_fontsize;
 	    prev_work_font = work_font;
 	    work_font     = using_ps ? cur_ps_font : cur_latex_font;
-	    /* font changed, refresh character map panel if it is up */
-	    if (prev_work_font != work_font)
-		refresh_character_panel();
 	    work_psflag   = using_ps;
 	    work_flags    = cur_textflags;
 	    work_textjust = cur_textjust;
@@ -517,9 +514,6 @@ init_text_input(int x, int y)
 	work_textcolor = cur_t->color;
 	prev_work_font = work_font;
 	work_font = cur_t->font;
-	/* font changed, refresh character map panel if it is up */
-	if (prev_work_font != work_font)
-	    refresh_character_panel();
 	work_xftfont = canvas_zoomed_xftfont = cur_t->xftfont;
 	work_fontsize = cur_t->size;
 	work_psflag   = cur_t->flags & PSFONT_TEXT;
@@ -561,6 +555,9 @@ init_text_input(int x, int y)
     supersub = 0;
 
     put_msg("Ready for text input (from keyboard)");
+
+    refresh_character_panel(work_psflag, work_font);
+
     /* get text height and ascent, descent for cursor height and line spacing */
     textmaxheight(work_psflag, work_font, work_fontsize, &ascent, &descent);
 

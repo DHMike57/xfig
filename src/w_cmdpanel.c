@@ -93,6 +93,8 @@
 #define LASTCHAR 255
 #define CMAP_FONTSIZE 16
 
+static int		charmap_psflag;
+static int		charmap_font;
 static XftDraw		*xftdraw[LASTCHAR + 1];
 static Widget		charcell[LASTCHAR + 1];
 
@@ -1575,16 +1577,16 @@ acc_load_recent_file(Widget w, XEvent *event, String *params, Cardinal *nparams)
  * Allocates a new XftFont, free it (closefont() or XftFontClose()) after use.
  */
 static void
-charmap_font_dimensions(XftFont **font, int *width, int *height, int *x, int *y)
+charmap_font_dimensions(int psflag, int font,
+		XftFont **xftfont, int *width, int *height, int *x, int *y)
 {
 	int	ascent, descent;
-	int	work_font = using_ps ? cur_ps_font : cur_latex_font;
 
-	*font = getfont(using_ps, work_font, CMAP_FONTSIZE, 0);
-	textmaxheight(using_ps, work_font, CMAP_FONTSIZE, &ascent, &descent);
+	*xftfont = getfont(psflag, font, CMAP_FONTSIZE, 0);
+	textmaxheight(psflag, font, CMAP_FONTSIZE, &ascent, &descent);
 	ascent /= ZOOM_FACTOR;
 	descent /= ZOOM_FACTOR;
-	*x = textlength(*font, (XftChar8 *)"W", 1);
+	*x = textlength(*xftfont, (XftChar8 *)"W", 1);
 	*height = max2((ascent + descent + 1) / 2, 6);
 	*height += ascent + descent;
 	*width = max2((*x + 1) / 2, 4);
@@ -1600,7 +1602,7 @@ charmap_font_dimensions(XftFont **font, int *width, int *height, int *x, int *y)
  */
 
 void
-refresh_character_panel(void)
+refresh_character_panel(int ps_sel, int font_sel)
 {
 	Boolean		resize = True;
 	int		width, height;
@@ -1612,11 +1614,16 @@ refresh_character_panel(void)
 	XftColor	xft_bg;
 	XColor		x_bg;
 
-	if (!character_map_popup)
+	ps_sel = ps_sel ? 1 : 0;
+	if (!character_map_popup ||
+			(charmap_psflag == ps_sel && charmap_font == font_sel))
 		return;
+	charmap_psflag = ps_sel;
+	charmap_font = font_sel;
+
 	sprintf(fname, "%s font characters:",
-			using_ps ? ps_fontinfo[cur_ps_font+1].name :
-					latex_fontinfo[cur_latex_font].name);
+			ps_sel ? ps_fontinfo[font_sel + 1].name :
+					latex_fontinfo[font_sel].name);
 	/* change font name label */
 	FirstArg(XtNlabel, fname);
 	SetValues(charmap_font_label);
@@ -1631,7 +1638,8 @@ refresh_character_panel(void)
 	xtoxftcolor(&xft_bg, &x_bg);
 
 	/* and the (possibly) new dimensions */
-	charmap_font_dimensions(&work_xftfont, &width, &height, &x, &y);
+	charmap_font_dimensions(charmap_psflag, charmap_font,
+			&work_xftfont, &width, &height, &x, &y);
 	if (w == width && h == height) {
 		resize = False;
 	} else {
@@ -1715,8 +1723,10 @@ popup_character_map(void)
 	character_map_panel = XtCreateManagedWidget("character_map_panel", formWidgetClass,
 					     character_map_popup, NULL, ZERO);
 
+	charmap_psflag = using_ps ? 1 : 0;
+	charmap_font = charmap_psflag ? cur_ps_font : cur_latex_font;
 	sprintf(fname, "%s font characters:",
-			using_ps? ps_fontinfo[cur_ps_font+1].name: latex_fontinfo[cur_latex_font+1].name);
+			charmap_psflag ? ps_fontinfo[cur_ps_font+1].name: latex_fontinfo[cur_latex_font].name);
 	FirstArg(XtNlabel, fname);
 	NextArg(XtNinternational, False);
 	NextArg(XtNborderWidth, 0);
@@ -1725,7 +1735,8 @@ popup_character_map(void)
 				Args, ArgCount);
 
 	/* get the font and font dimensions */
-	charmap_font_dimensions(&work_xftfont, &width, &height, &x, &y);
+	charmap_font_dimensions(charmap_psflag, charmap_font,
+			&work_xftfont, &width, &height, &x, &y);
 	vertDist = height / 6;
 
 	beside = (Widget) 0;

@@ -391,7 +391,7 @@ fontpane_select(Widget w, XtPointer closure, XtPointer call_data)
 	}
 
 	if (refresh) {
-		refresh_character_panel();
+		refresh_character_panel(*flag_sel, data.val);
 		put_msg("Font: %s", font_name);
 		/* put image of font in indicator window */
 		(*font_setimage) (font_widget);
