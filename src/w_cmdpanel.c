@@ -140,7 +140,8 @@ static void	popup_global_panel(Widget w);
 static void	global_panel_done(Widget w, XButtonEvent *ev);
 static void	global_panel_cancel(Widget w, XButtonEvent *ev);
 static void	character_panel_close(void);
-static void	paste_char(Widget w, XtPointer client_data, XtPointer call_data);
+static void	paste_character(Widget w, XEvent *ev, String *param,
+				Cardinal *num);
 
 Widget		CreateLabelledAscii(Widget *text_widg, char *label, char *widg_name, Widget parent, Widget below, char *str, int width);
 static Widget	create_main_menu(int menu_num, Widget beside);
@@ -166,18 +167,10 @@ static void     filename_unballoon(Widget widget, XtPointer closure, XEvent *eve
 String  global_translations =
         "<Message>WM_PROTOCOLS: DismissGlobal()\n";
 
-String  charmap_translations =
-        "<Message>WM_PROTOCOLS: DismissCharmap()\n";
-
 static XtActionsRec     global_actions[] =
 		    {
 			{"DismissGlobal", (XtActionProc) global_panel_cancel},
 		    };
-static XtActionsRec     charmap_actions[] =
-		    {
-			{"DismissCharmap", (XtActionProc) character_panel_close},
-		    };
-
 static XtActionsRec     menu_actions[] =
 		    {
 			{"xMenuPopup", (XtActionProc) popup_menu},
@@ -1711,7 +1704,6 @@ void
 popup_character_map(void)
 {
 	Widget		 beside, below;
-	ptr_int		 p;
 	int		i;
 	int		 vertDist;
 	int		 width, height;
@@ -1719,6 +1711,30 @@ popup_character_map(void)
 	char		 fname[80];
 	static Boolean	 actions_added=False;
 	XftFont		*work_xftfont;
+	/*
+	 * Add an action to each character cell to paste that char. Using the
+	 * callback of the CommandWidget did not work, because the default
+	 * translation table contain actions (set(), unset()) that invert and
+	 * revert the background of the cell. This process effectively erases
+	 * the glyph painted with xft onto the command widget. The default
+	 * translation table is
+	 *   "<EnterWindow>: highlight()\n  <LeaveWindow>: reset()\n\
+	 *    <Btn1Down>:set()\n  <Btn1Up>: notify() unset()\n".
+	 * Modifying the translation table to not contain the set() and unset()
+	 * actions also did not work, because then the callback was not invoked.
+	 * Therefore, directly invoke the action.
+	 */
+	char		translationfmt[] =
+				"<EnterWindow>: highlight()\n"
+				"<LeaveWindow>: reset()\n"
+				"<Btn1Up>: paste_char( %d )\n";
+	String		charmap_translations =
+				"<Message>WM_PROTOCOLS: DismissCharmap()\n";
+	XtActionsRec	charmap_actions[] = {
+			{"DismissCharmap", (XtActionProc)character_panel_close},
+			{"paste_char", paste_character}
+	};
+
 
 	/* only allow one copy */
 	if (character_map_popup)
@@ -1767,29 +1783,38 @@ popup_character_map(void)
 	 * just before the XDraw..() loop.
 	 */
 	XSyncOn();	/* without sync, the glyphs do not appear */
-	for (p.val = 32; p.val <= LASTCHAR; ++p.val) {
+	for (i = 32; i <= LASTCHAR; ++i) {
+		/*
+		 * The default translation table for a Command Widget is
+		 * "<EnterWindow>: highlight()\n <LeaveWindow>: reset()\n\
+		 *  <Btn1Down>:set()\n <Btn1Up>: notify() unset()\n",
+		 * but the set() and unset() actions would paint over the glyphs
+		 * that were drawn with xft.
+		 */
+		char	translations[96];
+		sprintf(translations, translationfmt, i);
 	    FirstArg(XtNlabel, "");
+	    NextArg(XtNtranslations, XtParseTranslationTable(translations));
 	    NextArg(XtNresizable, True);
 	    NextArg(XtNwidth, width);
 	    NextArg(XtNheight, height);
 	    NextArg(XtNfromVert, below);
 	    NextArg(XtNvertDistance, vertDist);
 	    NextArg(XtNfromHoriz, beside);
-	    beside = charcell[p.val] = XtCreateManagedWidget("char_button",
+	    beside = charcell[i] = XtCreateManagedWidget("char_button",
 				    commandWidgetClass, character_map_panel,
 				    Args, ArgCount);
-	    XtAddCallback(beside, XtNcallback, paste_char, (XtPointer)p.ptr);
 	    /* skip empty entries and 127 (delete) */
-	    if (p.val == 126) {
+	    if (i == 126) {
 		below = beside;
 		beside = (Widget) 0;
-		p.val += 33;
+		i += 33;
 		/* and make a gap */
 		vertDist *= 2;
-	    } else if ((p.val+1)%16 == 0 && p.val != LASTCHAR) {
+	    } else if ((i+1)%16 == 0 && i != LASTCHAR) {
 		below = beside;
 		beside = (Widget) 0;
-		if (p.val > 126 + 33 && p.val <= 126 + 33 + 16)
+		if (i > 126 + 33 && i <= 126 + 33 + 16)
 			vertDist /= 2;
 	    }
 	}
@@ -1822,20 +1847,22 @@ popup_character_map(void)
 }
 
 static void
-paste_char(Widget w, XtPointer client_data, XtPointer call_data)
+paste_character(Widget w, XEvent *ev, String *param, Cardinal *num)
 {
 	(void)w;
-	(void)call_data;
-	int	len;
-	FcChar8	str[FC_UTF8_MAX_LEN];
-	ptr_int	i = {client_data};
+	(void)ev;
+	(void)num;
 
-    /* only allow during text input */
-    if (canvas_kbd_proc != (void (*)())char_handler)
-	return;
-    len = FcUcs4ToUtf8((FcChar32)i.val, str);
-    char_handler(str, len, (KeySym) 0);
+	int		len;
+	int		i = atoi(*param);
+	FcChar8		str[FC_UTF8_MAX_LEN];
 
+	/* only allow during text input */
+	if (canvas_kbd_proc != (void (*)())char_handler)
+		return;
+
+	len = FcUcs4ToUtf8((FcChar32)i, str);
+	char_handler(str, len, (KeySym) 0);
 }
 
 /* add or remove a checkmark to a menu entry to show that it
