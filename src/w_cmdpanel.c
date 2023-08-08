@@ -144,6 +144,8 @@ static void	paste_character(Widget w, XtPointer client_data, XEvent *ev,
 				Boolean *pass);
 static void	redraw_character(Widget w, XtPointer client_data, XEvent *ev,
 				Boolean *pass);
+static void	redraw_all(Widget w, XtPointer client_data, XEvent *ev,
+				Boolean *pass);
 
 Widget		CreateLabelledAscii(Widget *text_widg, char *label, char *widg_name, Widget parent, Widget below, char *str, int width);
 static Widget	create_main_menu(int menu_num, Widget beside);
@@ -1831,6 +1833,19 @@ popup_character_map(void)
 					   character_map_panel, Args, ArgCount);
 	XtAddEventHandler(close_but, ButtonReleaseMask, False,
 			  (XtEventHandler) character_panel_close, (XtPointer) NULL);
+	/* redraw button */
+	FirstArg(XtNlabel, "Redraw");
+	NextArg(XtNinternational, False);
+	NextArg(XtNfromVert, beside);
+	NextArg(XtNfromHoriz, close_but);
+	NextArg(XtNvertDistance, 15);
+	NextArg(XtNheight, 25);
+	NextArg(XtNborderWidth, INTERNAL_BW);
+	beside = XtCreateManagedWidget("redraw", commandWidgetClass,
+					   character_map_panel, Args, ArgCount);
+	XtAddEventHandler(beside, ButtonReleaseMask, False,
+			redraw_all, (XtPointer) NULL);
+
 	XtPopup(character_map_popup, XtGrabNone);
 
 	(void) XSetWMProtocols(tool_d, XtWindow(character_map_popup), &wm_delete_window, 1);
@@ -1881,6 +1896,46 @@ redraw_character(Widget w, XtPointer client_data, XEvent *ev, Boolean *pass)
 			&work_xftfont, &width, &height, &x, &y);
 	XftDrawString8(xftdraw[i.val], xftcolor + BLACK, work_xftfont, x, y,
 			(FcChar8 *)&i, 1);
+}
+
+static void
+redraw_all(Widget w, XtPointer client_data, XEvent *ev, Boolean *pass)
+{
+	(void)w;
+	(void)client_data;
+	(void)ev;
+	(void)pass;
+
+	int		i;
+	int		x, y, width, height;
+	XftFont		*work_xftfont;
+	XftColor	xft_bg;
+	XColor		x_bg;
+
+	FirstArg(XtNbackground, &x_bg.pixel);
+	GetValues(charcell[33]);
+
+	/* get the background color */
+	XQueryColor(tool_d, tool_cm, &x_bg);
+	xtoxftcolor(&xft_bg, &x_bg);
+
+	charmap_font_dimensions(charmap_psflag, charmap_font,
+			&work_xftfont, &width, &height, &x, &y);
+	/*
+	 * Resizing the window might have broken the layout of the character map
+	 * panel. Therefore, tear down and bring up again.
+	 */
+	character_panel_close();
+	popup_character_map();
+
+	for (i = 32; i <= LASTCHAR; ++i) {
+		XftDrawRect(xftdraw[i], &xft_bg,
+				0, 0, (unsigned)width, (unsigned)height);
+		XftDrawString8(xftdraw[i], xftcolor + BLACK, work_xftfont,
+				x, y, (FcChar8 *)&i, 1);
+		if (i == 126)
+			i += 33;
+	}
 }
 
 /* add or remove a checkmark to a menu entry to show that it
