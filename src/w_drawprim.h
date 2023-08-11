@@ -84,7 +84,6 @@ extern pr_size      textsize(XFontStruct *fstruct, int n, char *s);
 extern XFontStruct *roman_font;
 extern XFontStruct *button_font;
 extern XftFont		*mono_font;
-extern XFontStruct *lookfont(int fnum, int size);
 extern GC	    makegc(int op, Pixel fg, Pixel bg);
 
 /* patterns like bricks, etc */
