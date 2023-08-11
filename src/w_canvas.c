@@ -222,6 +222,10 @@ void setup_canvas(void)
     reset_clip_window();
 }
 
+/*
+ * some convenience functions to abridge canvas_selected() further below
+ */
+
 static Status
 get_input(XKeyPressedEvent *kpe, char **buf, int buf_size, int *len,
 		KeySym *key_sym)
@@ -259,6 +263,63 @@ get_input(XKeyPressedEvent *kpe, char **buf, int buf_size, int *len,
 	}
 
 	return status;
+}
+
+static int
+process_keystroke(XKeyPressedEvent *kpe, int *compose_key)
+{
+	int		len;
+	Status		status;
+	static char	compose_buf[2];
+	char		b[8];
+	char		*buf = b;
+	size_t		buf_size = sizeof b / sizeof b[0];
+	KeySym		key_sym;
+
+	status = get_input(kpe, &buf, (int)buf_size, &len, &key_sym);
+
+	if (status == XLookupNone) {
+		if (buf != b)
+			free(buf);
+		return 1;
+	}
+
+	/* Provide for compose_key > 0, len == 0 because modifier keys (e.g.,
+	   shift) generate an event and a key_sym, but do not return a string.*/
+	if (*compose_key == 1 && len == 1) {
+		/* first key of compose sequence */
+		compose_buf[0] = buf[0];
+		*compose_key = 2;
+
+	} else if (*compose_key == 2 && len > 0) {
+		if (len == 1) {
+			/* second key of compose sequence */
+			char	*str;
+			compose_buf[1] = buf[0];
+			if (!getComposeKey(&str, compose_buf)) {
+				canvas_kbd_proc(str, (int)strlen(str),
+								(KeySym)0);
+			} else {
+				canvas_kbd_proc(compose_buf, 1, (KeySym)0);
+				canvas_kbd_proc(compose_buf + 1, 1, (KeySym)0);
+			}
+		} else {	/* len > 1 */
+			canvas_kbd_proc(compose_buf, 1, (KeySym)0);
+			canvas_kbd_proc(buf, len, key_sym);
+		}
+		setCompLED(0);
+		*compose_key = 0;
+	} else {
+		canvas_kbd_proc(buf, len, key_sym);
+		if (*compose_key == 1 && len > 1) {
+			/* invalid first compose key */
+			setCompLED(0);
+			*compose_key = 0;
+		}
+	}
+	if (buf != b)
+		free(buf);
+	return 0;
 }
 
 void
@@ -541,58 +602,8 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 				}
 				canvas_kbd_proc(NULL, 0, key);
 			} else {
-				int	len;
-				Status	status;
-				static char	compose_buf[2];
-				char	b[8];
-				char	*buf = b;
-				size_t	buf_size = sizeof b / sizeof b[0];
-				KeySym	key_sym;
-
-				status = get_input(kpe, &buf, (int)buf_size,
-						&len, &key_sym);
-				if (status == XLookupNone) {
-					if (buf != b)
-						free(buf);
+				if (process_keystroke(kpe, &compose_key))
 					break;
-				}
-				/*
-				 * Provide for compose_key > 0, len == 0 because
-				 * modifier keys (e.g., shift) generate an event
-				 * and a key_sym, but do not return a string.
-				 */
-				if (compose_key == 1 && len == 1) {
-					/* first key of compose sequence */
-					compose_buf[0] = buf[0];
-					compose_key = 2;
-
-				} else if (compose_key == 2 && len > 0) {
-					if (len == 1) {
-						/* second key of compose sequence */
-						char	*str;
-						compose_buf[1] = buf[0];
-						if (!getComposeKey(&str, compose_buf)) {
-							canvas_kbd_proc(str, (int)strlen(str), (KeySym)0);
-						} else {
-							canvas_kbd_proc(compose_buf, 1, (KeySym)0);
-							canvas_kbd_proc(compose_buf + 1, 1, (KeySym)0);
-						}
-					} else {	/* len > 1 */
-						canvas_kbd_proc(compose_buf, 1, (KeySym)0);
-						canvas_kbd_proc(buf, len, key_sym);
-					}
-					setCompLED(0);
-					compose_key = 0;
-				} else {
-					canvas_kbd_proc(buf, len, key_sym);
-					if (compose_key == 1 && len > 1) {
-						/* invalid first compose key */
-						setCompLED(0);
-						compose_key = 0;
-					}
-				}
-				if (buf != b)
-					free(buf);
 			}
 	    } else {		/* canvas_kbd_proc != null_proc */
 		/* Be cheeky... we aren't going to do anything, so pass the
