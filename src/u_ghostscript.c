@@ -805,12 +805,12 @@ display_presize(void *handle, void *device, int width, int height,
 }
 
 static void *
-display_memalloc(void *handle, void *device, unsigned long size)
+display_memalloc(void *handle, void *device, size_t size)
 {
 	(void) device;
 	struct calldata	*data = (struct calldata *)handle;
 
-	data->img = malloc((size_t)size);
+	data->img = malloc(size);
 
 	if (appres.DEBUG && data->img == NULL)
 		fputs("gslib_bitmap() - display_memalloc(): Out of memory.\n",
