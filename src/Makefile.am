@@ -178,6 +178,7 @@ splash.xbm: $(top_srcdir)/splash-image/spl_bckgnd.fig.in \
 #		# exchange hold and pattern space on the last matched line
 #		# get rid of the newline starting now the pattern space
 #	# backslash - newline becomes newline - tab - tab
+#	# but add a blank after #augment, #override or #replace
 #	# and surround the text with quotes, writing C strings
 fallback_script = '				\
 	/^[ \t]*\(!\|$$\)/ d;			\
@@ -193,7 +194,9 @@ fallback_script = '				\
 		z;				\
 		x;				\
 		s/^\n//		};		\
-	/\\\n/ s/ *\\\n/"\n\t\t"/g;		\
+	/\\\n/ {				\
+		s/ *\\\n/"\n\t\t"/g;		\
+		/\#\(augment\|override\|replace\)"/ s//\#\1 "/	};	\
 	s/^/\t"/;				\
 	s/$$/",/			'
 fallback.c: $(top_srcdir)/app-defaults/Fig
