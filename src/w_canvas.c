@@ -92,14 +92,14 @@ String		local_translations = "";
 
 typedef struct _CompKey	CompKey;
 struct _CompKey {
-    char            *str;
-    unsigned char   first;
-    unsigned char   second;
-    CompKey	   *next;
+	char		*str;
+	unsigned char	first;
+	unsigned char	second;
+	CompKey		*next;
 };
 static CompKey		*allCompKey = NULL;
 static void		readComposeKey(void);
-static int             getComposeKey(char **str, char compose_buf[2]);
+static int		getComposeKey(char **str, char compose_buf[2]);
 
 static void		canvas_paste(Widget w, XKeyEvent *paste_event);
 static void		popup_mode_panel(Widget widget, XButtonEvent *event,
@@ -110,62 +110,62 @@ static void		popdown_mode_panel(void);
 void
 null_proc(void)
 {
-    /* almost does nothing */
-    if (highlighting)
-	erase_objecthighlight();
+	/* almost does nothing */
+	if (highlighting)
+		erase_objecthighlight();
 }
 
 static void
 canvas_exposed(Widget tool, XEvent *event, String *params, Cardinal *nparams)
 {
-    (void)tool;
-    (void)params;
-    (void)nparams;
+	(void)tool;
+	(void)params;
+	(void)nparams;
 
-    static int	    xmin = 9999, xmax = -9999, ymin = 9999, ymax = -9999;
-    XExposeEvent   *xe = (XExposeEvent *) event;
-    register int    tmp;
+	static int	xmin = 9999, xmax = -9999, ymin = 9999, ymax = -9999;
+	XExposeEvent	*xe = (XExposeEvent *) event;
+	register int	tmp;
 
-    if (xe->x < xmin)
-	xmin = xe->x;
-    if (xe->y < ymin)
-	ymin = xe->y;
-    if ((tmp = xe->x + xe->width) > xmax)
-	xmax = tmp;
-    if ((tmp = xe->y + xe->height) > ymax)
-	ymax = tmp;
-    if (xe->count > 0)
-	return;
+	if (xe->x < xmin)
+		xmin = xe->x;
+	if (xe->y < ymin)
+		ymin = xe->y;
+	if ((tmp = xe->x + xe->width) > xmax)
+		xmax = tmp;
+	if ((tmp = xe->y + xe->height) > ymax)
+		ymax = tmp;
+	if (xe->count > 0)
+		return;
 
-    /* kludge to stop getting extra redraws at start up */
-    if (ignore_exp_cnt)
-	ignore_exp_cnt--;
-    else
-	redisplay_region(xmin, ymin, xmax, ymax);
-    xmin = 9999, xmax = -9999, ymin = 9999, ymax = -9999;
+	/* kludge to stop getting extra redraws at start up */
+	if (ignore_exp_cnt)
+		ignore_exp_cnt--;
+	else
+		redisplay_region(xmin, ymin, xmax, ymax);
+	xmin = 9999, xmax = -9999, ymin = 9999, ymax = -9999;
 }
 
 
-XtActionsRec	canvas_actions[] =
+static XtActionsRec	canvas_actions[] =
 {
-    {"EventCanv", (XtActionProc) canvas_selected},
-    {"ExposeCanv", (XtActionProc) canvas_exposed},
-    {"EnterCanv", (XtActionProc) draw_mousefun_canvas},
-    {"PasteCanv", (XtActionProc) canvas_paste},
-    {"LeaveCanv", (XtActionProc) clear_mousefun},
-    {"EraseRulerMark", (XtActionProc) erase_rulermark},
-    {"Unzoom", (XtActionProc) unzoom},
-    {"PanOrigin", (XtActionProc) pan_origin},
-    {"ToggleShowDepths", (XtActionProc) toggle_show_depths},
-    {"ToggleShowBalloons", (XtActionProc) toggle_show_balloons},
-    {"ToggleShowLengths", (XtActionProc) toggle_show_lengths},
-    {"ToggleShowVertexnums", (XtActionProc) toggle_show_vertexnums},
-    {"ToggleShowBorders", (XtActionProc) toggle_show_borders},
-    {"ToggleAutoRefresh", (XtActionProc) toggle_refresh_mode},
-    {"PopupModePanel", (XtActionProc)popup_mode_panel},
-    {"PopdownModePanel", (XtActionProc)popdown_mode_panel},
-    {"PopupKeyboardPanel", (XtActionProc)popup_keyboard_panel},
-    {"PopdownKeyboardPanel", (XtActionProc)popdown_keyboard_panel},
+	{"EventCanv",		(XtActionProc)canvas_selected},
+	{"ExposeCanv",		(XtActionProc)canvas_exposed},
+	{"EnterCanv",		(XtActionProc)draw_mousefun_canvas},
+	{"PasteCanv",		(XtActionProc)canvas_paste},
+	{"LeaveCanv",		(XtActionProc)clear_mousefun},
+	{"EraseRulerMark",	(XtActionProc)erase_rulermark},
+	{"Unzoom",		(XtActionProc)unzoom},
+	{"PanOrigin",		(XtActionProc)pan_origin},
+	{"ToggleShowDepths",	(XtActionProc)toggle_show_depths},
+	{"ToggleShowBalloons",	(XtActionProc)toggle_show_balloons},
+	{"ToggleShowLengths",	(XtActionProc)toggle_show_lengths},
+	{"ToggleShowVertexnums", (XtActionProc)toggle_show_vertexnums},
+	{"ToggleShowBorders",	(XtActionProc)toggle_show_borders},
+	{"ToggleAutoRefresh",	(XtActionProc)toggle_refresh_mode},
+	{"PopupModePanel",	(XtActionProc)popup_mode_panel},
+	{"PopdownModePanel",	(XtActionProc)popdown_mode_panel},
+	{"PopupKeyboardPanel",	(XtActionProc)popup_keyboard_panel},
+	{"PopdownKeyboardPanel", (XtActionProc)popdown_keyboard_panel},
 };
 
 /* need the ~Meta for the EventCanv action so that the accelerators still work
@@ -185,41 +185,42 @@ static String	canvas_translations =
 void
 init_canvas(Widget tool)
 {
-    DeclareArgs(12);
+	DeclareArgs(12);
 
-    FirstArg(XtNlabel, "");
-    NextArg(XtNinternational, False);
-    NextArg(XtNwidth, CANVAS_WD);
-    NextArg(XtNheight, CANVAS_HT);
-    NextArg(XtNborderWidth, 0);
-    NextArg(XtNfromHoriz, mode_panel);
-    NextArg(XtNfromVert, topruler_sw);
-    NextArg(XtNtop, XtChainTop);
-    NextArg(XtNleft, XtChainLeft);
+	FirstArg(XtNlabel, "");
+	NextArg(XtNinternational, False);
+	NextArg(XtNwidth, CANVAS_WD);
+	NextArg(XtNheight, CANVAS_HT);
+	NextArg(XtNborderWidth, 0);
+	NextArg(XtNfromHoriz, mode_panel);
+	NextArg(XtNfromVert, topruler_sw);
+	NextArg(XtNtop, XtChainTop);
+	NextArg(XtNleft, XtChainLeft);
 
-    canvas_sw = XtCreateWidget("canvas", labelWidgetClass, tool,
-			       Args, ArgCount);
-    canvas_leftbut_proc = null_proc;
-    canvas_middlebut_proc = null_proc;
-    canvas_rightbut_proc = null_proc;
-    canvas_kbd_proc = canvas_locmove_proc = null_proc;
-    XtAugmentTranslations(canvas_sw,
-			   XtParseTranslationTable(canvas_translations));
-    readComposeKey();
+	canvas_sw = XtCreateWidget("canvas", labelWidgetClass, tool,
+			Args, ArgCount);
+	canvas_leftbut_proc = null_proc;
+	canvas_middlebut_proc = null_proc;
+	canvas_rightbut_proc = null_proc;
+	canvas_kbd_proc = canvas_locmove_proc = null_proc;
+	XtAugmentTranslations(canvas_sw,
+			XtParseTranslationTable(canvas_translations));
+	readComposeKey();
 }
 
 void
 add_canvas_actions(void)
 {
-    XtAppAddActions(tool_app, canvas_actions, XtNumber(canvas_actions));
+	XtAppAddActions(tool_app, canvas_actions, XtNumber(canvas_actions));
 }
 
-/* at this point, the canvas widget is realized so we can get the window from it */
+/* at this point, the canvas widget is realized so we can get
+   the window from it */
 
 void setup_canvas(void)
 {
-    init_grid();
-    reset_clip_window();
+	init_grid();
+	reset_clip_window();
 }
 
 /*
@@ -326,298 +327,333 @@ void
 canvas_selected(Widget tool, XButtonEvent *event, String *params,
 		Cardinal *nparams)
 {
-    (void)tool;
-    (void)params;
-    (void)nparams;
+	(void)tool;
+	(void)params;
+	(void)nparams;
 
-    KeySym	    key;
-    static int	    sx = -10000, sy = -10000;
-    XButtonPressedEvent *be = (XButtonPressedEvent *) event;
-    XKeyPressedEvent *kpe = (XKeyPressedEvent *) event;
-    Window	    rw, cw;
-    int		    rx, ry, cx, cy;
-    unsigned int    mask;
-    int    x, y;
-    static int	compose_key = 0;
+	KeySym			key;
+	static int		sx = -10000, sy = -10000;
+	XButtonPressedEvent	*be = (XButtonPressedEvent *)event;
+	XKeyPressedEvent	*kpe = (XKeyPressedEvent *)event;
+	Window			rw, cw;
+	int			rx, ry, cx, cy;
+	unsigned int		mask;
+	int			x, y;
+	static int		compose_key = 0;
 
-    /* key on event type */
-    switch (event->type) {
+	/* key on event type */
+	switch (event->type) {
 
-      /****************/
-      case MotionNotify:
+
+	case MotionNotify:
 
 #if defined(SMOOTHMOTION)
-	/* translate from zoomed coords to object coords */
-	x = BACKX(event->x);
-	y = BACKY(event->y);
+		/* translate from zoomed coords to object coords */
+		x = BACKX(event->x);
+		y = BACKY(event->y);
 
-	/* perform appropriate rounding if necessary */			// isometric grid
-	round_coords(&x, &y);
+		/* perform appropriate rounding if necessary */
+		round_coords(&x, &y);
 
-	if (x == sx && y == sy)
-	    return;
-	sx = x;
-	sy = y;
+		if (x == sx && y == sy)
+			return;
+		sx = x;
+		sy = y;
 #else
-	XQueryPointer(event->display, event->window,
-			  &rw, &cw,
-			  &rx, &ry,
-			  &cx, &cy,
-			  &mask);
-	cx = BACKX(cx);
-	cy = BACKY(cy);
+		XQueryPointer(event->display, event->window,
+				&rw, &cw,
+				&rx, &ry,
+				&cx, &cy,
+				&mask);
+		cx = BACKX(cx);
+		cy = BACKY(cy);
 
-	/* perform appropriate rounding if necessary */
-	round_coords(&cx, &cy);						// isometric grid
+		/* perform appropriate rounding if necessary */
+		round_coords(&cx, &cy);
 
 #ifdef REPORT_XY_ALWAYS
-	put_msg("x = %.3f, y = %.3f %s",
-	    (float) cx/(appres.INCHES? PPI: PPCM), (float) cy/(appres.INCHES? PPI: PPCM),
-	    appres.INCHES? "in": "cm");
+		put_msg("x = %.3f, y = %.3f %s",
+				(float)cx/(appres.INCHES? PPI: PPCM),
+				(float) cy/(appres.INCHES? PPI: PPCM),
+				appres.INCHES? "in": "cm");
 #endif
 
-	if (cx == sx && cy == sy)
-		break;
+		if (cx == sx && cy == sy)
+			break;
 
-	/* draw crosshair cursor where pointer is */
-	if (appres.crosshair && action_on) {
-	    pw_vector(canvas_win, 0, last_y, (int)(CANVAS_WD*ZOOM_FACTOR), last_y,
+		/* draw crosshair cursor where pointer is */
+		if (appres.crosshair && action_on) {
+			pw_vector(canvas_win, 0, last_y,
+					(int)(CANVAS_WD*ZOOM_FACTOR), last_y,
 					INV_PAINT, 1, RUBBER_LINE, 0.0, RED);
-	    pw_vector(canvas_win, last_x, 0, last_x, (int)(CANVAS_HT*ZOOM_FACTOR),
+			pw_vector(canvas_win, last_x, 0, last_x,
+					(int)(CANVAS_HT*ZOOM_FACTOR),
 					INV_PAINT, 1, RUBBER_LINE, 0.0, RED);
-	    pw_vector(canvas_win, 0, cy, (int)(CANVAS_WD*ZOOM_FACTOR), cy,
+			pw_vector(canvas_win, 0, cy,
+					(int)(CANVAS_WD*ZOOM_FACTOR), cy,
 					INV_PAINT, 1, RUBBER_LINE, 0.0, RED);
-	    pw_vector(canvas_win, cx, 0, cx, (int)(CANVAS_HT*ZOOM_FACTOR),
+			pw_vector(canvas_win, cx, 0, cx,
+					(int)(CANVAS_HT*ZOOM_FACTOR),
 					INV_PAINT, 1, RUBBER_LINE, 0.0, RED);
-	}
+		}
 
-	last_x = x = sx = cx;	/* these are zoomed */
-	last_y = y = sy = cy;	/* coordinates!	    */
+		last_x = x = sx = cx;	/* these are zoomed */
+		last_y = y = sy = cy;	/* coordinates!	    */
 
 #endif /* SMOOTHMOTION */
 
-	set_rulermark(x, y);
-	(*canvas_locmove_proc) (x, y);
-	break;
-
-      /*****************/
-      case ButtonRelease:
-
-	break;
-
-      /***************/
-      case ButtonPress:
-
-	/* translate from zoomed coords to object coords */
-	x = BACKX(event->x);
-	y = BACKY(event->y);
-
-	if ((SNAP_MODE_NONE != snap_mode) &&
-            (be->button != Button3)) {
-          int vx = x;   /* these asssigments are here because x and y are register vbls */
-          int vy = y;
-
-	  /* if snap fails, i'm opting to punt entirely and let the user try again.
-	   * could also just revert to the usual round_coords(), but i think that
-	   * might cause confusion.
-	   */
-
-          if (False == snap_process(&vx, &vy, be->state & ShiftMask)) break;
-          else {
-            x = vx;
-            y = vy;
-          }
-        }
-	else {
-	  /* if the point hasn't been snapped... */
-	  /* perform appropriate rounding if necessary */
-	  round_coords(&x, &y);				// isometric grid
-	}
-
-	/* Convert Alt-Button3 to Button2 */
-	if (be->button == Button3 && be->state & Mod1Mask) {
-	    be->button = Button2;
-	    be->state = be->state & ~Mod1Mask;
-	}
-
-	/* call interactive zoom function when only control key pressed */
-	if (!zoom_in_progress && ((be->state & ControlMask) && !(be->state & ShiftMask))) {
-	    zoom_selected(x, y, be->button);
-	    break;
-	}
-
-        /* edit shape factor when pressing control & shift keys in edit mode */
-	if ((be->state & ControlMask && be->state & ShiftMask) &&
-	    cur_mode >= FIRST_EDIT_MODE) {
-		change_sfactor(x, y, be->button);
+		set_rulermark(x, y);
+		(*canvas_locmove_proc) (x, y);
 		break;
-	}
 
-	if (be->button == Button1)
-	    /* left button proc */
-	    (*canvas_leftbut_proc) (x, y, be->state & ShiftMask);
 
-	else if (be->button == Button2)
-	    /* middle button proc */
-	    (*canvas_middlebut_proc) (x, y, be->state & ShiftMask);
+	case ButtonRelease:
+		break;
 
-	else if (be->button == Button3)
-	    /* right button proc */
-	    (*canvas_rightbut_proc) (x, y, be->state & ShiftMask);
 
-	else if (be->button == Button4 && !shift)
-	    /* pan down with wheelmouse */
-	    pan_down(0);
+	case ButtonPress:
 
-	else if (be->button == Button5 && !shift)
-	    /* pan up with wheelmouse */
-	    pan_up(0);
+		/* translate from zoomed coords to object coords */
+		x = BACKX(event->x);
+		y = BACKY(event->y);
 
-	else if ((be->button == 6 /* Button6 */ && !shift) ||
-		(be->button == Button4 && shift))
-	    /* pan right with wheelmouse or touchpad */
-	    pan_right(0);
+		if ((SNAP_MODE_NONE != snap_mode) &&
+				(be->button != Button3)) {
+			/* these asssigments are here because x and y are
+			   register vbls */
+			int vx = x;
+			int vy = y;
 
-	else if ((be->button == 7 /* Button7 */ && !shift) ||
-		(be->button == Button5 && shift))
-	    /* pan left with wheelmouse or touchpad */
-	    pan_left(0);
+			/*
+			 * if snap fails, i'm opting to punt entirely and let
+			 * the user try again. could also just revert to the
+			 * usual round_coords(), but i think that might cause
+			 * confusion.
+			 */
 
-	break;
-
-      /**************/
-      case KeyPress:
-      case KeyRelease:
-
-	XQueryPointer(event->display, event->window,
-			&rw, &cw, &rx, &ry, &cx, &cy, &mask);
-	/* save global shift state */
-	shift = mask & ShiftMask;
-
-	if (True == keyboard_input_available) {
-	  XMotionEvent	me;
-
-	  if (keyboard_state & ShiftMask)
-	    (*canvas_middlebut_proc) (keyboard_x, keyboard_y, 0);
-	  else if (keyboard_state & ControlMask)
-	    (*canvas_rightbut_proc) (keyboard_x, keyboard_y, 0);
-	  else
-	    (*canvas_leftbut_proc) (keyboard_x, keyboard_y, 0);
-	  keyboard_input_available = False;
-
-	  /*
-	   * get some sort of feedback, like a drawing rubberband, onto
-	   * the canvas that the coord has been entered by faking up a
-	   * motion event.
-	   */
-
-	  last_x = x = sx = cx = keyboard_x;	/* these are zoomed */
-	  last_y = y = sy = cy = keyboard_y;	/* coordinates!	    */
-
-	  me.type		= MotionNotify;
-	  me.send_event		= 1;
-	  me.display		= event->display;
-	  me.window		= event->window;
-	  me.root		= event->root;
-	  me.subwindow		= event->subwindow;
-	  me.x			= event->x + 10;
-	  me.y			= event->y + 10;
-	  me.x_root		= event->x_root;
-	  me.y_root		= event->y_root;
-	  me.state		= event->state;
-	  me.is_hint		= 0;
-	  me.same_screen=	 event->same_screen;;
-	  XtDispatchEvent((XEvent *)(&me));
-
-	  break;
-	}
-
-	/* we might want to check action_on */
-	/* if arrow keys are pressed, pan */
-	key = XLookupKeysym(kpe, 0);
-
-	/* do the mouse function stuff first */
-	if (zoom_in_progress) {
-	    set_temp_cursor(magnify_cursor);
-	    draw_mousefun("final point", "", "cancel");
-	} else if (mask & ControlMask) {
-	    if (mask & ShiftMask) {
-		reset_cursor();
-		if (cur_mode >= FIRST_EDIT_MODE)
-		    draw_mousefun("More approx", "Cycle shapes", "More interp");
-		else
-		    draw_shift_mousefun_canvas();
-	    } else {  /* show control-key action */
-		set_temp_cursor(magnify_cursor);
-		draw_mousefun("Zoom area", "Pan to origin", "Unzoom");
-	    }
-	} else if (mask & ShiftMask) {
-	    reset_cursor();
-	    draw_shift_mousefun_canvas();
-	} else {
-	    reset_cursor();
-	    draw_mousefun_canvas();
-	}
-
-	if (event->type == KeyPress) {
-	  if (key == XK_Up ||		/* pan the canvas */
-	    key == XK_Down ||
-	    ((key == XK_Left ||    /* don't process the following if in text input mode */
-	      key == XK_Right ||
-	      key == XK_Home) && (!action_on || cur_mode != F_TEXT))) {
-	        switch (key) {
-		    case XK_Left:
-			pan_right(event->state&ShiftMask);
-			break;
-		    case XK_Right:
-			pan_left(event->state&ShiftMask);
-			break;
-		    case XK_Up:
-			pan_down(event->state&ShiftMask);
-			break;
-		    case XK_Down:
-			pan_up(event->state&ShiftMask);
-			break;
-		    case XK_Home:
-			pan_origin();
-			break;
-		} /* switch (key) */
-	  } else if (allCompKey && (key == XK_Multi_key ||
-				  key == XK_Meta_L || key == XK_Meta_R ||
-				  key == XK_Alt_L || key == XK_Alt_R)
-			  && action_on && cur_mode == F_TEXT) {
-		  compose_key = 1;
-		  setCompLED(1);
-		  break;
-	  } else {
-		if (canvas_kbd_proc != null_proc ) {
-
-			if (key == XK_Left || key == XK_Right ||
-					key == XK_Home || key == XK_End) {
-				if (compose_key) {
-					/* in case Meta was followed by
-					   cursor movement */
-					setCompLED(0);
-					compose_key = 0;
-				}
-				canvas_kbd_proc(NULL, 0, key);
-			} else {
-				if (process_keystroke(kpe, &compose_key))
-					break;
+			if (snap_process(&vx, &vy, be->state & ShiftMask) ==
+					False)
+				break;
+			else {
+				x = vx;
+				y = vy;
 			}
-	    } else {		/* canvas_kbd_proc != null_proc */
-		/* Be cheeky... we aren't going to do anything, so pass the
-		 * key on to the mode_panel window by rescheduling the event
-		 * The message window might treat it as a hotkey!
-		 */
-		kpe->window = XtWindow(mode_panel);
-		kpe->subwindow = 0;
-		XPutBackEvent(kpe->display,(XEvent *)kpe);
-	    }
-	  }
-	  break;
-	} /* event-type == KeyPress */
-    } /* switch(event->type) */
+		}
+		else {
+			/* if the point hasn't been snapped... */
+			/* perform appropriate rounding if necessary */
+			round_coords(&x, &y);
+		}
+
+		/* Convert Alt-Button3 to Button2 */
+		if (be->button == Button3 && be->state & Mod1Mask) {
+			be->button = Button2;
+			be->state = be->state & ~Mod1Mask;
+		}
+
+		/* call interactive zoom function when only
+		   control key pressed */
+		if (!zoom_in_progress && ((be->state & ControlMask) &&
+					!(be->state & ShiftMask))) {
+			zoom_selected(x, y, be->button);
+			break;
+		}
+
+		/* edit shape factor when pressing control & shift keys
+		   in edit mode */
+		if ((be->state & ControlMask && be->state & ShiftMask) &&
+				cur_mode >= FIRST_EDIT_MODE) {
+			change_sfactor(x, y, be->button);
+			break;
+		}
+
+		if (be->button == Button1)
+			/* left button proc */
+			(*canvas_leftbut_proc) (x, y, be->state & ShiftMask);
+
+		else if (be->button == Button2)
+			/* middle button proc */
+			(*canvas_middlebut_proc) (x, y, be->state & ShiftMask);
+
+		else if (be->button == Button3)
+			/* right button proc */
+			(*canvas_rightbut_proc) (x, y, be->state & ShiftMask);
+
+		else if (be->button == Button4 && !shift)
+			/* pan down with wheelmouse */
+			pan_down(0);
+
+		else if (be->button == Button5 && !shift)
+			/* pan up with wheelmouse */
+			pan_up(0);
+
+		else if ((be->button == 6 /* Button6 */ && !shift) ||
+				(be->button == Button4 && shift))
+			/* pan right with wheelmouse or touchpad */
+			pan_right(0);
+
+		else if ((be->button == 7 /* Button7 */ && !shift) ||
+				(be->button == Button5 && shift))
+			/* pan left with wheelmouse or touchpad */
+			pan_left(0);
+
+		break;
+
+
+	case KeyPress:
+	case KeyRelease:
+
+		XQueryPointer(event->display, event->window,
+				&rw, &cw, &rx, &ry, &cx, &cy, &mask);
+		/* save global shift state */
+		shift = mask & ShiftMask;
+
+		if (True == keyboard_input_available) {
+			XMotionEvent	me;
+
+			if (keyboard_state & ShiftMask)
+				(*canvas_middlebut_proc)(keyboard_x, keyboard_y,
+					       0);
+			else if (keyboard_state & ControlMask)
+				(*canvas_rightbut_proc)(keyboard_x, keyboard_y,
+						0);
+			else
+				(*canvas_leftbut_proc)(keyboard_x, keyboard_y,
+						0);
+			keyboard_input_available = False;
+
+			/*
+			 * get some sort of feedback, like a drawing rubberband,
+			 * onto the canvas that the coord has been entered by
+			 * faking up a motion event.
+			 */
+
+			last_x = x = sx = cx = keyboard_x;/* these are zoomed */
+			last_y = y = sy = cy = keyboard_y;/* coordinates! */
+
+			me.type			= MotionNotify;
+			me.send_event		= 1;
+			me.display		= event->display;
+			me.window		= event->window;
+			me.root			= event->root;
+			me.subwindow		= event->subwindow;
+			me.x			= event->x + 10;
+			me.y			= event->y + 10;
+			me.x_root		= event->x_root;
+			me.y_root		= event->y_root;
+			me.state		= event->state;
+			me.is_hint		= 0;
+			me.same_screen		= event->same_screen;;
+			XtDispatchEvent((XEvent *)(&me));
+
+			break;
+		}
+
+		/* we might want to check action_on */
+		/* if arrow keys are pressed, pan */
+		key = XLookupKeysym(kpe, 0);
+
+		/* do the mouse function stuff first */
+		if (zoom_in_progress) {
+			set_temp_cursor(magnify_cursor);
+			draw_mousefun("final point", "", "cancel");
+		} else if (mask & ControlMask) {
+			if (mask & ShiftMask) {
+				reset_cursor();
+				if (cur_mode >= FIRST_EDIT_MODE)
+					draw_mousefun("More approx",
+							"Cycle shapes",
+							"More interp");
+				else
+					draw_shift_mousefun_canvas();
+			} else {  /* show control-key action */
+				set_temp_cursor(magnify_cursor);
+				draw_mousefun("Zoom area", "Pan to origin",
+						"Unzoom");
+			}
+		} else if (mask & ShiftMask) {
+			reset_cursor();
+			draw_shift_mousefun_canvas();
+		} else {
+			reset_cursor();
+			draw_mousefun_canvas();
+		}
+
+		if (event->type == KeyPress) {
+
+			/* pan the canvas */
+			if (key == XK_Up || key == XK_Down ||
+					/* don't process the following if
+					   in text input mode */
+					((key == XK_Left || key == XK_Right ||
+					  key == XK_Home) &&
+					 (!action_on || cur_mode != F_TEXT))) {
+				switch (key) {
+				case XK_Left:
+					pan_right(event->state&ShiftMask);
+					break;
+				case XK_Right:
+					pan_left(event->state&ShiftMask);
+					break;
+				case XK_Up:
+					pan_down(event->state&ShiftMask);
+					break;
+				case XK_Down:
+					pan_up(event->state&ShiftMask);
+					break;
+				case XK_Home:
+					pan_origin();
+					break;
+				} /* switch (key) */
+
+			/* detect the compose key */
+			} else if (allCompKey && (key == XK_Multi_key ||
+						key == XK_Meta_L ||
+						key == XK_Meta_R ||
+						key == XK_Alt_L ||
+						key == XK_Alt_R) && action_on
+					&& cur_mode == F_TEXT) {
+				compose_key = 1;
+				setCompLED(1);
+				break;
+
+			/* edit text */
+			} else {
+				if (canvas_kbd_proc != null_proc ) {
+					if (key == XK_Left || key == XK_Right ||
+							key == XK_Home ||
+							key == XK_End) {
+						if (compose_key) {
+							/* in case Meta was
+							   followed by
+							   cursor movement */
+							setCompLED(0);
+							compose_key = 0;
+						}
+						canvas_kbd_proc(NULL, 0, key);
+					} else {
+						if (process_keystroke(kpe,
+								&compose_key))
+							break;
+					}
+				} else {
+					/*
+					 * Be cheeky... we aren't going to do
+					 * anything, so pass the key on to the
+					 * mode_panel window by rescheduling the
+					 * event
+					 * The message window might treat it as
+					 * a hotkey!
+					 */
+					kpe->window = XtWindow(mode_panel);
+					kpe->subwindow = 0;
+					XPutBackEvent(kpe->display,
+							(XEvent *)kpe);
+				}
+			}
+			break;
+		} /* event-type == KeyPress */
+	} /* switch(event->type) */
 }
 
 /* clear the canvas - this can't be called to clear a pixmap, only a window */
@@ -625,23 +661,24 @@ canvas_selected(Widget tool, XButtonEvent *event, String *params,
 void
 clear_canvas(void)
 {
-    /* clear the splash graphic if it is still on the screen */
-    if (splash_onscreen) {
-	splash_onscreen = False;
-	XClearArea(tool_d, canvas_win, 0, 0, CANVAS_WD, CANVAS_HT, False);
-    } else {
-	XClearArea(tool_d, canvas_win, clip_xmin, clip_ymin,
-	       clip_width, clip_height, False);
-    }
-    /* redraw any page border */
-    redisplay_pageborder();
+	/* clear the splash graphic if it is still on the screen */
+	if (splash_onscreen) {
+		splash_onscreen = False;
+		XClearArea(tool_d, canvas_win, 0, 0, CANVAS_WD, CANVAS_HT,
+				False);
+	} else {
+		XClearArea(tool_d, canvas_win, clip_xmin, clip_ymin,
+				clip_width, clip_height, False);
+	}
+	/* redraw any page border */
+	redisplay_pageborder();
 }
 
 void
 clear_region(int xmin, int ymin, int xmax, int ymax)
 {
-    XClearArea(tool_d, canvas_win, xmin, ymin,
-	       xmax - xmin + 1, ymax - ymin + 1, False);
+	XClearArea(tool_d, canvas_win, xmin, ymin,
+			xmax - xmin + 1, ymax - ymin + 1, False);
 }
 
 static void
@@ -682,10 +719,9 @@ get_canvas_clipboard(Widget w, XtPointer client_data, Atom *selection,
 void
 paste_primary_selection(void)
 {
-    /* turn off Compose key LED */
-    setCompLED(0);
-
-    canvas_paste(canvas_sw, NULL);
+	/* turn off Compose key LED */
+	setCompLED(0);
+	canvas_paste(canvas_sw, NULL);
 }
 
 static void
@@ -732,110 +768,110 @@ getComposeKey(char **str, char compose_buf[2])
 static void
 readComposeKey(void)
 {
-    FILE	   *st;
-    CompKey	   *compKeyPtr;
-    char	    line[255];
-    char	   *p;
-    char	   *p1;
-    char	   *p2;
-    char	   *p3;
-    long	    size;
+	FILE		*st;
+	CompKey		*compKeyPtr;
+	char		line[255];
+	char		*p;
+	char		*p1;
+	char		*p2;
+	char		*p3;
+	long		size;
 
 
-/* Treat the compose key DB a different way.  In this order:
- *
- *  1.	If the resource contains no "/", prefix it with the name of
- *	the wired-in directory and use that.
- *
- *  2.	Otherwise see if it begins with "~/", and if so use that,
- *	with the leading "~" replaced by the name of this user's
- *	$HOME directory.
- *
- * This way a user can have private compose key settings even when running
- * xfig privately.
- *
- * Pete Kaiser
- * 24 April 1992
- */
+	/* Treat the compose key DB a different way.  In this order:
+	 *
+	 *  1.	If the resource contains no "/", prefix it with the name of
+	 *	the wired-in directory and use that.
+	 *
+	 *  2.	Otherwise see if it begins with "~/", and if so use that,
+	 *	with the leading "~" replaced by the name of this user's
+	 *	$HOME directory.
+	 *
+	 * This way a user can have private compose key settings even when
+	 * running xfig privately.
+	 *
+	 * Pete Kaiser
+	 * 24 April 1992
+	 */
 
-     /* no / in name, make relative to XFIGLIBDIR */
-     if (strchr(appres.keyFile, '/') == NULL) {
-	 strcpy(line, XFIGLIBDIR);
-	 strcat(line, "/");
-	 strcat(line, appres.keyFile);
-	 }
+	/* no / in name, make relative to XFIGLIBDIR */
+	if (strchr(appres.keyFile, '/') == NULL) {
+		strcpy(line, XFIGLIBDIR);
+		strcat(line, "/");
+		strcat(line, appres.keyFile);
+	}
 
-     /* expand the ~ to the user's home directory */
-     else if (!strncmp(appres.keyFile, "~/", 2)) {
-	 strcpy(line, getenv("HOME"));
-	 strcat(line, appres.keyFile + 1);
-     } else
-	strcpy(line, appres.keyFile);
+	/* expand the ~ to the user's home directory */
+	else if (!strncmp(appres.keyFile, "~/", 2)) {
+		strcpy(line, getenv("HOME"));
+		strcat(line, appres.keyFile + 1);
+	} else
+		strcpy(line, appres.keyFile);
 
-    if ((st = fopen(line, "r")) == NULL) {
-	file_msg("Unable to open compose key file '%s',", line);
-	file_msg("\tno multi-key sequences available.");
-	return;
-    }
-    fseek(st, 0L, SEEK_END);
-    size = ftell(st);
-    fseek(st, 0L, SEEK_SET);
+	if ((st = fopen(line, "r")) == NULL) {
+		file_msg("Unable to open compose key file '%s',", line);
+		file_msg("\tno multi-key sequences available.");
+		return;
+	}
+	fseek(st, 0L, SEEK_END);
+	size = ftell(st);
+	fseek(st, 0L, SEEK_SET);
 
-    local_translations = (String) new_string(size);
+	local_translations = (String) new_string(size);
 
-    strcpy(local_translations, "");
-    while (fgets(line, 250, st) != NULL) {
-	if (line[0] == '#')
-		continue;
-	strcat(local_translations, line);
-	if ((p = strstr(line, "Multi_key")) != NULL) {
-		char		buf[FC_UTF8_MAX_LEN + 1];
-
-		if ((p1 = strstr(p, "<Key>")) == NULL)
+	strcpy(local_translations, "");
+	while (fgets(line, 250, st) != NULL) {
+		if (line[0] == '#')
 			continue;
-		p1 += strlen("<Key>");
-		if ((p = strstr(p1, ",")) == NULL)
-			continue;
-		*p++ = '\0';
-		if ((p2 = strstr(p, "<Key>")) == NULL)
-		       continue;
-		p2 += strlen("<Key>");
-		if ((p = strstr(p2, ":")) == NULL)
-			continue;
-		*p++ = '\0';
-		if ((p3 = strstr(p, "insert-string(")) == NULL)
-		       continue;
-		p3 +=strlen("insert-string(");
-		if ((p = strstr(p3, ")")) == NULL)
-			continue;
-		*p++ = '\0';
+		strcat(local_translations, line);
+		if ((p = strstr(line, "Multi_key")) != NULL) {
+			char		buf[FC_UTF8_MAX_LEN + 1];
 
-		if (!strncmp(p3, "0x", 2)) {
-		    int			l;
-		    uint_least32_t	x;
-		    sscanf(p3, "%" SCNxLEAST32, &x);
-		    l = FcUcs4ToUtf8((FcChar32)x, (FcChar8 *)buf);
-		    buf[l] = '\0';
-		    p3 = buf;
+			if ((p1 = strstr(p, "<Key>")) == NULL)
+				continue;
+			p1 += strlen("<Key>");
+			if ((p = strstr(p1, ",")) == NULL)
+				continue;
+			*p++ = '\0';
+			if ((p2 = strstr(p, "<Key>")) == NULL)
+				continue;
+			p2 += strlen("<Key>");
+			if ((p = strstr(p2, ":")) == NULL)
+				continue;
+			*p++ = '\0';
+			if ((p3 = strstr(p, "insert-string(")) == NULL)
+				continue;
+			p3 +=strlen("insert-string(");
+			if ((p = strstr(p3, ")")) == NULL)
+				continue;
+			*p++ = '\0';
+
+			if (!strncmp(p3, "0x", 2)) {
+				int			l;
+				uint_least32_t	x;
+				sscanf(p3, "%" SCNxLEAST32, &x);
+				l = FcUcs4ToUtf8((FcChar32)x, (FcChar8 *)buf);
+				buf[l] = '\0';
+				p3 = buf;
+			}
+
+			if (allCompKey == NULL) {
+				allCompKey = malloc(sizeof(CompKey));
+				compKeyPtr = allCompKey;
+			} else {
+				compKeyPtr->next = malloc(sizeof(CompKey));
+				compKeyPtr = compKeyPtr->next;
+			}
+			compKeyPtr->str = strdup(p3);
+			compKeyPtr->first = XStringToKeysym(p1);
+			compKeyPtr->second = XStringToKeysym(p2);
+			compKeyPtr->next = NULL;
 		}
-
-		if (allCompKey == NULL) {
-		    allCompKey = malloc(sizeof(CompKey));
-		    compKeyPtr = allCompKey;
-		} else {
-		    compKeyPtr->next = malloc(sizeof(CompKey));
-		    compKeyPtr = compKeyPtr->next;
-		}
-		compKeyPtr->str = strdup(p3);
-		compKeyPtr->first = XStringToKeysym(p1);
-		compKeyPtr->second = XStringToKeysym(p2);
-		compKeyPtr->next = NULL;
-	    }
-    }
-    fclose(st);
-    if (allCompKey == NULL)
-	    file_msg("Empty compose key database, "
-			    "no compose sequences available.");
+	}
+	fclose(st);
+	if (allCompKey == NULL)
+		file_msg("Empty compose key database, "
+				"no compose sequences available.");
 }
 
 void
@@ -850,63 +886,61 @@ setCompLED(int on)
 }
 
 /* toggle the length lines when drawing or moving points */
-
 void
 toggle_show_lengths(void)
 {
 	appres.showlengths = !appres.showlengths;
-	put_msg("%s lengths of lines in red ",appres.showlengths? "Show": "Don't show");
+	put_msg("%s lengths of lines in red ",
+			appres.showlengths ? "Show" : "Don't show");
 	refresh_view_menu();
 }
 
 /* toggle the drawing of vertex numbers on objects */
-
 void
 toggle_show_vertexnums(void)
 {
 	appres.shownums = !appres.shownums;
-	put_msg("%s vertex numbers on objects",appres.shownums? "Show": "Don't show");
+	put_msg("%s vertex numbers on objects",
+			appres.shownums ? "Show" : "Don't show");
 	refresh_view_menu();
 
 	/* if user just turned on vertex numbers, redraw only objects */
 	if (appres.shownums) {
-	    redisplay_canvas();
+		redisplay_canvas();
 	} else {
-	    /* otherwise redraw whole canvas */
-	    clear_canvas();
-	    redisplay_canvas();
+		/* otherwise redraw whole canvas */
+		clear_canvas();
+		redisplay_canvas();
 	}
 }
 
 /* toggle the drawing of page borders on the canvas */
-
 void
 toggle_show_borders(void)
 {
 	appres.show_pageborder = !appres.show_pageborder;
 	put_msg("%s page borders on canvas",
-		appres.show_pageborder? "Show": "Don't show");
+			appres.show_pageborder ? "Show" : "Don't show");
 	refresh_view_menu();
 
 	/* if user just turned on the border, draw only it */
 	if (appres.show_pageborder) {
-	    redisplay_pageborder();
+		redisplay_pageborder();
 	} else {
-	    /* otherwise redraw whole canvas */
-	    clear_canvas();
-	    redisplay_canvas();
+		/* otherwise redraw whole canvas */
+		clear_canvas();
+		redisplay_canvas();
 	}
 }
 
 /* toggle the information balloons */
-
 void
 toggle_show_balloons(void)
 {
-    appres.showballoons = !appres.showballoons;
-    put_msg("%s information balloons",
-		appres.showballoons? "Show": "Don't show");
-    refresh_view_menu();
+	appres.showballoons = !appres.showballoons;
+	put_msg("%s information balloons",
+			appres.showballoons ? "Show" : "Don't show");
+	refresh_view_menu();
 }
 
 
@@ -920,10 +954,11 @@ static Widget active_mode_panel = None;
 
 extern mode_sw_info mode_switches[];
 
-void static popdown_mode_panel(void)
+void static
+popdown_mode_panel(void)
 {
-  if (active_mode_panel != None) XtPopdown(active_mode_panel);
-  active_mode_panel = None;
+	if (active_mode_panel != None) XtPopdown(active_mode_panel);
+	active_mode_panel = None;
 }
 
 static void
@@ -939,79 +974,89 @@ mode_panel_button_selected(Widget w, icon_struct *icon, char *call_data)
 static void
 create_mode_panel(void)
 {
-  Widget draw_form, edit_form;
-  Widget form, entry;
-  icon_struct *icon;
-  Widget up = None, left = None;
-  int max_wd = 150, wd = 0;
-  int i;
+	Widget		draw_form, edit_form;
+	Widget		form, entry;
+	icon_struct	*icon;
+	Widget		up = None, left = None;
+	int		max_wd = 150, wd = 0;
+	int		i;
 
-  draw_panel = XtVaCreatePopupShell("draw_menu", transientShellWidgetClass, tool,
-				    XtNtitle, "Drawing Modes",
-				    XtNtitleEncoding, XA_STRING, NULL);
-  draw_form = XtVaCreateManagedWidget("form", formWidgetClass, draw_panel,
-				    XtNdefaultDistance, 0, NULL);
+	draw_panel = XtVaCreatePopupShell("draw_menu",
+			transientShellWidgetClass, tool,
+			XtNtitle, "Drawing Modes",
+			XtNtitleEncoding, XA_STRING, NULL);
+	draw_form = XtVaCreateManagedWidget("form", formWidgetClass, draw_panel,
+			XtNdefaultDistance, 0, NULL);
 
-  edit_panel = XtVaCreatePopupShell("edit_menu", transientShellWidgetClass, tool,
-				    XtNtitle, "Editing Modes",
-				    XtNtitleEncoding, XA_STRING, NULL);
-  edit_form = XtVaCreateManagedWidget("form", formWidgetClass, edit_panel,
-				    XtNdefaultDistance, 0, NULL);
+	edit_panel = XtVaCreatePopupShell("edit_menu",
+			transientShellWidgetClass, tool,
+			XtNtitle, "Editing Modes",
+			XtNtitleEncoding, XA_STRING, NULL);
+	edit_form = XtVaCreateManagedWidget("form", formWidgetClass, edit_panel,
+			XtNdefaultDistance, 0, NULL);
 
-  form = draw_form;
-  for (i = 0; mode_switches[i].mode != F_NULL; i++) {
-    if (form == draw_form && FIRST_EDIT_MODE <= mode_switches[i].mode) {
-      form = edit_form;
-      left = None;
-      up = None;
-      wd = 0;
-    }
-    icon = mode_switches[i].icon;
-    wd = wd + icon->width;
-    if (max_wd < wd) {
-      up = left;
-      left = None;
-      wd = icon->width;
-    }
-    entry = XtVaCreateManagedWidget("button", commandWidgetClass, form,
-			    XtNlabel, "", XtNinternational, False, XtNresizable, False,
-			    XtNtop, XawChainTop, XtNbottom, XawChainTop,
-			    XtNleft, XawChainLeft, XtNright, XawChainLeft,
-			    XtNwidth, icon->width, XtNheight, icon->height,
-			    XtNbackgroundPixmap, mode_switches[i].pixmap,
-			    NULL);
-    if (up != None) XtVaSetValues(entry, XtNfromVert, up, NULL);
-    if (left != None) XtVaSetValues(entry, XtNfromHoriz, left, NULL);
-    XtAddCallback(entry, XtNcallback, (XtCallbackProc)mode_panel_button_selected,
-		  (XtPointer)mode_switches[i].icon);
-    left = entry;
-  }
+	form = draw_form;
+	for (i = 0; mode_switches[i].mode != F_NULL; i++) {
+		if (form == draw_form &&
+				FIRST_EDIT_MODE <= mode_switches[i].mode) {
+			form = edit_form;
+			left = None;
+			up = None;
+			wd = 0;
+		}
+		icon = mode_switches[i].icon;
+		wd = wd + icon->width;
+		if (max_wd < wd) {
+			up = left;
+			left = None;
+			wd = icon->width;
+		}
+		entry = XtVaCreateManagedWidget("button", commandWidgetClass,
+				form, XtNlabel, "", XtNinternational, False,
+				XtNresizable, False,
+				XtNtop, XawChainTop, XtNbottom, XawChainTop,
+				XtNleft, XawChainLeft, XtNright, XawChainLeft,
+				XtNwidth, icon->width, XtNheight, icon->height,
+				XtNbackgroundPixmap, mode_switches[i].pixmap,
+				NULL);
+		if (up != None)
+			XtVaSetValues(entry, XtNfromVert, up, NULL);
+		if (left != None)
+			XtVaSetValues(entry, XtNfromHoriz, left, NULL);
+		XtAddCallback(entry, XtNcallback,
+				(XtCallbackProc)mode_panel_button_selected,
+				(XtPointer)mode_switches[i].icon);
+		left = entry;
+	}
 }
 
 static void
 popup_mode_panel(Widget widget, XButtonEvent *event, String *params,
 		Cardinal *num_params)
 {
-  (void)widget;
-  (void)num_params;
+	(void)widget;
+	(void)num_params;
 
-  Dimension wd, ht;
-  Widget panel;
+	Dimension wd, ht;
+	Widget panel;
 
-  if (draw_panel == None) {
-    create_mode_panel();
-    XtRealizeWidget(draw_panel);
-    XtRealizeWidget(edit_panel);
-    XSetWMProtocols(tool_d, XtWindow(draw_panel), &wm_delete_window, 1);
-    XSetWMProtocols(tool_d, XtWindow(edit_panel), &wm_delete_window, 1);
-  }
-  panel = (strcmp(params[0], "edit") == 0) ? edit_panel : draw_panel;
-  if (active_mode_panel != panel) popdown_mode_panel();
-  XtVaGetValues(panel, XtNwidth, &wd, XtNheight, &ht, NULL);
-  XtVaSetValues(panel, XtNx, event->x_root - wd / 2,
-		XtNy, event->y_root - ht * 2 / 3, NULL);
-  XtPopup(panel, XtGrabNone);
-  active_mode_panel = panel;
+	if (draw_panel == None) {
+		create_mode_panel();
+		XtRealizeWidget(draw_panel);
+		XtRealizeWidget(edit_panel);
+		XSetWMProtocols(tool_d, XtWindow(draw_panel), &wm_delete_window,
+				1);
+		XSetWMProtocols(tool_d, XtWindow(edit_panel), &wm_delete_window,
+				1);
+	}
+	panel = (strcmp(params[0], "edit") == 0) ? edit_panel : draw_panel;
+	if (active_mode_panel != panel)
+		popdown_mode_panel();
+	XtVaGetValues(panel, XtNwidth, &wd, XtNheight, &ht, NULL);
+	XtVaSetValues(panel, XtNx, event->x_root - wd / 2,
+			XtNy, event->y_root - ht * 2 / 3, NULL);
+	XtPopup(panel, XtGrabNone);
+	active_mode_panel = panel;
 }
 
 /* round coordinate on square grid */

@@ -37,82 +37,82 @@
 /* X11 font names */
 
 struct _xfstruct x_fontinfo[NUM_FONTS] = {
-    {"-*-times-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-times-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-times-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-times-bold-i-normal--", (struct xfont*) NULL},
-    {"-*-avantgarde-book-r-normal--", (struct xfont*) NULL},
-    {"-*-avantgarde-book-o-normal--", (struct xfont*) NULL},
-    {"-*-avantgarde-demi-r-normal--", (struct xfont*) NULL},
-    {"-*-avantgarde-demi-o-normal--", (struct xfont*) NULL},
-    {"-*-bookman-light-r-normal--", (struct xfont*) NULL},
-    {"-*-bookman-light-i-normal--", (struct xfont*) NULL},
-    {"-*-bookman-demi-r-normal--", (struct xfont*) NULL},
-    {"-*-bookman-demi-i-normal--", (struct xfont*) NULL},
-    {"-*-courier-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-courier-medium-o-normal--", (struct xfont*) NULL},
-    {"-*-courier-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-courier-bold-o-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-medium-o-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-o-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-medium-r-narrow--", (struct xfont*) NULL},
-    {"-*-helvetica-medium-o-narrow--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-r-narrow--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-o-narrow--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-bold-i-normal--", (struct xfont*) NULL},
-    {"-*-palatino-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-palatino-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-palatino-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-palatino-bold-i-normal--", (struct xfont*) NULL},
-    {"-*-symbol-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-itc zapf chancery-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-itc zapf dingbats-*-*-*--", (struct xfont*) NULL},
+	{"-*-times-medium-r-normal--", (struct xfont*) NULL},
+	{"-*-times-medium-i-normal--", (struct xfont*) NULL},
+	{"-*-times-bold-r-normal--", (struct xfont*) NULL},
+	{"-*-times-bold-i-normal--", (struct xfont*) NULL},
+	{"-*-avantgarde-book-r-normal--", (struct xfont*) NULL},
+	{"-*-avantgarde-book-o-normal--", (struct xfont*) NULL},
+	{"-*-avantgarde-demi-r-normal--", (struct xfont*) NULL},
+	{"-*-avantgarde-demi-o-normal--", (struct xfont*) NULL},
+	{"-*-bookman-light-r-normal--", (struct xfont*) NULL},
+	{"-*-bookman-light-i-normal--", (struct xfont*) NULL},
+	{"-*-bookman-demi-r-normal--", (struct xfont*) NULL},
+	{"-*-bookman-demi-i-normal--", (struct xfont*) NULL},
+	{"-*-courier-medium-r-normal--", (struct xfont*) NULL},
+	{"-*-courier-medium-o-normal--", (struct xfont*) NULL},
+	{"-*-courier-bold-r-normal--", (struct xfont*) NULL},
+	{"-*-courier-bold-o-normal--", (struct xfont*) NULL},
+	{"-*-helvetica-medium-r-normal--", (struct xfont*) NULL},
+	{"-*-helvetica-medium-o-normal--", (struct xfont*) NULL},
+	{"-*-helvetica-bold-r-normal--", (struct xfont*) NULL},
+	{"-*-helvetica-bold-o-normal--", (struct xfont*) NULL},
+	{"-*-helvetica-medium-r-narrow--", (struct xfont*) NULL},
+	{"-*-helvetica-medium-o-narrow--", (struct xfont*) NULL},
+	{"-*-helvetica-bold-r-narrow--", (struct xfont*) NULL},
+	{"-*-helvetica-bold-o-narrow--", (struct xfont*) NULL},
+	{"-*-new century schoolbook-medium-r-normal--", (struct xfont*) NULL},
+	{"-*-new century schoolbook-medium-i-normal--", (struct xfont*) NULL},
+	{"-*-new century schoolbook-bold-r-normal--", (struct xfont*) NULL},
+	{"-*-new century schoolbook-bold-i-normal--", (struct xfont*) NULL},
+	{"-*-palatino-medium-r-normal--", (struct xfont*) NULL},
+	{"-*-palatino-medium-i-normal--", (struct xfont*) NULL},
+	{"-*-palatino-bold-r-normal--", (struct xfont*) NULL},
+	{"-*-palatino-bold-i-normal--", (struct xfont*) NULL},
+	{"-*-symbol-medium-r-normal--", (struct xfont*) NULL},
+	{"-*-itc zapf chancery-medium-i-normal--", (struct xfont*) NULL},
+	{"-*-itc zapf dingbats-*-*-*--", (struct xfont*) NULL},
 };
 
 /* PostScript font names matched with X11 font names in x_fontinfo */
 
 struct _fstruct ps_fontinfo[NUM_FONTS + 1] = {
-    {"Default",				-1},
-    {"Times-Roman",			0},
-    {"Times-Italic",			1},
-    {"Times-Bold",			2},
-    {"Times-BoldItalic",		3},
-    {"AvantGarde-Book",			4},
-    {"AvantGarde-BookOblique",		5},
-    {"AvantGarde-Demi",			6},
-    {"AvantGarde-DemiOblique",		7},
-    {"Bookman-Light",			8},
-    {"Bookman-LightItalic",		9},
-    {"Bookman-Demi",			10},
-    {"Bookman-DemiItalic",		11},
-    {"Courier",				12},
-    {"Courier-Oblique",			13},
-    {"Courier-Bold",			14},
-    {"Courier-BoldOblique",		15},
-    {"Helvetica",			16},
-    {"Helvetica-Oblique",		17},
-    {"Helvetica-Bold",			18},
-    {"Helvetica-BoldOblique",		19},
-    {"Helvetica-Narrow",		20},
-    {"Helvetica-Narrow-Oblique",	21},
-    {"Helvetica-Narrow-Bold",		22},
-    {"Helvetica-Narrow-BoldOblique",	23},
-    {"NewCenturySchlbk-Roman",		24},
-    {"NewCenturySchlbk-Italic",		25},
-    {"NewCenturySchlbk-Bold",		26},
-    {"NewCenturySchlbk-BoldItalic",	27},
-    {"Palatino-Roman",			28},
-    {"Palatino-Italic",			29},
-    {"Palatino-Bold",			30},
-    {"Palatino-BoldItalic",		31},
-    {"Symbol",				32},
-    {"ZapfChancery-MediumItalic",	33},
-    {"ZapfDingbats",			34},
+	{"Default",				-1},
+	{"Times-Roman",				0},
+	{"Times-Italic",			1},
+	{"Times-Bold",				2},
+	{"Times-BoldItalic",			3},
+	{"AvantGarde-Book",			4},
+	{"AvantGarde-BookOblique",		5},
+	{"AvantGarde-Demi",			6},
+	{"AvantGarde-DemiOblique",		7},
+	{"Bookman-Light",			8},
+	{"Bookman-LightItalic",			9},
+	{"Bookman-Demi",			10},
+	{"Bookman-DemiItalic",			11},
+	{"Courier",				12},
+	{"Courier-Oblique",			13},
+	{"Courier-Bold",			14},
+	{"Courier-BoldOblique",			15},
+	{"Helvetica",				16},
+	{"Helvetica-Oblique",			17},
+	{"Helvetica-Bold",			18},
+	{"Helvetica-BoldOblique",		19},
+	{"Helvetica-Narrow",			20},
+	{"Helvetica-Narrow-Oblique",		21},
+	{"Helvetica-Narrow-Bold",		22},
+	{"Helvetica-Narrow-BoldOblique",	23},
+	{"NewCenturySchlbk-Roman",		24},
+	{"NewCenturySchlbk-Italic",		25},
+	{"NewCenturySchlbk-Bold",		26},
+	{"NewCenturySchlbk-BoldItalic",		27},
+	{"Palatino-Roman",			28},
+	{"Palatino-Italic",			29},
+	{"Palatino-Bold",			30},
+	{"Palatino-BoldItalic",			31},
+	{"Symbol",				32},
+	{"ZapfChancery-MediumItalic",		33},
+	{"ZapfDingbats",			34},
 };
 
 /*
@@ -173,49 +173,52 @@ const char *const xft_name[NUM_FONTS] = {
 /* LaTeX font names and the corresponding PostScript font index into ps_fontinfo */
 
 struct _fstruct latex_fontinfo[NUM_LATEX_FONTS] = {
-    {"Default",		0},
-    {"Roman",		0},
-    {"Bold",		2},
-    {"Italic",		1},
-    {"Sans Serif",	16},
-    {"Typewriter",	12},
+	{"Default",		0},
+	{"Roman",		0},
+	{"Bold",		2},
+	{"Italic",		1},
+	{"Sans Serif",		16},
+	{"Typewriter",		12},
 };
 
-int x_fontnum(int psflag, int fnum)
+int
+x_fontnum(int psflag, int fnum)
 {
-    int x_font;
+	int	x_font;
 
-    if ((psflag && fnum >= NUM_FONTS) || (!psflag && fnum >= NUM_LATEX_FONTS)) {
-	file_msg("Illegal font number, using font 0");
-	fnum = 0;
-    }
-    x_font = (psflag ?  ps_fontinfo[fnum + 1].xfontnum :
+	if ((psflag && fnum >= NUM_FONTS) ||
+			(!psflag && fnum >= NUM_LATEX_FONTS)) {
+		file_msg("Illegal font number, using font 0");
+		fnum = 0;
+	}
+	x_font = (psflag ? ps_fontinfo[fnum + 1].xfontnum :
 			latex_fontinfo[fnum].xfontnum);
-    return x_font;
+	return x_font;
 }
 
-int psfontnum(char *font)
+int
+psfontnum(char *font)
 {
-    int i;
+	int	i;
 
-    if (font == NULL)
+	if (font == NULL)
+		return(DEF_PS_FONT);
+	for (i = 0; i < NUM_FONTS; ++i)	/* Do not start with Zapf Dingbats */
+		if (strcasecmp(ps_fontinfo[i].name, font) == 0)
+			return i - 1;
 	return(DEF_PS_FONT);
-    for (i = 0; i < NUM_FONTS; ++i)	/* Do not start with Zapf Dingbats */
-	if (strcasecmp(ps_fontinfo[i].name, font) == 0)
-		return (i-1);
-    return(DEF_PS_FONT);
 }
 
 int latexfontnum(char *font)
 {
-    int i;
+	int	i;
 
-    if (font == NULL)
+	if (font == NULL)
+		return DEF_LATEX_FONT;
+	for (i = 0; i < NUM_LATEX_FONTS; i++)
+		if (strcasecmp(latex_fontinfo[i].name, font) == 0)
+			return i;
 	return(DEF_LATEX_FONT);
-    for (i=0; i<NUM_LATEX_FONTS; i++)
-	if (strcasecmp(latex_fontinfo[i].name, font) == 0)
-		return (i);
-    return(DEF_LATEX_FONT);
 }
 
 void
@@ -542,7 +545,8 @@ text_origin(int *draw_x, int *draw_y, int base_x, int base_y, int align,
 		*draw_y = base_y - offset.y;
 		break;
 	default:
-		file_msg("Incorrect text alignment %d, error in function text_origin().");
+		file_msg("Incorrect text alignment %d, "
+				"error in function text_origin().", align);
 		break;
 	}
 }

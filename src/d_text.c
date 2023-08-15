@@ -125,10 +125,10 @@ static void	begin_utf8char(unsigned char *str, int *pos);
 static void	end_utf8char(unsigned char *str, int *pos);
 static void	finish_n_start(int x, int y);
 static void	init_text_input(int x, int y), cancel_text_input(void);
-static F_text  *new_text(int len, char *string);
+static F_text	*new_text(int len, char *string);
 
 static void	new_text_line(void);
-static void     overlay_text_input(int x, int y);
+static void	overlay_text_input(int x, int y);
 static int	split_at_cursor(F_text *t, int x, int y, int *cursor_len,
 				int *start_suffix);
 static void	draw_cursor(int x, int y);
@@ -164,27 +164,29 @@ static Boolean	is_preedit_running();
 void
 text_drawing_selected(void)
 {
-    canvas_kbd_proc = null_proc;
-    canvas_locmove_proc = null_proc;
-    canvas_middlebut_proc = null_proc;
-    canvas_leftbut_proc = init_text_input;
-    canvas_rightbut_proc = null_proc;
-    set_mousefun("position cursor", "", "", "", "", "");
-    if (appres.international && strlen(appres.text_preedit) != 0) {
-      if (is_preedit_running()) {
-	canvas_middlebut_proc = paste_preedit_proc;
-	canvas_rightbut_proc = close_preedit_proc;
-	set_mousefun("position cursor", "paste pre-edit", "close pre-edit", "", "", "");
-      } else {
-	canvas_rightbut_proc = open_preedit_proc;
-	set_mousefun("position cursor", "", "open pre-edit", "", "", "");
-      }
-    }
-    reset_action_on();
-    clear_mousefun_kbd();
+	canvas_kbd_proc = null_proc;
+	canvas_locmove_proc = null_proc;
+	canvas_middlebut_proc = null_proc;
+	canvas_leftbut_proc = init_text_input;
+	canvas_rightbut_proc = null_proc;
+	set_mousefun("position cursor", "", "", "", "", "");
+	if (appres.international && strlen(appres.text_preedit) != 0) {
+		if (is_preedit_running()) {
+			canvas_middlebut_proc = paste_preedit_proc;
+			canvas_rightbut_proc = close_preedit_proc;
+			set_mousefun("position cursor", "paste pre-edit",
+					"close pre-edit", "", "", "");
+		} else {
+			canvas_rightbut_proc = open_preedit_proc;
+			set_mousefun("position cursor", "", "open pre-edit",
+							"", "", "");
+		}
+	}
+	reset_action_on();
+	clear_mousefun_kbd();
 
-    set_cursor(text_cursor);
-    is_newline = False;
+	set_cursor(text_cursor);
+	is_newline = False;
 }
 
 static void
@@ -210,15 +212,15 @@ commit_current_text(void)
 static void
 finish_n_start(int x, int y)
 {
-    reset_action_on();
-    terminate_char_handler();
+	reset_action_on();
+	terminate_char_handler();
 	commit_current_text();
-    /* reset text size after any super/subscripting */
-    work_fontsize = cur_fontsize;
-    work_float_fontsize = (float) work_fontsize;
-    supersub = 0;
-    is_newline = False;
-    init_text_input(x, y);
+	/* reset text size after any super/subscripting */
+	work_fontsize = cur_fontsize;
+	work_float_fontsize = (float) work_fontsize;
+	supersub = 0;
+	is_newline = False;
+	init_text_input(x, y);
 }
 
 void
@@ -226,20 +228,20 @@ finish_text_input(int x, int y, int shift)
 {
 	(void)x;
 	(void)y;
-    if (shift) {
-	paste_primary_selection();
-	return;
-    }
-    reset_action_on();
-    terminate_char_handler();
+	if (shift) {
+		paste_primary_selection();
+		return;
+	}
+	reset_action_on();
+	terminate_char_handler();
 	commit_current_text();
-    text_drawing_selected();
-    /* reset text size after any super/subscripting */
-    work_fontsize = cur_fontsize;
-    work_float_fontsize = (float) work_fontsize;
-    /* reset super/subscript */
-    supersub = 0;
-    draw_mousefun_canvas();
+	text_drawing_selected();
+	/* reset text size after any super/subscripting */
+	work_fontsize = cur_fontsize;
+	work_float_fontsize = (float) work_fontsize;
+	/* reset super/subscript */
+	supersub = 0;
+	draw_mousefun_canvas();
 }
 
 static void
@@ -266,16 +268,16 @@ cancel_text_input(void)
 		redisplay_regions(a,b,c,d, e,f,g,h);
 		old_t = NULL;
 	}
-    /* reset text size after any super/subscripting */
-    work_fontsize = cur_fontsize;
-    work_float_fontsize = (float) work_fontsize;
-    /* reset super/subscript */
-    supersub = 0;
-    terminate_char_handler();
-    reset_action_on();
+	/* reset text size after any super/subscripting */
+	work_fontsize = cur_fontsize;
+	work_float_fontsize = (float) work_fontsize;
+	/* reset super/subscript */
+	supersub = 0;
+	terminate_char_handler();
+	reset_action_on();
 
-    text_drawing_selected();
-    draw_mousefun_canvas();
+	text_drawing_selected();
+	draw_mousefun_canvas();
 }
 
 static void
@@ -284,16 +286,16 @@ new_text_line(void)
 	commit_current_text();
 	turn_off_blinking_cursor();
 
-    /* restore x,y to point where user clicked first text or start
-       of text if clicked on existing text */
-    cur_x = orig_x;
-    cur_y = orig_y;
-    /* restore orig char height */
-    char_ht = orig_ht;
+	/* restore x,y to point where user clicked first text or start
+	   of text if clicked on existing text */
+	cur_x = orig_x;
+	cur_y = orig_y;
+	/* restore orig char height */
+	char_ht = orig_ht;
 
-    /* advance to next line */
-    cur_x = round(cur_x + char_ht*cur_textstep*sin_t);
-    cur_y = round(cur_y + char_ht*cur_textstep*cos_t);
+	/* advance to next line */
+	cur_x = round(cur_x + char_ht*cur_textstep*sin_t);
+	cur_y = round(cur_y + char_ht*cur_textstep*cos_t);
 	orig_x = cur_x;
 	orig_y = cur_y;
 
@@ -302,7 +304,7 @@ new_text_line(void)
 	work_float_fontsize = (float) work_fontsize;
 	supersub = 0;
 
-    is_newline = True;
+	is_newline = True;
 	overlay_text_input(cur_x, cur_y);
 }
 
@@ -336,29 +338,29 @@ new_text_down(void)
 static void
 new_text_up(void)
 {
-    /* only so deep */
-    if (supersub >= MAX_SUPSUB)
-	return;
+	/* only so deep */
+	if (supersub >= MAX_SUPSUB)
+		return;
 
-    commit_current_text();
-    turn_off_blinking_cursor();
+	commit_current_text();
+	turn_off_blinking_cursor();
 
-    /* save current char height */
-    heights[abs(supersub)] = char_ht;
-    if (supersub++ < 0) {
-	/* we were previously in a subscript, go back one */
-	cur_x = round(cur_x - heights[-supersub]*sin_t*PSUB_FRAC);
-	cur_y = round(cur_y - heights[-supersub]*cos_t*PSUB_FRAC);
-	work_float_fontsize /= CSUB_FRAC;
-    } else if (supersub > 0) {
-	/* we were previously in a superscript, go deeper */
-	cur_x = round(cur_x - char_ht*sin_t*PSUB_FRAC);
-	cur_y = round(cur_y - char_ht*cos_t*PSUB_FRAC);
-	work_float_fontsize *= CSUB_FRAC;
-    }
-    work_fontsize = round(work_float_fontsize);
-    is_newline = False;
-    overlay_text_input(cur_x, cur_y);
+	/* save current char height */
+	heights[abs(supersub)] = char_ht;
+	if (supersub++ < 0) {
+		/* we were previously in a subscript, go back one */
+		cur_x = round(cur_x - heights[-supersub]*sin_t*PSUB_FRAC);
+		cur_y = round(cur_y - heights[-supersub]*cos_t*PSUB_FRAC);
+		work_float_fontsize /= CSUB_FRAC;
+	} else if (supersub > 0) {
+		/* we were previously in a superscript, go deeper */
+		cur_x = round(cur_x - char_ht*sin_t*PSUB_FRAC);
+		cur_y = round(cur_y - char_ht*cos_t*PSUB_FRAC);
+		work_float_fontsize *= CSUB_FRAC;
+	}
+	work_fontsize = round(work_float_fontsize);
+	is_newline = False;
+	overlay_text_input(cur_x, cur_y);
 }
 
 /* Version of init_text_input that allows overlaying.
@@ -368,49 +370,49 @@ new_text_up(void)
 static void
 overlay_text_input(int x, int y)
 {
-    cur_x = x;
-    cur_y = y;
+	cur_x = x;
+	cur_y = y;
 
-    set_action_on();
-    set_mousefun("new text", "finish text", "cancel", "", "paste text", "");
-    draw_mousefun_kbd();
-    draw_mousefun_canvas();
-    canvas_kbd_proc = (void (*)())char_handler;
-    canvas_middlebut_proc = finish_text_input;
-    canvas_leftbut_proc = finish_n_start;
-    canvas_rightbut_proc = cancel_text_input;
+	set_action_on();
+	set_mousefun("new text", "finish text", "cancel", "", "paste text", "");
+	draw_mousefun_kbd();
+	draw_mousefun_canvas();
+	canvas_kbd_proc = (void (*)())char_handler;
+	canvas_middlebut_proc = finish_text_input;
+	canvas_leftbut_proc = finish_n_start;
+	canvas_rightbut_proc = cancel_text_input;
 
-  /*
-   * set working font info to current settings. This allows user to change
-   * font settings while we are in the middle of accepting text without
-   * affecting this text i.e. we don't allow the text to change midway
-   * through
-   */
+	/*
+	 * set working font info to current settings. This allows user to change
+	 * font settings while we are in the middle of accepting text without
+	 * affecting this text i.e. we don't allow the text to change midway
+	 * through
+	 */
 
-    base_x = cur_x;
-    base_y = cur_y;
-    save_base_x = base_x;
-    save_base_y = base_y;
+	base_x = cur_x;
+	base_y = cur_y;
+	save_base_x = base_x;
+	save_base_y = base_y;
 
-    if (is_newline) {	/* working settings already set */
-	is_newline = False;
-    } else {		/* set working settings from ind panel */
-	work_textcolor = cur_pencolor;
-	work_font     = using_ps ? cur_ps_font : cur_latex_font;
-	work_psflag   = using_ps;
-	work_flags    = cur_textflags;
-	work_textjust = cur_textjust;
-	work_depth    = cur_depth;
-	work_angle    = cur_elltextangle*M_PI/180.0;
-	while (work_angle < 0.0)
-	    work_angle += M_2PI;
-	sin_t = sin((double)work_angle);
-	cos_t = cos((double)work_angle);
+	if (is_newline) {	/* working settings already set */
+		is_newline = False;
+	} else {		/* set working settings from ind panel */
+		work_textcolor = cur_pencolor;
+		work_font     = using_ps ? cur_ps_font : cur_latex_font;
+		work_psflag   = using_ps;
+		work_flags    = cur_textflags;
+		work_textjust = cur_textjust;
+		work_depth    = cur_depth;
+		work_angle    = cur_elltextangle*M_PI/180.0;
+		while (work_angle < 0.0)
+			work_angle += M_2PI;
+		sin_t = sin((double)work_angle);
+		cos_t = cos((double)work_angle);
 
-	canvas_zoomed_xftfont = getfont(work_psflag, work_font,
-			work_fontsize * display_zoomscale, work_angle);
-	work_xftfont = canvas_zoomed_xftfont;
-    }
+		canvas_zoomed_xftfont = getfont(work_psflag, work_font,
+				work_fontsize * display_zoomscale, work_angle);
+		work_xftfont = canvas_zoomed_xftfont;
+	}
 
 	/* get text ascent and descent for cursor height and line spacing */
 	textmaxheight(work_psflag, work_font, work_fontsize, &ascent, &descent);
@@ -420,177 +422,181 @@ overlay_text_input(int x, int y)
 	cur_t = new_text(1, "");
 	start_suffix = 0;
 
-    put_msg("Ready for text input (from keyboard)");
-    initialize_char_handler(canvas_win, finish_text_input,
-			  base_x, base_y);
+	put_msg("Ready for text input (from keyboard)");
+	initialize_char_handler(canvas_win, finish_text_input,
+			base_x, base_y);
 }
 
 static void
 init_text_input(int x, int y)
 {
-    int		posn;
-    int		cursor_len;
+	int	posn;
+	int	cursor_len;
 
-    cur_x = x;
-    cur_y = y;
+	cur_x = x;
+	cur_y = y;
 
-    /* clear canvas loc move proc in case we were in text select mode */
-    canvas_locmove_proc = null_proc;
+	/* clear canvas loc move proc in case we were in text select mode */
+	canvas_locmove_proc = null_proc;
 
-    set_action_on();
-    set_mousefun("new text", "finish text", "cancel", "", "paste text", "");
-    draw_mousefun_kbd();
-    draw_mousefun_canvas();
-    canvas_kbd_proc = (void (*)())char_handler;
-    canvas_middlebut_proc = finish_text_input;
-    canvas_leftbut_proc = finish_n_start;
-    canvas_rightbut_proc = cancel_text_input;
+	set_action_on();
+	set_mousefun("new text", "finish text", "cancel", "", "paste text", "");
+	draw_mousefun_kbd();
+	draw_mousefun_canvas();
+	canvas_kbd_proc = (void (*)())char_handler;
+	canvas_middlebut_proc = finish_text_input;
+	canvas_leftbut_proc = finish_n_start;
+	canvas_rightbut_proc = cancel_text_input;
 
-    /*
-     * set working font info to current settings. This allows user to change
-     * font settings while we are in the middle of accepting text without
-     * affecting this text i.e. we don't allow the text to change midway
-     * through
-     */
+	/*
+	 * set working font info to current settings. This allows user to change
+	 * font settings while we are in the middle of accepting text without
+	 * affecting this text i.e. we don't allow the text to change midway
+	 * through
+	 */
 
-    if ((old_t = text_search(cur_x, cur_y, &posn)) == NULL) {
+	if ((old_t = text_search(cur_x, cur_y, &posn)) == NULL) {
 
-	/******************/
-	/* new text input */
-	/******************/
+		/******************/
+		/* new text input */
+		/******************/
 
-	/* set origin where mouse was clicked */
-	base_x = orig_x = x;
-	base_y = orig_y = y;
-	save_base_x = base_x;
-	save_base_y = base_y;
+		/* set origin where mouse was clicked */
+		base_x = orig_x = x;
+		base_y = orig_y = y;
+		save_base_x = base_x;
+		save_base_y = base_y;
 
-	/* set working settings from ind panel */
-	if (is_newline) {	/* working settings already set from previous text */
-	    is_newline = False;
-	} else {		/* set working settings from ind panel */
-	    work_textcolor = cur_pencolor;
-	    work_fontsize = cur_fontsize;
-	    work_font     = using_ps ? cur_ps_font : cur_latex_font;
-	    work_psflag   = using_ps;
-	    work_flags    = cur_textflags;
-	    work_textjust = cur_textjust;
-	    work_depth    = cur_depth;
-	    work_angle    = cur_elltextangle*M_PI/180.0;
-	    while (work_angle < 0.0)
-		work_angle += M_2PI;
-	    sin_t = sin((double)work_angle);
-	    cos_t = cos((double)work_angle);
+		/* set working settings from ind panel */
+		if (is_newline) {
+			/* working settings already set from previous text */
+			is_newline = False;
+		} else {
+			/* set working settings from ind panel */
+			work_textcolor = cur_pencolor;
+			work_fontsize = cur_fontsize;
+			work_font     = using_ps ? cur_ps_font : cur_latex_font;
+			work_psflag   = using_ps;
+			work_flags    = cur_textflags;
+			work_textjust = cur_textjust;
+			work_depth    = cur_depth;
+			work_angle    = cur_elltextangle*M_PI/180.0;
+			while (work_angle < 0.0)
+				work_angle += M_2PI;
+			sin_t = sin((double)work_angle);
+			cos_t = cos((double)work_angle);
 
-	    /* get the font for actually drawing on the canvas */
-	    canvas_zoomed_xftfont = getfont(work_psflag, work_font,
-			    work_fontsize * display_zoomscale, work_angle);
-	    work_xftfont = canvas_zoomed_xftfont;
-	} /* (is_newline) */
+			/* get the font for actually drawing on the canvas */
+			canvas_zoomed_xftfont = getfont(work_psflag, work_font,
+					work_fontsize * display_zoomscale,
+					work_angle);
+			work_xftfont = canvas_zoomed_xftfont;
+		} /* (is_newline) */
 
-	cur_t = new_text(1, "");
-	start_suffix = 0;
+		cur_t = new_text(1, "");
+		start_suffix = 0;
 
-    } else {
-
-	/*****************/
-	/* existing text */
-	/*****************/
-
-	if (hidden_text(old_t)) {
-	    put_msg("Can't edit hidden text");
-	    text_drawing_selected();
-	    return;
-	}
-
-	cur_t = copy_text(old_t);
-	/* make old_t "invisible" for redrawing */
-	first_char_old_t = old_t->cstring[0];
-	old_t->cstring[0] = '\0';
-
-	/* update the working text parameters */
-	work_textcolor = cur_t->color;
-	work_font = cur_t->font;
-	work_xftfont = canvas_zoomed_xftfont = cur_t->xftfont;
-	work_fontsize = cur_t->size;
-	work_psflag   = cur_t->flags & PSFONT_TEXT;
-	work_flags    = cur_t->flags;
-	work_textjust = cur_t->type;
-	work_depth    = cur_t->depth;
-	work_angle    = cur_t->angle;
-	while (work_angle < 0.0)
-		work_angle += M_2PI;
-	sin_t = sin((double)work_angle);
-	cos_t = cos((double)work_angle);
-
-	toggle_textmarker(cur_t);
-	base_x = cur_t->base_x;
-	base_y = cur_t->base_y;
-	save_base_x = base_x;
-	save_base_y = base_y;
-
-	/* set origin to base of this text so newline will go there */
-	orig_x = base_x;
-	orig_y = base_y;
-
-	/* adjust the drawing origin, depending on the text alignment */
-	text_origin(&base_x, &base_y, base_x, base_y, cur_t->type,
-			cur_t->offset);
-
-	if (split_at_cursor(cur_t, cur_x, cur_y, &cursor_len, &start_suffix)) {
-		/* invalid text */
-		return;
 	} else {
-		cur_x = base_x + round(cursor_len * cos_t);
-		cur_y = base_y - round(cursor_len * sin_t);
+
+		/*****************/
+		/* existing text */
+		/*****************/
+
+		if (hidden_text(old_t)) {
+			put_msg("Can't edit hidden text");
+			text_drawing_selected();
+			return;
+		}
+
+		cur_t = copy_text(old_t);
+		/* make old_t "invisible" for redrawing */
+		first_char_old_t = old_t->cstring[0];
+		old_t->cstring[0] = '\0';
+
+		/* update the working text parameters */
+		work_textcolor = cur_t->color;
+		work_font = cur_t->font;
+		work_xftfont = canvas_zoomed_xftfont = cur_t->xftfont;
+		work_fontsize = cur_t->size;
+		work_psflag   = cur_t->flags & PSFONT_TEXT;
+		work_flags    = cur_t->flags;
+		work_textjust = cur_t->type;
+		work_depth    = cur_t->depth;
+		work_angle    = cur_t->angle;
+		while (work_angle < 0.0)
+			work_angle += M_2PI;
+		sin_t = sin((double)work_angle);
+		cos_t = cos((double)work_angle);
+
+		toggle_textmarker(cur_t);
+		base_x = cur_t->base_x;
+		base_y = cur_t->base_y;
+		save_base_x = base_x;
+		save_base_y = base_y;
+
+		/* set origin to base of this text so newline will go there */
+		orig_x = base_x;
+		orig_y = base_y;
+
+		/* adjust the drawing origin, depending on the text alignment */
+		text_origin(&base_x, &base_y, base_x, base_y, cur_t->type,
+				cur_t->offset);
+
+		if (split_at_cursor(cur_t, cur_x, cur_y, &cursor_len,
+							&start_suffix)) {
+			/* invalid text */
+			return;
+		} else {
+			cur_x = base_x + round(cursor_len * cos_t);
+			cur_y = base_y - round(cursor_len * sin_t);
+		}
 	}
-    }
-    /* save floating font size */
-    work_float_fontsize = work_fontsize;
-    /* reset super/subscript counter */
-    supersub = 0;
+	/* save floating font size */
+	work_float_fontsize = work_fontsize;
+	/* reset super/subscript counter */
+	supersub = 0;
 
-    put_msg("Ready for text input (from keyboard)");
+	put_msg("Ready for text input (from keyboard)");
 
-    refresh_character_panel(work_psflag, work_font);
+	refresh_character_panel(work_psflag, work_font);
 
-    /* get text height and ascent, descent for cursor height and line spacing */
-    textmaxheight(work_psflag, work_font, work_fontsize, &ascent, &descent);
+	/* get text height and ascent,
+	   descent for cursor height and line spacing */
+	textmaxheight(work_psflag, work_font, work_fontsize, &ascent, &descent);
 
-    /* save original char_ht for newline */
-    orig_ht = char_ht = ascent + descent;
-    initialize_char_handler(canvas_win, finish_text_input,
-			    base_x, base_y);
+	/* save original char_ht for newline */
+	orig_ht = char_ht = ascent + descent;
+	initialize_char_handler(canvas_win, finish_text_input, base_x, base_y);
 }
 
 static F_text *
 new_text(int len, char *string)
 {
-    F_text	   *text;
+	F_text	   *text;
 
-    if ((text = create_text()) == NULL)
-	return (NULL);
+	if ((text = create_text()) == NULL)
+		return (NULL);
 
-    if ((text->cstring = new_string(len)) == NULL) {
-	free(text);
-	return (NULL);
-    }
-    text->type = work_textjust;
-    text->font = work_font;	/* put in current font number */
-    text->xftfont = canvas_zoomed_xftfont;
-    text->zoom = zoomscale;
-    text->size = work_fontsize;
-    text->angle = work_angle;
-    text->flags = work_flags;
-    text->color = cur_pencolor;
-    text->depth = work_depth;
-    text->pen_style = -1;
-    text->base_x = base_x;
-    text->base_y = base_y;
-    strcpy(text->cstring, string);
-    textextents(text);
-    text->next = NULL;
-    return (text);
+	if ((text->cstring = new_string(len)) == NULL) {
+		free(text);
+		return (NULL);
+	}
+	text->type = work_textjust;
+	text->font = work_font;	/* put in current font number */
+	text->xftfont = canvas_zoomed_xftfont;
+	text->zoom = zoomscale;
+	text->size = work_fontsize;
+	text->angle = work_angle;
+	text->flags = work_flags;
+	text->color = cur_pencolor;
+	text->depth = work_depth;
+	text->pen_style = -1;
+	text->base_x = base_x;
+	text->base_y = base_y;
+	strcpy(text->cstring, string);
+	textextents(text);
+	text->next = NULL;
+	return (text);
 }
 
 
@@ -740,9 +746,9 @@ static void	(*cr_proc) ();
 static void
 draw_cursor(int x, int y)
 {
-    pw_vector(pw, x + round(descent*sin_t), y + round(descent*cos_t),
-		x - round(ascent*sin_t), y - round(ascent*cos_t),
-		INV_PAINT, 1, RUBBER_LINE, 0.0, DEFAULT);
+	pw_vector(pw, x + round(descent*sin_t), y + round(descent*cos_t),
+			x - round(ascent*sin_t), y - round(ascent*cos_t),
+			INV_PAINT, 1, RUBBER_LINE, 0.0, DEFAULT);
 }
 
 static void (*erase_cursor)(int x, int y) = draw_cursor;
@@ -750,55 +756,56 @@ static void (*erase_cursor)(int x, int y) = draw_cursor;
 static void
 initialize_char_handler(Window w, void (*cr) (/* ??? */), int bx, int by)
 {
-    pw = w;
-    cr_proc = cr;
-    rbase_x = cbase_x = bx;	/* keep real base so dont have roundoff */
-    rbase_y = cbase_y = by;
-    rcur_x = cur_x;
-    rcur_y = cur_y;
+	pw = w;
+	cr_proc = cr;
+	rbase_x = cbase_x = bx;	/* keep real base so dont have roundoff */
+	rbase_y = cbase_y = by;
+	rcur_x = cur_x;
+	rcur_y = cur_y;
 
-    turn_on_blinking_cursor(cur_x, cur_y);
-    if (xim_ic != NULL) {
-      put_msg("Ready for text input (from keyboard with input-method)");
-      XSetICFocus(xim_ic);
-      xim_active = True;
-      xim_set_spot(cur_x, cur_y);
-    }
+	turn_on_blinking_cursor(cur_x, cur_y);
+	if (xim_ic != NULL) {
+		put_msg("Ready for text input "
+				"(from keyboard with input-method)");
+		XSetICFocus(xim_ic);
+		xim_active = True;
+		xim_set_spot(cur_x, cur_y);
+	}
 }
 
 static void
 terminate_char_handler(void)
 {
-    turn_off_blinking_cursor();
-    cr_proc = NULL;
-    if (xim_ic != NULL) XUnsetICFocus(xim_ic);
-    xim_active = False;
+	turn_off_blinking_cursor();
+	cr_proc = NULL;
+	if (xim_ic != NULL) XUnsetICFocus(xim_ic);
+	xim_active = False;
 }
 
 void
 char_handler(unsigned char *c, int clen, KeySym keysym)
 {
-    int    i;
+	int    i;
 
-    if (cr_proc == NULL)
-	return;
+	if (cr_proc == NULL)
+		return;
 
-    if (clen == 1 && c[0] == ESC) {
-	cancel_text_input();
-    } else if (clen == 1 && (c[0] == CR || c[0] == NL)) {
-	new_text_line();
-    } else if (clen == 1 && c[0] == CTRL_UNDERSCORE) {
-	/* subscript */
-	new_text_down();
-    } else if (clen == 1 && c[0] == CTRL_HAT) {
-	/* superscript */
-	new_text_up();
+	if (clen == 1 && c[0] == ESC) {
+		cancel_text_input();
+	} else if (clen == 1 && (c[0] == CR || c[0] == NL)) {
+		new_text_line();
+	} else if (clen == 1 && c[0] == CTRL_UNDERSCORE) {
+		/* subscript */
+		new_text_down();
+	} else if (clen == 1 && c[0] == CTRL_HAT) {
+		/* superscript */
+		new_text_up();
 
-    /******************************************************/
-    /* move cursor left - move char from prefix to suffix */
-    /* Control-B and the Left arrow key both do this */
-    /******************************************************/
-    } else if (keysym == XK_Left || (clen == 1 && c[0] == CTRL_B)) {
+		/******************************************************/
+		/* move cursor left - move char from prefix to suffix */
+		/* Control-B and the Left arrow key both do this      */
+		/******************************************************/
+	} else if (keysym == XK_Left || (clen == 1 && c[0] == CTRL_B)) {
 		/* already at the beginning of the string, return */
 		if (start_suffix == 0)
 			return;
@@ -818,11 +825,11 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		}
 		move_blinking_cursor(cur_x, cur_y);
 
-    /*******************************************************/
-    /* move cursor right - move char from suffix to prefix */
-    /* Control-F and Right arrow key both do this */
-    /*******************************************************/
-    } else if (keysym == XK_Right || (clen == 1 && c[0] == CTRL_F)) {
+		/*******************************************************/
+		/* move cursor right - move char from suffix to prefix */
+		/* Control-F and Right arrow key both do this          */
+		/*******************************************************/
+	} else if (keysym == XK_Right || (clen == 1 && c[0] == CTRL_F)) {
 		/* already at the end of the string, return */
 		if (cur_t->cstring[start_suffix] == '\0')
 			return;
@@ -845,11 +852,11 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		}
 		move_blinking_cursor(cur_x, cur_y);
 
-    /***************************************************************/
-    /* move cursor to beginning of text - put everything in suffix */
-    /* Control-A and Home key both do this */
-    /***************************************************************/
-    } else if (keysym == XK_Home || (clen == 1 && c[0] == CTRL_A)) {
+		/**************************************************************/
+		/* move cursor to beginning of text - put everything in suffix*/
+		/* Control-A and Home key both do this                        */
+		/**************************************************************/
+	} else if (keysym == XK_Home || (clen == 1 && c[0] == CTRL_A)) {
 		if (start_suffix == 0)
 			return;
 		else
@@ -859,11 +866,11 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 				cur_t->type, cur_t->offset);
 		move_blinking_cursor(cur_x, cur_y);
 
-    /*********************************************************/
-    /* move cursor to end of text - put everything in prefix */
-    /* Control-E and End key both do this */
-    /*********************************************************/
-    } else if (keysym == XK_End || (clen == 1 && c[0] == CTRL_E)) {
+		/*********************************************************/
+		/* move cursor to end of text - put everything in prefix */
+		/* Control-E and End key both do this                    */
+		/*********************************************************/
+	} else if (keysym == XK_End || (clen == 1 && c[0] == CTRL_E)) {
 		size_t	len = strlen(cur_t->cstring);
 
 		if (start_suffix == (int)len)
@@ -877,10 +884,10 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		cur_y += cur_t->offset.y;
 		move_blinking_cursor(cur_x, cur_y);
 
-    /******************************************/
-    /* backspace - delete char left of cursor */
-    /******************************************/
-    } else if (clen == 1 && c[0] == CTRL_H) {
+		/******************************************/
+		/* backspace - delete char left of cursor */
+		/******************************************/
+	} else if (clen == 1 && c[0] == CTRL_H) {
 		size_t	len;
 		int	o;
 		int	xmin, xmax, ymin, ymax;
@@ -934,11 +941,11 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
 		turn_on_blinking_cursor(cur_x, cur_y);
 
-    /*****************************************/
-    /* delete char to right of cursor        */
-    /* Control-D and Delete key both do this */
-    /*****************************************/
-    } else if (clen == 1 && (c[0] == DEL || c[0] == CTRL_D)) {
+		/*****************************************/
+		/* delete char to right of cursor        */
+		/* Control-D and Delete key both do this */
+		/*****************************************/
+	} else if (clen == 1 && (c[0] == DEL || c[0] == CTRL_D)) {
 		size_t	len = strlen(cur_t->cstring);
 		int	o;
 		int	xmin, xmax, ymin, ymax;
@@ -981,10 +988,10 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
 		turn_on_blinking_cursor(cur_x, cur_y);
 
-    /*******************************/
-    /* delete to beginning of line */
-    /*******************************/
-    } else if (clen == 1 && c[0] == CTRL_X) {
+		/*******************************/
+		/* delete to beginning of line */
+		/*******************************/
+	} else if (clen == 1 && c[0] == CTRL_X) {
 		size_t	len;
 		int	xmin, xmax, ymin, ymax;
 
@@ -1013,10 +1020,10 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
 		turn_on_blinking_cursor(cur_x, cur_y);
 
-    /*************************/
-    /* delete to end of line */
-    /*************************/
-    } else if (clen == 1 && c[0] == CTRL_K) {
+		/*************************/
+		/* delete to end of line */
+		/*************************/
+	} else if (clen == 1 && c[0] == CTRL_K) {
 		size_t	len = strlen(cur_t->cstring);
 		int	xmin, xmax, ymin, ymax;
 
@@ -1043,42 +1050,44 @@ char_handler(unsigned char *c, int clen, KeySym keysym)
 		redisplay_zoomed_region(xmin, ymin, xmax, ymax);
 		turn_on_blinking_cursor(cur_x, cur_y);
 
-    } else if (clen == 1 && c[0] < SP) {
-	put_msg("Invalid character ignored");
+	} else if (clen == 1 && c[0] < SP) {
+		put_msg("Invalid character ignored");
 
-    /*************************/
-    /* normal text character */
-    /*************************/
-    } else {
-	    size_t	len = strlen(cur_t->cstring);
-	    F_text	t;
+		/*************************/
+		/* normal text character */
+		/*************************/
+	} else {
+		size_t	len = strlen(cur_t->cstring);
+		F_text	t;
 
-	    turn_off_blinking_cursor();
-	    cur_t->cstring = realloc(cur_t->cstring, len + (size_t)(clen + 1));
+		turn_off_blinking_cursor();
+		cur_t->cstring = realloc(cur_t->cstring,
+						len + (size_t)(clen + 1));
 
-	    cur_t->cstring[len + clen] = '\0';
-	    for (i = len - 1; i >= start_suffix; --i)
-		    cur_t->cstring[i + clen] = cur_t->cstring[i];
-	    memcpy(cur_t->cstring + start_suffix, c, clen);
-	    start_suffix += clen;
-	    textextents(cur_t);
-	    redisplay_text(cur_t);
+		cur_t->cstring[len + clen] = '\0';
+		for (i = len - 1; i >= start_suffix; --i)
+			cur_t->cstring[i + clen] = cur_t->cstring[i];
+		memcpy(cur_t->cstring + start_suffix, c, clen);
+		start_suffix += clen;
+		textextents(cur_t);
+		redisplay_text(cur_t);
 
-	    /* determine the cursor position */
-	    /* first, assign the current text drawing origin to  cur_x, cur_y */
-	    text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
-			    cur_t->type, cur_t->offset);
-	    t = *cur_t;		/* TODO: only copy a few items to t! */
-	    t.cstring = malloc((size_t)(start_suffix + 1));
-	    memcpy(t.cstring, cur_t->cstring, start_suffix);
-	    t.cstring[start_suffix] = '\0';
-	    textextents(&t);	/* TODO: only need the offset here! */
-	    free(t.cstring);
-	    cur_x += t.offset.x;
-	    cur_y += t.offset.y;
-	    /* free_text would also free comments, fonts, and follow t->next */
-	    turn_on_blinking_cursor(cur_x, cur_y);
-    }
+		/* determine the cursor position */
+		/* first, assign the current text origin to  cur_x, cur_y */
+		text_origin(&cur_x, &cur_y, cur_t->base_x, cur_t->base_y,
+				cur_t->type, cur_t->offset);
+		t = *cur_t;		/* TODO: only copy a few items to t! */
+		t.cstring = malloc((size_t)(start_suffix + 1));
+		memcpy(t.cstring, cur_t->cstring, start_suffix);
+		t.cstring[start_suffix] = '\0';
+		textextents(&t);	/* TODO: only need the offset here! */
+		free(t.cstring);
+		cur_x += t.offset.x;
+		cur_y += t.offset.y;
+		/* free_text would also free comments, fonts,
+		   and follow t->next */
+		turn_on_blinking_cursor(cur_x, cur_y);
+	}
 }
 
 
@@ -1098,26 +1107,27 @@ static void
 turn_on_blinking_cursor(int x, int y)
 {
 	unsigned long	blink_timer = BLINK_INTERVAL;
-    cursor_is_moving = 0;
-    cursor_x = x;
-    cursor_y = y;
-    draw_cursor(x, y);
-    cursor_on = 1;
-    if (!cur_is_blinking) {	/* if we are already blinking, don't request
+	cursor_is_moving = 0;
+	cursor_x = x;
+	cursor_y = y;
+	draw_cursor(x, y);
+	cursor_on = 1;
+	if (!cur_is_blinking) {	/* if we are already blinking, don't request
 				 * another */
-	(void) XtAppAddTimeOut(tool_app, blink_timer,
-			(XtTimerCallbackProc)blink, (XtPointer)blink_timer);
-	cur_is_blinking = True;
-    }
-    stop_blinking = False;
+		(void) XtAppAddTimeOut(tool_app, blink_timer,
+					(XtTimerCallbackProc)blink,
+					(XtPointer)blink_timer);
+		cur_is_blinking = True;
+	}
+	stop_blinking = False;
 }
 
 static void
 turn_off_blinking_cursor(void)
 {
-    if (cursor_on)
-	erase_cursor(cursor_x, cursor_y);
-    stop_blinking = True;
+	if (cursor_on)
+		erase_cursor(cursor_x, cursor_y);
+	stop_blinking = True;
 }
 
 static	XtTimerCallbackProc
@@ -1129,37 +1139,38 @@ blink(XtPointer client_data, XtIntervalId *id)
 		unsigned long	value;
 	} client = {client_data};
 
-    if (!stop_blinking) {
-	if (cursor_is_moving)
-	    return (0);
-	if (cursor_on) {
-	    erase_cursor(cursor_x, cursor_y);
-	    cursor_on = 0;
+	if (!stop_blinking) {
+		if (cursor_is_moving)
+			return (0);
+		if (cursor_on) {
+			erase_cursor(cursor_x, cursor_y);
+			cursor_on = 0;
+		} else {
+			draw_cursor(cursor_x, cursor_y);
+			cursor_on = 1;
+		}
+		(void) XtAppAddTimeOut(tool_app, client.value,
+					(XtTimerCallbackProc) blink,
+					(XtPointer)client.ptr);
 	} else {
-	    draw_cursor(cursor_x, cursor_y);
-	    cursor_on = 1;
+		stop_blinking = False;	/* signal that we've stopped */
+		cur_is_blinking = False;
 	}
-	(void) XtAppAddTimeOut(tool_app, client.value,
-			(XtTimerCallbackProc) blink, (XtPointer)client.ptr);
-    } else {
-	stop_blinking = False;	/* signal that we've stopped */
-	cur_is_blinking = False;
-    }
-    return (0);
+	return (0);
 }
 
 static void
 move_blinking_cursor(int x, int y)
 {
-    cursor_is_moving = 1;
-    if (cursor_on)
-	erase_cursor(cursor_x, cursor_y);
-    cursor_x = x;
-    cursor_y = y;
-    draw_cursor(cursor_x, cursor_y);
-    cursor_on = 1;
-    cursor_is_moving = 0;
-    if (xim_active) xim_set_spot(x, y);
+	cursor_is_moving = 1;
+	if (cursor_on)
+		erase_cursor(cursor_x, cursor_y);
+	cursor_x = x;
+	cursor_y = y;
+	draw_cursor(cursor_x, cursor_y);
+	cursor_on = 1;
+	cursor_is_moving = 0;
+	if (xim_active) xim_set_spot(x, y);
 }
 
 /*
@@ -1169,13 +1180,13 @@ move_blinking_cursor(int x, int y)
 void
 reload_text_fstructs(void)
 {
-    F_text	   *t;
+	F_text	   *t;
 
-    /* reload the compound objects' texts */
-    reload_compoundfont(objects.compounds);
-    /* and the separate texts */
-    for (t=objects.texts; t != NULL; t = t->next)
-	reload_text_fstruct(t);
+	/* reload the compound objects' texts */
+	reload_compoundfont(objects.compounds);
+	/* and the separate texts */
+	for (t=objects.texts; t != NULL; t = t->next)
+		reload_text_fstruct(t);
 }
 
 /*
@@ -1185,24 +1196,25 @@ reload_text_fstructs(void)
 static void
 reload_compoundfont(F_compound *compounds)
 {
-    F_compound	   *c;
-    F_text	   *t;
+	F_compound	   *c;
+	F_text	   *t;
 
-    for (c = compounds; c != NULL; c = c->next) {
-	reload_compoundfont(c->compounds);
-	for (t=c->texts; t != NULL; t = t->next)
-	    reload_text_fstruct(t);
-    }
+	for (c = compounds; c != NULL; c = c->next) {
+		reload_compoundfont(c->compounds);
+		for (t=c->texts; t != NULL; t = t->next)
+			reload_text_fstruct(t);
+	}
 }
 
 void
 reload_text_fstruct(F_text *t)
 {
-    t->zoom = zoomscale;
-    if (t->xftfont)
-	closefont(t->xftfont);
-    t->xftfont = getfont(psfont_text(t), t->font, t->size * display_zoomscale,
-						    t->angle); }
+	t->zoom = zoomscale;
+	if (t->xftfont)
+		closefont(t->xftfont);
+	t->xftfont = getfont(psfont_text(t), t->font,
+			t->size * display_zoomscale, t->angle);
+}
 
 
 /****************************************************************/
@@ -1214,203 +1226,219 @@ reload_text_fstruct(F_text *t)
 static void
 GetPreferredGeomerty(XIC ic, char *name, XRectangle **area)
 {
-  XVaNestedList list;
-  list = XVaCreateNestedList(0, XNAreaNeeded, area, NULL);
-  XGetICValues(ic, name, list, NULL);
-  XFree(list);
+	XVaNestedList list;
+	list = XVaCreateNestedList(0, XNAreaNeeded, area, NULL);
+	XGetICValues(ic, name, list, NULL);
+	XFree(list);
 }
 
 static void
 SetGeometry(XIC ic, char *name, XRectangle *area)
 {
-  XVaNestedList list;
-  list = XVaCreateNestedList(0, XNArea, area, NULL);
-  XSetICValues(ic, name, list, NULL);
-  XFree(list);
+	XVaNestedList list;
+	list = XVaCreateNestedList(0, XNArea, area, NULL);
+	XSetICValues(ic, name, list, NULL);
+	XFree(list);
 }
 
 void
 xim_set_ic_geometry(XIC ic, int width, int height)
 {
-  XRectangle preedit_area, *preedit_area_ptr;
-  XRectangle status_area, *status_area_ptr;
+	XRectangle preedit_area, *preedit_area_ptr;
+	XRectangle status_area, *status_area_ptr;
 
-  if (xim_ic == NULL) return;
+	if (xim_ic == NULL) return;
 
-  if (appres.DEBUG)
-    fprintf(stderr, "xim_set_ic_geometry(%d, %d)\n", width, height);
+	if (appres.DEBUG)
+		fprintf(stderr, "xim_set_ic_geometry(%d, %d)\n", width, height);
 
-  if (xim_style & XIMStatusArea) {
-    GetPreferredGeomerty(ic, XNStatusAttributes, &status_area_ptr);
-    status_area.width = status_area_ptr->width;
-    if (width / 2 < status_area.width) status_area.width = width / 2;
-    status_area.height = status_area_ptr->height;
-    status_area.x = 0;
-    status_area.y = height - status_area.height;
-    SetGeometry(xim_ic, XNStatusAttributes, &status_area);
-    if (appres.DEBUG) fprintf(stderr, "status geometry: %dx%d+%d+%d\n",
-			      status_area.width, status_area.height,
-			      status_area.x, status_area.y);
-  }
-  if (xim_style & XIMPreeditArea) {
-    GetPreferredGeomerty(ic, XNPreeditAttributes, &preedit_area_ptr);
-    preedit_area.width = preedit_area_ptr->width;
-    if (preedit_area.width < width - status_area.width)
-      preedit_area.width = width - status_area.width;
-    if (width < preedit_area.width)
-      preedit_area.width = width;
-    preedit_area.height = preedit_area_ptr->height;
-    preedit_area.x = width - preedit_area.width;
-    preedit_area.y = height - preedit_area.height;
-    SetGeometry(xim_ic, XNPreeditAttributes, &preedit_area);
-    if (appres.DEBUG) fprintf(stderr, "preedit geometry: %dx%d+%d+%d\n",
-			      preedit_area.width, preedit_area.height,
-			      preedit_area.x, preedit_area.y);
-  }
+	if (xim_style & XIMStatusArea) {
+		GetPreferredGeomerty(ic, XNStatusAttributes, &status_area_ptr);
+		status_area.width = status_area_ptr->width;
+		if (width / 2 < status_area.width)
+			status_area.width = width / 2;
+		status_area.height = status_area_ptr->height;
+		status_area.x = 0;
+		status_area.y = height - status_area.height;
+		SetGeometry(xim_ic, XNStatusAttributes, &status_area);
+		if (appres.DEBUG)
+			fprintf(stderr, "status geometry: %dx%d+%d+%d\n",
+				status_area.width, status_area.height,
+				status_area.x, status_area.y);
+	}
+	if (xim_style & XIMPreeditArea) {
+		GetPreferredGeomerty(ic, XNPreeditAttributes,
+							&preedit_area_ptr);
+		preedit_area.width = preedit_area_ptr->width;
+		if (preedit_area.width < width - status_area.width)
+			preedit_area.width = width - status_area.width;
+		if (width < preedit_area.width)
+			preedit_area.width = width;
+		preedit_area.height = preedit_area_ptr->height;
+		preedit_area.x = width - preedit_area.width;
+		preedit_area.y = height - preedit_area.height;
+		SetGeometry(xim_ic, XNPreeditAttributes, &preedit_area);
+		if (appres.DEBUG)
+			fprintf(stderr, "preedit geometry: %dx%d+%d+%d\n",
+				preedit_area.width, preedit_area.height,
+				preedit_area.x, preedit_area.y);
+	}
 }
 
 Boolean
 xim_initialize(Widget w)
 {
-  const XIMStyle style_notuseful = 0;
-  const XIMStyle style_over_the_spot = XIMPreeditPosition | XIMStatusArea;
-  const XIMStyle style_old_over_the_spot = XIMPreeditPosition | XIMStatusNothing;
-  const XIMStyle style_off_the_spot = XIMPreeditArea | XIMStatusArea;
-  const XIMStyle style_root = XIMPreeditNothing | XIMStatusNothing;
-  const XIMStyle style_none = XIMPreeditNone | XIMStatusNone;
-  XIMStyles	*styles;
-  XIMStyle	 preferred_style;
-  int		 i;
-  XVaNestedList  preedit_att, status_att;
-  XPoint	 spot;
-  char		*modifier_list;
+	const XIMStyle	style_notuseful = 0;
+	const XIMStyle	style_over_the_spot =
+					XIMPreeditPosition | XIMStatusArea;
+	const XIMStyle	style_old_over_the_spot =
+					XIMPreeditPosition | XIMStatusNothing;
+	const XIMStyle	style_off_the_spot = XIMPreeditArea | XIMStatusArea;
+	const XIMStyle	style_root = XIMPreeditNothing | XIMStatusNothing;
+	const XIMStyle	style_none = XIMPreeditNone | XIMStatusNone;
+	XIMStyles	*styles;
+	XIMStyle	preferred_style;
+	int		i;
+	XVaNestedList	preedit_att, status_att;
+	XPoint		spot;
+	char		*modifier_list;
 
-  preferred_style = style_notuseful;
-  if (strncasecmp(appres.xim_input_style, "OverTheSpot", 3) == 0)
-    preferred_style = style_over_the_spot;
-  else if (strncasecmp(appres.xim_input_style, "OldOverTheSpot", 6) == 0)
-    preferred_style = style_old_over_the_spot;
-  else if (strncasecmp(appres.xim_input_style, "OffTheSpot", 3) == 0)
-    preferred_style = style_off_the_spot;
-  else if (strncasecmp(appres.xim_input_style, "Root", 3) == 0)
-    preferred_style = style_root;
-  else if (strncasecmp(appres.xim_input_style, "None", 3) != 0)
-    fprintf(stderr, "xfig: inputStyle should OverTheSpot, OffTheSpot, or Root\n");
+	preferred_style = style_notuseful;
+	if (strncasecmp(appres.xim_input_style, "OverTheSpot", 3) == 0)
+		preferred_style = style_over_the_spot;
+	else if (strncasecmp(appres.xim_input_style, "OldOverTheSpot", 6) == 0)
+		preferred_style = style_old_over_the_spot;
+	else if (strncasecmp(appres.xim_input_style, "OffTheSpot", 3) == 0)
+		preferred_style = style_off_the_spot;
+	else if (strncasecmp(appres.xim_input_style, "Root", 3) == 0)
+		preferred_style = style_root;
+	else if (strncasecmp(appres.xim_input_style, "None", 3) != 0)
+		fprintf(stderr, "xfig: inputStyle should be OverTheSpot, "
+				"OffTheSpot, or Root\n");
 
-  if (preferred_style == style_notuseful) return False;
+	if (preferred_style == style_notuseful)
+		return False;
 
-  if (appres.DEBUG) fprintf(stderr, "initialize_input_method()...\n");
-  if ((modifier_list = XSetLocaleModifiers("@im=none")) == NULL || *modifier_list == '\0') {
-	printf("Warning: XSetLocaleModifiers() failed.\n");
-  } else
+	if (appres.DEBUG) fprintf(stderr, "initialize_input_method()...\n");
+	if ((modifier_list = XSetLocaleModifiers("@im=none")) == NULL ||
+			*modifier_list == '\0') {
+		printf("Warning: XSetLocaleModifiers() failed.\n");
+	} else
 
-  xim_im = XOpenIM(XtDisplay(w), NULL, NULL, NULL);
-  if (xim_im == NULL) {
-    fprintf(stderr, "xfig: can't open input-method\n");
-    return False;
-  }
-  XGetIMValues(xim_im, XNQueryInputStyle, &styles, NULL, NULL);
-  for (i = 0; i < styles->count_styles; i++) {
-    if (appres.DEBUG)
-      fprintf(stderr, "styles[%d]=%lx\n", i, styles->supported_styles[i]);
-    if (styles->supported_styles[i] == preferred_style) {
-      xim_style = preferred_style;
-    } else if (styles->supported_styles[i] == style_root) {
-      if (xim_style == 0) xim_style = style_root;
-    } else if (styles->supported_styles[i] == style_none) {
-      if (xim_style == 0) xim_style = style_none;
-    }
-  }
-  if (xim_style != preferred_style && *modifier_list != '\0' &&
-	!strstr(modifier_list,"@im=local") &&
-	!strstr(modifier_list,"@im=none")) {
-    fprintf(stderr, "xfig: this input-method does not support %s input style\n",
-	    appres.xim_input_style);
-    if (xim_style == 0) {
-      fprintf(stderr, "xfig: it does not support ROOT input style, too...\n");
-      return False;
-    } else {
-      fprintf(stderr, "xfig: using ROOT or NONE input style instead.\n");
-    }
-  }
-  if (appres.DEBUG) {
-    char *s;
-    if (xim_style == style_over_the_spot) s = "OverTheSpot";
-    else if (xim_style == style_off_the_spot) s = "OffTheSpot";
-    else if (xim_style == style_root) s = "Root";
-    else if (xim_style == style_none) s = "None";
-    else s = "unknown";
-    fprintf(stderr, "xfig: selected input style: %s\n", s);
-  }
+		xim_im = XOpenIM(XtDisplay(w), NULL, NULL, NULL);
+	if (xim_im == NULL) {
+		fprintf(stderr, "xfig: can't open input-method\n");
+		return False;
+	}
+	XGetIMValues(xim_im, XNQueryInputStyle, &styles, NULL, NULL);
+	for (i = 0; i < styles->count_styles; i++) {
+		if (appres.DEBUG)
+			fprintf(stderr, "styles[%d]=%lx\n",
+					i, styles->supported_styles[i]);
+		if (styles->supported_styles[i] == preferred_style) {
+			xim_style = preferred_style;
+		} else if (styles->supported_styles[i] == style_root) {
+			if (xim_style == 0) xim_style = style_root;
+		} else if (styles->supported_styles[i] == style_none) {
+			if (xim_style == 0) xim_style = style_none;
+		}
+	}
+	if (xim_style != preferred_style && *modifier_list != '\0' &&
+			!strstr(modifier_list,"@im=local") &&
+			!strstr(modifier_list,"@im=none")) {
+		fprintf(stderr, "xfig: this input-method does not support "
+				"%s input style\n", appres.xim_input_style);
+		if (xim_style == 0) {
+			fprintf(stderr, "xfig: it does not support ROOT "
+					"input style, too...\n");
+			return False;
+		} else {
+			fprintf(stderr, "xfig: using ROOT or NONE input "
+					"style instead.\n");
+		}
+	}
+	if (appres.DEBUG) {
+		char *s;
+		if (xim_style == style_over_the_spot) s = "OverTheSpot";
+		else if (xim_style == style_off_the_spot) s = "OffTheSpot";
+		else if (xim_style == style_root) s = "Root";
+		else if (xim_style == style_none) s = "None";
+		else s = "unknown";
+		fprintf(stderr, "xfig: selected input style: %s\n", s);
+	}
 
 	if (xim_style == style_none) {
 		xim_ic = XCreateIC(xim_im, XNInputStyle, xim_style, NULL, NULL);
 	} else {
-  spot.x = 20;  /* dummy */
-  spot.y = 20;
-  preedit_att = XVaCreateNestedList(0, XNFontSet, appres.fixed_fontset,
-				    XNSpotLocation, &spot,
-				    NULL);
-  status_att = XVaCreateNestedList(0, XNFontSet, appres.fixed_fontset,
-				   NULL);
-  xim_ic = XCreateIC(xim_im, XNInputStyle , xim_style,
-		     XNClientWindow, XtWindow(w),
-		     XNFocusWindow, XtWindow(w),
-		     XNPreeditAttributes, preedit_att,
-		     XNStatusAttributes, status_att,
-		     NULL, NULL);
-  XFree(preedit_att);
-  XFree(status_att);
+		spot.x = 20;  /* dummy */
+		spot.y = 20;
+		preedit_att = XVaCreateNestedList(0, XNFontSet,
+				appres.fixed_fontset, XNSpotLocation, &spot,
+				NULL);
+		status_att = XVaCreateNestedList(0, XNFontSet,
+				appres.fixed_fontset, NULL);
+		xim_ic = XCreateIC(xim_im, XNInputStyle , xim_style,
+				XNClientWindow, XtWindow(w),
+				XNFocusWindow, XtWindow(w),
+				XNPreeditAttributes, preedit_att,
+				XNStatusAttributes, status_att, NULL, NULL);
+		XFree(preedit_att);
+		XFree(status_att);
 	}
-  if (xim_ic == NULL) {
-    fprintf(stderr, "xfig: can't create input-context\n");
-    return False;
-  }
+	if (xim_ic == NULL) {
+		fprintf(stderr, "xfig: can't create input-context\n");
+		return False;
+	}
 
-  if (appres.DEBUG) fprintf(stderr, "input method initialized\n");
+	if (appres.DEBUG) fprintf(stderr, "input method initialized\n");
 
-  return True;
+	return True;
 }
 
 static void
 xim_set_spot(int x, int y)
 {
-  static XPoint spot;
-  XVaNestedList preedit_att;
-  int x1, y1;
-  if (xim_ic != NULL) {
-    if (xim_style & XIMPreeditPosition) {
-      if (appres.DEBUG) fprintf(stderr, "xim_set_spot(%d,%d)\n", x, y);
-      preedit_att = XVaCreateNestedList(0, XNSpotLocation, &spot, NULL);
-      x1 = ZOOMX(x) + 1;
-      y1 = ZOOMY(y);
-      if (x1 < 0) x1 = 0;
-      if (y1 < 0) y1 = 0;
-      spot.x = x1;
-      spot.y = y1;
-      XSetICValues(xim_ic, XNPreeditAttributes, preedit_att, NULL);
-      XFree(preedit_att);
-    }
-  }
+	static XPoint	spot;
+	XVaNestedList	preedit_att;
+	int		x1, y1;
+	if (xim_ic != NULL) {
+		if (xim_style & XIMPreeditPosition) {
+			if (appres.DEBUG)
+				fprintf(stderr, "xim_set_spot(%d,%d)\n", x, y);
+			preedit_att = XVaCreateNestedList(0, XNSpotLocation,
+								&spot, NULL);
+			x1 = ZOOMX(x) + 1;
+			y1 = ZOOMY(y);
+			if (x1 < 0) x1 = 0;
+			if (y1 < 0) y1 = 0;
+			spot.x = x1;
+			spot.y = y1;
+			XSetICValues(xim_ic, XNPreeditAttributes, preedit_att,
+								NULL);
+			XFree(preedit_att);
+		}
+	}
 }
 
 static Boolean
 is_preedit_running(void)
 {
-  pid_t pid;
-  sprintf(preedit_filename, "%s/%s%06d", TMPDIR, "xfig-preedit", getpid());
-  pid = waitpid(-1, NULL, WNOHANG);
-  if (0 < preedit_pid && pid == preedit_pid) preedit_pid = -1;
-  return (0 < preedit_pid && access(preedit_filename, R_OK) == 0);
+	pid_t	pid;
+	sprintf(preedit_filename, "%s/%s%06d",
+					TMPDIR, "xfig-preedit", getpid());
+	pid = waitpid(-1, NULL, WNOHANG);
+	if (0 < preedit_pid && pid == preedit_pid)
+		preedit_pid = -1;
+	return (0 < preedit_pid && access(preedit_filename, R_OK) == 0);
 }
 
 void
 kill_preedit(void)
 {
-  if (0 < preedit_pid) {
-    kill(preedit_pid, SIGTERM);
-    preedit_pid = -1;
-  }
+	if (0 < preedit_pid) {
+		kill(preedit_pid, SIGTERM);
+		preedit_pid = -1;
+	}
 }
 
 static void
@@ -1419,12 +1447,12 @@ close_preedit_proc(int x, int y)
 	(void)x;
 	(void)y;
 
-  if (is_preedit_running()) {
-    kill_preedit();
-    put_msg("Pre-edit window closed");
-  }
-  text_drawing_selected();
-  draw_mousefun_canvas();
+	if (is_preedit_running()) {
+		kill_preedit();
+		put_msg("Pre-edit window closed");
+	}
+	text_drawing_selected();
+	draw_mousefun_canvas();
 }
 
 static void
@@ -1433,53 +1461,58 @@ open_preedit_proc(int x, int y)
 	(void)x;
 	(void)y;
 
-  int i;
-  if (!is_preedit_running()) {
-    put_msg("Opening pre-edit window...");
-    draw_mousefun_canvas();
-    set_temp_cursor(wait_cursor);
-    preedit_pid = fork();
-    if (preedit_pid == -1) {  /* cannot fork */
-        fprintf(stderr, "Cannot fork the process: %s\n", strerror(errno));
-    } else if (preedit_pid == 0) {  /* child process; execute xfig-preedit */
-        execlp(appres.text_preedit, appres.text_preedit, preedit_filename, NULL);
-        fprintf(stderr, "Cannot execute %s\n", appres.text_preedit);
-        exit(-1);
-    } else {  /* parent process; wait until xfig-preedit is up */
-        for (i = 0; i < 10 && !is_preedit_running(); i++) sleep(1);
-    }
-    if (is_preedit_running())
-	put_msg("Pre-edit window opened");
-    else
-	put_msg("Cannot open pre-edit window");
-    reset_cursor();
-  }
-  text_drawing_selected();
-  draw_mousefun_canvas();
+	int	i;
+	if (!is_preedit_running()) {
+		put_msg("Opening pre-edit window...");
+		draw_mousefun_canvas();
+		set_temp_cursor(wait_cursor);
+		preedit_pid = fork();
+		if (preedit_pid == -1) {  /* cannot fork */
+			fprintf(stderr, "Cannot fork the process: %s\n",
+					strerror(errno));
+		} else if (preedit_pid == 0) {
+			/* child process; execute xfig-preedit */
+			execlp(appres.text_preedit, appres.text_preedit,
+					preedit_filename, NULL);
+			fprintf(stderr, "Cannot execute %s\n",
+					appres.text_preedit);
+			exit(-1);
+		} else {  /* parent process; wait until xfig-preedit is up */
+			for (i = 0; i < 10 && !is_preedit_running(); i++)
+				sleep(1);
+		}
+		if (is_preedit_running())
+			put_msg("Pre-edit window opened");
+		else
+			put_msg("Cannot open pre-edit window");
+		reset_cursor();
+	}
+	text_drawing_selected();
+	draw_mousefun_canvas();
 }
 
 static void
 paste_preedit_proc(int x, int y)
 {
-  FILE *fp;
-  int ch;
-  if (!is_preedit_running()) {
-    open_preedit_proc(x, y);
-  } else if ((fp = fopen(preedit_filename, "r")) != NULL) {
-    init_text_input(x, y);
-    while ((ch = getc(fp)) != EOF) {
-      if (ch == '\\')
-	new_text_line();
-      else
-	prefix[leng_prefix++] = ch;
-    }
-    prefix[leng_prefix] = '\0';
-    finish_text_input(0,0,0);
-    fclose(fp);
-    put_msg("Text pasted from pre-edit window");
-  } else {
-    put_msg("Cannot get text from pre-edit window");
-  }
-  text_drawing_selected();
-  draw_mousefun_canvas();
+	FILE	*fp;
+	int	ch;
+	if (!is_preedit_running()) {
+		open_preedit_proc(x, y);
+	} else if ((fp = fopen(preedit_filename, "r")) != NULL) {
+		init_text_input(x, y);
+		while ((ch = getc(fp)) != EOF) {
+			if (ch == '\\')
+				new_text_line();
+			else
+				prefix[leng_prefix++] = ch;
+		}
+		prefix[leng_prefix] = '\0';
+		finish_text_input(0,0,0);
+		fclose(fp);
+		put_msg("Text pasted from pre-edit window");
+	} else {
+		put_msg("Cannot get text from pre-edit window");
+	}
+	text_drawing_selected();
+	draw_mousefun_canvas();
 }

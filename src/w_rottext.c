@@ -49,12 +49,15 @@
 /* ---------------------------------------------------------------------- */
 
 
-static char            *my_strtok(char *str1, char *str2);
+int		XRotDrawString(Display *dpy, XFontStruct *font,
+			Drawable drawable, GC gc, int x, int y, char *str);
+int		XRotDrawImageString(Display *dpy, XFontStruct *font,
+			Drawable drawable, GC gc, int x, int y, char *str);
 
-int                     XRotDrawString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *str);
-int                     XRotDrawImageString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *str);
-
-static int              XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *text, int align, int bg);
+static char	*my_strtok(char *str1, char *str2);
+static int	XRotDrawHorizontalString(Display *dpy, XFontStruct *font,
+			Drawable drawable, GC gc, int x, int y, char *text,
+			int align, int bg);
 
 
 /* ---------------------------------------------------------------------- */
@@ -68,45 +71,45 @@ static int              XRotDrawHorizontalString(Display *dpy, XFontStruct *font
 static char
 *my_strtok(char *str1, char *str2)
 {
-    char		*ret;
-    int			stop;
-    size_t		i, j;
-    static size_t	start, len;
-    static char		*stext;
+	char		*ret;
+	int		stop;
+	size_t		i, j;
+	static size_t	start, len;
+	static char	*stext;
 
-    if (str2==NULL)
-	return NULL;
+	if (str2==NULL)
+		return NULL;
 
-    /* initialise if str1 not NULL */
-    if (str1!=NULL) {
-	start=0;
-	stext=str1;
-	len=strlen(str1);
-    }
+	/* initialise if str1 not NULL */
+	if (str1!=NULL) {
+		start=0;
+		stext=str1;
+		len = strlen(str1);
+	}
 
-    /* run out of tokens ? */
-    if (start>=len)
-	return NULL;
+	/* run out of tokens ? */
+	if (start >= len)
+		return NULL;
 
-    /* loop through characters */
-    for(i=start; i<len; i++) {
-	/* loop through delimiters */
-	stop=0;
-	for(j=0; j<strlen(str2); j++)
-	    if (stext[i]==str2[j])
-		stop=1;
+	/* loop through characters */
+	for(i = start; i < len; i++) {
+		/* loop through delimiters */
+		stop = 0;
+		for(j = 0; j < strlen(str2); j++)
+			if (stext[i] == str2[j])
+				stop = 1;
 
-	if (stop)
-	    break;
-    }
+		if (stop)
+			break;
+	}
 
-    stext[i]='\0';
+	stext[i]='\0';
 
-    ret=stext+start;
+	ret = stext + start;
 
-    start=i+1;
+	start = i + 1;
 
-    return ret;
+	return ret;
 }
 
 
@@ -119,10 +122,11 @@ static char
 /**************************************************************************/
 
 int
-XRotDrawString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *str)
+XRotDrawString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc,
+		int x, int y, char *str)
 {
-    return (XRotDrawHorizontalString(dpy, font, drawable, gc,
-				   x, y, str, NONE, 0));
+	return XRotDrawHorizontalString(dpy, font, drawable, gc,
+					x, y, str, NONE, 0);
 }
 
 
@@ -135,10 +139,11 @@ XRotDrawString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x,
 /**************************************************************************/
 
 int
-XRotDrawImageString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *str)
+XRotDrawImageString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc,
+		int x, int y, char *str)
 {
-    return(XRotDrawHorizontalString(dpy, font, drawable, gc,
-				  x, y, str, NONE, 1));
+	return XRotDrawHorizontalString(dpy, font, drawable, gc,
+					x, y, str, NONE, 1);
 }
 
 
@@ -150,106 +155,110 @@ XRotDrawImageString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, i
 /**************************************************************************/
 
 static int
-XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable, GC gc, int x, int y, char *text, int align, int bg)
+XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable,
+		GC gc, int x, int y, char *text, int align, int bg)
 {
-    GC my_gc;
-    size_t nl=1, i;
-    int height;
-    int xp, yp;
-    char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
-    int dir, asc, desc;
-    XCharStruct overall;
+	GC		my_gc;
+	size_t		nl = 1, i;
+	int		height;
+	int		xp, yp;
+	char		*str1, *str2, *str3;
+	char		*str2_a="\0", *str2_b = "\n\0";
+	int		dir, asc, desc;
+	XCharStruct	overall;
 
-    if (text == NULL || *text=='\0') {
-	DEBUG_PRINT1("Empty string, ignoring\n");
+	if (text == NULL || *text=='\0') {
+		DEBUG_PRINT1("Empty string, ignoring\n");
+		return 0;
+	}
+
+	/* this gc has similar properties to the user's gc (including stipple) */
+	my_gc=XCreateGC(dpy, drawable, (unsigned long) 0, 0);
+	XCopyGC(dpy, gc,
+			GCForeground | GCBackground | GCFunction | GCStipple|
+			GCFillStyle | GCClipMask | GCClipXOrigin |
+			GCClipYOrigin| GCSubwindowMode | GCTileStipXOrigin |
+			GCTileStipYOrigin | GCPlaneMask,
+			my_gc);
+	XSetFont(dpy, my_gc, font->fid);
+
+	/* count number of sections in string */
+	if (align!=NONE)
+		for(i = 0; i < strlen(text) - 1; i++)
+			if (text[i] == '\n')
+				nl++;
+
+	/* ignore newline characters if not doing alignment */
+	if (align == NONE)
+		str2 = str2_a;
+	else
+		str2 = str2_b;
+
+	/* overall font height */
+	height = font->ascent + font->descent;
+
+	/* y position */
+	if (align==TLEFT || align==TCENTRE || align==TRIGHT)
+		yp=y+font->ascent;
+	else if (align==MLEFT || align==MCENTRE || align==MRIGHT)
+		yp=y-nl*height/2+font->ascent;
+	else if (align==BLEFT || align==BCENTRE || align==BRIGHT)
+		yp=y-nl*height+font->ascent;
+	else
+		yp=y;
+
+	str1=strdup(text);
+	if (str1==NULL)
+		return 1;
+
+	str3=my_strtok(str1, str2);
+
+	if (is_i18n_font(font)) {
+		XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc, &overall);
+
+		/* overall font height */
+		height=overall.ascent+overall.descent;
+
+		/* y position */
+		if (align==TLEFT || align==TCENTRE || align==TRIGHT)
+			yp=y+overall.ascent;
+		else if (align==MLEFT || align==MCENTRE || align==MRIGHT)
+			yp=y-nl*height/2+overall.ascent;
+		else if (align==BLEFT || align==BCENTRE || align==BRIGHT)
+			yp=y-nl*height+overall.ascent;
+		else
+			yp=y;
+	}
+
+	/* loop through each section in the string */
+	do {
+		XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc,
+				&overall);
+
+		/* where to draw section in x ? */
+		if (align==TLEFT || align==MLEFT || align==BLEFT || align==NONE)
+			xp=x;
+		else if (align==TCENTRE || align==MCENTRE || align==BCENTRE)
+			xp=x-overall.rbearing/2;
+		else
+			xp=x-overall.rbearing;
+
+		/* draw string onto bitmap */
+		if (!bg)
+			XDrawString(dpy, drawable, my_gc, xp, yp, str3,
+					strlen(str3));
+		else
+			XDrawImageString(dpy, drawable, my_gc, xp, yp, str3,
+					strlen(str3));
+
+		/* move to next line */
+		yp += height;
+
+		str3 = my_strtok((char *)NULL, str2);
+	} while(str3 != NULL);
+
+	free(str1);
+	XFreeGC(dpy, my_gc);
+
 	return 0;
-    }
-
-    /* this gc has similar properties to the user's gc (including stipple) */
-    my_gc=XCreateGC(dpy, drawable, (unsigned long) 0, 0);
-    XCopyGC(dpy, gc,
-	    GCForeground|GCBackground|GCFunction|GCStipple|GCFillStyle|
-	    GCClipMask|GCClipXOrigin|GCClipYOrigin|GCSubwindowMode|
-	    GCTileStipXOrigin|GCTileStipYOrigin|GCPlaneMask, my_gc);
-    XSetFont(dpy, my_gc, font->fid);
-
-    /* count number of sections in string */
-    if (align!=NONE)
-	for(i=0; i<strlen(text)-1; i++)
-	    if (text[i]=='\n')
-		nl++;
-
-    /* ignore newline characters if not doing alignment */
-    if (align==NONE)
-	str2=str2_a;
-    else
-	str2=str2_b;
-
-    /* overall font height */
-    height=font->ascent+font->descent;
-
-    /* y position */
-    if (align==TLEFT || align==TCENTRE || align==TRIGHT)
-	yp=y+font->ascent;
-    else if (align==MLEFT || align==MCENTRE || align==MRIGHT)
-	yp=y-nl*height/2+font->ascent;
-    else if (align==BLEFT || align==BCENTRE || align==BRIGHT)
-	yp=y-nl*height+font->ascent;
-    else
-	yp=y;
-
-    str1=strdup(text);
-    if (str1==NULL)
-	return 1;
-
-    str3=my_strtok(str1, str2);
-
-    if (is_i18n_font(font)) {
-      XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc, &overall);
-
-      /* overall font height */
-      height=overall.ascent+overall.descent;
-
-      /* y position */
-      if (align==TLEFT || align==TCENTRE || align==TRIGHT)
-	  yp=y+overall.ascent;
-      else if (align==MLEFT || align==MCENTRE || align==MRIGHT)
-	  yp=y-nl*height/2+overall.ascent;
-      else if (align==BLEFT || align==BCENTRE || align==BRIGHT)
-	  yp=y-nl*height+overall.ascent;
-      else
-	  yp=y;
-    }
-
-    /* loop through each section in the string */
-    do {
-        XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc,
-                     &overall);
-
-	/* where to draw section in x ? */
-	if (align==TLEFT || align==MLEFT || align==BLEFT || align==NONE)
-	    xp=x;
-	else if (align==TCENTRE || align==MCENTRE || align==BCENTRE)
-	    xp=x-overall.rbearing/2;
-	else
-	    xp=x-overall.rbearing;
-
-	/* draw string onto bitmap */
-	if (!bg)
-	    XDrawString(dpy, drawable, my_gc, xp, yp, str3, strlen(str3));
-	else
-	    XDrawImageString(dpy, drawable, my_gc, xp, yp, str3, strlen(str3));
-
-	/* move to next line */
-	yp+=height;
-
-	str3=my_strtok((char *)NULL, str2);
-    }
-    while(str3!=NULL);
-
-    free(str1);
-    XFreeGC(dpy, my_gc);
-
-    return 0;
 }

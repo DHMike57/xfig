@@ -98,60 +98,61 @@ static void	zXDrawLines(Display *d, Window w, GC gc, zXPoint *points,
 
 void init_font(void)
 {
-    XftPattern	   *pattern;
-    XftResult	    res;
-    double	    dbl;
+	XftPattern	*pattern;
+	XftResult	res;
+	double		dbl;
 
-    if (appres.normalFont == NULL || *appres.normalFont == '\0')
-	appres.normalFont = NORMAL_FONT;
-    if (appres.buttonFont == NULL || *appres.buttonFont == '\0')
-	appres.buttonFont = BUTTON_FONT;
+	if (appres.normalFont == NULL || *appres.normalFont == '\0')
+		appres.normalFont = NORMAL_FONT;
+	if (appres.buttonFont == NULL || *appres.buttonFont == '\0')
+		appres.buttonFont = BUTTON_FONT;
 
-    /* Get the mono font. Similar to getfont() in u_fonts.c. */
+	/* Get the mono font. Similar to getfont() in u_fonts.c. */
 
-    pattern = XftNameParse(MONO_FONT);
-    XftPatternAddBool(pattern, XFT_ANTIALIAS, False);
-    /* Re-compute the pixelsize, since XFT_DPI is ignored. */
-    if (XftResultMatch != XftPatternGetDouble(pattern, XFT_SIZE, 0, &dbl)) {
-	fprintf(stderr, "could not find mono font size!");
-	dbl = 10.;
-    }
-    /* pixelsize; pixelsize overrides font size */
-    dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
-    XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
-
-    /* I printed the pattern before and after the match, and it worked to use
-       the same pointer as request and result pattern. */
-    pattern = XftFontMatch(tool_d, tool_sn, pattern, &res);
-
-    mono_font = XftFontOpenPattern(tool_d, pattern);
-
-
-    while ((roman_font = XLoadQueryFont(tool_d, appres.normalFont)) == 0) {
-	if (strcmp(appres.normalFont,"fixed") == 0) {
-	    fprintf(stderr, "Can't load 'fixed' font, something is wrong");
-	    fprintf(stderr," with your server - quitting.\n");
-	    exit(1);
+	pattern = XftNameParse(MONO_FONT);
+	XftPatternAddBool(pattern, XFT_ANTIALIAS, False);
+	/* Re-compute the pixelsize, since XFT_DPI is ignored. */
+	if (XftResultMatch != XftPatternGetDouble(pattern, XFT_SIZE, 0, &dbl)) {
+		fprintf(stderr, "could not find mono font size!");
+		dbl = 10.;
 	}
-	file_msg("Can't load font: %s, using 'fixed'\n", appres.normalFont);
-	appres.normalFont = "fixed";
-    } /* now loop to load "fixed" */
-    hidden_text_length = 4 * roman_font->max_bounds.width;
-    if ((button_font = XLoadQueryFont(tool_d, appres.buttonFont)) == 0) {
-	file_msg("Can't load font: %s, using %s\n",
-		appres.buttonFont, appres.normalFont);
-	button_font = XLoadQueryFont(tool_d, appres.normalFont);
-    }
+	/* pixelsize; pixelsize overrides font size */
+	dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
+	XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
 
-    if (appres.DEBUG) {
-	char	buf[230];
-	fprintf(stderr, "button_font: %s, fid: %lu\n", appres.buttonFont,
-		    button_font->fid);
-	fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
-		    roman_font->fid);
-	XftNameUnparse(pattern, buf, 230);
-	fprintf(stderr, "mono_font: %s\n", buf);
-    }
+	/* I printed the pattern before and after the match, and it worked to
+	   use the same pointer as request and result pattern. */
+	pattern = XftFontMatch(tool_d, tool_sn, pattern, &res);
+
+	mono_font = XftFontOpenPattern(tool_d, pattern);
+
+
+	while ((roman_font = XLoadQueryFont(tool_d, appres.normalFont)) == 0) {
+		if (strcmp(appres.normalFont,"fixed") == 0) {
+			fprintf(stderr, "Can't load 'fixed' font, something is wrong");
+			fprintf(stderr," with your server - quitting.\n");
+			exit(1);
+		}
+		file_msg("Can't load font: %s, using 'fixed'\n",
+				appres.normalFont);
+		appres.normalFont = "fixed";
+	} /* now loop to load "fixed" */
+	hidden_text_length = 4 * roman_font->max_bounds.width;
+	if ((button_font = XLoadQueryFont(tool_d, appres.buttonFont)) == 0) {
+		file_msg("Can't load font: %s, using %s\n",
+				appres.buttonFont, appres.normalFont);
+		button_font = XLoadQueryFont(tool_d, appres.normalFont);
+	}
+
+	if (appres.DEBUG) {
+		char	buf[230];
+		fprintf(stderr, "button_font: %s, fid: %lu\n",
+				appres.buttonFont, button_font->fid);
+		fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
+				roman_font->fid);
+		XftNameUnparse(pattern, buf, 230);
+		fprintf(stderr, "mono_font: %s\n", buf);
+	}
 
 }
 
@@ -191,69 +192,72 @@ void
 pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 	char *string, Color color, Color background)
 {
-    unsigned long	xfg, xbg;
+	unsigned long	xfg, xbg;
 
-    if (fstruct == NULL) {
-	fprintf(stderr,"Error, in pw_text, fstruct==NULL\n");
-	return;
-    }
+	if (fstruct == NULL) {
+		fprintf(stderr,"Error, in pw_text, fstruct==NULL\n");
+		return;
+	}
 
-    /* if this depth is inactive, draw the text in gray */
-    /* if depth == MAX_DEPTH+1 then the caller wants the original color no matter what */
-    if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth)))
-	color = MED_GRAY;
+	/* if this depth is inactive, draw the text in gray */
+	/* if depth == MAX_DEPTH+1 then the caller wants the original color
+	   no matter what */
+	if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth)))
+		color = MED_GRAY;
 
-    /* get the X colors */
-    xfg = getpixel(color);
-    xbg = getpixel(background);
-    if ((xfg != gc_color[op]) ||
-	(background != COLOR_NONE && (xbg != gc_background[op]))) {
-	    /* don't change the colors for ERASE */
-	    if (op == PAINT || op == INV_PAINT) {
-		if (op == PAINT)
-		    set_x_fg_color(gccache[op], color);
-		else
-		    XSetForeground(tool_d,gccache[op], xfg ^ getpixel(CANVAS_BG));
-		gc_color[op] = xfg;
-		if (background != COLOR_NONE) {
-		    set_x_bg_color(gccache[op], background);
-		    gc_background[op] = xbg;
+	/* get the X colors */
+	xfg = getpixel(color);
+	xbg = getpixel(background);
+	if ((xfg != gc_color[op]) || (background != COLOR_NONE &&
+				(xbg != gc_background[op]))) {
+		/* don't change the colors for ERASE */
+		if (op == PAINT || op == INV_PAINT) {
+			if (op == PAINT)
+				set_x_fg_color(gccache[op], color);
+			else
+				XSetForeground(tool_d,gccache[op],
+						xfg ^ getpixel(CANVAS_BG));
+			gc_color[op] = xfg;
+			if (background != COLOR_NONE) {
+				set_x_bg_color(gccache[op], background);
+				gc_background[op] = xbg;
+			}
 		}
-	    }
-    }
+	}
 
-    /* check for preview cancel here.  The text call may take some time if
-       a large font has to be rotated. */
-    if (check_cancel())
-	return;
+	/* check for preview cancel here.  The text call may take some time if
+	   a large font has to be rotated. */
+	if (check_cancel())
+		return;
 
-    if (background != COLOR_NONE) {
-	zXRotDrawImageString(tool_d, fstruct, w, gccache[op], x, y, string);
-    } else {
-	zXRotDrawString(tool_d, fstruct, w, gccache[op], x, y, string);
-    }
+	if (background != COLOR_NONE) {
+		zXRotDrawImageString(tool_d, fstruct, w, gccache[op], x, y,
+				string);
+	} else {
+		zXRotDrawString(tool_d, fstruct, w, gccache[op], x, y, string);
+	}
 }
 
 PR_SIZE
 textsize(XFontStruct *fstruct, int n, char *s)
 {
-    PR_SIZE	    ret;
-    int		    dir, asc, desc;
-    XCharStruct	    overall;
+	PR_SIZE	ret;
+	int		dir, asc, desc;
+	XCharStruct	overall;
 
-    if (appres.international) {
-      extern void i18n_text_extents(); /* w_i18n.h */
-      i18n_text_extents(fstruct, s, n, &dir, &asc, &desc, &overall);
-      ret.length = ZOOM_FACTOR * overall.width;
-      ret.ascent = ZOOM_FACTOR * overall.ascent;
-      ret.descent = ZOOM_FACTOR * overall.descent;
-      return (ret);
-    }
-    XTextExtents(fstruct, s, n, &dir, &asc, &desc, &overall);
-    ret.length = ZOOM_FACTOR * overall.width;
-    ret.ascent = ZOOM_FACTOR * overall.ascent;
-    ret.descent = ZOOM_FACTOR * overall.descent;
-    return (ret);
+	if (appres.international) {
+		extern void i18n_text_extents(); /* w_i18n.h */
+		i18n_text_extents(fstruct, s, n, &dir, &asc, &desc, &overall);
+		ret.length = ZOOM_FACTOR * overall.width;
+		ret.ascent = ZOOM_FACTOR * overall.ascent;
+		ret.descent = ZOOM_FACTOR * overall.descent;
+		return (ret);
+	}
+	XTextExtents(fstruct, s, n, &dir, &asc, &desc, &overall);
+	ret.length = ZOOM_FACTOR * overall.width;
+	ret.ascent = ZOOM_FACTOR * overall.ascent;
+	ret.descent = ZOOM_FACTOR * overall.descent;
+	return (ret);
 }
 
 /* LINES */
@@ -266,67 +270,68 @@ static int	gc_thickness[NUMOPS],
 GC
 makegc(int op, Pixel fg, Pixel bg)
 {
-    register GC	    ngc;
-    XGCValues	    gcv;
-    unsigned long   gcmask;
+	register GC	ngc;
+	XGCValues	gcv;
+	unsigned long	gcmask;
 
-    gcv.font = roman_font->fid;
-    gcv.join_style = JoinMiter;
-    gcv.cap_style = CapButt;
-    gcmask = GCJoinStyle | GCCapStyle | GCFunction | GCForeground |
+	gcv.font = roman_font->fid;
+	gcv.join_style = JoinMiter;
+	gcv.cap_style = CapButt;
+	gcmask = GCJoinStyle | GCCapStyle | GCFunction | GCForeground |
 		GCBackground | GCFont;
-    switch (op) {
-      case PAINT:
-	gcv.foreground = fg;
-	gcv.background = bg;
-	gcv.function = GXcopy;
-	break;
-      case ERASE:
-	gcv.foreground = bg;
-	gcv.background = bg;
-	gcv.function = GXcopy;
-	break;
-      case INV_PAINT:
-	gcv.foreground = fg ^ bg;
-	gcv.background = bg;
-	gcv.function = GXxor;
-	break;
-    }
+	switch (op) {
+	case PAINT:
+		gcv.foreground = fg;
+		gcv.background = bg;
+		gcv.function = GXcopy;
+		break;
+	case ERASE:
+		gcv.foreground = bg;
+		gcv.background = bg;
+		gcv.function = GXcopy;
+		break;
+	case INV_PAINT:
+		gcv.foreground = fg ^ bg;
+		gcv.background = bg;
+		gcv.function = GXxor;
+		break;
+	}
 
-    ngc = XCreateGC(tool_d, tool_w, gcmask, &gcv);
-    return (ngc);
+	ngc = XCreateGC(tool_d, tool_w, gcmask, &gcv);
+	return (ngc);
 }
 
 void init_gc(void)
 {
-    int		    i;
-    XGCValues	    gcv;
+	int		i;
+	XGCValues	gcv;
 
-    gccache[PAINT] = makegc(PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
-    gccache[ERASE] = makegc(ERASE, getpixel(DEFAULT), getpixel(CANVAS_BG));
-    gccache[INV_PAINT] = makegc(INV_PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
-    grid_gc = makegc(PAINT, grid_color, getpixel(CANVAS_BG));
+	gccache[PAINT] = makegc(PAINT, getpixel(DEFAULT), getpixel(CANVAS_BG));
+	gccache[ERASE] = makegc(ERASE, getpixel(DEFAULT), getpixel(CANVAS_BG));
+	gccache[INV_PAINT] = makegc(INV_PAINT, getpixel(DEFAULT),
+			getpixel(CANVAS_BG));
+	grid_gc = makegc(PAINT, grid_color, getpixel(CANVAS_BG));
 
-    for (i = 0; i < NUMOPS; i++) {
-	gc_color[i] = -1;
-	gc_background[i] = -1;
-	gc_thickness[i] = -1;
-	gc_line_style[i] = -1;
-	gc_join_style[i] = -1;
-    }
-    /* gc for page border and axis lines */
-    border_gc = DefaultGC(tool_d, tool_sn);
-    /* set the roman font for the message window */
-    XSetFont(tool_d, border_gc, roman_font->fid);
+	for (i = 0; i < NUMOPS; i++) {
+		gc_color[i] = -1;
+		gc_background[i] = -1;
+		gc_thickness[i] = -1;
+		gc_line_style[i] = -1;
+		gc_join_style[i] = -1;
+	}
+	/* gc for page border and axis lines */
+	border_gc = DefaultGC(tool_d, tool_sn);
+	/* set the roman font for the message window */
+	XSetFont(tool_d, border_gc, roman_font->fid);
 
-    /* gc for picture pixmap rendering */
-    pic_gc = XCreateGC(tool_d, DefaultRootWindow(tool_d), 0, NULL);
+	/* gc for picture pixmap rendering */
+	pic_gc = XCreateGC(tool_d, DefaultRootWindow(tool_d), 0, NULL);
 
-    /* make a gc for the command buttons */
-    gcv.font = button_font->fid;
-    button_gc = XCreateGC(tool_d, DefaultRootWindow(tool_d), GCFont, &gcv);
-    /* copy the other components from the page border gc to the button_gc */
-    XCopyGC(tool_d, border_gc, ~GCFont, button_gc);
+	/* make a gc for the command buttons */
+	gcv.font = button_font->fid;
+	button_gc = XCreateGC(tool_d, DefaultRootWindow(tool_d), GCFont, &gcv);
+	/* copy the other components from the page border gc to the button_gc */
+	XCopyGC(tool_d, border_gc, ~GCFont, button_gc);
 
 }
 
@@ -335,23 +340,23 @@ void init_gc(void)
 
 void init_fill_gc(void)
 {
-    XGCValues	    gcv;
-    int		    i;
-    unsigned long   mask;
+	XGCValues	gcv;
+	int		i;
+	unsigned long	mask;
 
-    gcv.fill_style = FillOpaqueStippled;
-    gcv.arc_mode = ArcPieSlice; /* fill mode for arcs */
-    gcv.fill_rule = EvenOddRule /* WindingRule */ ;
-    for (i = 0; i < NUMFILLPATS; i++) {
-	/* all the bits are recolored in set_fill_gc() */
-	fill_gc[i] = makegc(PAINT, getpixel(DEFAULT), getpixel(BLACK));
-	mask = GCFillStyle | GCFillRule | GCArcMode;
-	if (fill_pm[i]) {
-	    gcv.stipple = fill_pm[i];
-	    mask |= GCStipple;
+	gcv.fill_style = FillOpaqueStippled;
+	gcv.arc_mode = ArcPieSlice; /* fill mode for arcs */
+	gcv.fill_rule = EvenOddRule /* WindingRule */ ;
+	for (i = 0; i < NUMFILLPATS; i++) {
+		/* all the bits are recolored in set_fill_gc() */
+		fill_gc[i] = makegc(PAINT, getpixel(DEFAULT), getpixel(BLACK));
+		mask = GCFillStyle | GCFillRule | GCArcMode;
+		if (fill_pm[i]) {
+			gcv.stipple = fill_pm[i];
+			mask |= GCStipple;
+		}
+		XChangeGC(tool_d, fill_gc[i], mask, &gcv);
 	}
-	XChangeGC(tool_d, fill_gc[i], mask, &gcv);
-    }
 }
 
 /* SHADING */
@@ -750,271 +755,303 @@ patrn_strct pattern_images[NUMPATTERNS] = {
 
 void init_fill_pm(void)
 {
-    int		    i,j;
+	int		    i,j;
 
-    for (i = 0; i <= NUMFILLPATS; i++) {
-	fillstyle_choices[i].value = i;
-	fillstyle_choices[i].icon = &none_ic;
-    }
+	for (i = 0; i <= NUMFILLPATS; i++) {
+		fillstyle_choices[i].value = i;
+		fillstyle_choices[i].icon = &none_ic;
+	}
 
-    /**********************************************************************************/
-    /* NOTE:  All fillstyle_choices pixmaps will be recolored in recolor_fillstyles() */
-    /**********************************************************************************/
+	/********************************************************************
+	 * NOTE:  All fillstyle_choices pixmaps will be recolored
+	 * in recolor_fillstyles()
+	 ********************************************************************/
 
-    /* use same colors for "NONE" indicator for black and color */
-    fillstyle_choices[0].pixmap = XCreatePixmapFromBitmapData(tool_d,
+	/* use same colors for "NONE" indicator for black and color */
+	fillstyle_choices[0].pixmap = XCreatePixmapFromBitmapData(tool_d,
 			tool_w, none_ic.bits, none_ic.width,
 			none_ic.height, getpixel(DEFAULT), getpixel(CANVAS_BG),
 			tool_dpth);
 
-    /* Shade patterns go from full black to full saturation of the color */
-    for (i = 0; i < NUMSHADEPATS; i++) {
-	fill_pm[i] = XCreateBitmapFromData(tool_d, tool_w,
-				   (char*)shade_images[i], SHADE_IM_SIZE, SHADE_IM_SIZE);
-	/* create fill style pixmaps for indicator button */
-	/* The actual colors of fg/bg will be reset in recolor_fillstyles */
-	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
-		 tool_w, (char*)shade_images[i], SHADE_IM_SIZE, SHADE_IM_SIZE,
-		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
-    }
-    /* Tint patterns go from full saturation of the color to full white */
-    /* Note that there are no fillstyle_choices for tints for black */
-    for (i = NUMSHADEPATS; i < NUMSHADEPATS+NUMTINTPATS; i++) {
-	j = NUMSHADEPATS+NUMTINTPATS-i-1;	/* reverse the patterns */
-	fill_pm[i] = XCreateBitmapFromData(tool_d, tool_w,
-				   (char*)shade_images[j], SHADE_IM_SIZE, SHADE_IM_SIZE);
-	/* create fill style pixmaps for indicator button */
-	/* The actual colors of fg/bg will be reset in recolor_fillstyles */
-	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
-		 tool_w, (char*)shade_images[j], SHADE_IM_SIZE, SHADE_IM_SIZE,
-		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
-    }
-    /* Now do the remaining patterns (bricks, shingles, etc) */
-    for (i = NUMSHADEPATS+NUMTINTPATS; i < NUMFILLPATS; i++) {
-	size_t	nbytes;
-	j = i-(NUMSHADEPATS+NUMTINTPATS);
-	/* allocate current pattern data for zoom = 1 */
-	nbytes = ((pattern_images[j].owidth + 7) / 8) *
-						pattern_images[j].oheight;
-	pattern_images[j].cdata = malloc(nbytes);
-	/* pattern_images[j].cwidth and .cheight is already initialized with
-	   owidth and oheight */
-	memcpy(pattern_images[j].cdata, pattern_images[j].odata, nbytes);
-	/* create pattern at this zoom */
-	rescale_pattern(i);
-	/* save these patterns at zoom = 1 for the fill button panel */
-	fill_but_pm[j] = fill_pm[i];
-	fill_but_pm_zoom[j] = fill_pm_zoom[i];
-	/* to force new pixmaps for canvas */
-	fill_pm[i] = (Pixmap) 0;
-	/* and create another one */
-	rescale_pattern(i);
-	/* create fill style pixmaps for indicator button */
-	/* The actual colors of fg/bg will be reset in recolor_fillstyles */
-	fillstyle_choices[i + 1].pixmap = XCreatePixmapFromBitmapData(tool_d,
-		 tool_w, pattern_images[j].odata,
-		 pattern_images[j].owidth, pattern_images[j].oheight,
-		 getpixel(DEFAULT),getpixel(CANVAS_BG),tool_dpth);
-    }
+	/* Shade patterns go from full black to full saturation of the color */
+	for (i = 0; i < NUMSHADEPATS; i++) {
+		fill_pm[i] = XCreateBitmapFromData(tool_d, tool_w,
+				(char*)shade_images[i], SHADE_IM_SIZE,
+				SHADE_IM_SIZE);
+		/* create fill style pixmaps for indicator button */
+		/* The actual colors of fg/bg will be reset
+		   in recolor_fillstyles */
+		fillstyle_choices[i + 1].pixmap =
+			XCreatePixmapFromBitmapData(tool_d, tool_w,
+					(char*)shade_images[i], SHADE_IM_SIZE,
+					SHADE_IM_SIZE, getpixel(DEFAULT),
+					getpixel(CANVAS_BG), tool_dpth);
+	}
+	/* Tint patterns go from full saturation of the color to full white */
+	/* Note that there are no fillstyle_choices for tints for black */
+	for (i = NUMSHADEPATS; i < NUMSHADEPATS+NUMTINTPATS; i++) {
+		j = NUMSHADEPATS+NUMTINTPATS-i-1;	/* reverse the patterns */
+		fill_pm[i] = XCreateBitmapFromData(tool_d, tool_w,
+				(char*)shade_images[j], SHADE_IM_SIZE,
+				SHADE_IM_SIZE);
+		/* create fill style pixmaps for indicator button */
+		/* The actual colors of fg/bg will be reset in recolor_fillstyles */
+		fillstyle_choices[i + 1].pixmap =
+			XCreatePixmapFromBitmapData(tool_d, tool_w,
+					(char*)shade_images[j], SHADE_IM_SIZE,
+					SHADE_IM_SIZE, getpixel(DEFAULT),
+					getpixel(CANVAS_BG), tool_dpth);
+	}
+	/* Now do the remaining patterns (bricks, shingles, etc) */
+	for (i = NUMSHADEPATS+NUMTINTPATS; i < NUMFILLPATS; i++) {
+		size_t	nbytes;
+		j = i-(NUMSHADEPATS+NUMTINTPATS);
+		/* allocate current pattern data for zoom = 1 */
+		nbytes = ((pattern_images[j].owidth + 7) / 8) *
+			pattern_images[j].oheight;
+		pattern_images[j].cdata = malloc(nbytes);
+		/* pattern_images[j].cwidth and .cheight is already initialized
+		   with owidth and oheight */
+		memcpy(pattern_images[j].cdata, pattern_images[j].odata,nbytes);
+		/* create pattern at this zoom */
+		rescale_pattern(i);
+		/* save these patterns at zoom = 1 for the fill button panel */
+		fill_but_pm[j] = fill_pm[i];
+		fill_but_pm_zoom[j] = fill_pm_zoom[i];
+		/* to force new pixmaps for canvas */
+		fill_pm[i] = (Pixmap) 0;
+		/* and create another one */
+		rescale_pattern(i);
+		/* create fill style pixmaps for indicator button */
+		/* The actual colors of fg/bg will be reset
+		   in recolor_fillstyles */
+		fillstyle_choices[i + 1].pixmap =
+			XCreatePixmapFromBitmapData(tool_d, tool_w,
+					pattern_images[j].odata,
+					pattern_images[j].owidth,
+					pattern_images[j].oheight,
+					getpixel(DEFAULT), getpixel(CANVAS_BG),
+					tool_dpth);
+	}
 }
 
 void
-pw_vector(Window w, int x1, int y1, int x2, int y2, int op,
-	  int line_width, int line_style, float style_val, Color color)
+pw_vector(Window w, int x1, int y1, int x2, int y2, int op, int line_width,
+		int line_style, float style_val, Color color)
 {
-    if (line_width == 0)
-	return;
-    set_line_stuff(line_width, line_style, style_val, JOIN_MITER, CAP_BUTT, op, color);
-    if (line_style == PANEL_LINE)
-	XDrawLine(tool_d, w, gccache[op], x1, y1, x2, y2);
-    else
-	zXDrawLine(tool_d, w, gccache[op], x1, y1, x2, y2);
+	if (line_width == 0)
+		return;
+	set_line_stuff(line_width, line_style, style_val, JOIN_MITER, CAP_BUTT,
+			op, color);
+	if (line_style == PANEL_LINE)
+		XDrawLine(tool_d, w, gccache[op], x1, y1, x2, y2);
+	else
+		zXDrawLine(tool_d, w, gccache[op], x1, y1, x2, y2);
 }
 
 void
-pw_curve(Window w, int xstart, int ystart, int xend, int yend,
-	 int op, int depth, int linewidth, int style, float style_val, int fill_style,
-	 Color pen_color, Color fill_color, int cap_style)
+pw_curve(Window w, int xstart, int ystart, int xend, int yend, int op,
+		int depth, int linewidth, int style, float style_val,
+		int fill_style, Color pen_color, Color fill_color,
+		int cap_style)
 {
-    int		    xmin, ymin;
-    unsigned int    wd, ht;
+	int			xmin, ymin;
+	unsigned int	wd, ht;
 
-    /* if this depth is inactive, draw the curve and any fill in gray */
-    /* if depth == MAX_DEPTH+1 then the caller wants the original color no matter what */
-    if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth))) {
-	pen_color = MED_GRAY;
-	fill_color = LT_GRAY;
-    }
+	/* if this depth is inactive, draw the curve and any fill in gray */
+	/* if depth == MAX_DEPTH+1 then the caller wants the original color no matter what */
+	if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth))) {
+		pen_color = MED_GRAY;
+		fill_color = LT_GRAY;
+	}
 
-    xmin = min2(xstart, xend);
-    ymin = min2(ystart, yend);
-    wd = (unsigned int) abs(xstart - xend);
-    ht = (unsigned int) abs(ystart - yend);
+	xmin = min2(xstart, xend);
+	ymin = min2(ystart, yend);
+	wd = (unsigned int) abs(xstart - xend);
+	ht = (unsigned int) abs(ystart - yend);
 
-    /* if it's a fill pat we know about */
-    if (fill_style >= 0 && fill_style < NUMFILLPATS) {
-	set_fill_gc(fill_style, op, pen_color, fill_color, xstart, ystart);
-	zXFillArc(tool_d, w, fillgc, xmin, ymin, wd, ht, 0, 360 * 64);
-    }
-    if (linewidth == 0)
-	return;
-    if (op == ERASE) {
-	/* kludge - to speed things up we erase with thick solid lines */
-	set_line_stuff(linewidth + 3, SOLID_LINE, 0.0, JOIN_MITER,
-			cap_style, op, pen_color);
-	zXDrawArc(tool_d, w, gccache[op], xmin, ymin, wd, ht, 0, 360 * 64);
-    } else {
-	set_line_stuff(linewidth, style, style_val, JOIN_MITER,
-			cap_style, op, pen_color);
-	zXDrawArc(tool_d, w, gccache[op], xmin, ymin, wd, ht, 0, 360 * 64);
-    }
+	/* if it's a fill pat we know about */
+	if (fill_style >= 0 && fill_style < NUMFILLPATS) {
+		set_fill_gc(fill_style, op, pen_color, fill_color, xstart,
+				ystart);
+		zXFillArc(tool_d, w, fillgc, xmin, ymin, wd, ht, 0, 360 * 64);
+	}
+	if (linewidth == 0)
+		return;
+	if (op == ERASE) {
+		/* kludge - to speed things up we erase with thick solid lines*/
+		set_line_stuff(linewidth + 3, SOLID_LINE, 0.0, JOIN_MITER,
+				cap_style, op, pen_color);
+		zXDrawArc(tool_d, w, gccache[op], xmin, ymin, wd, ht, 0,
+				360 * 64);
+	} else {
+		set_line_stuff(linewidth, style, style_val, JOIN_MITER,
+				cap_style, op, pen_color);
+		zXDrawArc(tool_d, w, gccache[op], xmin, ymin, wd, ht, 0,
+				360 * 64);
+	}
 }
 
-/* a point object - actually draw a line from (x-line_width/2,y) to (x+linewidth/2,y)
-	so that we get some thickness */
+/* a point object - actually draw a line from (x-line_width/2,y) to
+   (x+linewidth/2,y) so that we get some thickness */
 
 void
-pw_point(Window w, int x, int y, int op, int depth, int line_width,
-	 Color color, int cap_style)
+pw_point(Window w, int x, int y, int op, int depth, int line_width, Color color,
+		int cap_style)
 {
-    int		    hf_wid;
+	int		hf_wid;
 
-    /* if this depth is inactive, draw the point in gray */
-    if (draw_parent_gray || !active_layer(depth))
-	color = MED_GRAY;
+	/* if this depth is inactive, draw the point in gray */
+	if (draw_parent_gray || !active_layer(depth))
+		color = MED_GRAY;
 
-    /* pw_point doesn't use line_style or fill_style but needs color */
-    set_line_stuff(line_width, SOLID_LINE, 0.0, JOIN_MITER, cap_style,
-		op, color);
-    if (cap_style > 0)
-	hf_wid = 0;
-    else
-	hf_wid = (int)(ZOOM_FACTOR*line_width/2);
-    /* add one to the right if the line_width is odd */
-    zXDrawLine(tool_d, w, gccache[op], x-hf_wid, y, x+hf_wid+(line_width%2), y);
+	/* pw_point doesn't use line_style or fill_style but needs color */
+	set_line_stuff(line_width, SOLID_LINE, 0.0, JOIN_MITER, cap_style,
+			op, color);
+	if (cap_style > 0)
+		hf_wid = 0;
+	else
+		hf_wid = (int)(ZOOM_FACTOR*line_width/2);
+	/* add one to the right if the line_width is odd */
+	zXDrawLine(tool_d, w, gccache[op], x-hf_wid, y, x+hf_wid+(line_width%2),
+			y);
 }
 
 void
-pw_arcbox(Window w, int xmin, int ymin, int xmax, int ymax, int radius,
-	  int op, int depth, int line_width, int line_style,
-	  float style_val, int fill_style, Color pen_color, Color fill_color)
+pw_arcbox(Window w, int xmin, int ymin, int xmax, int ymax, int radius, int op,
+		int depth, int line_width, int line_style, float style_val,
+		int fill_style, Color pen_color, Color fill_color)
 {
-    GC		    gc;
-    int		    diam = 2 * radius;
+	GC	gc;
+	int	diam = 2 * radius;
 
-    /* if this depth is inactive, draw the arcbox in gray */
-    if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth))) {
-	pen_color = MED_GRAY;
-	fill_color = LT_GRAY;
-    }
+	/* if this depth is inactive, draw the arcbox in gray */
+	if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth))) {
+		pen_color = MED_GRAY;
+		fill_color = LT_GRAY;
+	}
 
-    /* if it's a fill pat we know about */
-    if (fill_style >= 0 && fill_style < NUMFILLPATS) {
-	set_fill_gc(fill_style, op, pen_color, fill_color, xmin, ymin);
-	/* upper left */
-	zXFillArc(tool_d, w, fillgc, xmin, ymin, diam, diam, 90 * 64, 90 * 64);
-	/* lower left */
-	zXFillArc(tool_d, w, fillgc, xmin, ymax - diam, diam, diam, 180 * 64, 90 * 64);
-	/* lower right */
-	zXFillArc(tool_d, w, fillgc, xmax - diam, ymax - diam, diam, diam, 270 * 64, 90 * 64);
-	/* upper right */
-	zXFillArc(tool_d, w, fillgc, xmax - diam, ymin, diam, diam, 0 * 64, 90 * 64);
-	/* fill strip on left side between upper and lower arcs */
-	if (ymax - ymin - diam > 0)
-	    zXFillRectangle(tool_d, w, fillgc, xmin, ymin + radius, radius,
-			    ymax - ymin - diam + 1);
-	/* fill middle section */
-	if (xmax - xmin - diam > 0)
-	    zXFillRectangle(tool_d, w, fillgc, xmin + radius, ymin,
-			    xmax - xmin - diam + 1, ymax - ymin + 1);
-	/* fill strip on right side between upper and lower arcs */
-	if (ymax - ymin - diam > 0)
-	    zXFillRectangle(tool_d, w, fillgc, xmax - radius, ymin + radius,
-			    radius, ymax - ymin - diam + 1);
-    }
-    if (line_width == 0)
-	return;
+	/* if it's a fill pat we know about */
+	if (fill_style >= 0 && fill_style < NUMFILLPATS) {
+		set_fill_gc(fill_style, op, pen_color, fill_color, xmin, ymin);
+		/* upper left */
+		zXFillArc(tool_d, w, fillgc, xmin, ymin, diam, diam, 90 * 64,
+				90 * 64);
+		/* lower left */
+		zXFillArc(tool_d, w, fillgc, xmin, ymax - diam, diam, diam,
+				180 * 64, 90 * 64);
+		/* lower right */
+		zXFillArc(tool_d, w, fillgc, xmax - diam, ymax - diam, diam,
+				diam, 270 * 64, 90 * 64);
+		/* upper right */
+		zXFillArc(tool_d, w, fillgc, xmax - diam, ymin, diam, diam,
+				0 * 64, 90 * 64);
+		/* fill strip on left side between upper and lower arcs */
+		if (ymax - ymin - diam > 0)
+			zXFillRectangle(tool_d, w, fillgc, xmin, ymin + radius,
+					radius, ymax - ymin - diam + 1);
+		/* fill middle section */
+		if (xmax - xmin - diam > 0)
+			zXFillRectangle(tool_d, w, fillgc, xmin + radius, ymin,
+					xmax - xmin - diam + 1,
+					ymax - ymin + 1);
+		/* fill strip on right side between upper and lower arcs */
+		if (ymax - ymin - diam > 0)
+			zXFillRectangle(tool_d, w, fillgc, xmax - radius,
+					ymin + radius, radius,
+					ymax - ymin - diam + 1);
+	}
+	if (line_width == 0)
+		return;
 
-    set_line_stuff(line_width, line_style, style_val, JOIN_MITER, CAP_BUTT,
-		op, pen_color);
-    gc = gccache[op];
-    /* now draw the edges and arc corners */
-    zXDrawArc(tool_d, w, gc, xmin, ymin, diam, diam, 90 * 64, 90 * 64);
-    zXDrawLine(tool_d, w, gc, xmin, ymin + radius, xmin, ymax - radius + 1);
-    zXDrawArc(tool_d, w, gc, xmin, ymax - diam, diam, diam, 180 * 64, 90 * 64);
-    zXDrawLine(tool_d, w, gc, xmin + radius, ymax, xmax - radius + 1, ymax);
-    zXDrawArc(tool_d, w, gc, xmax - diam, ymax - diam, diam, diam, 270 * 64, 90 * 64);
-    zXDrawLine(tool_d, w, gc, xmax, ymax - radius, xmax, ymin + radius - 1);
-    zXDrawArc(tool_d, w, gc, xmax - diam, ymin, diam, diam, 0 * 64, 90 * 64);
-    zXDrawLine(tool_d, w, gc, xmax - radius, ymin, xmin + radius - 1, ymin);
+	set_line_stuff(line_width, line_style, style_val, JOIN_MITER, CAP_BUTT,
+			op, pen_color);
+	gc = gccache[op];
+	/* now draw the edges and arc corners */
+	zXDrawArc(tool_d, w, gc, xmin, ymin, diam, diam, 90 * 64, 90 * 64);
+	zXDrawLine(tool_d, w, gc, xmin, ymin + radius, xmin, ymax - radius + 1);
+	zXDrawArc(tool_d, w, gc, xmin, ymax - diam, diam, diam, 180 * 64,
+			90 * 64);
+	zXDrawLine(tool_d, w, gc, xmin + radius, ymax, xmax - radius + 1, ymax);
+	zXDrawArc(tool_d, w, gc, xmax - diam, ymax - diam, diam, diam, 270 * 64,
+			90 * 64);
+	zXDrawLine(tool_d, w, gc, xmax, ymax - radius, xmax, ymin + radius - 1);
+	zXDrawArc(tool_d, w, gc, xmax - diam, ymin, diam, diam, 0 * 64,
+			90 * 64);
+	zXDrawLine(tool_d, w, gc, xmax - radius, ymin, xmin + radius - 1, ymin);
 }
 
 void
 pw_lines(Window w, zXPoint *points, int npoints, int op, int depth,
-	 int line_width, int line_style, float style_val,
-	 int join_style, int cap_style, int fill_style,
-	 Color pen_color, Color fill_color)
+		int line_width, int line_style, float style_val, int join_style,
+		int cap_style, int fill_style, Color pen_color,
+		Color fill_color)
 {
-    register int i;
-    register XPoint *p;
+	register int	i;
+	register XPoint	*p;
 
-    /* if this depth is inactive, draw the line in gray */
-    if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth))) {
-	pen_color = MED_GRAY;
-	fill_color = LT_GRAY;
-    }
-
-    /* if the line has only one point or it has two points and those points are
-       coincident AND we are drawing a DOTTED line, this kills Xsun and hangs
-       other servers.
-       We will just call pw_point since it is only a point anyway */
-
-    if ((npoints == 1) ||
-	(npoints == 2 && points[0].x == points[1].x && points[0].y == points[1].y)) {
-	    pw_point(w, points[0].x, points[0].y, op, depth, line_width, pen_color, cap_style);
-	    return;
-    }
-
-    if (line_style == PANEL_LINE) {
-	/* must use XPoint, not our zXPoint */
-	p = (XPoint *) malloc(npoints * sizeof(XPoint));
-	for (i=0; i<npoints; i++) {
-	    p[i].x = (short) points[i].x;
-	    p[i].y = (short) points[i].y;
+	/* if this depth is inactive, draw the line in gray */
+	if (draw_parent_gray || (depth < MAX_DEPTH+1 && !active_layer(depth))) {
+		pen_color = MED_GRAY;
+		fill_color = LT_GRAY;
 	}
-    }
 
-    /* if it's a fill pat we know about, find upper-left corner for pattern origin */
-    if (fill_style >= 0 && fill_style < NUMFILLPATS) {
-	int xmin=100000, ymin=100000, i;
-	if (fill_style >= NUMTINTPATS+NUMSHADEPATS) {
-	    for (i=0; i<npoints; i++) {
-		xmin = min2(xmin,points[i].x);
-		ymin = min2(ymin,points[i].y);
-	    }
+	/*
+	 * if the line has only one point or it has two points and those points
+	 * are coincident AND we are drawing a DOTTED line, this kills Xsun and
+	 * hangs other servers. We will just call pw_point since it is only a
+	 * point anyway
+	 */
+
+	if ((npoints == 1) || (npoints == 2 && points[0].x == points[1].x &&
+				points[0].y == points[1].y)) {
+		pw_point(w, points[0].x, points[0].y, op, depth, line_width,
+				pen_color, cap_style);
+		return;
 	}
-	else {
-		xmin = ymin = 0;
-	}
-	set_fill_gc(fill_style, op, pen_color, fill_color, xmin, ymin);
+
 	if (line_style == PANEL_LINE) {
-	    XFillPolygon(tool_d, w, fillgc, p, npoints,
-			 Complex, CoordModeOrigin);
-	} else {
-	    zXFillPolygon(tool_d, w, fillgc, points, npoints,
-			  Complex, CoordModeOrigin);
+		/* must use XPoint, not our zXPoint */
+		p = (XPoint *) malloc(npoints * sizeof(XPoint));
+		for (i=0; i<npoints; i++) {
+			p[i].x = (short) points[i].x;
+			p[i].y = (short) points[i].y;
+		}
 	}
-    }
-    if (line_width == 0)
-	return;
-    set_line_stuff(line_width, line_style, style_val, join_style, cap_style,
+
+	/* if it's a fill pat we know about,
+	   find upper-left corner for pattern origin */
+	if (fill_style >= 0 && fill_style < NUMFILLPATS) {
+		int xmin=100000, ymin=100000, i;
+		if (fill_style >= NUMTINTPATS+NUMSHADEPATS) {
+			for (i=0; i<npoints; i++) {
+				xmin = min2(xmin,points[i].x);
+				ymin = min2(ymin,points[i].y);
+			}
+		}
+		else {
+			xmin = ymin = 0;
+		}
+		set_fill_gc(fill_style, op, pen_color, fill_color, xmin, ymin);
+		if (line_style == PANEL_LINE) {
+			XFillPolygon(tool_d, w, fillgc, p, npoints,
+					Complex, CoordModeOrigin);
+		} else {
+			zXFillPolygon(tool_d, w, fillgc, points, npoints,
+					Complex, CoordModeOrigin);
+		}
+	}
+	if (line_width == 0)
+		return;
+	set_line_stuff(line_width, line_style, style_val, join_style, cap_style,
 			op, pen_color);
-    if (line_style == PANEL_LINE) {
-	XDrawLines(tool_d, w, gccache[op], p, npoints, CoordModeOrigin);
-	free((char *) p);
-    } else {
-	zXDrawLines(tool_d, w, gccache[op], points, npoints, CoordModeOrigin);
-    }
+	if (line_style == PANEL_LINE) {
+		XDrawLines(tool_d, w, gccache[op], p, npoints, CoordModeOrigin);
+		free((char *) p);
+	} else {
+		zXDrawLines(tool_d, w, gccache[op], points, npoints,
+				CoordModeOrigin);
+	}
 }
 
 void
@@ -1024,70 +1061,78 @@ erase_box(int xmin, int ymin, int xmax, int ymax)
 			xmax - xmin, ymax - ymin);
 }
 
-void set_clip_window(int xmin, int ymin, int xmax, int ymax)
+void
+set_clip_window(int xmin, int ymin, int xmax, int ymax)
 {
-    clip_xmin = clip[0].x = xmin;
-    clip_ymin = clip[0].y = ymin;
-    clip_xmax = xmax;
-    clip_ymax = ymax;
-    clip_width = clip[0].width = xmax - xmin + 1;
-    clip_height = clip[0].height = ymax - ymin + 1;
-    XSetClipRectangles(tool_d, border_gc, 0, 0, clip, 1, YXBanded);
-    XSetClipRectangles(tool_d, gccache[PAINT], 0, 0, clip, 1, YXBanded);
-    XSetClipRectangles(tool_d, gccache[INV_PAINT], 0, 0, clip, 1, YXBanded);
-    XSetClipRectangles(tool_d, gccache[ERASE], 0, 0, clip, 1, YXBanded);
+	clip_xmin = clip[0].x = xmin;
+	clip_ymin = clip[0].y = ymin;
+	clip_xmax = xmax;
+	clip_ymax = ymax;
+	clip_width = clip[0].width = xmax - xmin + 1;
+	clip_height = clip[0].height = ymax - ymin + 1;
+	XSetClipRectangles(tool_d, border_gc, 0, 0, clip, 1, YXBanded);
+	XSetClipRectangles(tool_d, gccache[PAINT], 0, 0, clip, 1, YXBanded);
+	XSetClipRectangles(tool_d, gccache[INV_PAINT], 0, 0, clip, 1, YXBanded);
+	XSetClipRectangles(tool_d, gccache[ERASE], 0, 0, clip, 1, YXBanded);
 }
 
-void set_zoomed_clip_window(int xmin, int ymin, int xmax, int ymax)
+void
+set_zoomed_clip_window(int xmin, int ymin, int xmax, int ymax)
 {
-    set_clip_window(ZOOMX(xmin), ZOOMY(ymin), ZOOMX(xmax), ZOOMY(ymax));
+	set_clip_window(ZOOMX(xmin), ZOOMY(ymin), ZOOMX(xmax), ZOOMY(ymax));
 }
 
-void reset_clip_window(void)
+void
+reset_clip_window(void)
 {
-    set_clip_window(0, 0, CANVAS_WD, CANVAS_HT);
+	set_clip_window(0, 0, CANVAS_WD, CANVAS_HT);
 }
 
-void set_fill_gc(int fill_style, int op, int pencolor, int fillcolor, int xorg, int yorg)
+void
+set_fill_gc(int fill_style, int op, int pencolor, int fillcolor, int xorg,
+		int yorg)
 {
-    Color	    fg, bg;
+	Color	fg, bg;
 
-    /* see if we need to create this fill style if it is a pattern.
-       This might have happened if there was a change of zoom. */
+	/* see if we need to create this fill style if it is a pattern.
+	   This might have happened if there was a change of zoom. */
 
-    if ((fill_style >= NUMSHADEPATS+NUMTINTPATS) &&
-	((fill_pm[fill_style] == 0) || (fill_pm_zoom[fill_style] != display_zoomscale)))
-	    rescale_pattern(fill_style);
-    fillgc = fill_gc[fill_style];
-    if (op != ERASE) {
-	/* if a pattern, color the lines in the pen color and the field in fill color */
-	if (fill_style >= NUMSHADEPATS+NUMTINTPATS) {
-	    fg = getpixel(pencolor);
-	    bg = getpixel(fillcolor);
+	if ((fill_style >= NUMSHADEPATS+NUMTINTPATS) &&
+			((fill_pm[fill_style] == 0) ||
+			 (fill_pm_zoom[fill_style] != display_zoomscale)))
+		rescale_pattern(fill_style);
+	fillgc = fill_gc[fill_style];
+	if (op != ERASE) {
+		/* if a pattern, color the lines in the pen color
+		   and the field in fill color */
+		if (fill_style >= NUMSHADEPATS+NUMTINTPATS) {
+			fg = getpixel(pencolor);
+			bg = getpixel(fillcolor);
+		} else {
+			if (fillcolor == BLACK) {
+				fg = getpixel(BLACK);
+				bg = getpixel(WHITE);
+			} else if (fillcolor == DEFAULT) {
+				fg = getpixel(DEFAULT);
+				bg = getpixel(CANVAS_BG);
+			} else {
+				fg = getpixel(fillcolor);
+				bg = (fill_style < NUMSHADEPATS ?
+						getpixel(BLACK) :
+						getpixel(WHITE));
+			}
+		}
 	} else {
-	    if (fillcolor == BLACK) {
-		fg = getpixel(BLACK);
-		bg = getpixel(WHITE);
-	    } else if (fillcolor == DEFAULT) {
-		fg = getpixel(DEFAULT);
+		fg = getpixel(CANVAS_BG);   /* un-fill */
 		bg = getpixel(CANVAS_BG);
-	    } else {
-		fg = getpixel(fillcolor);
-		bg = (fill_style < NUMSHADEPATS ?
-				getpixel(BLACK) : getpixel(WHITE));
-	    }
 	}
-    } else {
-	fg = getpixel(CANVAS_BG);   /* un-fill */
-	bg = getpixel(CANVAS_BG);
-    }
-    XSetForeground(tool_d,fillgc,fg);
-    XSetBackground(tool_d,fillgc,bg);
-    /* set stipple from the fill_pm array */
-    XSetStipple(tool_d, fillgc, fill_pm[fill_style]);
-    /* set origin of pattern relative to object itself */
-    XSetTSOrigin(tool_d, fillgc, ZOOMX(xorg), ZOOMY(yorg));
-    XSetClipRectangles(tool_d, fillgc, 0, 0, clip, 1, YXBanded);
+	XSetForeground(tool_d,fillgc,fg);
+	XSetBackground(tool_d,fillgc,bg);
+	/* set stipple from the fill_pm array */
+	XSetStipple(tool_d, fillgc, fill_pm[fill_style]);
+	/* set origin of pattern relative to object itself */
+	XSetTSOrigin(tool_d, fillgc, ZOOMX(xorg), ZOOMY(yorg));
+	XSetClipRectangles(tool_d, fillgc, 0, 0, clip, 1, YXBanded);
 }
 
 
@@ -1109,123 +1154,131 @@ static unsigned char dash_list[16][8] = {
 		    {255, 255, 255, 255, 255, 255, 255, 255},
 		    {255, 255, 255, 255, 255, 255, 255, 255}};
 
-static int join_styles[3] = { JoinMiter, JoinRound, JoinBevel };
-static int cap_styles[3] = { CapButt, CapRound, CapProjecting };
+static int	join_styles[3] = { JoinMiter, JoinRound, JoinBevel };
+static int	cap_styles[3] = { CapButt, CapRound, CapProjecting };
 
-static int ndash_dot = 4;
-static float dash_dot[4] = { 1., 0.5, 0., 0.5 };
-static int ndash_2dots = 6;
-static float dash_2dots[6] = { 1., 0.45, 0., 0.333, 0., 0.45 };
-static int ndash_3dots = 8;
-static float dash_3dots[8] = { 1., 0.4, 0., 0.3, 0., 0.3, 0., 0.4 };
+static int	ndash_dot = 4;
+static float	dash_dot[4] = { 1., 0.5, 0., 0.5 };
+static int	ndash_2dots = 6;
+static float	dash_2dots[6] = { 1., 0.45, 0., 0.333, 0., 0.45 };
+static int	ndash_3dots = 8;
+static float	dash_3dots[8] = { 1., 0.4, 0., 0.3, 0., 0.3, 0., 0.4 };
 
 
-void set_line_stuff(int width, int style, float style_val, int join_style, int cap_style, int op, int color)
+void
+set_line_stuff(int width, int style, float style_val, int join_style,
+		int cap_style, int op, int color)
 {
-    XGCValues	    gcv;
-    unsigned long   mask;
+	XGCValues		gcv;
+	unsigned long	mask;
 
-    switch (style) {
-      case RUBBER_LINE:
-	width = 0;
-	break;
-      case PANEL_LINE:
-	break;
-      default:
-	width = round(display_zoomscale * (width > 1 ? width - 1 : 0.5));
-	break;
-    }
-
-    /* user zero-width lines for speed with SOLID lines */
-    /* can't do this for dashed lines because server isn't */
-    /* required to draw dashes for zero-width lines */
-    if (width == 1 && style == SOLID_LINE)
-	width = 0;
-    /* conversely, if the width is calculated to 0 and this is a dashed line, make width 1 */
-    if (width == 0 && style != SOLID_LINE)
-	width = 1;
-
-    /* see if all gc stuff is already correct */
-
-    if (width == gc_thickness[op] && style == gc_line_style[op] &&
-	join_style == gc_join_style[op] &&
-	cap_style == gc_cap_style[op] &&
-	(getpixel(color) == gc_color[op]) &&
-	((style != DASH_LINE && style != DOTTED_LINE &&
-          style != DASH_DOT_LINE && style != DASH_2_DOTS_LINE &&
-          style != DASH_3_DOTS_LINE) ||
-	 dash_list[op][1] == (unsigned char) round(style_val * display_zoomscale)))
-	    return;			/* no need to change anything */
-
-    gcv.line_width = width;
-    mask = GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle;
-    if (op == PAINT) {
-	gcv.foreground = getpixel(color);
-	mask |= GCForeground;
-    } else if (op == INV_PAINT) {
-	gcv.foreground = getpixel(color) ^ getpixel(CANVAS_BG);
-	mask |= GCForeground;
-    }
-    gcv.join_style = join_styles[join_style];
-    gcv.cap_style = cap_styles[cap_style];
-    gcv.line_style = (style == DASH_LINE || style == DOTTED_LINE ||
-             style == DASH_DOT_LINE || style == DASH_2_DOTS_LINE ||
-             style == DASH_3_DOTS_LINE) ?
-	LineOnOffDash : LineSolid;
-
-    XChangeGC(tool_d, gccache[op], mask, &gcv);
-    if (style_val > 0.0) {	/* style_val of 0.0 causes problems */
-	if (style == DASH_LINE || style == DOTTED_LINE) {
-	    /* length of ON/OFF pixels */
-	    if (style_val * display_zoomscale > 255.0)
-		dash_list[op][0] = dash_list[op][1] = (char) 255;	/* too large for X! */
-	    else
-	        dash_list[op][0] = dash_list[op][1] =
-				(char) round(style_val * display_zoomscale);
-	    /* length of ON pixels for dotted */
-	    if (style == DOTTED_LINE)
-		dash_list[op][0] = (char)display_zoomscale;
-
-	    if (dash_list[op][0]==0)		/* take care for rounding to zero ! */
-		dash_list[op][0]=1;
-	    if (dash_list[op][1]==0)		/* take care for rounding to zero ! */
-		dash_list[op][1]=1;
-	    XSetDashes(tool_d, gccache[op], 0, (char *) dash_list[op], 2);
-	} else if (style == DASH_DOT_LINE || style == DASH_2_DOTS_LINE ||
-		  style == DASH_3_DOTS_LINE) {
-            int il, nd;
-            float *fl;
-            if (style == DASH_2_DOTS_LINE) {
-		fl=dash_2dots;
-		nd=ndash_2dots;
-	    } else if (style == DASH_3_DOTS_LINE) {
-		fl=dash_3dots;
-		nd=ndash_3dots;
-	    } else {
-		fl=dash_dot;
-		nd=ndash_dot;
-	    }
-	    for (il =0; il<nd; il ++) {
-                if (fl[il] != 0.) {
-		    if (fl[il] * style_val * display_zoomscale > 255.0)
-			dash_list[op][il] = (char) 255;	/* too large for X! */
-		    else
-			dash_list[op][il] = (char) round(fl[il] * style_val *
-					display_zoomscale);
-		} else {
-		    dash_list[op][il] = (char)display_zoomscale;
-		}
-		if (dash_list[op][il]==0)	/* take care for rounding to zero ! */
-			dash_list[op][il]=1;
-	    }
-	    XSetDashes(tool_d, gccache[op], 0, (char *) dash_list[op], nd);
+	switch (style) {
+	case RUBBER_LINE:
+		width = 0;
+		break;
+	case PANEL_LINE:
+		break;
+	default:
+		width = round(display_zoomscale * (width > 1? width - 1 : 0.5));
+		break;
 	}
-    }
-    gc_thickness[op] = width;
-    gc_line_style[op] = style;
-    gc_join_style[op] = join_style;
-    gc_cap_style[op] = cap_style;
-    gc_color[op] = getpixel(color);
+
+	/* user zero-width lines for speed with SOLID lines */
+	/* can't do this for dashed lines because server isn't */
+	/* required to draw dashes for zero-width lines */
+	if (width == 1 && style == SOLID_LINE)
+		width = 0;
+	/* conversely, if the width is calculated to 0 and
+	   this is a dashed line, make width 1 */
+	if (width == 0 && style != SOLID_LINE)
+		width = 1;
+
+	/* see if all gc stuff is already correct */
+
+	if (width == gc_thickness[op] && style == gc_line_style[op] &&
+			join_style == gc_join_style[op] &&
+			cap_style == gc_cap_style[op] &&
+			(getpixel(color) == gc_color[op]) &&
+			((style != DASH_LINE && style != DOTTED_LINE &&
+			  style != DASH_DOT_LINE && style != DASH_2_DOTS_LINE &&
+			  style != DASH_3_DOTS_LINE) || dash_list[op][1] ==
+			 (unsigned char)round(style_val * display_zoomscale)))
+		return;			/* no need to change anything */
+
+	gcv.line_width = width;
+	mask = GCLineWidth | GCLineStyle | GCCapStyle | GCJoinStyle;
+	if (op == PAINT) {
+		gcv.foreground = getpixel(color);
+		mask |= GCForeground;
+	} else if (op == INV_PAINT) {
+		gcv.foreground = getpixel(color) ^ getpixel(CANVAS_BG);
+		mask |= GCForeground;
+	}
+	gcv.join_style = join_styles[join_style];
+	gcv.cap_style = cap_styles[cap_style];
+	gcv.line_style = (style == DASH_LINE || style == DOTTED_LINE ||
+			style == DASH_DOT_LINE || style == DASH_2_DOTS_LINE ||
+			style == DASH_3_DOTS_LINE) ? LineOnOffDash : LineSolid;
+
+	XChangeGC(tool_d, gccache[op], mask, &gcv);
+	if (style_val > 0.0) {	/* style_val of 0.0 causes problems */
+		if (style == DASH_LINE || style == DOTTED_LINE) {
+			/* length of ON/OFF pixels */
+			if (style_val * display_zoomscale > 255.0)
+				/* too large for X! */
+				dash_list[op][0] = dash_list[op][1] = (char)255;
+			else
+				dash_list[op][0] = dash_list[op][1] =
+					(char)round(style_val * display_zoomscale);
+			/* length of ON pixels for dotted */
+			if (style == DOTTED_LINE)
+				dash_list[op][0] = (char)display_zoomscale;
+
+			if (dash_list[op][0] == 0)
+				/* take care for rounding to zero ! */
+				dash_list[op][0] = 1;
+			if (dash_list[op][1] == 0)
+				/* take care for rounding to zero ! */
+				dash_list[op][1] = 1;
+			XSetDashes(tool_d, gccache[op], 0,
+					(char *)dash_list[op], 2);
+		} else if (style == DASH_DOT_LINE || style == DASH_2_DOTS_LINE
+				|| style == DASH_3_DOTS_LINE) {
+			int	il, nd;
+			float	*fl;
+			if (style == DASH_2_DOTS_LINE) {
+				fl=dash_2dots;
+				nd=ndash_2dots;
+			} else if (style == DASH_3_DOTS_LINE) {
+				fl=dash_3dots;
+				nd=ndash_3dots;
+			} else {
+				fl=dash_dot;
+				nd=ndash_dot;
+			}
+			for (il =0; il<nd; il ++) {
+				if (fl[il] != 0.) {
+					if (fl[il] * style_val * display_zoomscale > 255.0)
+						/* too large for X! */
+						dash_list[op][il] = (char) 255;
+					else
+						dash_list[op][il] = (char)round(fl[il] * style_val *
+								display_zoomscale);
+				} else {
+					dash_list[op][il] = (char)display_zoomscale;
+				}
+				if (dash_list[op][il]==0)	/* take care for rounding to zero ! */
+					dash_list[op][il]=1;
+			}
+			XSetDashes(tool_d, gccache[op], 0,
+					(char *)dash_list[op], nd);
+		}
+	}
+	gc_thickness[op] = width;
+	gc_line_style[op] = style;
+	gc_join_style[op] = join_style;
+	gc_cap_style[op] = cap_style;
+	gc_color[op] = getpixel(color);
 }
 
 /* resize the fill patterns for the current display_zoomscale */
@@ -1247,15 +1300,14 @@ rescale_pattern(int patnum)
 		XFreePixmap(tool_d,fill_pm[patnum]);
 	}
 	fill_pm[patnum] = XCreateBitmapFromData(tool_d, tool_w,
-				   pattern_images[j].cdata,
-				   pattern_images[j].cwidth,
-				   pattern_images[j].cheight);
+			pattern_images[j].cdata, pattern_images[j].cwidth,
+			pattern_images[j].cheight);
 	/* set the zoom value so we know what zoom it was generated for */
 	fill_pm_zoom[patnum] = display_zoomscale;
 	/* now update the gc to use the new pixmaps */
 	if (fill_gc[patnum]) {
-	    gcv.stipple = fill_pm[patnum];
-	    XChangeGC(tool_d, fill_gc[patnum], GCStipple, &gcv);
+		gcv.stipple = fill_pm[patnum];
+		XChangeGC(tool_d, fill_gc[patnum], GCStipple, &gcv);
 	}
 	reset_cursor();
 }
@@ -1263,71 +1315,71 @@ rescale_pattern(int patnum)
 static void
 scale_pattern(int indx)
 {
-    int	    i;
-    int	    j;
-    char   *odata;
-    char   *ndata;
-    int	    nbytes;
-    int	    obytes;
-    int	    ibit;
-    int	    jbit;
-    int	    wbit;
-    int	    width, height;
-    int	    nwidth, nheight;
+	int	i;
+	int	j;
+	char	*odata;
+	char	*ndata;
+	int	nbytes;
+	int	obytes;
+	int	ibit;
+	int	jbit;
+	int	wbit;
+	int	width, height;
+	int	nwidth, nheight;
 
-    width = pattern_images[indx].owidth;
-    height = pattern_images[indx].oheight;
+	width = pattern_images[indx].owidth;
+	height = pattern_images[indx].oheight;
 
-    nwidth = display_zoomscale * width;
-    nheight = display_zoomscale * height;
+	nwidth = display_zoomscale * width;
+	nheight = display_zoomscale * height;
 
-    /* if already correct size just return */
-    if (nwidth ==pattern_images[indx].cwidth &&
-	nheight==pattern_images[indx].cheight)
+	/* if already correct size just return */
+	if (nwidth ==pattern_images[indx].cwidth &&
+			nheight==pattern_images[indx].cheight)
 		return;
 
-    /* prevent 0-size bitmaps */
-    if (nwidth == 0)
-	nwidth = 1;
-    if (nheight == 0)
-	nheight = 1;
+	/* prevent 0-size bitmaps */
+	if (nwidth == 0)
+		nwidth = 1;
+	if (nheight == 0)
+		nheight = 1;
 
-    obytes = (width + 7) / 8;
-    nbytes = (nwidth + 7) / 8;
+	obytes = (width + 7) / 8;
+	nbytes = (nwidth + 7) / 8;
 
-    odata = pattern_images[indx].odata;
-    ndata = pattern_images[indx].cdata;
-    /* if was already scaled before free that data */
-    if (ndata)
-	    free(ndata);
-    /* allocate new space for zoomed bytes */
-    pattern_images[indx].cdata = ndata = (char *) malloc(nbytes * nheight);
-    memset(ndata, 0, (size_t)(nbytes * nheight));
+	odata = pattern_images[indx].odata;
+	ndata = pattern_images[indx].cdata;
+	/* if was already scaled before free that data */
+	if (ndata)
+		free(ndata);
+	/* allocate new space for zoomed bytes */
+	pattern_images[indx].cdata = ndata = (char *) malloc(nbytes * nheight);
+	memset(ndata, 0, (size_t)(nbytes * nheight));
 
-    /* create a new bitmap at the specified size (requires interpolation) */
-    if (nwidth >= width) {		/* new is larger, loop over its matrix */
-	for (j = 0; j < nheight; j++) {
-	    jbit = height * j / nheight * obytes;
-	    for (i = 0; i < nwidth; i++) {
-		ibit = width * i / nwidth;	/* xy bit position from original bitmap */
-		wbit = *(odata + jbit + ibit / 8);
-		if (wbit & (1 << (ibit & 7)))
-		    *(ndata + j * nbytes + i / 8) |= (1 << (i & 7));
-	    }
+	/* create a new bitmap at the specified size (requires interpolation) */
+	if (nwidth >= width) {		/* new is larger, loop over its matrix */
+		for (j = 0; j < nheight; j++) {
+			jbit = height * j / nheight * obytes;
+			for (i = 0; i < nwidth; i++) {
+				ibit = width * i / nwidth;	/* xy bit position from original bitmap */
+				wbit = *(odata + jbit + ibit / 8);
+				if (wbit & (1 << (ibit & 7)))
+					*(ndata + j * nbytes + i / 8) |= (1 << (i & 7));
+			}
+		}
+	} else {	/* new is smaller, loop over orig matrix so we don't lose bits */
+		for (j = 0; j < height; j++) {
+			jbit = nheight * j / height * nbytes;
+			for (i = 0; i < width; i++) {
+				ibit = nwidth * i / width;	/* xy bit position from new bitmap */
+				wbit = *(odata + j * obytes + i / 8);
+				if (wbit & (1 << (i & 7)))
+					*(ndata + jbit + ibit / 8) |= (1 << (ibit & 7));
+			}
+		}
 	}
-    } else {	/* new is smaller, loop over orig matrix so we don't lose bits */
-	for (j = 0; j < height; j++) {
-	    jbit = nheight * j / height * nbytes;
-	    for (i = 0; i < width; i++) {
-		ibit = nwidth * i / width;	/* xy bit position from new bitmap */
-		wbit = *(odata + j * obytes + i / 8);
-		if (wbit & (1 << (i & 7)))
-		    *(ndata + jbit + ibit / 8) |= (1 << (ibit & 7));
-	    }
-	}
-    }
-    pattern_images[indx].cwidth = nwidth;
-    pattern_images[indx].cheight = nheight;
+	pattern_images[indx].cwidth = nwidth;
+	pattern_images[indx].cheight = nheight;
 }
 
 /* storage for conversion of data points to screen coords (zXDrawLines and zXFillPolygon) */
@@ -1341,26 +1393,26 @@ static void	 convert_sh(zXPoint *p, int n);
 static void
 zXDrawLines(Display *d, Window w, GC gc, zXPoint *points, int n, int coordmode)
 {
-    /* make sure we have allocated data */
-    if (!chkalloc(n)) {
-	return;
-    }
-    /* now convert each point to short into _pp_ */
-    convert_sh(points, n);
-    XDrawLines(d, w, gc, _pp_, n, coordmode);
+	/* make sure we have allocated data */
+	if (!chkalloc(n)) {
+		return;
+	}
+	/* now convert each point to short into _pp_ */
+	convert_sh(points, n);
+	XDrawLines(d, w, gc, _pp_, n, coordmode);
 }
 
 static void
 zXFillPolygon(Display *d, Window w, GC gc, zXPoint *points, int n,
 		int shape, int coordmode)
 {
-    /* make sure we have allocated data for _pp_ */
-    if (!chkalloc(n)) {
-	return;
-    }
-    /* now convert each point to short into _pp_ */
-    convert_sh(points, n);
-    XFillPolygon(d, w, gc, _pp_, n, shape, coordmode);
+	/* make sure we have allocated data for _pp_ */
+	if (!chkalloc(n)) {
+		return;
+	}
+	/* now convert each point to short into _pp_ */
+	convert_sh(points, n);
+	XFillPolygon(d, w, gc, _pp_, n, shape, coordmode);
 }
 
 /* convert each point to short */
@@ -1368,42 +1420,45 @@ zXFillPolygon(Display *d, Window w, GC gc, zXPoint *points, int n,
 static void
 convert_sh(zXPoint *p, int n)
 {
-    int		 i;
+	int		i;
 
-    for (i=0; i<n; i++) {
-	_pp_[i].x = ZOOMX(p[i].x);
-	_pp_[i].y = ZOOMY(p[i].y);
-    }
+	for (i=0; i<n; i++) {
+		_pp_[i].x = ZOOMX(p[i].x);
+		_pp_[i].y = ZOOMY(p[i].y);
+	}
 }
 
 static Boolean
 chkalloc(int n)
 {
-    int		 i;
-    XPoint	*tpp;
+	int		i;
+	XPoint	*tpp;
 
-    /* see if we need to allocate some (more) memory */
-    if (n > _npp_) {
-	/* if previous allocation failed, return now */
-	if (_noalloc_)
-	    return False;
-	/* get either what we need +50 points or 500, whichever is larger */
-	i = max2(n+50, 500);
-	if (_npp_ == 0) {
-	    if ((tpp = (XPoint *) malloc(i * sizeof(XPoint))) == 0) {
-		fprintf(stderr,"\007Can't alloc memory for %d point array, exiting\n",i);
-		exit(1);
-	    }
-	} else {
-	    if ((tpp = (XPoint *) realloc(_pp_, i * sizeof(XPoint))) == 0) {
-		file_msg("Can't alloc memory for %d point array",i);
-		_noalloc_ = True;
-		return False;
-	    }
+	/* see if we need to allocate some (more) memory */
+	if (n > _npp_) {
+		/* if previous allocation failed, return now */
+		if (_noalloc_)
+			return False;
+		/* get either what we need +50 points or 500,
+		   whichever is larger */
+		i = max2(n+50, 500);
+		if (_npp_ == 0) {
+			if ((tpp = malloc(i * sizeof(XPoint))) == 0) {
+				fprintf(stderr, "\007Can't alloc memory for %d "
+						"point array, exiting\n", i);
+				exit(1);
+			}
+		} else {
+			if ((tpp = realloc(_pp_, i * sizeof(XPoint))) == 0) {
+				file_msg("Can't alloc memory for %d "
+						"point array", i);
+				_noalloc_ = True;
+				return False;
+			}
+		}
+		/* everything ok, set global pointer and count */
+		_pp_ = tpp;
+		_npp_ = i;
 	}
-	/* everything ok, set global pointer and count */
-	_pp_ = tpp;
-	_npp_ = i;
-    }
-    return True;
+	return True;
 }

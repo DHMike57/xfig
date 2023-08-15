@@ -663,7 +663,7 @@ image_size(int *size_x, int *size_y, int pixels_x, int pixels_y,
 /*
  * Input:
  *    rel_or_abs_path	A path relative to cur_file_dir (not starting with a
- *    			slash), relative to home (starting with ~), or
+ *			slash), relative to home (starting with ~), or
  *			an absolute path
  * Return value:
  *    A malloc'd string containing the internal representation of

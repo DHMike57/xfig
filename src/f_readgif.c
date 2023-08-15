@@ -66,7 +66,7 @@ static int	GetDataBlock(FILE *fd, unsigned char *buf);
 struct {
 	unsigned int	Width;
 	unsigned int	Height;
-	struct	 Cmap	ColorMap[MAX_COLORMAP_SIZE];
+	struct Cmap	ColorMap[MAX_COLORMAP_SIZE];
 	unsigned int	BitPixel;
 	unsigned int	ColorResolution;
 	unsigned int	Background;
@@ -199,7 +199,8 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 
 		if (c == '!') {			/* Extension */
 			if (!ReadOK(pic_stream->fp, &c, 1))
-				file_msg("GIF read error on extension function code");
+				file_msg("GIF read error on extension "
+						"function code");
 			(void)DoGIFextension(pic_stream->fp, c);
 			continue;
 		}
@@ -283,23 +284,23 @@ read_gif(F_pic *pic, struct xfig_stream *restrict pic_stream)
 	/* now match original transparent colortable index with possibly new
 	   colortable from ppmtopcx */
 	if (pic->pic_cache->transp != TRANSP_NONE) {
-	    if (useGlobalColormap) {
-		red = GifScreen.ColorMap[pic->pic_cache->transp].red;
-		green = GifScreen.ColorMap[pic->pic_cache->transp].green;
-		blue = GifScreen.ColorMap[pic->pic_cache->transp].blue;
-	    } else {
-		red = localColorMap[pic->pic_cache->transp].red;
-		green = localColorMap[pic->pic_cache->transp].green;
-		blue = localColorMap[pic->pic_cache->transp].blue;
-	    }
-	    for (i = 0; i < pic->pic_cache->numcols; ++i) {
-		if (pic->pic_cache->cmap[i].red == red &&
-		    pic->pic_cache->cmap[i].green == green &&
-		    pic->pic_cache->cmap[i].blue == blue)
-			break;
-	    }
-	    if (i < pic->pic_cache->numcols)
-		pic->pic_cache->transp = i;
+		if (useGlobalColormap) {
+			red = GifScreen.ColorMap[pic->pic_cache->transp].red;
+			green = GifScreen.ColorMap[pic->pic_cache->transp].green;
+			blue = GifScreen.ColorMap[pic->pic_cache->transp].blue;
+		} else {
+			red = localColorMap[pic->pic_cache->transp].red;
+			green = localColorMap[pic->pic_cache->transp].green;
+			blue = localColorMap[pic->pic_cache->transp].blue;
+		}
+		for (i = 0; i < pic->pic_cache->numcols; ++i) {
+			if (pic->pic_cache->cmap[i].red == red &&
+					pic->pic_cache->cmap[i].green == green &&
+					pic->pic_cache->cmap[i].blue == blue)
+				break;
+		}
+		if (i < pic->pic_cache->numcols)
+			pic->pic_cache->transp = i;
 	}
 
 	return stat;
@@ -312,13 +313,13 @@ ReadColorMap(FILE *fd, unsigned int number, struct Cmap *cmap)
 	unsigned char	rgb[3];
 
 	for (i = 0; i < number; ++i) {
-	    if (! ReadOK(fd, rgb, sizeof(rgb))) {
-		file_msg("bad GIF colormap" );
-		return False;
-	    }
-	    cmap[i].red   = rgb[0];
-	    cmap[i].green = rgb[1];
-	    cmap[i].blue  = rgb[2];
+		if (! ReadOK(fd, rgb, sizeof(rgb))) {
+			file_msg("bad GIF colormap" );
+			return False;
+		}
+		cmap[i].red   = rgb[0];
+		cmap[i].green = rgb[1];
+		cmap[i].blue  = rgb[2];
 	}
 	return True;
 }
@@ -326,8 +327,8 @@ ReadColorMap(FILE *fd, unsigned int number, struct Cmap *cmap)
 static Boolean
 DoGIFextension(FILE *fd, int label)
 {
-	static unsigned char buf[256];
-	char	    *str;
+	static unsigned char	buf[256];
+	char		*str;
 
 	switch (label) {
 	case 0x01:		/* Plain Text Extension */
