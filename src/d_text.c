@@ -428,8 +428,7 @@ overlay_text_input(int x, int y)
 static void
 init_text_input(int x, int y)
 {
-    int		    length, posn;
-    int		    prev_work_font;
+    int		posn;
     int		cursor_len;
 
     cur_x = x;
@@ -472,7 +471,6 @@ init_text_input(int x, int y)
 	} else {		/* set working settings from ind panel */
 	    work_textcolor = cur_pencolor;
 	    work_fontsize = cur_fontsize;
-	    prev_work_font = work_font;
 	    work_font     = using_ps ? cur_ps_font : cur_latex_font;
 	    work_psflag   = using_ps;
 	    work_flags    = cur_textflags;
@@ -512,7 +510,6 @@ init_text_input(int x, int y)
 
 	/* update the working text parameters */
 	work_textcolor = cur_t->color;
-	prev_work_font = work_font;
 	work_font = cur_t->font;
 	work_xftfont = canvas_zoomed_xftfont = cur_t->xftfont;
 	work_fontsize = cur_t->size;
@@ -529,7 +526,6 @@ init_text_input(int x, int y)
 	toggle_textmarker(cur_t);
 	base_x = cur_t->base_x;
 	base_y = cur_t->base_y;
-	length = cur_t->length;
 	save_base_x = base_x;
 	save_base_y = base_y;
 
