@@ -418,7 +418,7 @@ create_keyboard_panel()
 {
   Widget keyboard_form;
   Widget label, usage_hint;
-  DeclareArgs(10);
+  DeclareArgs(11);
   char * str;
   String  keyboard_translations =
         "<Key>Return: HandleKeyboardInput()\n\
