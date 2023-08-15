@@ -194,9 +194,9 @@ boxsize_msg(int fact)
 
 	/* erase old text */
 	if (!first_lenmsg) {
-	    pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufx,
+	    pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font, bufx,
 			RED, COLOR_NONE);
-	    pw_text(canvas_win, ot2x, ot2y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufy,
+	    pw_text(canvas_win, ot2x, ot2y, INV_PAINT, MAX_DEPTH+1, roman_font, bufy,
 			RED, COLOR_NONE);
 	}
 	first_lenmsg = False;
@@ -217,7 +217,7 @@ boxsize_msg(int fact)
 	    t1y = cur_y + sdy - 5.0/zoomscale;			/* above the line */
 	else
 	    t1y = cur_y + sdy + sizey.ascent + 5.0/zoomscale;	/* below the line */
-	pw_text(canvas_win, t1x, t1y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufx,
+	pw_text(canvas_win, t1x, t1y, INV_PAINT, MAX_DEPTH+1, roman_font, bufx,
 			RED, COLOR_NONE);
 
 	/* then dy */
@@ -226,7 +226,7 @@ boxsize_msg(int fact)
 	    t2x = fix_x + sdx + 5.0/zoomscale;			/* right of the line */
 	else
 	    t2x = fix_x + sdx - sizex.length - 4.0/zoomscale;	/* left of the line */
-	pw_text(canvas_win, t2x, t2y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufy,
+	pw_text(canvas_win, t2x, t2y, INV_PAINT, MAX_DEPTH+1, roman_font, bufy,
 			RED, COLOR_NONE);
 
 	/* now save new values */
@@ -267,9 +267,9 @@ void erase_box_lengths(void)
 {
     if (!first_lenmsg && appres.showlengths && !freehand_line) {
 	/* erase old text */
-	pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufx,
+	pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font, bufx,
 			RED, COLOR_NONE);
-	pw_text(canvas_win, ot2x, ot2y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufy,
+	pw_text(canvas_win, ot2x, ot2y, INV_PAINT, MAX_DEPTH+1, roman_font, bufy,
 			RED, COLOR_NONE);
     }
     first_lenmsg = False;
@@ -283,11 +283,11 @@ void erase_lengths(void)
 	pw_vector(canvas_win, ofx, oy, ofx, ofy, INV_PAINT, 1, RUBBER_LINE, 0.0, RED);
 
 	/* erase old text */
-	pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufx,
+	pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font, bufx,
 			RED, COLOR_NONE);
-	pw_text(canvas_win, ot2x, ot2y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufy,
+	pw_text(canvas_win, ot2x, ot2y, INV_PAINT, MAX_DEPTH+1, roman_font, bufy,
 			RED, COLOR_NONE);
-	pw_text(canvas_win, ot3x, ot3y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0, bufhyp,
+	pw_text(canvas_win, ot3x, ot3y, INV_PAINT, MAX_DEPTH+1, roman_font, bufhyp,
 			RED, COLOR_NONE);
     }
     first_lenmsg = False;
@@ -399,11 +399,11 @@ altlength_msg(int type, int fx, int fy)
 
 		    /* erase old text */
 		    pw_text(canvas_win, ot1x, ot1y, INV_PAINT, MAX_DEPTH+1, roman_font,
-					0.0, bufx, RED, COLOR_NONE);
+					bufx, RED, COLOR_NONE);
 		    pw_text(canvas_win, ot2x, ot2y, INV_PAINT, MAX_DEPTH+1, roman_font,
-					0.0, bufy, RED, COLOR_NONE);
+					bufy, RED, COLOR_NONE);
 		    pw_text(canvas_win, ot3x, ot3y, INV_PAINT, MAX_DEPTH+1, roman_font,
-					0.0, bufhyp, RED, COLOR_NONE);
+					bufhyp, RED, COLOR_NONE);
 		}
 
 		/* draw new lines */
@@ -430,7 +430,7 @@ altlength_msg(int type, int fx, int fy)
 		    t1y = cur_y + sdy - 3.0/zoomscale;			/* above the line */
 		else
 		    t1y = cur_y + sdy + sizey.ascent + 3.0/zoomscale;	/* below the line */
-		pw_text(canvas_win, t1x, t1y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0,
+		pw_text(canvas_win, t1x, t1y, INV_PAINT, MAX_DEPTH+1, roman_font,
 				bufx, RED, COLOR_NONE);
 
 		t2y = (cur_y+fy)/2+sdy;
@@ -439,7 +439,7 @@ altlength_msg(int type, int fx, int fy)
 		    t2x = fx + sdx + 4.0/zoomscale;			/* right of the line */
 		else
 		    t2x = fx + sdx - sizex.length - 4.0/zoomscale;	/* left of the line */
-		pw_text(canvas_win, t2x, t2y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0,
+		pw_text(canvas_win, t2x, t2y, INV_PAINT, MAX_DEPTH+1, roman_font,
 				bufy, RED, COLOR_NONE);
 
 		/* finally, the hypotenuse */
@@ -451,7 +451,7 @@ altlength_msg(int type, int fx, int fy)
 		    t3y = t2y + sizehyp.ascent + 3.0/zoomscale;	/* below the hyp */
 		else
 		    t3y = t2y - 3.0/zoomscale;			/* above the hyp */
-		pw_text(canvas_win, t3x, t3y, INV_PAINT, MAX_DEPTH+1, roman_font, 0.0,
+		pw_text(canvas_win, t3x, t3y, INV_PAINT, MAX_DEPTH+1, roman_font,
 				bufhyp, RED, COLOR_NONE);
 
 		break;

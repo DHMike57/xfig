@@ -67,11 +67,11 @@
 	     (short)round(zoomscale*(d1)),(short)round(zoomscale*(d2)),\
 	     a1,a2)
 
-#define zXRotDrawString(disp,font,ang,win,gc,x,y,s)\
-    XRotDrawString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
+#define zXRotDrawString(disp,font,win,gc,x,y,s)\
+    XRotDrawString(disp,font,win,gc,ZOOMX(x),ZOOMY(y),s)
 
-#define zXRotDrawImageString(disp,font,ang,win,gc,x,y,s)\
-    XRotDrawImageString(disp,font,ang,win,gc,ZOOMX(x),ZOOMY(y),s)
+#define zXRotDrawImageString(disp,font,win,gc,x,y,s)\
+    XRotDrawImageString(disp,font,win,gc,ZOOMX(x),ZOOMY(y),s)
 
 #define zXFillRectangle(disp,win,gc,x,y,w,h)\
     XFillRectangle(disp,win,gc,ZOOMX(x),ZOOMY(y),\
@@ -184,13 +184,12 @@ pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
 			(int)strlen(s));
 }
 
-/* print "string" in window "w" using font specified in fstruct at angle
-	"angle" (radians) at (x,y)
+/* print "string" in window "w" using font specified in fstruct
    If background is != COLOR_NONE, draw background color ala DrawImageString
 */
 void
 pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
-	float angle, char *string, Color color, Color background)
+	char *string, Color color, Color background)
 {
     unsigned long	xfg, xbg;
 
@@ -229,9 +228,9 @@ pw_text(Window w, int x, int y, int op, int depth, XFontStruct *fstruct,
 	return;
 
     if (background != COLOR_NONE) {
-	zXRotDrawImageString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
+	zXRotDrawImageString(tool_d, fstruct, w, gccache[op], x, y, string);
     } else {
-	zXRotDrawString(tool_d, fstruct, angle, w, gccache[op], x, y, string);
+	zXRotDrawString(tool_d, fstruct, w, gccache[op], x, y, string);
     }
 }
 

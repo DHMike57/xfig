@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2022 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Parts Copyright (c) 1992 by James Tough
  * Parts Copyright (c) 1998 by Georg Stemmer
@@ -305,13 +305,13 @@ void draw_arc(F_arc *a, int op)
 				max2(scx+10,clip_xmax), max2(scy+10,clip_ymax));
 	sprintf(bufx,"c");
 	pw_text(canvas_win, cx, round(cy-3.0/zoomscale),
-		op, a->depth, roman_font, 0.0, bufx, RED, COLOR_NONE);
+		op, a->depth, roman_font, bufx, RED, COLOR_NONE);
 	pw_point(canvas_win, cx, cy, op, a->depth, 4, RED, CAP_ROUND);
 	for (i=1; i<=3; i++) {
 	    /* label the point number above the point */
 	    sprintf(bufx,"%d",i);
 	    pw_text(canvas_win, a->point[i-1].x, round(a->point[i-1].y-3.0/zoomscale),
-		op, a->depth, roman_font, 0.0, bufx, RED, COLOR_NONE);
+		op, a->depth, roman_font, bufx, RED, COLOR_NONE);
 	    pw_point(canvas_win, a->point[i-1].x, a->point[i-1].y, op, a->depth, 4, RED, CAP_ROUND);
 	}
 	/* restore original clip window */
@@ -755,7 +755,7 @@ void draw_line(F_line *line, int op)
 	/* label the point number above the point */
 	if (appres.shownums && active_layer(line->depth)) {
 	    pw_text(canvas_win, x, round(y-3.0/zoomscale), PAINT, line->depth,
-			roman_font, 0.0, "0", RED, COLOR_NONE);
+			roman_font, "0", RED, COLOR_NONE);
 	}
 	return;
     }
@@ -774,7 +774,7 @@ void draw_line(F_line *line, int op)
 		(line->type != T_BOX && line->type != T_POLYGON)) {
 		sprintf(bufx,"%d",i++);
 		pw_text(canvas_win, x, round(y-3.0/zoomscale), PAINT, line->depth,
-			roman_font, 0.0, bufx, RED, COLOR_NONE);
+			roman_font, bufx, RED, COLOR_NONE);
 	    }
 	}
 	if (!add_point(x, y)) {
@@ -829,7 +829,7 @@ void draw_arcbox(F_line *line, int op)
 	if (appres.shownums && active_layer(line->depth)) {
 	    sprintf(bufx,"%d",i++);
 	    pw_text(canvas_win, point->x, round(point->y-3.0/zoomscale), PAINT, line->depth,
-			roman_font, 0.0, bufx, RED, COLOR_NONE);
+			roman_font, bufx, RED, COLOR_NONE);
 	}
     }
     pw_arcbox(canvas_win, xmin, ymin, xmax, ymax, round(line->radius*ZOOM_FACTOR),
@@ -2131,7 +2131,7 @@ void debug_depth(int depth, int x, int y)
 	sprintf(str,"%d",depth);
 	size = textsize(roman_font, strlen(str), str);
 	pw_text(canvas_win, x-size.length-round(3.0/zoomscale), round(y-3.0/zoomscale),
-		PAINT, depth, roman_font, 0.0, str, RED, COLOR_NONE);
+		PAINT, depth, roman_font, str, RED, COLOR_NONE);
     }
 }
 
@@ -2163,7 +2163,7 @@ draw_spline(F_spline *spline, int op)
 	    /* label the point number above the point */
 	    sprintf(bufx,"%d",i++);
 	    pw_text(canvas_win, p->x, round(p->y-3.0/zoomscale), PAINT, spline->depth,
-		roman_font, 0.0, bufx, RED, COLOR_NONE);
+		roman_font, bufx, RED, COLOR_NONE);
 	}
     }
     if (open_spline(spline))
