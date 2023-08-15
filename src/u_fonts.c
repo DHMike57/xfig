@@ -74,51 +74,6 @@ struct _xfstruct x_fontinfo[NUM_FONTS] = {
     {"-*-itc zapf dingbats-*-*-*--", (struct xfont*) NULL},
 };
 
-/* Use the following font names for any font that doesn't exist in the table above.
- * These come with the Open Group X distribution so they should be a common set.
- *
- * The XFontStruct * slot is also used to store a 12 point (or closest size) font
- * structure when needed by draw_text() to scale text down below MIN_FONT_SIZE points.
-*/
-
-struct _xfstruct x_backup_fontinfo[NUM_FONTS] = {
-    {"-*-times-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-times-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-times-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-times-bold-i-normal--", (struct xfont*) NULL},
-    {"-*-lucida-medium-r-normal-sans-", (struct xfont*) NULL}, /* closest to Avant-Garde */
-    {"-*-lucida-medium-i-normal-sans-", (struct xfont*) NULL},
-    {"-*-lucida-bold-r-normal-sans-", (struct xfont*) NULL},
-    {"-*-lucida-bold-i-normal-sans-", (struct xfont*) NULL},
-    {"-*-times-medium-r-normal--", (struct xfont*) NULL},      /* closest to Bookman */
-    {"-*-times-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-times-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-times-bold-i-normal--", (struct xfont*) NULL},
-    {"-*-courier-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-courier-medium-o-normal--", (struct xfont*) NULL},
-    {"-*-courier-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-courier-bold-o-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-medium-o-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-o-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-medium-r-normal--", (struct xfont*) NULL},  /* closest to Helv-nar. */
-    {"-*-helvetica-medium-o-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-helvetica-bold-o-normal--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-bold-r-normal--", (struct xfont*) NULL},
-    {"-*-new century schoolbook-bold-i-normal--", (struct xfont*) NULL},
-    {"-*-lucidabright-medium-r-normal--", (struct xfont*) NULL},   /* closest to Palatino */
-    {"-*-lucidabright-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-lucidabright-demibold-r-normal--", (struct xfont*) NULL},
-    {"-*-lucidabright-demibold-i-normal--", (struct xfont*) NULL},
-    {"-*-symbol-medium-r-normal--", (struct xfont*) NULL},
-    {"-*-zapf chancery-medium-i-normal--", (struct xfont*) NULL},
-    {"-*-zapf dingbats-*-*-*--", (struct xfont*) NULL},
-};
-
 /* PostScript font names matched with X11 font names in x_fontinfo */
 
 struct _fstruct ps_fontinfo[NUM_FONTS + 1] = {
