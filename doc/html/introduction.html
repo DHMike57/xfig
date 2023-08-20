@@ -39,10 +39,8 @@ can be <A HREF="drawing.html">created</A>, <A HREF="editing.html#delete">deleted
 <A HREF="attributes.html">Attributes such as colors or line styles</A>
 can be selected in various ways.
 For text, <A HREF="attributes.html#font-panel"> 35 fonts</A> are available.
-Text can also include <A HREF="drawing.html#compose-char">Latin-1 characters</A>
-such as &quot;&auml;&quot; or &quot;&ccedil;&quot;.
 It is also possible to <A HREF="drawing.html#picture">embed images</A>
-in formats such as GIF, JPEG, EPS (PostScript), etc.
+in formats such as JPEG, PDF, EPS, PNG, etc.
 
 <p>
 Here is a screen image of <B>xfig</B>.
@@ -65,39 +63,45 @@ Click on them to see a larger version.
 
 <P>
 <B>Xfig</B> saves figures in its native
-<I><A HREF="fig-format.html">Fig format</A></I>,
-but they may be <A HREF="printing.html#export">converted
-into various formats</A> such as PostScript, GIF, JPEG, HP-GL, etc. <B>xfig</B>
+<I><A HREF="fig-format.html">Fig format</A></I>, and it can
+<A HREF="printing.html#export">export to various formats</A>
+such as PDF, PNG, TIKZ, etc.
+For export <B>xfig</B> needs <B>fig2dev</B>, which can also
+be invoked from the command line.
+<B>xfig</B>
 has a facility to <A HREF="printing.html#print">print figures to a PostScript
 printer</A>, too.
 
 <P>There are <A HREF="installation.html#related-apps">some applications</A>
 which can produce output in the <I>Fig format</I>.
-For example, <B>xfig</B> doesn't have a facility to create graphs,
+For example, <B>xfig</B> does not have a facility to create graphs,
 but tools such as <B><A HREF="installation.html#gnuplot">gnuplot</A></B>
-or <B><A HREF="installation.html#xgraph">xgraph</A></B> can create graphs
+can create graphs
 and export them in <I>Fig format</I>. Even if your favorite application
-can't generate output for <B>xfig</B>, tools such as
+can not generate output for <B>xfig</B>, tools such as
 <B><A HREF="installation.html#pstoedit">pstoedit</A></B>
 or <B><A HREF="installation.html#hp2xx">hp2xx</A></B> may allow you to
 read and edit those figures with <B>xfig</B>. If you want to import images
-into the figure but you don't need to edit the image itself
+into the figure but you do not need to edit the image itself
 (like <A HREF="screen_image_map.html">this example</A>),
 it is also possible to <A HREF="drawing.html#picture">embed
-images</A> in formats such as GIF, JPEG, EPSF (PostScript), etc.
+images</A> in formats such as JPEG, PNG, PDF, EPS (PostScript), etc.
 
 <P>Most operation are performed using the mouse, but some operations may
 also be performed using <A HREF="accelerators.html">keyboard accelerators</A>
 (shortcuts). Use of a three-button mouse is recommended, but it is also
 possible to use a two-button mouse (if you have a two-button mouse and
-your X server doesn't emulate a three-button mouse, press the Meta (or Alt) key
+your X server does not emulate a three-button mouse, press the Meta (or Alt) key
 and right mouse button together to simulate mouse button 2). Normally, mouse
 buttons 1 to 3 are assigned to the left, middle, and right buttons respectively.
 
-<P><B>xfig 3.2.X</B> and <B>fig2dev 3.2.X</B> include code for internationalization,
-it allows use of local characters (e.g., Japanese) in <B>xfig</B>.
-It uses standard internationalization (I18N) mechanism of X11R5,
-and known to work for Japanese and Korean at this time.
+<P><B>Xfig 3.2.9</B> and <B>fig2dev 3.2.9</B> support international text, and
+some  <a href="printing.html#language">output formats</a>, e.g., SVG or TIKZ,
+can display any character or glyph that is available in Unicode.
+Other output formats, notably PostScript
+(EPS), PDF, and all bitmap outputs are restricted to mainly western language
+character sets (including cyrillic and greek).
+These latter output formats can be made to work for Japanese and Korean.
 See <a href="i18n.html">Internationalization</a> about this.
 
 <hr>

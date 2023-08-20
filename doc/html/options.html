@@ -509,8 +509,6 @@ to map the colors in imported pictures to the limited set available to it.
 <p>
 <dt><kbd>-normalFont </kbd> <i>font</i> (<kbd>-nor</kbd>)
 <dd>Set the font used in message windows, etc.
-This font will also be used on the canvas
-when the desired font is not available.
 The default is <tt>6x13</tt>.
 
 <p>
@@ -662,14 +660,11 @@ If this is set to <tt>None</tt>, input method will not used.
 This is effective only if internationalization facility is enabled.
 
 <p>
-<dt><kbd>-international</kbd>
+<dt><kbd>-nointernational</kbd>
   <img src="images/pict-i18n.png" alt="[I18N]">
-<dd>Turn on internationalization facility.
-<b>Xfig</b> must be compiled with the
-<a href="i18n.html">internationalization facility</a>.
-Languages such as Japanese or Korean can't be used in international-<b>xfig</b>
-unless this option is specified when invoking <b>xfig</b>
-or the <tt>international</tt> resource is set to <i>ON</i>.
+<dd>Turn off internationalization facility.
+<b>Xfig</b> then only accesses latin-1 characters.
+Some text in the user interface may render better if this is set.
 
 <p>
 <dt><kbd>-keyFile </kbd> <i>compose-key-file</i> (<kbd>-k</kbd>)
@@ -1524,18 +1519,7 @@ only for <b>xfig</b> with <a href="i18n.html">internationalization facility</a>.
 <br>
 <b>Option:</b> <tt>-international</tt>
 <br>
-<b>Default:</b> <FONT color="#AA00AA">off</font>
-
-<p>
-<dt><kbd>boldFontSet</kbd> (<kbd>BoldFontSet</kbd>)
-<dd>Set the fontset used for drawing international text
-when <i>Times-Bold</i> is selected.
-This is effective only if internationalization facility is enabled.
-See also <tt>normalFontSet</tt>.
-<br>
-<b>Default:</b> <tt><FONT color="#AA00AA">-*-times-bold-r-normal--16-*-*-*-*-*-*-*,
-    -*-*-bold-r-normal--16-*-*-*-*-*-*-*,
-    -*-*-*-r-*--16-*-*-*-*-*-*-*</font></tt>
+<b>Default:</b> <FONT color="#AA00AA">on</font>
 
 <p>
 <dt><kbd>fixedFontSet</kbd> (<kbd>FontSet</kbd>)
@@ -1546,19 +1530,6 @@ This is effective only if internationalization facility is enabled.
 <b>Default:</b> <tt><FONT color="#AA00AA">-*-times-medium-r-normal--16-*-*-*-*-*-*-*,
     -*-*-medium-r-normal--16-*-*-*-*-*-*-*,
     -*-*-*-r-*--16-*-*-*-*-*-*-*</font></tt>
-
-<p>
-<dt><kbd>fontMenuLanguage</kbd> (<kbd>Language</kbd>)
-<dd>Specify the language to be used for label of
-<a href="attributes.html#text-font">TEXT FONT</a>.
-<tt>japanese</tt> and <tt>korean</tt> are supported in the current release,
-and label of <i>Times-Roman</i> and <i>Times-Bold</i> will be replaced
-by those for the language.
-Normally, you don't have to set this because <b>xfig</b> will choose it
-from the locale if this is not explicitly specified.
-This is effective only if internationalization facility is enabled.
-<br>
-<b>Default:</b> &quot;&quot;
 
 <p>
 <dt><kbd>inputStyle</kbd>
@@ -1573,17 +1544,6 @@ This is effective only if internationalization facility is enabled.
 <b>Option:</b> <tt>-inputStyle</tt>
 <br>
 <b>Default:</b> <FONT color="#AA00AA"><tt>OffTheSpot</tt></font>
-
-<p>
-<dt><kbd>normalFontSet</kbd> (<kbd>NormalFontSet</kbd>)
-<dd>Set the fontset used for drawing international text
-when <i>Times-Roman</i> is selected.
-This is effective only if internationalization facility is enabled.
-See also <tt>boldFontSet</tt>.
-<br>
-<b>Default:</b> <tt><FONT color="#AA00AA">-*-times-medium-r-normal--16-*-*-*-*-*-*-*,
-    -*-*-medium-r-normal--16-*-*-*-*-*-*-*,
-    -*-*-*-r-*--16-*-*-*-*-*-*-*</font></tt>
 
 </dl>
 

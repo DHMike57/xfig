@@ -690,16 +690,17 @@ If <a href="attributes.html#text-angle">TEXT/ELLIPSE ANGLE</a>
 is set to non-zero, the text will rotated by the angle, positive being
 counter-clockwise.
 <p>
-It is possible to enter Latin-1 glyphs
-such as `&auml;' or `&ccedil;'
-(Compose characters) using the COMPOSE (META) key.
-See <a href="#compose-char">Latin-1 Characters</a> about this.  These tables
-also show the keyboard mapping for glyphs from the Symbol font.
-<p>
-<img src="images/pict-i18n.png" alt="[I18N]">
-In <a href="i18n.html">international-<b>xfig</b></a>, it is possible to
-<a href="i18n.html#input-japanese">enter local text such as Japanese</a>
-with this.
+Xfig is fully unicode-aware, thus any glyph you can enter on the keyboard, or
+which you can enter by a compose method, should be properly processed.
+For latin-1 glyphs (such as `&auml;' or `&ccedil;') it is possible to enter
+characters by selecting <i>Character map</i> from the
+<a href="main_menus.html#view-menu"><i>View</i> menu</a> and clicking on
+the character.
+Latin1 glyphs can also be entered by a sequence of key strokes using the
+COMPOSE (META) key.
+The key sequences are listed under
+<a href="#compose-char">Latin-1 Characters</a>.
+These tables also show the keyboard mapping for glyphs from the Symbol font.
 <p>
 A simplistic superscript/subscript facility is provided.  While entering
 text, if <b>Ctrl-^</b> (control caret) is pressed, a new, smaller
@@ -772,9 +773,8 @@ See also <a href="attributes.html#text-step">TEXT STEP</a>.</tr>
  will also perform this function, as will <b>Shift+Mouse Button 2</b>.</tr>
 
  <tr><th><tt>&lt;Compose&gt;</tt> or <tt>&lt;Alt&gt;</tt> or <tt>&lt;Meta&gt;</tt>
-		<td>This key is used to enter Latin-1 character
-	 such as `<img src="images/a-umlaut.png" alt="a umlaut">' or
-	 `<img src="images/c-cedilla.png" alt="c cedilla" align=top>'.<br>
+		<td>This key is used to enter Latin-1 characters
+			such as `&auml;' or `&ccedil;'.
 	 See also <a href="#compose-char">Latin-1 Characters</a>.</tr>
  </table>
 
@@ -1176,15 +1176,7 @@ Not all COMPOSE, META and ALT keys can be used on all systems.
 On some systems such as Sun Workstations, the META key may be labeled as
 <img src="images/sun-meta-key.png" alt="Diamond Mark">.
 <p>
-<img src="images/pict-i18n.png" alt="[I18N]">
-If <a href="i18n.html">international-<b>xfig</b></a>
-is used in environments which use character set other than Latin-1
-(Japanese or Korean, for example),
-it is not possible to use these Latin-1 glyphs
-when `<i>Times-Roman + Mincho</i>' or `<i>Times-Bold + Gothic</i>'
-is selected in <a href="attributes.html#text-font">TEXT FONT</a>.
 
-<p>
 <hr>
 
 [ <a href="contents.html">Contents</a> |
