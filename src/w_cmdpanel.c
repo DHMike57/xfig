@@ -1090,7 +1090,7 @@ static void
 create_global_panel(Widget w)
 {
 	(void)w;
-	DeclareArgs(10);
+	DeclareArgs(11);
 	Widget		beside, below, freehand, recent;
 	Widget		delay_form, delay_spinner;
 	Position	xposn, yposn;
@@ -1258,7 +1258,7 @@ Widget
 CreateLabelledAscii(Widget *text_widg, char *label, char *widg_name, Widget
 		parent, Widget below, char *str, int width)
 {
-	DeclareArgs(10);
+	DeclareArgs(11);
 	Widget	lab_widg;
 
 	FirstArg(XtNlabel, label);
