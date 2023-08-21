@@ -122,14 +122,9 @@ Version @PACKAGE_VERSION@
 .SH DESCRIPTION
 .I Xfig
 is a menu-driven tool that allows the user to draw and manipulate
-objects interactively under the X Window System.
-.B It runs under X version 11
-.B release 4 or higher
-and requires a two- or three-button mouse.
+objects interactively under the X Window System.  If
 .I file
-specifies the name of a file to be edited.
-The objects in the file will be read at the start of
-.IR xfig .
+is given, it specifies the name of a file to be edited.
 .PP
 The bulk of the documentation for
 .IR xfig
@@ -140,7 +135,7 @@ or point your browser at
 .IR @HTMLDIR@/html/index.html .
 There are both English and Japanese versions.
 .PP
-When using a two-button mouse use the
+When using a two-button mouse instead of a three-button mouse, use the
 .I <Meta>
 key and the right button at the same time to effect
 the action of the middle button.
@@ -506,15 +501,15 @@ mode is
 Specifies the position for the icon.
 .\"-------
 .At
-.BR \-im [ age_editor ]
+.BR \-ima [ ge_editor ]
 .I editor
 .Ap
 Specify bitmap editor to use when ``Edit Image'' button is pressed
 in Picture Object panel.
 .\"-------
 .At
-.BR \-inc [ hes ]
-.BR (or -imperial)
+.BR \-inc [ hes "] (or"
+.BR -imp [ erial ])
 .Ap
 Make inches the unit of choice.
 This is the default.
@@ -529,16 +524,7 @@ Install own colormap. Normally, xfig uses the current colormap.
 .Ap
 Use lines of width
 .I width
-between all buttons and panels (default = 1).
-.\"-------
-.At
-.BR \-international
-.Ap
-Switch on international support (mainly Japanese and Korean),
-users of ISO Latin 1 (ISO-8859-1) probably should not use this,
-therefore the international support is switched off by default
-for locales using ISO-8859-1* codesets. For all other locales this
-option is already used by default.
+between all buttons and panels (default 1).
 .\"-------
 .At
 .BR \-jpeg [ _quality ]
@@ -648,6 +634,10 @@ Make centimeters the unit of choice.
 The option
 .B -centimeters
 may also be used.
+Fig files saved in metric mode are, due to rounding issues, scaled down by about
+5% when saved, and scaled up when read in. Using
+.BR -inches " or " -imperial
+avoids the scaling.
 .IP \&
 After
 .I xfig
@@ -669,6 +659,16 @@ Sets multiple page mode for print or export. See also
 .BR \-single.
 .\"-------
 .At
+.BR \-nointernational
+.Ap
+Switch off international support. This can be done if
+text objects only contain ASCII characters.
+(Characters beyond ASCII are interpreted as Latin 1).
+If there are error messages when starting xfig
+regarding "missing charsets in string to fontset conversion",
+setting this option avoids the error.
+.\"-------
+.At
 .BR \-noo [ verlap ]
 .Ap
 When exporting in multiple page mode, causes no overlap from page to page.
@@ -681,14 +681,8 @@ This is the default.  See also
 .Ap
 Cause the font used for the message window to be
 .IR font .
-This font is also used on the canvas when the selected font is not
-available in an X11 font (default = 6x13).
-.\"-------
-.At
-.BR \-nosc [ alablefonts ]
-.Ap
-Disables use of the X11R5 or OpenWindows scalable fonts.
-You might want to use this for debugging.
+This font is also used on the canvas when the global settings "Show
+line lengths" or "Show vertex numbers" are true (default = 6x13).
 .\"-------
 .At
 .BR \-nosp [ lash ]
@@ -860,14 +854,6 @@ The default is
 .Ap
 Set the height(width) of the top(side) rulers in pixels.
 The default (and minimum) is 24.
-.\"-------
-.At
-.BR \-scala [ blefonts ]
-.Ap
-Allows use of the X11R5 or OpenWindows scalable fonts (this is the default).
-If the scalable fonts aren't available
-.I xfig
-will automatically switch to non-scaling fonts.
 .\"-------
 .At
 .BR \-scale_factor
@@ -1074,12 +1060,7 @@ Set the starting text step.
 .Ap
 Specifies that xfig should use the input tablet instead of the mouse
 for drawing.  You must have the XInputExtension in your X server and
-an input tablet for this to work.  Also, you must modify the Imakefile
-to include the
-.B USETAB
-and
-.B TABLIB
-variables.
+an input tablet for this to work.
 .\"-------
 .At
 .BR \-track
@@ -1106,9 +1087,7 @@ on the command line and write it out to the original file,
 in the current file format for the version of xfig being run.
 The original Fig file will be preserved with
 the suffix \fI.bak\fR attached to the name.
-.br
-In this mode, xfig doesn't connect the X server, so no window is opened,
-and it exits when finished.
+In this mode, xfig exits when finished, and no window is opened.
 .\"-------
 .At
 .BR \-users [ cale ]
@@ -1241,7 +1220,8 @@ inches	boolean	true	\-inches (true),
 			\-metric (false)
 installowncmap	boolean	false	\-installowncmap
 internalborderwidth	integer	1	\-internalBW
-international	boolean	false	\-international
+international	boolean	true	\-international (true),
+			\-nointernational (false)
 jpeg_quality	integer	75	\-jpeg_quality
 justify	boolean	false	\-left (false),
 			\-right (true)
@@ -1268,8 +1248,6 @@ pwidth	float	11 (landscape)	\-pwidth
 		8.5 (portrait)
 rigidtext	boolean	false	\-rigid (true)
 rulerthick	integer	24	\-rulerthick
-scalablefonts	boolean	true	\-scalablefonts (true),
-			\-noscalablefonts (false)
 scale_factor	float	1.0	\-scale_factor
 showallbuttons	boolean	false	\-showallbuttons
 showaxislines	boolean	true	\-showaxislines (true),
@@ -1329,7 +1307,7 @@ Please send bug reports, fixes, new features etc. to:
 .br
 \&@PACKAGE_BUGREPORT@
 .PP
-Because of the difference of some fonts in some X servers and the PostScript
+Because of the difference of the fonts shown on the canvas and the PostScript
 fonts on printers, text alignment can be problematic.
 .PP
 Not all operations employ smart redrawing of objects which are altered

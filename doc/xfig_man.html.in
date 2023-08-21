@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Tue Jun 13 20:26:27 2023 -->
+<!-- CreationDate: Mon Aug 21 21:19:24 2023 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -61,10 +61,8 @@ Version @PACKAGE_VERSION@</p>
 <p style="margin-left:11%; margin-top: 1em"><i>Xfig</i> is
 a menu-driven tool that allows the user to draw and
 manipulate objects interactively under the X Window System.
-<b>It runs under X version 11 release 4 or higher</b> and
-requires a two- or three-button mouse. <i>file</i> specifies
-the name of a file to be edited. The objects in the file
-will be read at the start of <i>xfig</i>.</p>
+If <i>file</i> is given, it specifies the name of a file to
+be edited.</p>
 
 <p style="margin-left:11%; margin-top: 1em">The bulk of the
 documentation for <i>xfig</i> is in an HTML-based reference
@@ -73,9 +71,9 @@ browser at <i>@HTMLDIR@/html/index.html</i>. There are both
 English and Japanese versions.</p>
 
 <p style="margin-left:11%; margin-top: 1em">When using a
-two-button mouse use the <i>&lt;Meta&gt;</i> key and the
-right button at the same time to effect the action of the
-middle button.</p>
+two-button mouse instead of a three-button mouse, use the
+<i>&lt;Meta&gt;</i> key and the right button at the same
+time to effect the action of the middle button.</p>
 
 <p style="margin-left:11%; margin-top: 1em"><i>Xfig</i> is
 available from @PACKAGE_URL@.</p>
@@ -739,7 +737,7 @@ icons. This is the default. The other mode is
 icon.</p>
 
 
-<p style="margin-left:11%; margin-top: 1em"><b>&minus;im</b>[<b>age_editor</b>]
+<p style="margin-left:11%; margin-top: 1em"><b>&minus;ima</b>[<b>ge_editor</b>]
 <i>editor</i></p>
 
 <p style="margin-left:22%;">Specify bitmap editor to use
@@ -748,7 +746,7 @@ pressed in Picture Object panel.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;inc</b>[<b>hes</b>]
-<b>(or</b>-imperial)</p>
+(or <b>-imp</b>[<b>erial</b>])</p>
 
 <p style="margin-left:22%;">Make inches the unit of choice.
 This is the default.</p>
@@ -764,17 +762,7 @@ xfig uses the current colormap.</p>
 width</p>
 
 <p style="margin-left:22%;">Use lines of width <i>width</i>
-between all buttons and panels (default = 1).</p>
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>&minus;international</b></p>
-
-<p style="margin-left:22%;">Switch on international support
-(mainly Japanese and Korean), users of ISO Latin 1
-(ISO-8859-1) probably should not use this, therefore the
-international support is switched off by default for locales
-using ISO-8859-1* codesets. For all other locales this
-option is already used by default.</p>
+between all buttons and panels (default 1).</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;jpeg</b>[<b>_quality</b>]
@@ -865,7 +853,11 @@ for imported images to <i>numcols (default 64).</i></p>
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;me</b>[<b>tric</b>]</p>
 
 <p style="margin-left:22%;">Make centimeters the unit of
-choice. The option <b>-centimeters</b> may also be used.</p>
+choice. The option <b>-centimeters</b> may also be used. Fig
+files saved in metric mode are, due to rounding issues,
+scaled down by about 5% when saved, and scaled up when read
+in. Using <b>-inches</b> or <b>-imperial</b> avoids the
+scaling.</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
@@ -892,6 +884,16 @@ where the two rulers meet.</p></td></tr>
 print or export. See also <b>&minus;single.</b></p>
 
 
+<p style="margin-left:11%; margin-top: 1em"><b>&minus;nointernational</b></p>
+
+<p style="margin-left:22%;">Switch off international
+support. This can be done if text objects only contain ASCII
+characters. (Characters beyond ASCII are interpreted as
+Latin 1). If there are error messages when starting xfig
+regarding &quot;missing charsets in string to fontset
+conversion&quot;, setting this option avoids the error.</p>
+
+
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;noo</b>[<b>verlap</b>]</p>
 
 <p style="margin-left:22%;">When exporting in multiple page
@@ -904,15 +906,9 @@ default. See also <b>&minus;overlap.</b></p>
 
 <p style="margin-left:22%;">Cause the font used for the
 message window to be <i>font</i>. This font is also used on
-the canvas when the selected font is not available in an X11
-font (default = 6x13).</p>
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>&minus;nosc</b>[<b>alablefonts</b>]</p>
-
-<p style="margin-left:22%;">Disables use of the X11R5 or
-OpenWindows scalable fonts. You might want to use this for
-debugging.</p>
+the canvas when the global settings &quot;Show line
+lengths&quot; or &quot;Show vertex numbers&quot; are true
+(default = 6x13).</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;nosp</b>[<b>lash</b>]</p>
@@ -1568,14 +1564,6 @@ top(side) rulers in pixels. The default (and minimum) is
 24.</p>
 
 
-<p style="margin-left:11%; margin-top: 1em"><b>&minus;scala</b>[<b>blefonts</b>]</p>
-
-<p style="margin-left:22%;">Allows use of the X11R5 or
-OpenWindows scalable fonts (this is the default). If the
-scalable fonts aren&rsquo;t available <i>xfig</i> will
-automatically switch to non-scaling fonts.</p>
-
-
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;scale_factor</b>
 <i>scale</i></p>
 
@@ -1775,9 +1763,7 @@ mode 4 is 1 inch. In metric mode, mode 0 is
 <p style="margin-left:22%;">Specifies that xfig should use
 the input tablet instead of the mouse for drawing. You must
 have the XInputExtension in your X server and an input
-tablet for this to work. Also, you must modify the Imakefile
-to include the <b>USETAB</b> and <b>TABLIB</b>
-variables.</p>
+tablet for this to work.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;track</b></p>
@@ -1804,9 +1790,8 @@ color number, which is 32 or higher.</p>
 specified on the command line and write it out to the
 original file, in the current file format for the version of
 xfig being run. The original Fig file will be preserved with
-the suffix <i>.bak</i> attached to the name. <br>
-In this mode, xfig doesn&rsquo;t connect the X server, so no
-window is opened, and it exits when finished.</p>
+the suffix <i>.bak</i> attached to the name. In this mode,
+xfig exits when finished, and no window is opened.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>&minus;users</b>[<b>cale</b>]
@@ -2437,11 +2422,23 @@ to the command line arguments:</p>
 <td width="25%">
 
 
-<p>false</p></td>
+<p>true</p></td>
 <td width="32%">
 
 
-<p>&minus;international</p></td></tr>
+<p>&minus;international (true),</p></td></tr>
+<tr valign="top" align="left">
+<td width="6%"></td>
+<td width="25%">
+</td>
+<td width="12%">
+</td>
+<td width="25%">
+</td>
+<td width="32%">
+
+
+<p>&minus;nointernational (false)</p></td></tr>
 <tr valign="top" align="left">
 <td width="6%"></td>
 <td width="25%">
@@ -2862,36 +2859,6 @@ to the command line arguments:</p>
 
 
 <p>&minus;rulerthick</p></td></tr>
-<tr valign="top" align="left">
-<td width="6%"></td>
-<td width="25%">
-
-
-<p>scalablefonts</p></td>
-<td width="12%">
-
-
-<p>boolean</p></td>
-<td width="25%">
-
-
-<p>true</p></td>
-<td width="32%">
-
-
-<p>&minus;scalablefonts (true),</p></td></tr>
-<tr valign="top" align="left">
-<td width="6%"></td>
-<td width="25%">
-</td>
-<td width="12%">
-</td>
-<td width="25%">
-</td>
-<td width="32%">
-
-
-<p>&minus;noscalablefonts (false)</p></td></tr>
 <tr valign="top" align="left">
 <td width="6%"></td>
 <td width="25%">
@@ -3575,7 +3542,7 @@ reports, fixes, new features etc. to: <br>
 @PACKAGE_BUGREPORT@</p>
 
 <p style="margin-left:11%; margin-top: 1em">Because of the
-difference of some fonts in some X servers and the
+difference of the fonts shown on the canvas and the
 PostScript fonts on printers, text alignment can be
 problematic.</p>
 
