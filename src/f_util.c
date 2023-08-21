@@ -1001,9 +1001,7 @@ update_fig_files(int argc, char **argv)
 	appres.magnification = 100.0f;
 	appres.multiple = False;
 	appres.transparent = -2;
-	/* and use scalable fonts, if available */
-	appres.scalablefonts = True;
-	/* but do not set correct_font_size; Originally, font sizes were given
+	/* Do not set correct_font_size. Originally, font sizes were given
 	   in pixel, and xfig displayed with 80 pixels to the inch. */
 
 	/* read Fig file but don't import any images */

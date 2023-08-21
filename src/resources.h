@@ -184,7 +184,6 @@ typedef struct _appres {
     Boolean	 RHS_PANEL;
     char	*pdf_viewer;		/* viewer for pdf docs */
     int		 rulerthick;		/* thickness of rulers */
-    Boolean	 scalablefonts;		/* whether user wants scalable fonts or not */
     Boolean	 showallbuttons;
     Boolean	 showballoons;		/* show popup messages when user passes over buttons */
     Boolean	 showlengths;		/* length/width lines when drawing or moving */
