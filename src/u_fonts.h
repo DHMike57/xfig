@@ -56,12 +56,6 @@ struct _fstruct {
     int		    xfontnum;	/* template for locating X fonts */
 };
 
-struct _xfstruct {
-    char	   *template;	/* template for locating X fonts */
-    struct xfont   *xfontlist;	/* linked list of X fonts for different point
-				 * sizes */
-};
-
 
 extern int	psfontnum(char *font);
 extern int	latexfontnum(char *font);
@@ -74,7 +68,6 @@ extern void	textmaxheight(int psflag, int font, int size, int *ascent,
 				int *descent);
 extern void	text_origin(int *draw_x, int *draw_y, int base_x, int base_y,
 				int align, F_pos offset);
-extern struct _xfstruct	x_fontinfo[];
 extern struct _fstruct	ps_fontinfo[];
 extern struct _fstruct	latex_fontinfo[];
 

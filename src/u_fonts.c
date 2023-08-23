@@ -34,47 +34,7 @@
 
 #define DEF_PS_FONT		0
 
-/* X11 font names */
-
-struct _xfstruct x_fontinfo[NUM_FONTS] = {
-	{"-*-times-medium-r-normal--", (struct xfont*) NULL},
-	{"-*-times-medium-i-normal--", (struct xfont*) NULL},
-	{"-*-times-bold-r-normal--", (struct xfont*) NULL},
-	{"-*-times-bold-i-normal--", (struct xfont*) NULL},
-	{"-*-avantgarde-book-r-normal--", (struct xfont*) NULL},
-	{"-*-avantgarde-book-o-normal--", (struct xfont*) NULL},
-	{"-*-avantgarde-demi-r-normal--", (struct xfont*) NULL},
-	{"-*-avantgarde-demi-o-normal--", (struct xfont*) NULL},
-	{"-*-bookman-light-r-normal--", (struct xfont*) NULL},
-	{"-*-bookman-light-i-normal--", (struct xfont*) NULL},
-	{"-*-bookman-demi-r-normal--", (struct xfont*) NULL},
-	{"-*-bookman-demi-i-normal--", (struct xfont*) NULL},
-	{"-*-courier-medium-r-normal--", (struct xfont*) NULL},
-	{"-*-courier-medium-o-normal--", (struct xfont*) NULL},
-	{"-*-courier-bold-r-normal--", (struct xfont*) NULL},
-	{"-*-courier-bold-o-normal--", (struct xfont*) NULL},
-	{"-*-helvetica-medium-r-normal--", (struct xfont*) NULL},
-	{"-*-helvetica-medium-o-normal--", (struct xfont*) NULL},
-	{"-*-helvetica-bold-r-normal--", (struct xfont*) NULL},
-	{"-*-helvetica-bold-o-normal--", (struct xfont*) NULL},
-	{"-*-helvetica-medium-r-narrow--", (struct xfont*) NULL},
-	{"-*-helvetica-medium-o-narrow--", (struct xfont*) NULL},
-	{"-*-helvetica-bold-r-narrow--", (struct xfont*) NULL},
-	{"-*-helvetica-bold-o-narrow--", (struct xfont*) NULL},
-	{"-*-new century schoolbook-medium-r-normal--", (struct xfont*) NULL},
-	{"-*-new century schoolbook-medium-i-normal--", (struct xfont*) NULL},
-	{"-*-new century schoolbook-bold-r-normal--", (struct xfont*) NULL},
-	{"-*-new century schoolbook-bold-i-normal--", (struct xfont*) NULL},
-	{"-*-palatino-medium-r-normal--", (struct xfont*) NULL},
-	{"-*-palatino-medium-i-normal--", (struct xfont*) NULL},
-	{"-*-palatino-bold-r-normal--", (struct xfont*) NULL},
-	{"-*-palatino-bold-i-normal--", (struct xfont*) NULL},
-	{"-*-symbol-medium-r-normal--", (struct xfont*) NULL},
-	{"-*-itc zapf chancery-medium-i-normal--", (struct xfont*) NULL},
-	{"-*-itc zapf dingbats-*-*-*--", (struct xfont*) NULL},
-};
-
-/* PostScript font names matched with X11 font names in x_fontinfo */
+/* PostScript font names corresponding to fonts requested in xft_name[] */
 
 struct _fstruct ps_fontinfo[NUM_FONTS + 1] = {
 	{"Default",				-1},

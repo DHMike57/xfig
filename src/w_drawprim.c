@@ -245,14 +245,6 @@ textsize(XFontStruct *fstruct, int n, char *s)
 	int		dir, asc, desc;
 	XCharStruct	overall;
 
-	if (appres.international) {
-		extern void i18n_text_extents(); /* w_i18n.h */
-		i18n_text_extents(fstruct, s, n, &dir, &asc, &desc, &overall);
-		ret.length = ZOOM_FACTOR * overall.width;
-		ret.ascent = ZOOM_FACTOR * overall.ascent;
-		ret.descent = ZOOM_FACTOR * overall.descent;
-		return (ret);
-	}
 	XTextExtents(fstruct, s, n, &dir, &asc, &desc, &overall);
 	ret.length = ZOOM_FACTOR * overall.width;
 	ret.ascent = ZOOM_FACTOR * overall.ascent;

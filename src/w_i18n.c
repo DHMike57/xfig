@@ -23,7 +23,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "w_i18n.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -395,82 +394,6 @@ unsigned char Korean_Bold_bits[] = {
    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
    0x00,0x00,0x00,0x00};
-
-
-/* check if str include i18n character */
-static Boolean is_i18n_text(str)
-     char *str;
-{
-  int i;
-  for (i = 0; str[i] != '\0'; i++) {
-    if (str[i] & 0x80) return TRUE;
-  }
-  return FALSE;
-}
-
-/* get fontset and size corresponding to font specified by fid */
-/* return FALSE if the font is not for i18n */
-static Boolean seek_fontset(fid, fontset, size_ret)
-     Font fid;
-     XFontSet *fontset;
-     int *size_ret;
-{
-  extern struct _xfstruct x_fontinfo[]; /* X11 fontnames */
-  struct xfont *nf;
-  int i;
-  if (!appres.international) return FALSE;
-  for (i = 0; i < NUM_FONTS; i++) {
-    nf = x_fontinfo[i].xfontlist;
-    while (nf != NULL && (nf->fset == NULL || nf->fstruct->fid != fid))
-      nf = nf->next;
-    if (nf != NULL && nf->fset != NULL) {
-      *fontset=nf->fset;
-      *size_ret = nf->size;
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-int
-i18n_fontset_height(fontset)
-     XFontSet fontset;
-{
-  XFontSetExtents *extents;
-  extents = XExtentsOfFontSet(fontset);
-  return extents->max_logical_extent.height;
-}
-
-
-/* get extents of the text */
-void
-i18n_text_extents(font, str, len, dir, asc, des, overall)
-     XFontStruct *font;
-     char *str;
-     int len;
-     int *dir, *asc, *des;  /* assume these return values are not used */
-     XCharStruct *overall;
-{
-  XFontSet fontset;
-  int font_size;
-  XRectangle ink, logical;
-  double scale;
-  if (!appres.international || !is_i18n_text(str)
-      || !seek_fontset(font->fid, &fontset, &font_size)) {
-    XTextExtents(font, str, len, dir, asc, des, overall);
-  } else {
-    XmbTextExtents(fontset, str, len, &ink, &logical);
-    if (appres.fontset_size <= 0)
-      scale = (double)font_size / (double)i18n_fontset_height(fontset);
-    else
-      scale = (double)font_size / (double)appres.fontset_size;
-    overall->width = max2(logical.width, ink.width + ink.x) * scale + 0.5;
-    overall->lbearing = -ink.x * scale;
-    overall->rbearing = overall->width;
-    overall->ascent = -logical.y * scale;
-    overall->descent = logical.height * scale - overall->ascent;
-  }
-}
 
 
 #ifndef HAVE_SETLOCALE

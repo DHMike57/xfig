@@ -264,18 +264,7 @@ void free_GCs(void)
 void free_Fonts(void)
 {
   int i;
-  struct xfont   *nf;
 
-
-  for (i=0; i<NUM_FONTS; i++) {
-    for (nf = x_fontinfo[i].xfontlist; nf != NULL;) {
-      /* Uncommented, see ticket #54, https://sourceforge.net/p/mcj/tickets/54*/
-      /* XUnloadFont(tool_d, nf->fid); */
-      if (nf->fstruct != NULL)
-	  XFreeFont(tool_d, nf->fstruct);
-      nf = nf->next;
-    }
-  }
   if (roman_font!=NULL) {
     XFreeFont(tool_d, roman_font);
   };
