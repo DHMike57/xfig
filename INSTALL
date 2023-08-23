@@ -6,10 +6,13 @@ Type
 
 to build xfig and install it below /usr/local.  For requirements, see below.
 
-Optionally, run `make check' after make and `make installcheck' after
-installation. A variation to the above is to do "make -sj" to do a parallel
-build (-j), be less verbose (-s) and use the "make install-strip" target,
-which strips debugging symbols from the final executable.
+Optional:
+	make check	     # Run a few tests on the newly built executable
+	make installcheck    # Run the same tests with the installed executable
+
+Variations:
+make -sj  (-s .. silent, -j .. parallel build),
+make install-strip .. strip debugging symbols from the final executable
 
 The path given by the --with-appdefaultdir option varies between systems.
 It may be one of "/usr/share/X11/app-defaults", "/etc/X11/app-defaults",
@@ -50,6 +53,11 @@ needed at runtime.
 Usually, if a package manager is used, the runtime libraries are contained in a
 "lib*" package, the header files in a "lib*-dev" or "lib*-devel" package,
 e.g., "libx11" and "libx11-dev".
+
+Fonts:
+Xfig queries fontconfig for suitable fonts to display text objects on its
+canvas. For best looks, install a package that contains the base 35 Postscript
+fonts, e.g., on debian fonts-urw-base35
 
 
 Specific distributions:

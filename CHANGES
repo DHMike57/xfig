@@ -2,10 +2,10 @@ Changes to Xfig
 =============================================================================
 Version 3.2
 =============================================================================
-Patchlevel 9 (Nov 2022)
+Patchlevel 9 (Aug 2023)
 
 NEW FEATURES:
-	o Text objects are rendered using the xft library.
+	o Text objects are rendered using the xft library, querying fontconfig.
 	o Relative, not absolute paths to embedded picture files are written
 	  to .fig files. This makes it easier to move and share .fig files.
 
@@ -17,7 +17,7 @@ CHANGES:
 	  Previously, bytes with a value larger than expressable with 7 bits
 	  were printed as backslash-escaped three-digit octal value.
 
-	o Remove application resources save8bit, latinKeyboard,
+	o Remove application resources save8bit, latinKeyboard, scaleablefonts,
 	  fig2devLocalizeOption, encoding, eucEncoding, localeEncoding.
 
 BUGS FIXED:
