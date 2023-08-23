@@ -29,38 +29,26 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 
-#include "w_i18n.h"
 #include "xfig_math.h"
-
-#define XDrawString		i18n_draw_string
-#define XDrawImageString	i18n_draw_image_string
-#define XTextExtents		i18n_text_extents
-
-
-
-/* ---------------------------------------------------------------------- */
 
 
 /* Debugging macros */
 
 #define DEBUG_PRINT1(a) /* if (appres.DEBUG) printf (a) */
 
-
-/* ---------------------------------------------------------------------- */
-
+/* EXPORTS */
 
 int		XRotDrawString(Display *dpy, XFontStruct *font,
 			Drawable drawable, GC gc, int x, int y, char *str);
 int		XRotDrawImageString(Display *dpy, XFontStruct *font,
 			Drawable drawable, GC gc, int x, int y, char *str);
 
+/* LOCALS */
+
 static char	*my_strtok(char *str1, char *str2);
 static int	XRotDrawHorizontalString(Display *dpy, XFontStruct *font,
 			Drawable drawable, GC gc, int x, int y, char *text,
 			int align, int bg);
-
-
-/* ---------------------------------------------------------------------- */
 
 
 /**************************************************************************/
@@ -212,23 +200,6 @@ XRotDrawHorizontalString(Display *dpy, XFontStruct *font, Drawable drawable,
 		return 1;
 
 	str3=my_strtok(str1, str2);
-
-	if (is_i18n_font(font)) {
-		XTextExtents(font, str3, strlen(str3), &dir, &asc, &desc, &overall);
-
-		/* overall font height */
-		height=overall.ascent+overall.descent;
-
-		/* y position */
-		if (align==TLEFT || align==TCENTRE || align==TRIGHT)
-			yp=y+overall.ascent;
-		else if (align==MLEFT || align==MCENTRE || align==MRIGHT)
-			yp=y-nl*height/2+overall.ascent;
-		else if (align==BLEFT || align==BCENTRE || align==BRIGHT)
-			yp=y-nl*height+overall.ascent;
-		else
-			yp=y;
-	}
 
 	/* loop through each section in the string */
 	do {
