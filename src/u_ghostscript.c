@@ -128,7 +128,7 @@ stdout_mediabox(void *caller_handle, const char *str, int len)
 		data->bb[3] = (int)ceil(fbb[3]);
 	} else {
 		/* Either the pdf is corrupt, which yields a matching failure,
-		 * or a read error occured or EOF is reached.
+		 * or a read error occurred or EOF is reached.
 		 * Ghostscript returns with zero from a corrupt pdf, and writes
 		 * error information to stdout.
 		 * Use the bounding box to report a, most likely, corrupt pdf.
@@ -416,7 +416,7 @@ gsexe_mediabox(char *file, int *llx, int *lly, int *urx, int *ury)
 
 #ifdef HAVE_GSLIB
 /*
- * Return codes: 0..success, -1..within the function, an error occured,
+ * Return codes: 0..success, -1..within the function, an error occurred,
  *  GS_ERROR..the ghostscript interpreter returned an error
  */
 static int

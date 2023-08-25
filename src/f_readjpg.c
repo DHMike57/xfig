@@ -123,7 +123,7 @@ read_JPEG_file(FILE *file, F_pic *pic)
 
 	/* Establish the setjmp return context for error_exit to use. */
 	if (setjmp(setjmp_buffer)) {
-		/* an error has occured */
+		/* an error has occurred */
 		jpeg_destroy_decompress(&cinfo);
 		if (pic->pic_cache->bitmap != NULL) {
 			free(pic->pic_cache->bitmap);

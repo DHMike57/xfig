@@ -133,7 +133,7 @@ tangent_normal_line(int x, int y, float vx, float vy)
     append_point(xr, yr, &cur_point);
 
     if ((line = create_line()) == NULL)
-        return; /* an error occured */
+        return; /* an error occurred */
     line->type = T_POLYLINE;
     line->style = cur_linestyle;
     line->thickness = cur_linewidth;

@@ -425,7 +425,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 	/* readfunc() expect an open file stream, positioned not at the
 	   start of the stream. The stream remains open after returning. */
 	if (headers[i].readfunc(pic, &pic_stream) != PicSuccess) {
-		file_msg("Errors occured when reading %s file %s",
+		file_msg("Errors occurred when reading %s file %s",
 						headers[i].type, abs_path);
 	} else {
 		put_msg("Reading Picture object file...Done");
