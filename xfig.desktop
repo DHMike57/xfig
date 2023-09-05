@@ -1,5 +1,5 @@
 [Desktop Entry]
-Exec=/usr/bin/xfig %f
+Exec=xfig %f
 InitialPreference=2
 MimeType=application/x-xfig;
 Name=xfig
