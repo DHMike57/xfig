@@ -95,9 +95,6 @@ dnl AC_CHECK_PROG(XDG_MENU, [xdg-desktop-menu], [xdg-desktop-menu])
 AC_SEARCH_LIBS([pow], [m])dnl
 dnl AC_SEARCH_LIBS([deflate], [z])  # libz is not needed.
 AC_SEARCH_LIBS([FcInit], [fontconfig])
-AS_IF([test "x$ac_cv_search_pow" = xno \
-	|| test "x$ac_cv_search_png_read_info" = xno],
-    [AC_MSG_ERROR([Necessary libraries not found.])])
 
 
 # Checks for header files.
@@ -186,6 +183,10 @@ PostScript files. To disable calling ghostscript, set to the empty string,
 .BR \"\-ghostscript \"\"\"\"\" ."])dnl
 AC_SUBST([gsman])
 AM_SUBST_NOTMAKE([gsman])
+
+AS_IF([test "x$ac_cv_search_pow" = xno \
+	|| test "x$ac_cv_search_png_read_info" = xno],
+    [AC_MSG_ERROR([Necessary libraries not found.])])
 
 
 # Checks for typedefs, structures, and compiler characteristics.
