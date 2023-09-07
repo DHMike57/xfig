@@ -317,10 +317,10 @@ gsexe(FILE **out, bool *isnew, char *exenew, char *exeold)
  * Call ghostscript to extract the /MediaBox from the pdf given in file.
  * Command line, for gs >= 9.50,
  *    gs -q -dNODISPLAY --permit-file-read=in.pdf -c \
- *	"(in.pdf) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == quit"
+ *	"(in.pdf) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == runpdfend quit"
  * gs < 9.50:
  *    gs -q -dNODISPLAY -dNOSAFER -c \
- *	"(in.pdf) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == quit"
+ *	"(in.pdf) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == runpdfend quit"
  * The command line was found, and modified a bit, at
  *https://stackoverflow.com/questions/2943281/using-ghostscript-to-get-page-size
  * Beginning with gs 9.50, "-dSAFER" is the default, and permission to access
@@ -349,9 +349,11 @@ gsexe_mediabox(char *file, int *llx, int *lly, int *urx, int *ury)
 		return -3;
 
 	exenew = "%s -q -dNODISPLAY \"--permit-file-read=%s\" -c \"(%s) (r) "
-		"file runpdfbegin 1 pdfgetpage /MediaBox pget pop == quit\"";
+		"file runpdfbegin 1 pdfgetpage /MediaBox pget pop == "
+		"runpdfend quit\"";
 	exeold = "%s -q -dNODISPLAY -c \"(%s) (r) "
-		"file runpdfbegin 1 pdfgetpage /MediaBox pget pop == quit\"";
+		"file runpdfbegin 1 pdfgetpage /MediaBox pget pop == "
+		"runpdfend quit\"";
 
 	/* malloc() buffers for the command line, if necessary */
 	fmt = exenew;
@@ -445,7 +447,8 @@ gslib_mediabox(char *file, int *llx, int *lly, int *urx, int *ury)
 	argnew[3] = "--permit-file-read=%s";	/* file */
 	argnew[4] = "-c";
 	argnew[5] =
-	    "(%s) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == quit";
+	    "(%s) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == "
+	    "runpdfend quit";
 
 	argold[0] = argnew[0];
 	argold[1] = argnew[1];
