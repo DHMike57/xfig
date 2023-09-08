@@ -23,13 +23,11 @@
 # "`u' modifier ignored since `D' is the default...".
 ARFLAGS = cr
 
-# Xft #includes <ft2build.h>, not <freetype2/ft2build.h>, hence freetype2
-# must be put into the search path.
-
-AM_CPPFLAGS = -I$(oldincludedir)/freetype2 $(XCPPFLAGS) -DNDEBUG -DXFIGLIBDIR="\"$(compkeydbdir)\"" \
+AM_CPPFLAGS = $(fontconfig_CFLAGS) $(XCPPFLAGS) -DNDEBUG	\
+	-DXFIGLIBDIR="\"$(compkeydbdir)\""			\
 	-DOBJLIBDIR="\"$(pkgdatadir)/Libraries\"" -DXFIGDOCDIR="\"$(docdir)\""
 
-AM_LDFLAGS = $(XLDFLAGS)
+AM_LDFLAGS = $(fontconfig_LIBS) $(XLDFLAGS)
 
 # LIBOBJS must be placed in LDADD or xfig_LDADD - otherwise, the
 # lib-dir is not distributed

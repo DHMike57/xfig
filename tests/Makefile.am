@@ -39,9 +39,9 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	  echo 'm4_define([AT_PACKAGE_URL], [@PACKAGE_URL@])'; \
 	} >'$(srcdir)/package.m4'
 
-AM_CPPFLAGS = -I$(top_srcdir)/src -I$(oldincludedir)/freetype2 $(XCPPFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/src $(fontconfig_CFLAGS) $(XCPPFLAGS)
 
-AM_LDFLAGS = $(XLDFLAGS)
+AM_LDFLAGS = $(fontconfig_LIBS) $(XLDFLAGS)
 LDADD = $(top_builddir)/src/libxfig.a $(XLIBS)
 
 check_PROGRAMS = test1 test2 test3 test4

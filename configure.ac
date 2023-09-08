@@ -81,10 +81,22 @@ AC_PROG_SED
 AM_PROG_AR
 
 # Search for pkg-config and set PKG_CONFIG to the path found, else empty.
-# PKG_PROG_PKG_CONFIG
+PKG_PROG_PKG_CONFIG
 # On debian, pkg-config does not find xaw3d. On archlinux, pkg-config
 # --libs xaw3d yields -lXaw3d -lXmu -lXt -lX11 -- but -lXmu is not
 # strictly necessary. Use hard-coded paths instead of pkg-config.
+
+# First try pkg-config, as a side-effect this might set flags that are
+# useful later, e.g., for libpng.
+dnl Under archlinux, PKG_CHECK_MODULES(FT, fontconfig) would write during
+dnl ./configure "checking for FT...", under debian the line is
+dnl "checking for fontconfig...". Stay on the comprehensible side.
+AS_IF([test "x$PKG_CONFIG" != x],
+    [PKG_CHECK_MODULES([fontconfig], [fontconfig])],
+    [fontconfig_CFLAGS='-I$(oldincludedir)/freetype2 '
+     AC_SEARCH_LIBS([FcInit], [fontconfig])])
+AC_SUBST([fontconfig_CFLAGS])
+AC_SUBST([fontconfig_LIBS])
 
 dnl Not useful for packagers.
 dnl AC_CHECK_PROG(XDG_ICON, [xdg-icon-resource], [xdg-icon-resource])
@@ -93,8 +105,6 @@ dnl AC_CHECK_PROG(XDG_MENU, [xdg-desktop-menu], [xdg-desktop-menu])
 
 # Checks for libraries.
 AC_SEARCH_LIBS([pow], [m])dnl
-dnl AC_SEARCH_LIBS([deflate], [z])  # libz is not needed.
-AC_SEARCH_LIBS([FcInit], [fontconfig])
 
 
 # Checks for header files.
