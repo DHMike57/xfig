@@ -71,4 +71,15 @@ extern void	text_origin(int *draw_x, int *draw_y, int base_x, int base_y,
 extern struct _fstruct	ps_fontinfo[];
 extern struct _fstruct	latex_fontinfo[];
 
+/*
+ * For (ITC) Zapf Dingbats, URW Dingbats, or URW D050000L as well
+ * as Symbol, Standard Symbols PS, or URW Standard Symbols L we
+ * need to map the byte characters into UTF-8 multi byte characters.
+ * This to make XftTextExtentsUtf8() and XftDrawStringUtf8() working.
+ */
+typedef XftChar8 (*map_f)(XftChar8);
+extern XftChar32 map_dingbats(XftChar8);
+extern XftChar32 map_symbols(XftChar8);
+extern map_f adobe_charset(XftFont *font);
+
 #endif /* U_FONTS_H */
