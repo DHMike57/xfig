@@ -17,8 +17,9 @@
  */
 
 /*
- * Call ghostscript to get the /MediaBox, and convert eps/pdf to bitmaps.
- * Autor: Thomas Loimer, 2020.
+ * Routines to (i) get the bounding box of a pdf, (ii) convert eps/pdf files
+ * to bitmaps.
+ * Author: Thomas Loimer, 2020-2023.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -54,6 +55,53 @@
 #define GS_ERROR	(-2)
 
 /*
+ * Ghostscript command lines to get the mediabox of a pdf
+ *
+ * gs < 9.50 (rev.revision < 950)
+ *     gs -q -dNODISPLAY -dNOSAFER -c "(in.pdf) (r) file "
+ *         "runpdfbegin 1 pdfgetpage /MediaBox pget pop == runpdfend quit"
+ * gs >= 9.50
+ *    gs -q -dNODISPLAY --permit-file-read=in.pdf -c "(in.pdf) (r) file "
+ *         "runpdfbegin 1 pdfgetpage /MediaBox pget pop == runpdfend quit"
+ *
+ * Beginning with gs 9.50, "-dSAFER" is the default, and permission to access
+ * files must be explicitly given with the --permit-file-{read,write,..}
+ * options. Before gs 9.50, "-dNOSAFER" is the default.
+ *
+ * rev.revision: As of version 9.53, the patch level is included into the
+ * version number <https://ghostscript.readthedocs.io/en/gs10.01.0/News.html>,
+ * therefore: 952, next: 9530
+ *
+ * The commands above write the coordinates of the lower left and upper right
+ * corners to stdout, enclosed by square braces: "[lx lly ..]".
+ *
+ * The command line was found, and modified a bit, at
+ *https://stackoverflow.com/questions/2943281/using-ghostscript-to-get-page-size
+ * With commit [a9181d] "runpdfend" was inserted, see also
+ * <https://bugs.ghostscript.com/show_bug.cgi?id=705855> and
+ * <https://bugs.ghostscript.com/show_bug.cgi?id=705836>
+ *
+ * The command line calls the pdf interpreter, see
+ * <https://ghostscript.readthedocs.io/en/gs10.01.0/Language.html#scripting-the-pdf-interpreter>
+ * (in.pdf) (r) file	open in.pdf for reading, return a file object
+ * <file> runpdfbegin	set up the environment to process the file as pdf
+ * 1 pdfgetpage		read page 1, return a dict
+ * <dict> /MediaBox pget  if /MediaBox is found, return it's value and true
+ * pop			pop the "true" from the stack
+ * ==			print the value on the stack
+ * runpdfend		terminate processing of the pdf
+ *
+ * Instead of "/Mediabox pget pop ==" one could use "/Mediabox get ==". pget is
+ * defined in /usr/share/ghostscript/Resource/Init/pdf_main.ps and retrieves a
+ * (possibly inherited) key value from a page dict.
+ *
+ * A different option is to use
+ *    gs -q -dNODISPLAY -dNOPAUSE -dBATCH -sPageList=1 -dPDFINFO 'in.pdf'
+ * which writes "MediaBox: [llx lly ..]" besides much information to stderr.
+ *
+ */
+
+/*
  * Link into the ghostscript library.
  * If invoked via the library, ghostscript calls three callback functions when
  * wishing to read from stdin or write to stdout or stderr, respectively.
@@ -62,9 +110,6 @@
  * necessary.
  * Here, set up calls to ghostscript and callback functions to read a pdf
  * file, scanning the output for the /MediaBox specification.
- *
- * If linking into the library by dlopen() fails, call the ghostscript
- * executable via popen("gs..", "r").
  */
 
 #ifdef HAVE_GSLIB
@@ -323,18 +368,8 @@ gsexe(FILE **out, bool *isnew, char *exenew, char *exeold)
 }
 
 /*
- * Call ghostscript to extract the /MediaBox from the pdf given in file.
- * Command line, for gs >= 9.50,
- *    gs -q -dNODISPLAY --permit-file-read=in.pdf -c \
- *	"(in.pdf) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == runpdfend quit"
- * gs < 9.50:
- *    gs -q -dNODISPLAY -dNOSAFER -c \
- *	"(in.pdf) (r) file runpdfbegin 1 pdfgetpage /MediaBox pget pop == runpdfend quit"
- * The command line was found, and modified a bit, at
- *https://stackoverflow.com/questions/2943281/using-ghostscript-to-get-page-size
- * Beginning with gs 9.50, "-dSAFER" is the default, and permission to access
- * files must be explicitly given with the --permit-file-{read,write,..}
- * options. Before gs 9.50, "-dNOSAFER" is the default.
+ * Call ghostscript to extract the bounding box from the pdf given in file.
+ * See above for an description of the command line.
  *
  * Return 0 on success, -1 on failure, -2 (GS_ERROR) for a ghostscript-error,
  * -3 if the path to the ghostscript executable is not given.
