@@ -667,6 +667,7 @@ XftChar32 map_dingbats(XftChar8 in)
 	case 0x7C: return 0x275C;    /* HEAVY SINGLE COMMA QUOTATION MARK ORNAMENT */
 	case 0x7D: return 0x275D;    /* HEAVY DOUBLE TURNED COMMA QUOTATION MARK ORNAMENT */
 	case 0x7E: return 0x275E;    /* HEAVY DOUBLE COMMA QUOTATION MARK ORNAMENT */
+	/* 0x7F */
 	case 0x80: return 0xF8D7;    /* MEDIUM LEFT PARENTHESIS ORNAMENT */
 	case 0x81: return 0xF8D8;    /* MEDIUM RIGHT PARENTHESIS ORNAMENT */
 	case 0x82: return 0xF8D9;    /* MEDIUM FLATTENED LEFT PARENTHESIS ORNAMENT */
@@ -681,6 +682,7 @@ XftChar32 map_dingbats(XftChar8 in)
 	case 0x8B: return 0xF8E2;    /* LIGHT RIGHT TORTOISE SHELL BRACKET ORNAMENT */
 	case 0x8C: return 0xF8E3;    /* MEDIUM LEFT CURLY BRACKET ORNAMENT */
 	case 0x8D: return 0xF8E4;    /* MEDIUM RIGHT CURLY BRACKET ORNAMENT */
+	/* 0x8E - 0xA0 */
 	case 0xA1: return 0x2761;    /* CURVED STEM PARAGRAPH SIGN ORNAMENT */
 	case 0xA2: return 0x2762;    /* HEAVY EXCLAMATION MARK ORNAMENT */
 	case 0xA3: return 0x2763;    /* HEAVY HEART EXCLAMATION MARK ORNAMENT */
@@ -788,13 +790,18 @@ XftChar32 map_symbols(XftChar8 in)
 	switch(in) {
 	case 0x20: return 0x0020;    /* SPACE */
 	case 0x21: return 0x0021;    /* EXCLAMATION MARK */
+	case 0x22: return 0x2200;    /* FOR ALL */
 	case 0x23: return 0x0023;    /* NUMBER SIGN */
+	case 0x24: return 0x2203;    /* THERE EXISTS */
 	case 0x25: return 0x0025;    /* PERCENT SIGN */
 	case 0x26: return 0x0026;    /* AMPERSAND */
+	case 0x27: return 0x220B;    /* CONTAINS AS MEMBER */
 	case 0x28: return 0x0028;    /* OPENING PARENTHESIS */
 	case 0x29: return 0x0029;    /* CLOSING PARENTHESIS */
+	case 0x2A: return 0x2217;    /* ASTERISK OPERATOR */
 	case 0x2B: return 0x002B;    /* PLUS SIGN */
 	case 0x2C: return 0x002C;    /* COMMA */
+	case 0x2D: return 0x2212;    /* MINUS SIGN */
 	case 0x2E: return 0x002E;    /* PERIOD */
 	case 0x2F: return 0x002F;    /* SLASH */
 	case 0x30: return 0x0030;    /* DIGIT ZERO */
@@ -813,148 +820,147 @@ XftChar32 map_symbols(XftChar8 in)
 	case 0x3D: return 0x003D;    /* EQUALS SIGN */
 	case 0x3E: return 0x003E;    /* GREATER-THAN SIGN */
 	case 0x3F: return 0x003F;    /* QUESTION MARK */
-	case 0x5B: return 0x005B;    /* OPENING SQUARE BRACKET */
-	case 0x5D: return 0x005D;    /* CLOSING SQUARE BRACKET */
-	case 0x5F: return 0x005F;    /* SPACING UNDERSCORE */
-	case 0x7B: return 0x007B;    /* OPENING CURLY BRACKET */
-	case 0x7C: return 0x007C;    /* VERTICAL BAR */
-	case 0x7D: return 0x007D;    /* CLOSING CURLY BRACKET */
-	case 0xD3: return 0x00A9;    /* COPYRIGHT SIGN */
-	case 0xE3: return 0x00A9;    /* COPYRIGHT SIGN */
-	case 0xD8: return 0x00AC;    /* NOT SIGN */
-	case 0xD2: return 0x00AE;    /* REGISTERED TRADE MARK SIGN */
-	case 0xE2: return 0x00AE;    /* REGISTERED TRADE MARK SIGN */
-	case 0xB0: return 0x00B0;    /* DEGREE SIGN */
-	case 0xB1: return 0x00B1;    /* PLUS-OR-MINUS SIGN */
-	case 0xB4: return 0x00D7;    /* MULTIPLICATION SIGN */
-	case 0xB8: return 0x00F7;    /* DIVISION SIGN */
-	case 0xA6: return 0x0192;    /* LATIN SMALL LETTER SCRIPT F */
+	case 0x40: return 0x2245;    /* APPROXIMATELY EQUAL TO */
 	case 0x41: return 0x0391;    /* GREEK CAPITAL LETTER ALPHA */
 	case 0x42: return 0x0392;    /* GREEK CAPITAL LETTER BETA */
-	case 0x47: return 0x0393;    /* GREEK CAPITAL LETTER GAMMA */
+	case 0x43: return 0x03A7;    /* GREEK CAPITAL LETTER CHI */
 	case 0x44: return 0x0394;    /* GREEK CAPITAL LETTER DELTA */
+/*	case 0x44: return 0x2206;    /* INCREMENT */
 	case 0x45: return 0x0395;    /* GREEK CAPITAL LETTER EPSILON */
-	case 0x5A: return 0x0396;    /* GREEK CAPITAL LETTER ZETA */
+	case 0x46: return 0x03A6;    /* GREEK CAPITAL LETTER PHI */
+	case 0x47: return 0x0393;    /* GREEK CAPITAL LETTER GAMMA */
 	case 0x48: return 0x0397;    /* GREEK CAPITAL LETTER ETA */
-	case 0x51: return 0x0398;    /* GREEK CAPITAL LETTER THETA */
 	case 0x49: return 0x0399;    /* GREEK CAPITAL LETTER IOTA */
+	case 0x4A: return 0x03D1;    /* GREEK SMALL LETTER SCRIPT THETA */
 	case 0x4B: return 0x039A;    /* GREEK CAPITAL LETTER KAPPA */
 	case 0x4C: return 0x039B;    /* GREEK CAPITAL LETTER LAMBDA */
 	case 0x4D: return 0x039C;    /* GREEK CAPITAL LETTER MU */
 	case 0x4E: return 0x039D;    /* GREEK CAPITAL LETTER NU */
-	case 0x58: return 0x039E;    /* GREEK CAPITAL LETTER XI */
 	case 0x4F: return 0x039F;    /* GREEK CAPITAL LETTER OMICRON */
 	case 0x50: return 0x03A0;    /* GREEK CAPITAL LETTER PI */
+	case 0x51: return 0x0398;    /* GREEK CAPITAL LETTER THETA */
 	case 0x52: return 0x03A1;    /* GREEK CAPITAL LETTER RHO */
 	case 0x53: return 0x03A3;    /* GREEK CAPITAL LETTER SIGMA */
 	case 0x54: return 0x03A4;    /* GREEK CAPITAL LETTER TAU */
 	case 0x55: return 0x03A5;    /* GREEK CAPITAL LETTER UPSILON */
-	case 0x46: return 0x03A6;    /* GREEK CAPITAL LETTER PHI */
-	case 0x43: return 0x03A7;    /* GREEK CAPITAL LETTER CHI */
-	case 0x59: return 0x03A8;    /* GREEK CAPITAL LETTER PSI */
+	case 0x56: return 0x03C2;    /* GREEK SMALL LETTER FINAL SIGMA */
 	case 0x57: return 0x03A9;    /* GREEK CAPITAL LETTER OMEGA */
+/*	case 0x57: return 0x2126;    /* OHM */
+	case 0x58: return 0x039E;    /* GREEK CAPITAL LETTER XI */
+	case 0x59: return 0x03A8;    /* GREEK CAPITAL LETTER PSI */
+	case 0x5A: return 0x0396;    /* GREEK CAPITAL LETTER ZETA */
+	case 0x5B: return 0x005B;    /* OPENING SQUARE BRACKET */
+	case 0x5C: return 0x2234;    /* THEREFORE */
+	case 0x5D: return 0x005D;    /* CLOSING SQUARE BRACKET */
+	case 0x5E: return 0x22A5;    /* UP TACK */
+	case 0x5F: return 0x005F;    /* SPACING UNDERSCORE */
+	case 0x60: return 0x203E;    /* SPACING OVERSCORE */
 	case 0x61: return 0x03B1;    /* GREEK SMALL LETTER ALPHA */
 	case 0x62: return 0x03B2;    /* GREEK SMALL LETTER BETA */
-	case 0x67: return 0x03B3;    /* GREEK SMALL LETTER GAMMA */
+	case 0x63: return 0x03C7;    /* GREEK SMALL LETTER CHI */
 	case 0x64: return 0x03B4;    /* GREEK SMALL LETTER DELTA */
 	case 0x65: return 0x03B5;    /* GREEK SMALL LETTER EPSILON */
-	case 0x7A: return 0x03B6;    /* GREEK SMALL LETTER ZETA */
+	case 0x66: return 0x03C6;    /* GREEK SMALL LETTER PHI */
+	case 0x67: return 0x03B3;    /* GREEK SMALL LETTER GAMMA */
 	case 0x68: return 0x03B7;    /* GREEK SMALL LETTER ETA */
-	case 0x71: return 0x03B8;    /* GREEK SMALL LETTER THETA */
 	case 0x69: return 0x03B9;    /* GREEK SMALL LETTER IOTA */
+	case 0x6A: return 0x03D5;    /* GREEK SMALL LETTER SCRIPT PHI */
 	case 0x6B: return 0x03BA;    /* GREEK SMALL LETTER KAPPA */
 	case 0x6C: return 0x03BB;    /* GREEK SMALL LETTER LAMBDA */
 	case 0x6D: return 0x03BC;    /* GREEK SMALL LETTER MU */
 	case 0x6E: return 0x03BD;    /* GREEK SMALL LETTER NU */
-	case 0x78: return 0x03BE;    /* GREEK SMALL LETTER XI */
 	case 0x6F: return 0x03BF;    /* GREEK SMALL LETTER OMICRON */
 	case 0x70: return 0x03C0;    /* GREEK SMALL LETTER PI */
+	case 0x71: return 0x03B8;    /* GREEK SMALL LETTER THETA */
 	case 0x72: return 0x03C1;    /* GREEK SMALL LETTER RHO */
-	case 0x56: return 0x03C2;    /* GREEK SMALL LETTER FINAL SIGMA */
 	case 0x73: return 0x03C3;    /* GREEK SMALL LETTER SIGMA */
 	case 0x74: return 0x03C4;    /* GREEK SMALL LETTER TAU */
 	case 0x75: return 0x03C5;    /* GREEK SMALL LETTER UPSILON */
-	case 0x66: return 0x03C6;    /* GREEK SMALL LETTER PHI */
-	case 0x63: return 0x03C7;    /* GREEK SMALL LETTER CHI */
-	case 0x79: return 0x03C8;    /* GREEK SMALL LETTER PSI */
-	case 0x77: return 0x03C9;    /* GREEK SMALL LETTER OMEGA */
-	case 0x4A: return 0x03D1;    /* GREEK SMALL LETTER SCRIPT THETA */
-	case 0xA1: return 0x03D2;    /* GREEK CAPITAL LETTER UPSILON HOOK */
-	case 0x6A: return 0x03D5;    /* GREEK SMALL LETTER SCRIPT PHI */
 	case 0x76: return 0x03D6;    /* GREEK SMALL LETTER OMEGA PI */
-	case 0xB7: return 0x2022;    /* BULLET */
-	case 0xBC: return 0x2026;    /* HORIZONTAL ELLIPSIS */
+	case 0x77: return 0x03C9;    /* GREEK SMALL LETTER OMEGA */
+	case 0x78: return 0x03BE;    /* GREEK SMALL LETTER XI */
+	case 0x79: return 0x03C8;    /* GREEK SMALL LETTER PSI */
+	case 0x7A: return 0x03B6;    /* GREEK SMALL LETTER ZETA */
+	case 0x7B: return 0x007B;    /* OPENING CURLY BRACKET */
+	case 0x7C: return 0x007C;    /* VERTICAL BAR */
+	case 0x7D: return 0x007D;    /* CLOSING CURLY BRACKET */
+	case 0x7E: return 0x223C;    /* TILDE OPERATOR */
+	/* 0x80 - 0xA0 */
+	case 0xA1: return 0x03D2;    /* GREEK CAPITAL LETTER UPSILON HOOK */
 	case 0xA2: return 0x2032;    /* PRIME */
-	case 0xB2: return 0x2033;    /* DOUBLE PRIME */
-	case 0x60: return 0x203E;    /* SPACING OVERSCORE */
+	case 0xA3: return 0x2264;    /* LESS THAN OR EQUAL TO */
 	case 0xA4: return 0x2044;    /* FRACTION SLASH */
-	case 0xC1: return 0x2111;    /* BLACK-LETTER I */
-	case 0xC3: return 0x2118;    /* SCRIPT P */
-	case 0xC2: return 0x211C;    /* BLACK-LETTER R */
-	case 0xD4: return 0x2122;    /* TRADEMARK */
-	case 0xE4: return 0x2122;    /* TRADEMARK */
-/*	case 0x57: return 0x2126;    /* OHM */
-	case 0xC0: return 0x2135;    /* FIRST TRANSFINITE CARDINAL */
+	case 0xA5: return 0x221E;    /* INFINITY */
+/*	case 0xA4: return 0x2215;    /* DIVISION SLASH */
+	case 0xA6: return 0x0192;    /* LATIN SMALL LETTER SCRIPT F */
+	case 0xA7: return 0x2663;    /* BLACK CLUB SUIT */
+	case 0xA8: return 0x2666;    /* BLACK DIAMOND SUIT */
+	case 0xA9: return 0x2665;    /* BLACK HEART SUIT */
+	case 0xAA: return 0x2660;    /* BLACK SPADE SUIT */
+	case 0xAB: return 0x2194;    /* LEFT RIGHT ARROW */
 	case 0xAC: return 0x2190;    /* LEFT ARROW */
 	case 0xAD: return 0x2191;    /* UP ARROW */
 	case 0xAE: return 0x2192;    /* RIGHT ARROW */
 	case 0xAF: return 0x2193;    /* DOWN ARROW */
-	case 0xAB: return 0x2194;    /* LEFT RIGHT ARROW */
+	case 0xB0: return 0x00B0;    /* DEGREE SIGN */
+	case 0xB1: return 0x00B1;    /* PLUS-OR-MINUS SIGN */
+	case 0xB2: return 0x2033;    /* DOUBLE PRIME */
+	case 0xB3: return 0x2265;    /* GREATER THAN OR EQUAL TO */
+	case 0xB4: return 0x00D7;    /* MULTIPLICATION SIGN */
+	case 0xB5: return 0x221D;    /* PROPORTIONAL TO */
+	case 0xB6: return 0x2202;    /* PARTIAL DIFFERENTIAL */
+	case 0xB7: return 0x2022;    /* BULLET */
+	case 0xB8: return 0x00F7;    /* DIVISION SIGN */
+	case 0xB9: return 0x2260;    /* NOT EQUAL TO */
+	case 0xBA: return 0x2261;    /* IDENTICAL TO */
+	case 0xBB: return 0x2248;    /* ALMOST EQUAL TO */
+	case 0xBC: return 0x2026;    /* HORIZONTAL ELLIPSIS */
+	/* 0xBD, 0xBE */
 	case 0xBF: return 0x21B5;    /* DOWN ARROW WITH CORNER LEFT */
+	case 0xC0: return 0x2135;    /* FIRST TRANSFINITE CARDINAL */
+	case 0xC1: return 0x2111;    /* BLACK-LETTER I */
+	case 0xC2: return 0x211C;    /* BLACK-LETTER R */
+	case 0xC3: return 0x2118;    /* SCRIPT P */
+	case 0xC4: return 0x2297;    /* CIRCLED TIMES */
+	case 0xC5: return 0x2295;    /* CIRCLED PLUS */
+	case 0xC6: return 0x2205;    /* EMPTY SET */
+	case 0xC7: return 0x2229;    /* INTERSECTION */
+	case 0xC8: return 0x222A;    /* UNION */
+	case 0xC9: return 0x2283;    /* SUPERSET OF */
+	case 0xCA: return 0x2287;    /* SUPERSET OF OR EQUAL TO */
+	case 0xCB: return 0x2284;    /* NOT A SUBSET OF */
+	case 0xCC: return 0x2282;    /* SUBSET OF */
+	case 0xCD: return 0x2286;    /* SUBSET OF OR EQUAL TO */
+	case 0xCE: return 0x2208;    /* ELEMENT OF */
+	case 0xCF: return 0x2209;    /* NOT AN ELEMENT OF */
+	case 0xD0: return 0x2220;    /* ANGLE */
+	case 0xD1: return 0x2207;    /* NABLA */
+	case 0xD2: return 0x00AE;    /* REGISTERED TRADE MARK SIGN */
+	case 0xD3: return 0x00A9;    /* COPYRIGHT SIGN */
+	case 0xD4: return 0x2122;    /* TRADEMARK */
+	case 0xD5: return 0x220F;    /* N-ARY PRODUCT */
+	case 0xD6: return 0x221A;    /* SQUARE ROOT */
+	case 0xD7: return 0x22C5;    /* DOT OPERATOR */
+	case 0xD8: return 0x00AC;    /* NOT SIGN */
+	case 0xD9: return 0x2227;    /* LOGICAL AND */
+	case 0xDA: return 0x2228;    /* LOGICAL OR */
+	case 0xDB: return 0x21D4;    /* LEFT RIGHT DOUBLE ARROW */
 	case 0xDC: return 0x21D0;    /* LEFT DOUBLE ARROW */
 	case 0xDD: return 0x21D1;    /* UP DOUBLE ARROW */
 	case 0xDE: return 0x21D2;    /* RIGHT DOUBLE ARROW */
 	case 0xDF: return 0x21D3;    /* DOWN DOUBLE ARROW */
-	case 0xDB: return 0x21D4;    /* LEFT RIGHT DOUBLE ARROW */
-	case 0x22: return 0x2200;    /* FOR ALL */
-	case 0xB6: return 0x2202;    /* PARTIAL DIFFERENTIAL */
-	case 0x24: return 0x2203;    /* THERE EXISTS */
-	case 0xC6: return 0x2205;    /* EMPTY SET */
-/*	case 0x44: return 0x2206;    /* INCREMENT */
-	case 0xD1: return 0x2207;    /* NABLA */
-	case 0xCE: return 0x2208;    /* ELEMENT OF */
-	case 0xCF: return 0x2209;    /* NOT AN ELEMENT OF */
-	case 0x27: return 0x220B;    /* CONTAINS AS MEMBER */
-	case 0xD5: return 0x220F;    /* N-ARY PRODUCT */
-	case 0xE5: return 0x2211;    /* N-ARY SUMMATION */
-	case 0x2D: return 0x2212;    /* MINUS SIGN */
-/*	case 0xA4: return 0x2215;    /* DIVISION SLASH */
-	case 0x2A: return 0x2217;    /* ASTERISK OPERATOR */
-	case 0xD6: return 0x221A;    /* SQUARE ROOT */
-	case 0xB5: return 0x221D;    /* PROPORTIONAL TO */
-	case 0xA5: return 0x221E;    /* INFINITY */
-	case 0xD0: return 0x2220;    /* ANGLE */
-	case 0xD9: return 0x2227;    /* LOGICAL AND */
-	case 0xDA: return 0x2228;    /* LOGICAL OR */
-	case 0xC7: return 0x2229;    /* INTERSECTION */
-	case 0xC8: return 0x222A;    /* UNION */
-	case 0xF2: return 0x222B;    /* INTEGRAL */
-	case 0x5C: return 0x2234;    /* THEREFORE */
-	case 0x7E: return 0x223C;    /* TILDE OPERATOR */
-	case 0x40: return 0x2245;    /* APPROXIMATELY EQUAL TO */
-	case 0xBB: return 0x2248;    /* ALMOST EQUAL TO */
-	case 0xB9: return 0x2260;    /* NOT EQUAL TO */
-	case 0xBA: return 0x2261;    /* IDENTICAL TO */
-	case 0xA3: return 0x2264;    /* LESS THAN OR EQUAL TO */
-	case 0xB3: return 0x2265;    /* GREATER THAN OR EQUAL TO */
-	case 0xCC: return 0x2282;    /* SUBSET OF */
-	case 0xC9: return 0x2283;    /* SUPERSET OF */
-	case 0xCB: return 0x2284;    /* NOT A SUBSET OF */
-	case 0xCD: return 0x2286;    /* SUBSET OF OR EQUAL TO */
-	case 0xCA: return 0x2287;    /* SUPERSET OF OR EQUAL TO */
-	case 0xC5: return 0x2295;    /* CIRCLED PLUS */
-	case 0xC4: return 0x2297;    /* CIRCLED TIMES */
-	case 0x5E: return 0x22A5;    /* UP TACK */
-	case 0xD7: return 0x22C5;    /* DOT OPERATOR */
-	case 0xF3: return 0x2320;    /* TOP HALF INTEGRAL */
-	case 0xF5: return 0x2321;    /* BOTTOM HALF INTEGRAL */
-	case 0xE1: return 0x2329;    /* BRA */
-	case 0xF1: return 0x232A;    /* KET */
 	case 0xE0: return 0x25CA;    /* LOZENGE */
-	case 0xAA: return 0x2660;    /* BLACK SPADE SUIT */
-	case 0xA7: return 0x2663;    /* BLACK CLUB SUIT */
-	case 0xA9: return 0x2665;    /* BLACK HEART SUIT */
-	case 0xA8: return 0x2666;    /* BLACK DIAMOND SUIT */
+	case 0xE1: return 0x2329;    /* BRA */
+	case 0xE2: return 0x00AE;    /* REGISTERED TRADE MARK SIGN */
+	case 0xE3: return 0x00A9;    /* COPYRIGHT SIGN */
+	case 0xE4: return 0x2122;    /* TRADEMARK */
+	case 0xE5: return 0x2211;    /* N-ARY SUMMATION */
+	/* 0xE6 - 0xF0 */
+	case 0xF1: return 0x232A;    /* KET */
+	case 0xF2: return 0x222B;    /* INTEGRAL */
+	case 0xF3: return 0x2320;    /* TOP HALF INTEGRAL */
+	/* 0xF4 */
+	case 0xF5: return 0x2321;    /* BOTTOM HALF INTEGRAL */
 	default:   return 0x0000;
 	}
 };
