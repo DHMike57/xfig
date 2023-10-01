@@ -90,8 +90,10 @@
 
 /* Character map features */
 
-#define LASTCHAR 255
-#define CMAP_FONTSIZE 16
+#define LASTCHAR	255
+#define STARTGAP	0x8d
+#define MISSING		18
+#define CMAP_FONTSIZE	16
 
 static int	charmap_psflag;
 static int	charmap_font;
@@ -1702,8 +1704,8 @@ refresh_character_panel(int ps_sel, int font_sel)
 			SetValues(charcell[i]);
 			XftDrawDestroy(xftdraw[i]);
 		}
-		if (i == 126)
-			i += 33;
+		if (i == STARTGAP)
+			i += MISSING;
 	}
 
 	if (resize) {
@@ -1722,8 +1724,8 @@ refresh_character_panel(int ps_sel, int font_sel)
 				0, 0, (unsigned)width, (unsigned)height);
 		XftDrawString8(xftdraw[i], xftcolor + BLACK, work_xftfont,
 				x, y, (FcChar8 *)&i, 1);
-		if (i == 126)
-			i += 33;
+		if (i == STARTGAP)
+			i += MISSING;
 	}
 
 	XftFontClose(tool_d, work_xftfont);
@@ -1737,8 +1739,8 @@ character_panel_close(void)
 	character_map_popup = (Widget) 0;
 	for (i = 32; i <= LASTCHAR; ++i) {
 		XftDrawDestroy(xftdraw[i]);
-		if (i == 126)
-			i += 33;
+		if (i == STARTGAP)
+			i += MISSING;
 	}
 }
 
@@ -1844,18 +1846,14 @@ popup_character_map(void)
 				paste_character, p.ptr);
 		XtAddEventHandler(beside, EnterWindowMask, False,
 				redraw_character, p.ptr);
-		/* skip empty entries and 127 (delete) */
-		if (i == 126) {
+		/* skip empty entries */
+		if (i == STARTGAP) {
 			below = beside;
 			beside = (Widget) 0;
-			i += 33;
-			/* and make a gap */
-			vertDist *= 2;
+			i += MISSING;
 		} else if ((i+1)%16 == 0 && i != LASTCHAR) {
 			below = beside;
 			beside = (Widget) 0;
-			if (i > 126 + 33 && i <= 126 + 33 + 16)
-				vertDist /= 2;
 		}
 	}
 
@@ -1893,8 +1891,8 @@ popup_character_map(void)
 				tool_v, tool_cm);
 		XftDrawString8(xftdraw[i], xftcolor + BLACK, work_xftfont,
 				x, y, (FcChar8 *)&i, 1);
-		if (i == 126)
-			i += 33;
+		if (i == STARTGAP)
+			i += MISSING;
 	}
 	XSyncOff();
 	XftFontClose(tool_d, work_xftfont);
@@ -1971,8 +1969,8 @@ redraw_all(Widget w, XtPointer client_data, XEvent *ev, Boolean *pass)
 				0, 0, (unsigned)width, (unsigned)height);
 		XftDrawString8(xftdraw[i], xftcolor + BLACK, work_xftfont,
 				x, y, (FcChar8 *)&i, 1);
-		if (i == 126)
-			i += 33;
+		if (i == STARTGAP)
+			i += MISSING;
 	}
 }
 
