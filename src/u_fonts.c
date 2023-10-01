@@ -885,13 +885,17 @@ XftChar32 map_symbols(XftChar8 in)
 	case 0x7C: return 0x007C;    /* VERTICAL BAR */
 	case 0x7D: return 0x007D;    /* CLOSING CURLY BRACKET */
 	case 0x7E: return 0x223C;    /* TILDE OPERATOR */
-	/* 0x80 - 0xA0 */
+	/* case 0x7F */
+	case 0x80: return 0xf8ff;    /* Apple logo, private use area. */
+/*	case 0x80: return 0xf000;    /* Another location for apple logo. */
+	/* 0x81 - 0xA0 */
+	case 0xA0: return 0x20ac;    /* Euro sign */
 	case 0xA1: return 0x03D2;    /* GREEK CAPITAL LETTER UPSILON HOOK */
 	case 0xA2: return 0x2032;    /* PRIME */
 	case 0xA3: return 0x2264;    /* LESS THAN OR EQUAL TO */
 	case 0xA4: return 0x2044;    /* FRACTION SLASH */
-	case 0xA5: return 0x221E;    /* INFINITY */
 /*	case 0xA4: return 0x2215;    /* DIVISION SLASH */
+	case 0xA5: return 0x221E;    /* INFINITY */
 	case 0xA6: return 0x0192;    /* LATIN SMALL LETTER SCRIPT F */
 	case 0xA7: return 0x2663;    /* BLACK CLUB SUIT */
 	case 0xA8: return 0x2666;    /* BLACK DIAMOND SUIT */
@@ -915,7 +919,12 @@ XftChar32 map_symbols(XftChar8 in)
 	case 0xBA: return 0x2261;    /* IDENTICAL TO */
 	case 0xBB: return 0x2248;    /* ALMOST EQUAL TO */
 	case 0xBC: return 0x2026;    /* HORIZONTAL ELLIPSIS */
-	/* 0xBD, 0xBE */
+	/* Vertical and horizontal line extension are supposed to be used for
+	   extension of arrows; Alternatives would be box drawing signs */
+	case 0xBD: return 0x23d0;    /* Vertical line extension */
+	case 0xBE: return 0x23af;    /* Horizontal line extension */
+/*	case 0xBD: return 0x2502;    /* Box drawings light vertical */
+/*	case 0xBE: return 0x2500;    /* Box drawings light horizontal */
 	case 0xBF: return 0x21B5;    /* DOWN ARROW WITH CORNER LEFT */
 	case 0xC0: return 0x2135;    /* FIRST TRANSFINITE CARDINAL */
 	case 0xC1: return 0x2111;    /* BLACK-LETTER I */
@@ -955,12 +964,32 @@ XftChar32 map_symbols(XftChar8 in)
 	case 0xE3: return 0x00A9;    /* COPYRIGHT SIGN */
 	case 0xE4: return 0x2122;    /* TRADEMARK */
 	case 0xE5: return 0x2211;    /* N-ARY SUMMATION */
-	/* 0xE6 - 0xF0 */
+	case 0xE6: return 0x239b;    /* Left parenthesis upper hook */
+	case 0xE7: return 0x239c;    /* Left parenthesis extension */
+	case 0xE8: return 0x239d;    /* Left parenthesis lower hook */
+	case 0xE9: return 0x23a1;    /* Left square bracket upper corner */
+	case 0xEA: return 0x23a2;    /* Left square bracket extension */
+	case 0xEB: return 0x23a3;    /* Left square bracket lower corner */
+	case 0xEC: return 0x23a7;    /* Left curly bracket upper hook */
+	case 0xED: return 0x23a8;    /* Left curly bracket middle piece */
+	case 0xEE: return 0x23a9;    /* Left curly bracket lower hook */
+	case 0xEF: return 0x23aa;    /* Curly bracket extension */
+	/* 0xF0 */
 	case 0xF1: return 0x232A;    /* KET */
 	case 0xF2: return 0x222B;    /* INTEGRAL */
 	case 0xF3: return 0x2320;    /* TOP HALF INTEGRAL */
-	/* 0xF4 */
+	case 0xF4: return 0x23ae;    /* Integral extension */
 	case 0xF5: return 0x2321;    /* BOTTOM HALF INTEGRAL */
+	case 0xF6: return 0x239e;    /* Right parenthesis upper hook */
+	case 0xF7: return 0x239f;    /* Right parenthesis extension */
+	case 0xF8: return 0x23a0;    /* Right parenthesis lower hook */
+	case 0xF9: return 0x23a4;    /* Right square bracket upper corner */
+	case 0xFA: return 0x23a5;    /* Right square bracket extension */
+	case 0xFB: return 0x23a6;    /* Right square bracket lower corner */
+	case 0xFC: return 0x23ab;    /* Right curly bracket upper hook */
+	case 0xFD: return 0x23ac;    /* Right curly bracket middle piece */
+	case 0xFE: return 0x23ad;    /* Right curly bracket lower hook */
+	/*  0xFF */
 	default:   return 0x0000;
 	}
 };
