@@ -1191,7 +1191,7 @@ done_figure_comments(void)
 		/* save old comments */
 		saved_objects.comments = objects.comments;
 		/* get new comments */
-		s = panel_get_value(comments_panel);
+		s = conv_utf8strdup(panel_get_value(comments_panel));
 		/* allocate space and copy */
 		copy_comments(&s, &objects.comments);
 		clean_up();
@@ -1577,13 +1577,14 @@ get_new_compound_values(void)
 			(float)(new_c->nwcorner.y - new_c->secorner.y);
 
 	/* get any comments */
-	new_c->comments = strdup(panel_get_value(comments_panel));
+	new_c->comments = conv_utf8strdup(panel_get_value(comments_panel));
 
 	/* get any new text object values */
 	for (t=new_c->texts,i=0; t ;t=t->next,i++) {
 		if (t->cstring)
 			free(t->cstring);
-		t->cstring = strdup(panel_get_value(compound_text_panels[i]));
+		t->cstring = conv_utf8strdup(panel_get_value(
+					compound_text_panels[i]));
 	}
 
 	translate_compound(new_c, dx, dy);
@@ -2192,7 +2193,8 @@ get_new_line_values(void)
 		new_l->depth = atoi(panel_get_value(depth_panel));
 		/* get any comments
 		 * (this is done in get_generic_vals for other line types) */
-		new_l->comments = strdup(panel_get_value(comments_panel));
+		new_l->comments = conv_utf8strdup(panel_get_value(
+							comments_panel));
 		p1.x = panel_get_dim_value(x1_panel);
 		p1.y = panel_get_dim_value(y1_panel);
 		p2.x = panel_get_dim_value(x2_panel);
@@ -3151,7 +3153,7 @@ new_generic_values(void)
 	check_depth();
 	generic_vals.depth = atoi(panel_get_value(depth_panel));
 	/* get the comments */
-	generic_vals.comments = strdup(panel_get_value(comments_panel));
+	generic_vals.comments = conv_utf8strdup(panel_get_value(comments_panel));
 	/* include dash length in panel, too */
 	generic_vals.style_val = (float) atof(panel_get_value(style_val_panel));
 	if (generic_vals.style == DASH_LINE || generic_vals.style == DOTTED_LINE
@@ -3502,7 +3504,7 @@ generic_window(char *object_type, char *sub_type, icon_struct *icon,
 	/* make text widget for any comment lines */
 	FirstArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 2);
-	NextArg(XtNstring, comments);
+	NextArg(XtNstring, comments ? conv_strutf8dup(comments) : comments);
 	NextArg(XtNinsertPosition, 0);
 	NextArg(XtNeditType, XawtextEdit);
 	if (!strcmp(sub_type,"Picture Object")) {
