@@ -1194,6 +1194,7 @@ done_figure_comments(void)
 		s = conv_utf8strdup(panel_get_value(comments_panel));
 		/* allocate space and copy */
 		copy_comments(&s, &objects.comments);
+		free(s);
 		clean_up();
 		set_action_object(F_EDIT, O_FIGURE);
 		set_modifiedflag();
@@ -3153,7 +3154,8 @@ new_generic_values(void)
 	check_depth();
 	generic_vals.depth = atoi(panel_get_value(depth_panel));
 	/* get the comments */
-	generic_vals.comments = conv_utf8strdup(panel_get_value(comments_panel));
+	generic_vals.comments = conv_utf8strdup(panel_get_value(
+							comments_panel));
 	/* include dash length in panel, too */
 	generic_vals.style_val = (float) atof(panel_get_value(style_val_panel));
 	if (generic_vals.style == DASH_LINE || generic_vals.style == DOTTED_LINE
@@ -3315,6 +3317,7 @@ generic_window(char *object_type, char *sub_type, icon_struct *icon,
 	Dimension	label_height, image_height;
 	int		button_distance;
 	int		i, fill;
+	char		*utf8 = NULL;
 	Widget		image, cancel;
 	Pixmap		image_pm;
 	XFontStruct	*temp_font;
@@ -3504,7 +3507,8 @@ generic_window(char *object_type, char *sub_type, icon_struct *icon,
 	/* make text widget for any comment lines */
 	FirstArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 2);
-	NextArg(XtNstring, comments ? conv_strutf8dup(comments) : comments);
+	NextArg(XtNstring, comments ?
+				(utf8 = conv_strutf8dup(comments)) : comments);
 	NextArg(XtNinsertPosition, 0);
 	NextArg(XtNeditType, XawtextEdit);
 	if (!strcmp(sub_type,"Picture Object")) {
@@ -3527,6 +3531,8 @@ generic_window(char *object_type, char *sub_type, icon_struct *icon,
 			asciiTextWidgetClass, form, Args, ArgCount);
 	XtOverrideTranslations(comments_panel,
 			XtParseTranslationTable(edit_comment_translations));
+	if (utf8)
+		free(utf8);
 
 	/***************** COMMON PARAMETERS *****************/
 
@@ -4550,6 +4556,7 @@ str_panel(char *string, char *name, Widget *pi_x, int width, Boolean
 	size_t		i;
 	Dimension	pwidth;
 	XFontStruct	*temp_font;
+	char		*str = NULL;;
 	char		*labelname, *textname;
 
 
@@ -4558,8 +4565,8 @@ str_panel(char *string, char *name, Widget *pi_x, int width, Boolean
 		/* yes, make it and manage it */
 		/* make the labels of the widgets xxx_label for the label part
 		   and xxx_text for the asciiwidget part */
-		labelname = (char *) new_string(strlen(name)+7);
-		textname = (char *) new_string(strlen(name)+6);
+		labelname = new_string(strlen(name)+7);
+		textname = new_string(strlen(name)+6);
 		strcpy(labelname,name);
 		strcat(labelname,"_label");
 		strcpy(textname,name);
@@ -4605,7 +4612,7 @@ str_panel(char *string, char *name, Widget *pi_x, int width, Boolean
 	if (nlines > 4)	/* limit to displaying 4 lines and show scrollbars */
 		nlines = 4;
 	FirstArg(XtNfromVert, below);
-	NextArg(XtNstring, conv_strutf8dup(string));
+	NextArg(XtNstring, *string ? (str = conv_strutf8dup(string)) : string);
 	NextArg(XtNinsertPosition, strlen(string));
 	NextArg(XtNfromHoriz, beside);
 	NextArg(XtNeditType, XawtextEdit);
@@ -4634,9 +4641,11 @@ str_panel(char *string, char *name, Widget *pi_x, int width, Boolean
 
 	below = *pi_x;
 
+	if (*string)
+		free(str);
 	if (name && strlen(name) > 0) {
-		free((char *) textname);
-		free((char *) labelname);
+		free(textname);
+		free(labelname);
 	}
 }
 
