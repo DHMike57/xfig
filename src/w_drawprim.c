@@ -184,15 +184,18 @@ pw_xfttext(XftDraw *xftdraw, int x, int y, int depth, XftFont *font,
 		return;
 
 	if ((map = adobe_charset(font))) {
-		XftChar32 glyphs[len];
-		int glen = 0;
+		XftChar8	*chr;
+		XftChar32	glyphs[len];
+		int		glen = 0;
 
-		for (XftChar8 *chr = (XftChar8 *)s; chr < s+len; chr++) {
-			XftChar32 glyph = XftCharIndex(tool_d, font, map(*chr));
+		for (chr = (XftChar8 *)s; chr < (XftChar8 *)s + len; ++chr) {
+			XftChar32	glyph = XftCharIndex(tool_d, font,
+								map(*chr));
 			if (glyph)
 				glyphs[glen++] = glyph;
 		}
-		XftDrawGlyphs(xftdraw, &xftcolor[c], font, zx, zy, glyphs, glen);
+		XftDrawGlyphs(xftdraw, &xftcolor[c], font, zx, zy, glyphs,
+									glen);
 	} else
 		XftDrawStringUtf8(xftdraw, &xftcolor[c], font, zx, zy,
 				  (XftChar8*)s, (int)len);

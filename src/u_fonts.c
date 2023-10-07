@@ -327,12 +327,13 @@ textextents(F_text *t)
 	rotfont = getfont(psfont_text(t), t->font, t->size * ZOOM_FACTOR,
 			(double)t->angle);
 	if ((map = adobe_charset(rotfont))) {
-		XftChar32 glyphs[len], *glyph;
-		XftChar8 *s = (XftChar8 *)t->cstring;
-		int glen = 0;
+		XftChar32	glyphs[len];
+		XftChar8	*s = (XftChar8 *)t->cstring;
+		int		glen = 0;
 
 		for (XftChar8 *chr = s; chr < s+len; chr++) {
-			XftChar32 glyph = XftCharIndex(tool_d, rotfont, map(*chr));
+			XftChar32	glyph = XftCharIndex(tool_d, rotfont,
+								map(*chr));
 			if (glyph)
 				glyphs[glen++] = glyph;
 		}
@@ -429,19 +430,20 @@ textextents(F_text *t)
 		horfont = getfont(psfont_text(t), t->font,
 					t->size * ZOOM_FACTOR, 0.0);
 		if ((map = adobe_charset(horfont))) {
-			XftChar32 glyphs[len], *glyph;
-			XftChar8 *s = (XftChar8 *)t->cstring;
-			int glen = 0;
+			XftChar32	glyphs[len];
+			XftChar8	*s = (XftChar8 *)t->cstring;
+			int		glen = 0;
 
-			for (XftChar8 *chr = s; chr < s+len; chr++) {
-				XftChar32 glyph = XftCharIndex(tool_d, horfont, map(*chr));
+			for (XftChar8 *chr = s; chr < s+len; ++chr) {
+				XftChar32	glyph = XftCharIndex(tool_d,
+							horfont, map(*chr));
 				if (glyph)
 					glyphs[glen++] = glyph;
 			}
 			XftGlyphExtents(tool_d, horfont, glyphs, glen, &extents);
 		} else {
-			XftTextExtentsUtf8(tool_d, horfont, (XftChar8 *)t->cstring,
-				len, &extents);
+			XftTextExtentsUtf8(tool_d, horfont,
+					(XftChar8 *)t->cstring, len, &extents);
 		}
 		/* See above, libxft keeps a cache of 16 closed fonts. */
 		closefont(horfont);
@@ -486,12 +488,13 @@ textlength(XftFont *horfont, XftChar8 *string, int len)
 		return 0;
 
 	if ((map = adobe_charset(horfont))) {
-		XftChar32 glyphs[len], *glyph;
-		XftChar8 *chr, *s = string;
-		int glen = 0;
+		XftChar32	glyphs[len];
+		XftChar8	*chr, *s = string;
+		int		glen = 0;
 
-		for (XftChar8 *chr = s; chr < s+len; chr++) {
-			XftChar32 glyph = XftCharIndex(tool_d, horfont, map(*chr));
+		for (chr = s; chr < s+len; ++chr) {
+			XftChar32	glyph = XftCharIndex(tool_d, horfont,
+								map(*chr));
 			if (glyph)
 				glyphs[glen++] = glyph;
 		}
@@ -519,12 +522,13 @@ textmaxheight(int psflag, int font, int size, int *ascent, int *descent)
 
 	horfont = getfont(psflag, font, size * ZOOM_FACTOR, 0.0);
 	if ((map = adobe_charset(horfont))) {
-		XftChar32 glyphs[len], *glyph;
-		XftChar8 *s = max_height_str;
-		int glen = 0;
+		XftChar32	glyphs[len];
+		XftChar8	*chr, *s = max_height_str;
+		int		glen = 0;
 
-		for (XftChar8 *chr = s; chr < s+len; chr++) {
-			XftChar32 glyph = XftCharIndex(tool_d, horfont, map(*chr));
+		for (chr = s; chr < s+len; chr++) {
+			XftChar32	glyph = XftCharIndex(tool_d, horfont,
+								map(*chr));
 			if (glyph)
 				glyphs[glen++] = glyph;
 		}
@@ -569,7 +573,8 @@ text_origin(int *draw_x, int *draw_y, int base_x, int base_y, int align,
  * Unicode mapping found in
  * /usr/share/fonts/encodings/adobe-dingbats.enc.gz
  */
-XftChar32 map_dingbats(XftChar8 in)
+XftChar32
+map_dingbats(XftChar8 in)
 {
 	switch (in) {
 	case 0x20: return 0x0020;    /* SPACE */
@@ -778,14 +783,15 @@ XftChar32 map_dingbats(XftChar8 in)
 	case 0xFE: return 0x27BE;    /* OPEN-OUTLINED RIGHTWARDS ARROW */
 	default:   return 0x0000;
 	}
-};
+}
 
 /*
  * Unicode mapping found in
  * /usr/share/fonts/encodings/adobe-symbol.enc.gz
  * Duplicates are disabled
  */
-XftChar32 map_symbols(XftChar8 in)
+XftChar32
+map_symbols(XftChar8 in)
 {
 	switch(in) {
 	case 0x20: return 0x0020;    /* SPACE */
@@ -825,7 +831,7 @@ XftChar32 map_symbols(XftChar8 in)
 	case 0x42: return 0x0392;    /* GREEK CAPITAL LETTER BETA */
 	case 0x43: return 0x03A7;    /* GREEK CAPITAL LETTER CHI */
 	case 0x44: return 0x0394;    /* GREEK CAPITAL LETTER DELTA */
-/*	case 0x44: return 0x2206;    /* INCREMENT */
+/*	case 0x44: return 0x2206;     * INCREMENT */
 	case 0x45: return 0x0395;    /* GREEK CAPITAL LETTER EPSILON */
 	case 0x46: return 0x03A6;    /* GREEK CAPITAL LETTER PHI */
 	case 0x47: return 0x0393;    /* GREEK CAPITAL LETTER GAMMA */
@@ -845,7 +851,7 @@ XftChar32 map_symbols(XftChar8 in)
 	case 0x55: return 0x03A5;    /* GREEK CAPITAL LETTER UPSILON */
 	case 0x56: return 0x03C2;    /* GREEK SMALL LETTER FINAL SIGMA */
 	case 0x57: return 0x03A9;    /* GREEK CAPITAL LETTER OMEGA */
-/*	case 0x57: return 0x2126;    /* OHM */
+/*	case 0x57: return 0x2126;     * OHM */
 	case 0x58: return 0x039E;    /* GREEK CAPITAL LETTER XI */
 	case 0x59: return 0x03A8;    /* GREEK CAPITAL LETTER PSI */
 	case 0x5A: return 0x0396;    /* GREEK CAPITAL LETTER ZETA */
@@ -887,14 +893,14 @@ XftChar32 map_symbols(XftChar8 in)
 	case 0x7E: return 0x223C;    /* TILDE OPERATOR */
 	/* case 0x7F */
 	case 0x80: return 0xf8ff;    /* Apple logo, private use area. */
-/*	case 0x80: return 0xf000;    /* Another location for apple logo. */
+/*	case 0x80: return 0xf000;     * Another location for apple logo. */
 	/* 0x81 - 0xA0 */
 	case 0xA0: return 0x20ac;    /* Euro sign */
 	case 0xA1: return 0x03D2;    /* GREEK CAPITAL LETTER UPSILON HOOK */
 	case 0xA2: return 0x2032;    /* PRIME */
 	case 0xA3: return 0x2264;    /* LESS THAN OR EQUAL TO */
 	case 0xA4: return 0x2044;    /* FRACTION SLASH */
-/*	case 0xA4: return 0x2215;    /* DIVISION SLASH */
+/*	case 0xA4: return 0x2215;     * DIVISION SLASH */
 	case 0xA5: return 0x221E;    /* INFINITY */
 	case 0xA6: return 0x0192;    /* LATIN SMALL LETTER SCRIPT F */
 	case 0xA7: return 0x2663;    /* BLACK CLUB SUIT */
@@ -923,8 +929,8 @@ XftChar32 map_symbols(XftChar8 in)
 	   extension of arrows; Alternatives would be box drawing signs */
 	case 0xBD: return 0x23d0;    /* Vertical line extension */
 	case 0xBE: return 0x23af;    /* Horizontal line extension */
-/*	case 0xBD: return 0x2502;    /* Box drawings light vertical */
-/*	case 0xBE: return 0x2500;    /* Box drawings light horizontal */
+/*	case 0xBD: return 0x2502;     * Box drawings light vertical */
+/*	case 0xBE: return 0x2500;     * Box drawings light horizontal */
 	case 0xBF: return 0x21B5;    /* DOWN ARROW WITH CORNER LEFT */
 	case 0xC0: return 0x2135;    /* FIRST TRANSFINITE CARDINAL */
 	case 0xC1: return 0x2111;    /* BLACK-LETTER I */
@@ -992,11 +998,12 @@ XftChar32 map_symbols(XftChar8 in)
 	/*  0xFF */
 	default:   return 0x0000;
 	}
-};
+}
 
-map_f adobe_charset(XftFont *font)
+map_f
+adobe_charset(XftFont *font)
 {
-	map_f map = NULL;
+	map_f	map = NULL;
 
 	/*
 	 * Hack: does this font has small a in its charset?
@@ -1012,7 +1019,7 @@ map_f adobe_charset(XftFont *font)
 		        char *colon;
 
 		        fullname += 9;
-		        if (colon = strchr(fullname, ':'))
+		        if ((colon = strchr(fullname, ':')))
 		                *colon = '\0';
 		        if (strcasestr(fullname, "symbol"))
 		                map = map_symbols;

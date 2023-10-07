@@ -77,9 +77,9 @@ extern struct _fstruct	latex_fontinfo[];
  * need to map the byte characters into UTF-8 multi byte characters.
  * This to make XftTextExtentsUtf8() and XftDrawStringUtf8() working.
  */
-typedef XftChar8 (*map_f)(XftChar8);
-extern XftChar32 map_dingbats(XftChar8);
-extern XftChar32 map_symbols(XftChar8);
-extern map_f adobe_charset(XftFont *font);
+typedef XftChar32	(*map_f)(XftChar8);
+extern XftChar32	map_dingbats(XftChar8);
+extern XftChar32	map_symbols(XftChar8);
+extern map_f		adobe_charset(XftFont *font);
 
 #endif /* U_FONTS_H */
