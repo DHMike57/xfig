@@ -1184,18 +1184,19 @@ make_window_figure(void)
 static void
 done_figure_comments(void)
 {
-	char	*s;
+	char	*s, *saved;
 
 	switch (button_result) {
 	case DONE:
 		/* save old comments */
-		saved_objects.comments = objects.comments;
+		saved = objects.comments;
 		/* get new comments */
 		s = conv_utf8strdup(panel_get_value(comments_panel));
 		/* allocate space and copy */
 		copy_comments(&s, &objects.comments);
 		free(s);
 		clean_up();
+		saved_objects.comments = saved;
 		set_action_object(F_EDIT, O_FIGURE);
 		set_modifiedflag();
 		break;
