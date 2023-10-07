@@ -3318,7 +3318,7 @@ generic_window(char *object_type, char *sub_type, icon_struct *icon,
 	Dimension	label_height, image_height;
 	int		button_distance;
 	int		i, fill;
-	char		*utf8 = NULL;
+	char		*str = NULL;
 	Widget		image, cancel;
 	Pixmap		image_pm;
 	XFontStruct	*temp_font;
@@ -3509,7 +3509,7 @@ generic_window(char *object_type, char *sub_type, icon_struct *icon,
 	FirstArg(XtNfromVert, below);
 	NextArg(XtNvertDistance, 2);
 	NextArg(XtNstring, comments ?
-				(utf8 = conv_strutf8dup(comments)) : comments);
+				(str = conv_strutf8dup(comments)) : comments);
 	NextArg(XtNinsertPosition, 0);
 	NextArg(XtNeditType, XawtextEdit);
 	if (!strcmp(sub_type,"Picture Object")) {
@@ -3532,8 +3532,8 @@ generic_window(char *object_type, char *sub_type, icon_struct *icon,
 			asciiTextWidgetClass, form, Args, ArgCount);
 	XtOverrideTranslations(comments_panel,
 			XtParseTranslationTable(edit_comment_translations));
-	if (utf8)
-		free(utf8);
+	if (str)
+		free(str);
 
 	/***************** COMMON PARAMETERS *****************/
 

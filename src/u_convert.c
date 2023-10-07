@@ -227,7 +227,12 @@ conv_utf8strdup(const char *src /* locale charset */)
 {
 #ifdef HAVE_ICONV
 	char	*dest;
+#endif
 
+	if (src[0] == '\0')
+		return NULL;
+
+#ifdef HAVE_ICONV
 	init_conversion();
 	convert(&dest, (char *)src, cd[0]);
 	return dest;
