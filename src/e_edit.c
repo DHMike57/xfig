@@ -2158,6 +2158,7 @@ static void
 get_new_line_values(void)
 {
 	struct f_point	p1, p2, *p;
+	char		*str;
 	char		*picture_path; /* relative or absolute path,
 					  as displayed */
 	int		dx, dy, rotation;
@@ -2219,7 +2220,9 @@ get_new_line_values(void)
 		sprintf(buf, "%1.1f", ratio);
 		FirstArg(XtNlabel, buf);
 		SetValues(hw_ratio_panel);
-		picture_path = internal_path(panel_get_value(pic_name_panel));
+		str = conv_utf8strdup(panel_get_value(pic_name_panel));
+		picture_path = internal_path(str);
+		free(str);
 		/* the string memory returned by pic_name_panel my be freed by
 		   XawAsciiSourceFreeString(pic_name_panel);	*/
 		if (!picture_path) {

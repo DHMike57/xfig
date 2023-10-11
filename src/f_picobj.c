@@ -42,6 +42,7 @@
 #include "mode.h"
 #include "f_readpcx.h"		/* read_pcx() */
 #include "f_util.h"		/* file_timestamp() */
+#include "u_convert.h"
 #include "u_create.h"		/* create_picture_entry() */
 #include "u_spawn.h"
 #include "w_file.h"		/* check_cancel() */
@@ -149,6 +150,7 @@ file_on_disk(const char *restrict name, char **restrict found, size_t len,
 {
 	int		i;
 	size_t		name_len;
+	char		*loc_name;
 	char		*suffix;
 	struct stat	status;
 	static char	*filetypes[][3] = {
@@ -165,12 +167,13 @@ file_on_disk(const char *restrict name, char **restrict found, size_t len,
 	const int	filetypes_len =
 				(int)(sizeof filetypes / sizeof(filetypes[1]));
 
-	name_len = strlen(name);
+	loc_name = conv_strutf8dup(name);
+	name_len = strlen(loc_name);
 	if (name_len >= len &&
 			!(*found = new_string(name_len + FILEONDISK_ADD - 1)))
 		return FileInvalid;
 
-	strcpy(*found, name);
+	strcpy(*found, loc_name);
 
 	/*
 	 * Possibilities, e.g.,
@@ -180,12 +183,14 @@ file_on_disk(const char *restrict name, char **restrict found, size_t len,
 	 *	img.ppm.gz	img.ppm.gz		gunzip -c
 	 *	img.ppm.gz	img.ppm			""
 	 */
-	if (stat(name, &status)) {
+	if (stat(loc_name, &status)) {
 		/* File not found. Now try, whether a file with one of
 		   the known suffices appended exists. */
 		if (len < name_len + FILEONDISK_ADD && (*found =
-				new_string(name_len + FILEONDISK_ADD - 1)))
+				new_string(name_len + FILEONDISK_ADD - 1))) {
+			free(loc_name);
 			return FileInvalid;
+		}
 
 		suffix = *found + name_len;
 		for (i = 0; i < filetypes_len; ++i) {
@@ -199,10 +204,10 @@ file_on_disk(const char *restrict name, char **restrict found, size_t len,
 		/* Not found. Check, whether the file has one of the known
 		   compression suffices, but the uncompressed file
 		   exists on disk. */
-		if (i == filetypes_len && (suffix = strrchr(name, '.'))) {
+		if (i == filetypes_len && (suffix = strrchr(loc_name, '.'))) {
 			for (i = 0; i < filetypes_len; ++i) {
 				if (!strcmp(suffix, filetypes[i][0])) {
-					*(*found + (suffix - name)) = '\0';
+					*(*found + (suffix - loc_name)) = '\0';
 					if (!stat(*found, &status)) {
 						*uncompress = NULL;
 						break;
@@ -217,12 +222,13 @@ file_on_disk(const char *restrict name, char **restrict found, size_t len,
 		if (i == filetypes_len) {
 			/* not found */
 			*found[0] = '\0';
+			free(loc_name);
 			return FileInvalid;
 		}
 	} else {
 		/* File exists. Check, whether the name has one of the known
 		   compression suffices. */
-		if ((suffix = strrchr(name, '.'))) {
+		if ((suffix = strrchr(loc_name, '.'))) {
 			for (i = 0; i < filetypes_len; ++i) {
 				if (!strcmp(suffix, filetypes[i][0])) {
 					*uncompress = &filetypes[i][1];
@@ -237,6 +243,7 @@ file_on_disk(const char *restrict name, char **restrict found, size_t len,
 			*uncompress = NULL;
 	}
 
+	free(loc_name);
 	return 0;
 }
 
