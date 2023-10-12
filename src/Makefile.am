@@ -27,12 +27,12 @@ AM_CPPFLAGS = $(fontconfig_CFLAGS) $(XCPPFLAGS) -DNDEBUG	\
 	-DXFIGLIBDIR="\"$(compkeydbdir)\""			\
 	-DOBJLIBDIR="\"$(pkgdatadir)/Libraries\"" -DXFIGDOCDIR="\"$(docdir)\""
 
-AM_LDFLAGS = $(fontconfig_LIBS) $(XLDFLAGS)
+AM_LDFLAGS = $(XLDFLAGS)
 
 # LIBOBJS must be placed in LDADD or xfig_LDADD - otherwise, the
 # lib-dir is not distributed
 # LIBOBJS may contain the replacement functions from AC_REPLACE_FUNCS.
-xfig_LDADD = $(LIBOBJS) $(XLIBS)
+xfig_LDADD = $(LIBOBJS) $(fontconfig_LIBS) $(XLIBS)
 
 bin_PROGRAMS = xfig
 
