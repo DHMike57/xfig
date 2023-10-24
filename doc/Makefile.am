@@ -41,7 +41,7 @@ documentation: $(top_srcdir)/version.m4
 	cd $(srcdir)/html && htmldoc -f ../xfig_ref_en.pdf --no-title	\
 		--webpage --header ..c -t pdf14 --size a4 contents.html	\
 		$$($(FGREP) '<a href=' contents.html |			\
-			$(SED) 's/.*a href="//;s/["\#].*//;' | uniq |	\
+			$(SED) 's/.*a href="//; s/["\#].*//;' | uniq |	\
 			$(FGREP) -v japanese)
 
 # To create xfig-title.png, probably test:
