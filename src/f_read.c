@@ -1052,6 +1052,11 @@ read_lineobject(FILE *fp)
 			numcom = 0;
 			return NULL;
 		}
+		if (!file_is_utf8) {
+			char	*s2 = conv_utf8strdup(s1);
+			free(s1);
+			s1 = s2;
+		}
 
 		if (!update_figs) {
 			/* only read in the image if update_figs is False */
