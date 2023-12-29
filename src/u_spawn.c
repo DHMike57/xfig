@@ -21,6 +21,7 @@
 #endif
 
 #include <errno.h>
+#include <locale.h>
 #include <poll.h>
 #include <unistd.h>		/* close() */
 #include <signal.h>		/* SIGHUP */
@@ -155,8 +156,19 @@ static int
 spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 			int cfd[2])
 {
+	int		i;
+	char		locale[32];
+	char *const	envp[2] = {locale, NULL};
+
+	i = snprintf(locale, sizeof locale, "LC_CTYPE=%s",
+			setlocale(LC_CTYPE, NULL));
+	if (i >= sizeof locale)
+		file_msg("Spawning %s, unable to set correct locale:\n\t"
+				"LC_CTYPE=%s\n\tLocale name has %d chars, "
+				"maximum is %zd.",
+				full_command(argv), setlocale(LC_CTYPE, NULL),
+				i, sizeof locale - 1);
 #ifdef HAVE_POSIX_SPAWNP
-	int				i;
 	posix_spawn_file_actions_t	file_actions;
 
 	posix_spawn_file_actions_init(&file_actions);
@@ -174,7 +186,7 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 		}
 	}
 
-	return posix_spawnp(pid, argv[0], &file_actions, NULL, argv, NULL);
+	return posix_spawnp(pid, argv[0], &file_actions, NULL, argv, envp);
 
 #else	/* HAVE_POSIX_SPAWNP undefined: fork() and exec() */
 	*pid = fork();
@@ -182,7 +194,6 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 		return errno;
 	if (*pid == 0) {
 		/* the child */
-		int	i;
 		if (cfd[0] > -1)
 			close(cfd[0]);
 		if (cfd[1] > -1)
@@ -194,7 +205,7 @@ spawn_process(pid_t *restrict pid, char *const argv[restrict], int fd[3],
 				close(fd[i]);
 			}
 		}
-		if (execvp(argv[0], argv) == -1)
+		if (execvpe(argv[0], argv, envp) == -1)
 			return errno;;
 	}
 
