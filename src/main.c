@@ -692,6 +692,8 @@ main(int argc, char **argv)
 
 		update_figs = True;
 
+		/* for updating legacy fig-files the encoding is needed */
+		setlocale(LC_CTYPE, "");
 		/* if the fig file contains text objects,
 		   update_fig_files() depends on font information */
 		cnt = setup_visual(&argc, argv, args);
