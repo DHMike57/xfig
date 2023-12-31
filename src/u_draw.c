@@ -38,6 +38,7 @@
 #include "f_util.h"		/* xf_basename() */
 #include "f_picobj.h"		/* ABSOLUTE_PATHNAME */
 #include "u_bound.h"		/* <obj>_bound(), overlapping() */
+#include "u_convert.h"
 #include "u_error.h"		/* X_error_handler() */
 #include "u_fonts.h"
 #include "u_geom.h"		/* compute_angle() */
@@ -679,7 +680,7 @@ void draw_line(F_line *line, int op)
 	    string = EMPTY_PIC;
 	else
 		/* xf_basename anyhow walks over possibly prepended chars */
-	    string = xf_basename(line->pic->pic_cache->file);
+	    string = conv_utf8strdup(xf_basename(line->pic->pic_cache->file));
 
 	p0 = line->points;
 	p1 = p0->next;
@@ -741,7 +742,10 @@ void draw_line(F_line *line, int op)
 	    pw_xfttext(canvas_draw, x, y, line->depth, mono_font, string,
 			    GREEN4);
 	}
+	if (string != EMPTY_PIC)
+		free(string);
     }
+
     /* get first point and coordinates */
     point = line->points;
     x = point->x;

@@ -37,8 +37,9 @@
 #include "f_picobj.h"
 #include "f_read.h"
 #include "f_util.h"
-#include "u_colors.h"
 #include "u_bound.h"
+#include "u_colors.h"
+#include "u_convert.h"
 #include "w_export.h"
 #include "w_msgpanel.h"
 #include "w_setup.h"
@@ -484,17 +485,22 @@ write_line(FILE *fp, F_line *l)
 
 		/* handle picture stuff */
 		if (l->type == T_PICTURE) {
-			char	picfile_buf[128];
+			char	picfile_buf[128] = "";
 			char	*picfile = picfile_buf;
-			if (l->pic->pic_cache && l->pic->pic_cache->file)
+			char	*utf8_name = NULL;
+			if (l->pic->pic_cache && l->pic->pic_cache->file) {
 				external_path(&picfile, sizeof picfile_buf,
 						l->pic->pic_cache->file);
-			if (picfile[0] == '\0')
-				strcpy(picfile, EMPTY_PIC);
+				if (picfile[0])
+					utf8_name = conv_utf8strdup(picfile);
+			}
+			fprintf(fp, "\t%d %s\n", l->pic->flipped,
+					picfile[0] ? utf8_name : EMPTY_PIC);
 
-			fprintf(fp, "\t%d %s\n", l->pic->flipped, picfile);
 			if (picfile != picfile_buf)
 				free(picfile);
+			if (utf8_name)
+				free(utf8_name);
 		}
 
 		fprintf(fp, "\t");
