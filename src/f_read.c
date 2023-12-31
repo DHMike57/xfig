@@ -218,8 +218,7 @@ read_fig(char *file_name, F_compound *obj, Boolean merge, int xoff, int yoff,
 	struct xfig_stream	fig_stream;
 	int			status;
 
-	read_file_name = file_name;
-	first_file_msg = True;
+	file_msg(NULL, file_name);
 	init_stream(&fig_stream);
 	if (!(fp = open_stream(file_name, &fig_stream)))
 		return BAD_FORMAT;
@@ -234,7 +233,6 @@ read_fig(char *file_name, F_compound *obj, Boolean merge, int xoff, int yoff,
 	(void)close_stream(&fig_stream);
 	free_stream(&fig_stream);
 	/* so subsequent file_msg() calls don't print wrong file name */
-	first_file_msg = False;
 	return status;
 }
 

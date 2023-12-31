@@ -57,7 +57,6 @@
 Boolean		popup_up = False;
 Boolean		file_msg_is_popped=False;
 Widget		file_msg_popup;
-Boolean		first_file_msg;
 Boolean		first_lenmsg = True;
 
 /************************  LOCAL ******************/
@@ -579,26 +578,43 @@ areameas_msg(char *msgtext, float area, float totarea, int flag)
              msgtext, areastr);
 }
 
-
-/* This is the section for the popup message window (file_msg) */
-/* if global update_figs is true, do a fprintf(stderr,msg) instead of in the window */
-
-/* VARARGS1 */
+/*
+ * Print to the popup message window or, if update_figs is true, to stderr.
+ * Set the file name for the initial message with file_msg(NULL, file_name).
+ */
 void
 file_msg(char *format,...)
 {
-    va_list ap;
+    va_list		ap;
+    static Boolean	first_file_msg = False;
+    static char		*file_name = NULL;
 
+    va_start(ap, format);
     if (!update_figs) {
+	if (format == NULL) {
+	    const char	*s = va_arg(ap, const char *);
+	    /* set the file name for the initial message */
+	    if (file_name == NULL || strcmp(file_name, s)) {
+		file_name = strdup(s);
+		first_file_msg = True;
+	    }
+	    va_end(ap);
+	    return;
+	} else if (format[0] == '\0') {
+	    va_end(ap);
+	    free(file_name);
+	    return;
+	}
+
 	popup_file_msg();
 	if (first_file_msg) {
 	    first_file_msg = False;
-	    file_msg("---------------------");
-	    file_msg("File %s:",read_file_name);
+	    /* the initial message */
+	    file_msg("----------------------------------------");
+	    file_msg("File %s:", file_name);
 	}
     }
 
-    va_start(ap, format);
     /* format the string (but leave room for \n and \0) */
     vsnprintf(tmpstr, sizeof(tmpstr)-2, format, ap);
     va_end(ap);

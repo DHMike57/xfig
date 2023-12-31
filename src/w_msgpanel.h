@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2020 by Thomas Loimer
+ * Parts Copyright (c) 2016-2023 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -32,7 +32,6 @@ extern void	popup_file_msg(void);
 extern void	make_dimension_string(float length, char *str, Boolean square);
 
 extern Boolean	popup_up;
-extern Boolean	first_file_msg;
 extern Boolean	file_msg_is_popped;
 extern Widget	file_msg_popup;
 extern Boolean	first_lenmsg;
