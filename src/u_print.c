@@ -130,7 +130,7 @@ start_argumentlist(char *arg[restrict], char argbuf[restrict][ARGBUF_SIZE],
 	arg[0] = fig2dev_cmd;
 	arg[1] = "-L";
 	*a = 2;	/* arg[2] will be the output language */
-	if (appres.magnification < 99.99 | appres.magnification > 100.01) {
+	if (appres.magnification < 99.99 || appres.magnification > 100.01) {
 		int	n;
 		arg[++*a] = "-m";
 		n = snprintf(argbuf[++*b], ARGBUF_SIZE,
@@ -531,6 +531,7 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 		} else if (cur_exp_lang == LANG_PSTEX ||
 				cur_exp_lang == LANG_PDFTEX) {
 			size_t	len = strlen(outfile);
+			char	*s;
 
 			/* Options were already set above
 			    - output the first file */
@@ -544,8 +545,9 @@ print_export(char *file, int xoff, int yoff, char *backgrnd, char *transparent,
 				goto free_outfile;
 			}
 			memcpy(tmp_name, outfile, len + 1);
-			if (!realloc(outfile, len + 3)) {
+			if (!(outfile = realloc(s = outfile, len + 3))) {
 				ret = 1;
+				outfile = s;	/* for free(outfile) below */
 				goto free_tmp_name;
 			}
 			strcpy(outfile + len, "_t");
