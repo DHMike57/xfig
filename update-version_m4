@@ -4,7 +4,7 @@
 # Copyright (c) 1985-1988 by Supoj Sutanthavibul
 # Parts Copyright (c) 1989-2015 by Brian V. Smith
 # Parts Copyright (c) 1991 by Paul King
-# Parts Copyright (c) 2016-2019 by Thomas Loimer
+# Parts Copyright (c) 2016-2023 by Thomas Loimer
 #
 # Any party obtaining a copy of these files is granted, free of charge, a
 # full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -16,11 +16,15 @@
 # and this permission notice remain intact.
 #
 #
-#	update-version_m4: Set the version information in version.m4.
-#	Author: Thomas Loimer, 2016
+
+#
+# update-version_m4: Set the version information in version.m4.
+# Author: Thomas Loimer <thomas.loimer@tuwien.ac.at>, 2016-2023
 #
 
-if (git --version) >/dev/null 2>&1 && test "`git describe --abbrev=1`" != \
+# test, whether git is available, and we are in a git tree
+if git config --local -l >/dev/null 2>&1 &&	\
+    test "`git describe --abbrev=1`" !=		\
 	"`sed -n '/^m4_def.*XFIG_VERS/ {s/.*, *\[\(.*\)\])/\1/;p}' version.m4`"
 then
     sed  -i "\

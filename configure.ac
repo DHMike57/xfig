@@ -230,7 +230,8 @@ AC_ARG_ENABLE(versioning, [AS_HELP_STRING([--enable-versioning],
 	[enable changing the version number, only useful for \
 	 hacking (default: disable)])],
     [],[enableval=no])dnl
-AM_CONDITIONAL([ENABLE_VERSIONING], [test "x$enableval" = xyes])dnl
+AS_IF([test "x$enableval" = xyes],dnl
+    [update_version='( cd $srcdir && . ./update-version_m4 )'])dnl
 
 AC_ARG_ENABLE(arrows4to14, [AS_HELP_STRING([--disable-arrows4to14],
 	[disable arrow types 4 to 14 (default: enable)])],
@@ -453,7 +454,8 @@ AC_CONFIG_FILES([Makefile
 		doc/xfig.man
 		doc/xfig_man.html
 		tests/Makefile
-		tests/atlocal])dnl
+		tests/atlocal],
+	[], [$update_version])dnl
 
 AC_OUTPUT
 

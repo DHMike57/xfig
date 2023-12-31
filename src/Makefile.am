@@ -143,14 +143,6 @@ version.xbm: version.fig.in $(top_srcdir)/version.m4
 		convert ppm:- -trim xbm:- | \
 		$(SED) '1,3 s/-_/letters_/; 3 s/char/unsigned &/' >$@
 
-if ENABLE_VERSIONING
-# The Makefile generated in $top_srcdir lets configure and config.h.in
-# depend on configure.ac and on all .m4-files.
-$(top_srcdir)/version.m4: $(top_srcdir)/configure.ac $(top_srcdir)/Makefile.am \
-			  $(srcdir)/Makefile.am $(srcdir)/*.c $(srcdir)/*.h
-	cd $(top_srcdir) && ./update-version_m4
-endif
-
 splash.xpm: $(top_srcdir)/splash-image/spl_bckgnd.fig.in \
 		$(top_srcdir)/version.m4
 	fig2dev -L xpm ../splash-image/spl_bckgnd.fig \
