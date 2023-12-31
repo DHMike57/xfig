@@ -861,10 +861,10 @@ build_layer_list(char *layers)
 	}
 	if (len < notlen && firstyes != -1) {
 		/* use list of layers TO print */
-		sprintf(layers," -D +%s ",list);
+		sprintf(layers, "+%s", list);
 	} else if (firstno != -1){
 		/* use list of layers to NOT print */
-		sprintf(layers," -D -%s ",notlist);
+		sprintf(layers, "-%s", notlist);
 	}
 }
 
