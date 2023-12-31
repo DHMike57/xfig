@@ -1052,8 +1052,8 @@ read_lineobject(FILE *fp)
 			numcom = 0;
 			return NULL;
 		}
-		if (!file_is_utf8) {
-			char	*s2 = conv_utf8strdup(s1);
+		if (file_is_utf8) {
+			char	*s2 = conv_strutf8dup(s1);
 			free(s1);
 			s1 = s2;
 		}
