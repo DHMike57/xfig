@@ -6,7 +6,7 @@ AC_COPYRIGHT([FIG : Facility for Interactive Generation of figures
 Copyright (c) 1985-1988 by Supoj Sutanthavibul
 Parts Copyright (c) 1989-2015 by Brian V. Smith
 Parts Copyright (c) 1991 by Paul King
-Parts Copyright (c) 2016-2023 by Thomas Loimer
+Parts Copyright (c) 2016-2024 by Thomas Loimer
 
 Any party obtaining a copy of these files is granted, free of charge, a
 full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -19,7 +19,7 @@ and this permission notice remain intact.
 ])
 
 # configure.ac
-# Author: Thomas Loimer, 2016-2023
+# Author: Thomas Loimer, 2016-2024
 
 dnl The minimum autoconf version to process this file. In version 2.60,
 dnl the directory variables changed, see info autoconf, section 4.8.3.
@@ -226,13 +226,7 @@ AC_REPLACE_FUNCS([isascii strstr strchr strrchr strcasecmp strncasecmp \
 AC_CONFIG_LIBOBJ_DIR([lib])
 
 # Query user options
-AC_ARG_ENABLE(versioning, [AS_HELP_STRING([--enable-versioning],
-	[enable changing the version number, only useful for \
-	 hacking (default: disable)])],
-    [],[enableval=no])dnl
-AS_IF([test "x$enableval" = xyes],dnl
-    [update_version='( cd $srcdir && . ./update-version_m4 )'])dnl
-
+# alphabetically sorted, first --enable-, then --with-
 AC_ARG_ENABLE(arrows4to14, [AS_HELP_STRING([--disable-arrows4to14],
 	[disable arrow types 4 to 14 (default: enable)])],
     [],[enableval=yes])dnl
@@ -240,15 +234,35 @@ AS_IF([test "x$enableval" = xyes],
     [AC_DEFINE([ARROWS4TO14], 1,
 	 [Define to use arrow types 4 to 14 (22 arrows).])])dnl
 
-AC_ARG_WITH(gsexe, [AS_HELP_STRING([--with-gsexe=<name>],
-       [specify filename or path of the ghostscript executable (default: gs);
- empty string, "", to avoid calling the executable])],
-    [AS_IF([test "x$withval" = xno], [withval=""])],
-    [withval=yes])dnl
-AS_IF([test "x$withval" = xyes], [withval="gs"])
-AC_DEFINE_UNQUOTED([GSEXE], ["$withval"],
-    [Define to the filename or path of the ghostscript executable.])dnl
-AC_SUBST([GSEXE], ["$withval"])
+AC_ARG_ENABLE(comp-led, [AS_HELP_STRING([--enable-comp-led=#],
+    [turn on the compose indicator LED when entering \
+		multi-key characters (default: 3)])],
+    [],[enableval=3])dnl
+AS_IF([test "$enableval" -ge 1 && test "$enableval" -le 4],
+    [AC_DEFINE_UNQUOTED([COMP_LED], [$enableval],dnl
+	[Define and set to a number (1-4) to turn on the compose indicator LED \
+	 when entering multi-key characters.])])dnl
+
+AC_ARG_ENABLE(splash, [AS_HELP_STRING([--enable-splash],
+	[enable splash screen (default: disable)])],
+    [], [enableval=no])dnl
+AS_IF([test "x$enableval" = xyes],
+    [AC_DEFINE([USE_SPLASH], 1, [Define to show a splash screen.])])
+AM_CONDITIONAL([USE_SPLASH], [test "x$enableval" = xyes])dnl
+
+AC_ARG_ENABLE(tablet, [AS_HELP_STRING([--enable-tablet],
+	[enable support for tablet device (default: disable)])],
+    [], [enableval=no])dnl
+AS_IF([test "x$enableval" = xyes],
+    [AC_SEARCH_LIBS([XFreeDeviceList], [Xi],
+	    [AC_DEFINE([USE_TAB], 1, [Define for using an input tablet.])])])
+
+AC_ARG_ENABLE(versioning, [AS_HELP_STRING([--enable-versioning],
+	[enable changing the version number, only useful for \
+	 hacking (default: disable)])],
+    [],[enableval=no])dnl
+AS_IF([test "x$enableval" = xyes],dnl
+    [update_version='( cd $srcdir && . ./update-version_m4 )'])dnl
 
 dnl With # as comment, configure fails on the lines below!
 dnl Currently only w_rottext.c includes CACHE_[XIMAGES|BITMAPS], logic there
@@ -279,12 +293,25 @@ AS_IF([test "x$enableval" = xyes],
 	import of xpm files.])], [enableval=no])])
 AM_CONDITIONAL([USE_XPM], [test "x$enableval" = xyes])dnl
 
-AC_ARG_ENABLE(splash, [AS_HELP_STRING([--enable-splash],
-	[enable splash screen (default: disable)])],
-    [], [enableval=no])dnl
-AS_IF([test "x$enableval" = xyes],
-    [AC_DEFINE([USE_SPLASH], 1, [Define to show a splash screen.])])
-AM_CONDITIONAL([USE_SPLASH], [test "x$enableval" = xyes])dnl
+#user options --with
+AC_ARG_WITH(gsexe, [AS_HELP_STRING([--with-gsexe=<name>],
+       [specify filename or path of the ghostscript executable (default: gs);
+ empty string, "", to avoid calling the executable])],
+    [AS_IF([test "x$withval" = xno], [withval=""])],
+    [withval=yes])dnl
+AS_IF([test "x$withval" = xyes], [withval="gs"])
+AC_DEFINE_UNQUOTED([GSEXE], ["$withval"],
+    [Define to the filename or path of the ghostscript executable.])dnl
+AC_SUBST([GSEXE], ["$withval"])
+
+printcapfile="/etc/printcap"
+AC_ARG_WITH(printcap, [AS_HELP_STRING([--with-printcap=<path>],
+	[specify path to printcap file (default: /etc/printcap)])],
+    [AS_IF([test "x$withval" = xno || test "x$withval" = xyes],
+	[AC_MSG_NOTICE([using $printcapfile as printcap file])],
+	[printcapfile=$withval])])dnl
+AC_DEFINE_UNQUOTED([PRINTCAP], ["$printcapfile"],
+	[Define to the path of the printcap-file.])dnl
 
 AC_ARG_WITH(xaw3d1_5e, [AS_HELP_STRING([--without-xaw3d1_5e],
 	[do not use version Xaw3d >= 1.5e (default: use)])],
@@ -299,7 +326,6 @@ dnl	[PKG_CHECK_MODULES(XAW, xaw3d)],
 dnl	[PKG_CHECK_MODULES(XAW, xaw7, [],
 dnl	    [AC_MSG_WARN("$XAW_PKG_ERRORS")
 dnl	     PKG_CHECK_MODULES(XAW, xaw6)])dnl
-
 AS_IF([test "x$withval" = xyes],
     [AS_IF([test -z "$XCPPFLAGS"],
 	[XCPPFLAGS="-DXAW_INTERNATIONALIZATION"],
@@ -317,30 +343,11 @@ AS_IF([test "x$withval" = xyes],
 AM_CONDITIONAL([XAW3D1_5E],
     [test "x$withval" = xyes && test "x$with_xaw3d1_5e" = xyes])dnl
 
-AC_ARG_ENABLE(tablet, [AS_HELP_STRING([--enable-tablet],
-	[enable support for tablet device (default: disable)])],
-    [], [enableval=no])dnl
-AS_IF([test "x$enableval" = xyes],
-    [AC_SEARCH_LIBS([XFreeDeviceList], [Xi],
-	    [AC_DEFINE([USE_TAB], 1, [Define for using an input tablet.])])])
-
-AC_ARG_ENABLE(comp-led, [AS_HELP_STRING([--enable-comp-led=#],
-    [turn on the compose indicator LED when entering \
-		multi-key characters (default: 3)])],
-    [],[enableval=3])dnl
-AS_IF([test "$enableval" -ge 1 && test "$enableval" -le 4],
-    [AC_DEFINE_UNQUOTED([COMP_LED], [$enableval],dnl
-	[Define and set to a number (1-4) to turn on the compose indicator LED \
-	 when entering multi-key characters.])])dnl
-
-printcapfile="/etc/printcap"
-AC_ARG_WITH(printcap, [AS_HELP_STRING([--with-printcap=<path>],
-	[specify path to printcap file (default: /etc/printcap)])],
-    [AS_IF([test "x$withval" = xno || test "x$withval" = xyes],
-	[AC_MSG_NOTICE([using $printcapfile as printcap file])],
-	[printcapfile=$withval])])
-AC_DEFINE_UNQUOTED([PRINTCAP], ["$printcapfile"],
-	[Define to the path of the printcap-file.])
+AC_ARG_WITH(xfig-libraries, AS_HELP_STRING([--without-xfig-libraries],
+	[do not install xfig-Libraries (default: install)]),
+    [], [withval=yes])dnl
+AM_CONDITIONAL([XFIG_LIBRARIES],
+    [test "x$withval" = xyes && test -d "$srcdir/Libraries"])dnl
 
 dnl Nice idea, to set appdefaultdir using pkg-config.
 dnl Alas, this results in a hard-coded path, which breaks the
@@ -367,12 +374,6 @@ AS_IF([test "x$prefix" = xNONE],
      APPDEFAULTDIR=`eval echo "$APPDEFAULTDIR"`;])dnl
 AC_SUBST([APPDEFAULTDIR])dnl
 
-AC_ARG_WITH(icondir, [AS_HELP_STRING([--with-icondir=<path>],
-	[specify icon directory, to put xfig.png \
-		(default: $datarootdir/pixmaps)])],
-    [], [withval='${datarootdir}/pixmaps'])dnl
-AC_SUBST(icondir, ["$withval"])dnl
-
 AC_ARG_WITH(applicationsdir, AS_HELP_STRING([--with-applicationsdir=<path>],
 	[specify directory for xfig.desktop file \
 		(default: $datarootdir/applications)]),
@@ -384,6 +385,12 @@ AC_ARG_WITH(compkeydbdir, [AS_HELP_STRING([--with-compkeydbdir=<path>],
 		(default: $datadir/xfig)])],
     [], [withval='${datadir}/xfig'])dnl
 AC_SUBST(compkeydbdir, ["$withval"])dnl
+
+AC_ARG_WITH(icondir, [AS_HELP_STRING([--with-icondir=<path>],
+	[specify icon directory, to put xfig.png \
+		(default: $datarootdir/pixmaps)])],
+    [], [withval='${datarootdir}/pixmaps'])dnl
+AC_SUBST(icondir, ["$withval"])dnl
 
 
 # Set the variables for substitution in xfig.man
@@ -431,12 +438,6 @@ AC_SUBST([COMPKEYDBDIR])dnl
 AC_SUBST([HTMLDIR])dnl
 AC_SUBST([DOCDIR])dnl
 AC_SUBST([PKGDATADIR])dnl
-
-AC_ARG_WITH(xfig-libraries, AS_HELP_STRING([--without-xfig-libraries],
-	[do not install xfig-Libraries (default: install)]),
-    [], [withval=yes])dnl
-AM_CONDITIONAL([XFIG_LIBRARIES],
-    [test "x$withval" = xyes && test -d "$srcdir/Libraries"])dnl
 
 # Autotest infrastructure.
 AC_CONFIG_TESTDIR([tests], [src${PATH_SEPARATOR}tests])dnl
