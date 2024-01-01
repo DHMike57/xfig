@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -688,6 +688,11 @@ void goodbye(Boolean abortflag)
 
 	/* Call after free_GCs(); XftDrawDestroy() does not free unavailable GC. */
 	XftDrawDestroy(main_draw);
+
+#ifdef FREEMEM
+	free_compound(&objects);
+	free_compound(&saved_objects);
+#endif
 
 	/* generate a fault to cause core dump */
 	if (abortflag) {

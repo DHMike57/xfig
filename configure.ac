@@ -243,6 +243,13 @@ AS_IF([test "$enableval" -ge 1 && test "$enableval" -le 4],
 	[Define and set to a number (1-4) to turn on the compose indicator LED \
 	 when entering multi-key characters.])])dnl
 
+AC_ARG_ENABLE(free-memory, [AS_HELP_STRING([--enable-free-memory],
+	[free all allocated memory on exit])],
+    [],[enableval=no])dnl
+AS_IF([test "x$enableval" = xyes],
+    [AC_DEFINE([FREEMEM], 1,
+	 [Define to free all allocated memory on exit.])])dnl
+
 AC_ARG_ENABLE(splash, [AS_HELP_STRING([--enable-splash],
 	[enable splash screen (default: disable)])],
     [], [enableval=no])dnl
