@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -739,6 +739,8 @@ void add_recent_file(char *file)
 	return;
     name = new_string(strlen(file)+3);	/* allow for file number (1), blank (1) and NUL */
     sprintf(name,"%1d %s",num_recent_files+1,file);
+    if (recent_files[num_recent_files].name)
+	    free(recent_files[num_recent_files].name);
     recent_files[num_recent_files].name = name;
     num_recent_files++;
 }
@@ -786,8 +788,9 @@ void update_xfigrc(char *name, char *string)
 
 int strain_out(char *name)
 {
-    char    line[RC_BUFSIZ+1], *tok;
-    int fd;
+	char	line[RC_BUFSIZ+1];
+	int	fd;
+	size_t	len;
 
     /* make a temp filename in the user's home directory so we
        can just rename it to .xfigrc after creating it */
@@ -817,16 +820,17 @@ int strain_out(char *name)
 	xfigrc = (FILE *) 0;
 	return 0;
     }
+
+    len = strlen(name);
     while (fgets(line, RC_BUFSIZ, xfigrc) != NULL) {
+	char	*c;
 	/* look for sane input */
 	if (line[0] == '\0')
 	    break;
-	/* make copy of line to look for token because strtok modifies the line */
-	tok = strdup(line);
-	if (strcasecmp(strtok(tok, ": \t"), name) == 0)
+	if ((c = strchr(line, ':')) && (size_t)(c - line) == len &&
+			!strncmp(name, line, len))
 	    continue;			/* match, skip */
 	fputs(line, tmpf);
-	free(tok);
     }
     return 0;
 }

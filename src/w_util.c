@@ -775,6 +775,13 @@ MakeFloatSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Wid
 			string, I_FVAL, min, max, inc, width);
 }
 
+static void
+free_spinner(Widget w, XtPointer client_data, XtPointer call_data)
+{
+	(void)w; (void)call_data;
+	free((spin_struct *)client_data);
+}
+
 /*****************************************************************************************
    Make a "spinner" entry widget - a widget with an asciiTextWidget and
    two spinners, an up and down spinner to increase and decrease the value.
@@ -846,6 +853,8 @@ MakeSpinnerEntry(Widget parent, Widget *text, char *name, Widget below, Widget b
     if (callback) {
 	XtAddCallback(source, XtNcallback, callback, (XtPointer) spinstruct);
     }
+
+    XtAddCallback(source, XtNdestroyCallback, free_spinner, (XtPointer)spinstruct);
 
     XtOverrideTranslations(*text, XtParseTranslationTable(text_translations));
 

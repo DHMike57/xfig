@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -578,6 +578,14 @@ areameas_msg(char *msgtext, float area, float totarea, int flag)
              msgtext, areastr);
 }
 
+#ifdef FREEMEM
+static void
+free_filename(void)
+{
+	file_msg("");
+}
+#endif
+
 /*
  * Print to the popup message window or, if update_figs is true, to stderr.
  * Set the file name for the initial message with file_msg(NULL, file_name).
@@ -594,8 +602,17 @@ file_msg(char *format,...)
 	if (format == NULL) {
 	    const char	*s = va_arg(ap, const char *);
 	    /* set the file name for the initial message */
-	    if (file_name == NULL || strcmp(file_name, s)) {
+	    if (file_name == NULL) {
 		file_name = strdup(s);
+		first_file_msg = True;
+#ifdef FREEMEM
+		atexit(free_filename);
+#endif
+	    } else if (strcmp(file_name, s)) {
+		size_t	len;
+		if ((len = strlen(s)) > strlen(file_name))
+		    file_name = realloc(file_name, len + 1);
+		memcpy(file_name, s, len + 1);
 		first_file_msg = True;
 	    }
 	    va_end(ap);

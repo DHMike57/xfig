@@ -5,7 +5,7 @@
  * Parts Copyright (c) 1990 by Digital Equipment Corporation. All Rights Reserved.
  * Parts Copyright (c) 1990 by Digital Equipment Corporation
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -88,7 +88,8 @@
 static char	CurrentSelectionName[PATH_MAX];
 static int	file_entry_cnt, dir_entry_cnt;
 static char   **file_list, **dir_list;
-static char   **filelist, **dirlist;
+static char   **filelist = NULL;
+static char   **dirlist = NULL;
 static char    *dirmask;
 
 static Widget	hidden;
@@ -142,6 +143,27 @@ static XtActionsRec actionTable[] = {
 
 int wild_match (char *string, char *pattern);
 void NewList (Widget listwidget, String *list);
+
+static void
+free_list(char **restrict list)
+{
+	char	**entry = list;
+	while (*entry) {
+		free(*entry);
+		*entry++ = NULL;
+	}
+}
+
+#ifdef FREEMEM
+static void
+freelists(void)
+{
+	if (filelist)
+		free_list(filelist);
+	if (dirlist)
+		free_list(dirlist);
+}
+#endif /* FREEMEM */
 
 void
 FileSelected(Widget w, XtPointer client_data, XtPointer call_data)
@@ -298,10 +320,18 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     int		    char_ht,char_wd;
     char	   *dir;
 
+#ifdef FREEMEM
+    if (!filelist || !dirlist)
+	    atexit(freelists);
+#endif
+    if (filelist)
+	    free_list(filelist);
+    if (dirlist)
+	    free_list(dirlist);
     dir_entry_cnt = NENTRIES;
     file_entry_cnt = NENTRIES;
-    filelist = (char **) calloc(file_entry_cnt, sizeof(char *));
-    dirlist = (char **) calloc(dir_entry_cnt, sizeof(char *));
+    filelist = calloc(file_entry_cnt, sizeof(char *));
+    dirlist = calloc(dir_entry_cnt, sizeof(char *));
 
     if (browse_up) {
 	get_directory(cur_browse_dir);
@@ -576,9 +606,10 @@ MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
     if (dirp == NULL) {
 	reset_cursor();
 	*file_list = filelist;
-	*file_list[0]="";
+	/* filelist entries may be freed, therefore: strdup() */
+	*file_list[0] = strdup("");
 	*dir_list = dirlist;
-	*dir_list[0]="..";
+	*dir_list[0] = strdup("..");
 	return False;
     }
     /* process any events to ensure cursor is set to wait_cursor */
@@ -612,8 +643,7 @@ MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
 	if (IsDirectory(dir_name, dp->d_name)) {
 	    *cur_directory++ = strdup(dp->d_name);
 	    if (cur_directory == last_dir) {	/* out of space, make more */
-		dirlist = (char **) realloc(dirlist,
-					2 * dir_entry_cnt * sizeof(char *));
+		dirlist = realloc(dirlist, 2 * dir_entry_cnt * sizeof(char *));
 		cur_directory = dirlist + dir_entry_cnt - 1;
 		dir_entry_cnt = 2 * dir_entry_cnt;
 		last_dir = dirlist + dir_entry_cnt - 1;
@@ -634,7 +664,7 @@ MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
 		continue;	/* skip files with leading . */
 	    *cur_file++ = strdup(dp->d_name);
 	    if (cur_file == last_file) {	/* out of space, make more */
-		filelist = (char **) realloc(filelist,
+		filelist = realloc(filelist,
 				       2 * file_entry_cnt * sizeof(char *));
 		cur_file = filelist + file_entry_cnt - 1;
 		file_entry_cnt = 2 * file_entry_cnt;

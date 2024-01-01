@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Copyright (c) 1992 by Brian Boyter
  *
@@ -350,6 +350,7 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 				/* must set the h/w ratio here */
 				pic->hw_ratio =(float)pic->pic_cache->bit_size.y
 					/ pic->pic_cache->bit_size.x;
+				free(file);
 				return;
 			}
 			break;
@@ -433,6 +434,8 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 
 	close_stream(&pic_stream);
 	free_stream(&pic_stream);
+	if (reread)
+		free(file);
 }
 
 /*

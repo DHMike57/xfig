@@ -689,11 +689,6 @@ void goodbye(Boolean abortflag)
 	/* Call after free_GCs(); XftDrawDestroy() does not free unavailable GC. */
 	XftDrawDestroy(main_draw);
 
-#ifdef FREEMEM
-	free_compound(&objects);
-	free_compound(&saved_objects);
-#endif
-
 	/* generate a fault to cause core dump */
 	if (abortflag) {
 		/* go to orig_dir, in case core dumps go to the cwd */
