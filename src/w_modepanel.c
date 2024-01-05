@@ -455,6 +455,20 @@ init_mode_panel(Widget tool)
     return;
 }
 
+void
+free_mode_pixmaps(Widget w, XtPointer client_data, XtPointer call_data)
+{
+	(void)w; (void)client_data; (void)call_data;
+	int		i;
+	mode_sw_info	*msw;
+
+	for (i = 0; i < NUM_MODE_SW; ++i) {
+		msw = &mode_switches[i];
+		XFreePixmap(tool_d, msw->pixmap);
+		XFreePixmap(tool_d, msw->reversePM);
+	}
+}
+
 /*
  * after panel widget is realized (in main) put some bitmaps etc. in it
  */
@@ -493,6 +507,7 @@ void setup_mode_panel(void)
 				   but_bg, but_fg, tool_dpth);
     }
 
+    XtAddCallback(mode_panel, XtNdestroyCallback, free_mode_pixmaps, NULL);
     XDefineCursor(tool_d, XtWindow(mode_panel), arrow_cursor);
     FirstArg(XtNmappedWhenManaged, True);
     SetValues(mode_panel);
