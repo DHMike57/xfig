@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fontconfig/fontconfig.h>
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>	/* XFT DEBUG */
 
@@ -99,6 +100,7 @@ static void	zXDrawLines(Display *d, Window w, GC gc, zXPoint *points,
 void init_font(void)
 {
 	XftPattern	*pattern;
+	XftPattern	*mono;
 	XftResult	res;
 	double		dbl;
 
@@ -120,11 +122,10 @@ void init_font(void)
 	dbl *= DISPLAY_PIX_PER_INCH / (appres.correct_font_size ? 72. : 80.);
 	XftPatternAddDouble(pattern, XFT_PIXEL_SIZE, dbl);
 
-	/* I printed the pattern before and after the match, and it worked to
-	   use the same pointer as request and result pattern. */
-	pattern = XftFontMatch(tool_d, tool_sn, pattern, &res);
+	mono = XftFontMatch(tool_d, tool_sn, pattern, &res);
+	FcPatternDestroy(pattern);
 
-	mono_font = XftFontOpenPattern(tool_d, pattern);
+	mono_font = XftFontOpenPattern(tool_d, mono);
 
 
 	while ((roman_font = XLoadQueryFont(tool_d, appres.normalFont)) == 0) {
@@ -150,7 +151,7 @@ void init_font(void)
 				appres.buttonFont, button_font->fid);
 		fprintf(stderr, "roman_font: %s, fid: %lu\n", appres.normalFont,
 				roman_font->fid);
-		XftNameUnparse(pattern, buf, 230);
+		XftNameUnparse(mono, buf, 230);
 		fprintf(stderr, "mono_font: %s\n", buf);
 	}
 
