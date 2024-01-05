@@ -280,6 +280,7 @@ free_Fonts(void)
 {
 	int i;
 
+	closefont(mono_font);
 	if (roman_font!=NULL) {
 		XFreeFont(tool_d, roman_font);
 	};
