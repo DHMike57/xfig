@@ -589,6 +589,7 @@ free_filename(void)
 /*
  * Print to the popup message window or, if update_figs is true, to stderr.
  * Set the file name for the initial message with file_msg(NULL, file_name).
+ * Free the memory allocated for file_name with file_msg("").
  */
 void
 file_msg(char *format,...)
@@ -596,6 +597,7 @@ file_msg(char *format,...)
     va_list		ap;
     static Boolean	first_file_msg = False;
     static char		*file_name = NULL;
+    static size_t	len_file;
 
     va_start(ap, format);
     if (!update_figs) {
@@ -604,14 +606,17 @@ file_msg(char *format,...)
 	    /* set the file name for the initial message */
 	    if (file_name == NULL) {
 		file_name = strdup(s);
+		len_file = strlen(file_name);
 		first_file_msg = True;
 #ifdef FREEMEM
 		atexit(free_filename);
 #endif
 	    } else if (strcmp(file_name, s)) {
 		size_t	len;
-		if ((len = strlen(s)) > strlen(file_name))
+		if ((len = strlen(s)) > len_file) {
 		    file_name = realloc(file_name, len + 1);
+		    len_file = len;
+		}
 		memcpy(file_name, s, len + 1);
 		first_file_msg = True;
 	    }
