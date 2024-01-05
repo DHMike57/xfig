@@ -1978,8 +1978,6 @@ static char scroll_accel[] =
 	<Btn5Down>:	StartScroll(Forward)\n\
 	<BtnUp>:	NotifyScroll(FullLength) EndScroll()\n";
 
-static XtAccelerators scroll_acceltable = 0;
-
 void
 InstallScroll(Widget widget)
 {
@@ -2006,33 +2004,34 @@ InstallScrollParent(Widget widget)
 static void
 _installscroll(Widget parent, Widget widget)
 {
-	Widget		scroll;
-	XtActionList	action_list;
-	int		num_actions, i;
-	Boolean		found_scroll_action;
+	Cardinal		num_actions, i;
+	Widget			scroll;
+	XtActionList		action_list;
+	static XtAccelerators	scroll_acceltable = 0;
 
 	/* only parse the acceleration table once */
 	if (scroll_acceltable == 0)
-	    scroll_acceltable = XtParseAcceleratorTable(scroll_accel);
+		scroll_acceltable = XtParseAcceleratorTable(scroll_accel);
 
-	/* install the wheel scrolling for the scrollbar of the parent onto the widget */
+	/* install the wheel scrolling for the scrollbar of the parent
+	   onto the widget */
 	scroll = XtNameToWidget(parent, "vertical");
-	if (scroll) {
-	    /* first see if the scrollbar supports the StartScroll action (when Xaw
-	     * is compiled with ARROW_SCROLLBAR, it does not have this action */
-	    found_scroll_action = False;
-	    XtGetActionList(scrollbarWidgetClass, &action_list,
-				(unsigned int *)&num_actions);
-	    for (i=0; i<num_actions; i++)
+	if (!scroll)
+		return;
+	/* first see if the scrollbar supports the StartScroll action (when Xaw
+	 * is compiled with ARROW_SCROLLBAR, it does not have this action */
+	XtGetActionList(scrollbarWidgetClass, &action_list, &num_actions);
+	if (!action_list)
+		return;
+	for (i = 0; i < num_actions; ++i) {
 		if (strcasecmp(action_list[i].string, "startscroll") == 0) {
-		    found_scroll_action = True;
-		    break;
+			/* found a scroll action */
+			XtOverrideTranslations(scroll, scroll_acceltable);
+			FirstArg(XtNaccelerators, scroll_acceltable);
+			SetValues(scroll);
+			XtInstallAccelerators(widget, scroll);
+			break;
 		}
-	    if (found_scroll_action) {
-		XtOverrideTranslations(scroll, scroll_acceltable);
-		FirstArg(XtNaccelerators, scroll_acceltable);
-		SetValues(scroll);
-		XtInstallAccelerators(widget, scroll);
-	    }
 	}
+	XtFree((char *)action_list);
 }
