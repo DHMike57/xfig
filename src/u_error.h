@@ -21,9 +21,10 @@
 
 #include <X11/Intrinsic.h>	/* includes X11/Xlib.h */
 
-extern int	X_error_handler(Display *d, XErrorEvent *err_ev);
+extern void	emergency_quit(Boolean abortflag);
 extern void	error_handler(int err_sig);
 extern void	my_quit(Widget w, XEvent *event, String *params,
 			Cardinal *num_params);
+extern int	X_error_handler(Display *d, XErrorEvent *err_ev);
 
 #endif

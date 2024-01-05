@@ -39,8 +39,6 @@
 #define MAXERRMSGLEN 512
 
 
-void		emergency_quit(Boolean abortflag);
-
 static int	error_cnt = 0;
 
 

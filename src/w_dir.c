@@ -74,6 +74,7 @@
 #include "resources.h"
 #include "mode.h"
 #include "f_util.h"
+#include "u_error.h"
 #include "w_browse.h"
 #include "w_cursor.h"
 #include "w_drawprim.h"		/* for max_char_height */
@@ -86,10 +87,6 @@
 
 
 static char	CurrentSelectionName[PATH_MAX];
-static int	file_entry_cnt, dir_entry_cnt;
-static char   **file_list, **dir_list;
-static char   **filelist = NULL;
-static char   **dirlist = NULL;
 static char    *dirmask;
 
 static Widget	hidden;
@@ -102,12 +99,13 @@ static void	SetDir(Widget widget, XEvent *event, String *params,
 				Cardinal *num_params);
 static void	ParentDir(Widget w, XEvent *event, String *params,
 				Cardinal *num_params);
-static void	CallbackRescan(Widget widget, XtPointer closure,
-				XtPointer call_data);
-static Boolean	MakeFileList(char *dir_name, char *mask, char ***_dirs,
-				char ***files);
+static Boolean	MakeFileList(char *dir_name, char *mask, char ***dirlist,
+				char ***filelist);
 static void	parseuserpath(const char *restrict path,
 				char *restrict longpath);
+
+static int	wild_match (char *string, char *pattern);
+static void	NewList (Widget listwidget, String *list);
 
 /* Static variables */
 
@@ -141,29 +139,6 @@ static XtActionsRec actionTable[] = {
  */
 
 
-int wild_match (char *string, char *pattern);
-void NewList (Widget listwidget, String *list);
-
-static void
-free_list(char **restrict list)
-{
-	char	**entry = list;
-	while (*entry) {
-		free(*entry);
-		*entry++ = NULL;
-	}
-}
-
-#ifdef FREEMEM
-static void
-freelists(void)
-{
-	if (filelist)
-		free_list(filelist);
-	if (dirlist)
-		free_list(dirlist);
-}
-#endif /* FREEMEM */
 
 void
 FileSelected(Widget w, XtPointer client_data, XtPointer call_data)
@@ -319,19 +294,10 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     XFontStruct	   *temp_font;
     int		    char_ht,char_wd;
     char	   *dir;
+    char	  **dirlist, **filelist;
 
-#ifdef FREEMEM
-    if (!filelist || !dirlist)
-	    atexit(freelists);
-#endif
-    if (filelist)
-	    free_list(filelist);
-    if (dirlist)
-	    free_list(dirlist);
-    dir_entry_cnt = NENTRIES;
-    file_entry_cnt = NENTRIES;
-    filelist = calloc(file_entry_cnt, sizeof(char *));
-    dirlist = calloc(dir_entry_cnt, sizeof(char *));
+    /* Initialize _filelist and _dirlist */
+    MakeFileList(NULL, NULL, NULL, NULL);
 
     if (browse_up) {
 	get_directory(cur_browse_dir);
@@ -425,7 +391,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
 
     FirstArg(XtNstring, &dirmask);
     GetValues(*mask_w);
-    if (MakeFileList(dir, dirmask, &dir_list, &file_list) == False)
+    if (MakeFileList(dir, dirmask, &dirlist, &filelist) == False)
 	file_msg("No files in directory?");
 
     FirstArg(XtNlabel, "  Current Dir");
@@ -516,7 +482,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     dir_viewport = XtCreateManagedWidget("dirvport", viewportWidgetClass,
 					 parent, Args, ArgCount);
 
-    FirstArg(XtNlist, file_list);
+    FirstArg(XtNlist, filelist);
     NextArg(XtNinternational, appres.international);
     /* for file panel use only one column */
     if (file_panel) {
@@ -529,7 +495,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     XtOverrideTranslations(*flist_w,
 			   XtParseTranslationTable(list_panel_translations));
 
-    FirstArg(XtNlist, dir_list);
+    FirstArg(XtNlist, dirlist);
     NextArg(XtNinternational, appres.international);
     *dlist_w = XtCreateManagedWidget("dir_list_panel", figListWidgetClass,
 				     dir_viewport, Args, ArgCount);
@@ -556,7 +522,7 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     NextArg(XtNright, XtChainLeft);
     w = XtCreateManagedWidget("rescan", commandWidgetClass, parent,
 			      Args, ArgCount);
-    XtAddCallback(w, XtNcallback, CallbackRescan, (XtPointer) NULL);
+    XtAddCallback(w, XtNcallback, (XtCallbackProc)Rescan, NULL);
 
     /* install accelerators so they can be used from each window */
     XtInstallAccelerators(parent, w);
@@ -569,47 +535,132 @@ create_dirinfo(Boolean file_exp, Widget parent, Widget below, Widget *ret_beside
     return;
 }
 
+#ifdef FREEMEM
+
+static void
+free_list(char **restrict list, const int count)
+{
+	char	**entry;
+	for (entry = list; entry - list < count; ++entry)
+		if (*entry)
+			free(*entry);
+	free(list);
+}
+
+static void
+freelists(void)
+{
+	char	**dummy;
+	(void)MakeFileList(NULL, NULL, &dummy, NULL);
+}
+
+#endif /* FREEMEM */
+
 /* Function:	SPComp() compares two string pointers for qsort().
  * Arguments:	s1, s2: strings to be compared.
  * Returns:	Value of strcmp().
- * Notes:
+ * Notes:	man qsort(3) shows the cast in the EXAMPLES section.
  */
 
 static int
-SPComp(char **s1, char **s2)
+SPComp(const void *p1, const void *p2)
 {
-    return (strcmp(*s1, *s2));
+    return (strcmp(*(const char **)p1, *(const char **)p2));
 }
+
+static void
+replace_entry(char **restrict entry, const char *new)
+{
+	if (!strcmp(*entry, new))
+		return;
+	if (*entry)
+		free(*entry);
+	*entry = strdup(new);
+}
+
+/*
+ * Double the size of the file/directory list.
+ * Return the newly allocated list and the new size of the list.
+ */
+static void
+extend_list(char ***restrict list, char ***restrict current, int *num)
+{
+	char		**c;
+	const int	fac = 2;
+
+	*list = realloc(*list, *num * fac * sizeof(char *));
+
+	/* zero the string pointers to know when free() is possible */
+	for (c = *list + *num; c < *list + fac * *num; ++c)
+		*c = NULL;
+	*current = *list + *num - 1;
+	*num *= fac;
+}
+
 
 #define MAX_MASKS	20
 #define MAX_MASK_LEN	64
+#define _STRINGIFY(X)	#X
+#define STRINGIFY(X)	_STRINGIFY(X)
 
-Boolean
-MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
+/*
+ * Use MakeFileList(NULL, NULL, NULL, NULL) to allocate memory for the
+ * statically allocated string arrays _dirlist and _filelist.
+ * MakeFileList(NULL, NULL, x, NULL) will free _dirlist and _filelist.
+ */
+static Boolean
+MakeFileList(char *dir_name, char *mask, char ***dirlist, char ***filelist)
 {
+    static char	**_filelist = NULL;
+    static char	**_dirlist = NULL;
+    static int	file_entry_cnt = NENTRIES;
+    static int	dir_entry_cnt = NENTRIES;
     DIR		  *dirp;
     DIRSTRUCT	  *dp;
     char	 **cur_file, **cur_directory;
-    char	 **last_file, **last_dir;
     int		   nmasks,i;
     char	  *wild[MAX_MASKS],*cmask;
     char	buf[MAX_MASK_LEN];
+    const char	delims[] = " \t";
     Boolean	   match;
 
+    if (dir_name == NULL) {
+#ifdef FREEMEM
+	/* at exit, call with MakeFileList(NULL, NULL, x, NULL) */
+	if (dirlist != NULL) {
+		if (_filelist)
+			free_list(_filelist, file_entry_cnt);
+		if(_dirlist)
+			free_list(_dirlist, dir_entry_cnt);
+		return True;
+	}
+#endif
+	if (_filelist)	/* already initialized */
+	    return True;
+
+	_filelist = calloc(file_entry_cnt, sizeof(char *));
+	_dirlist = calloc(dir_entry_cnt, sizeof(char *));
+	if (!_filelist || !_dirlist) {
+		put_msg("No more memory - QUITTING!");
+		fputs("Available memory exceeded - quitting.\n", stderr);
+		emergency_quit(False);
+	}
+#ifdef FREEMEM
+	atexit(freelists);
+#endif
+	return True;
+    }
+
     set_temp_cursor(wait_cursor);
-    cur_file = filelist;
-    cur_directory = dirlist;
-    last_file = filelist + file_entry_cnt - 1;
-    last_dir = dirlist + dir_entry_cnt - 1;
+    cur_file = _filelist;
+    cur_directory = _dirlist;
 
     dirp = opendir(dir_name);
     if (dirp == NULL) {
 	reset_cursor();
-	*file_list = filelist;
-	/* filelist entries may be freed, therefore: strdup() */
-	*file_list[0] = strdup("");
-	*dir_list = dirlist;
-	*dir_list[0] = strdup("..");
+	replace_entry(_filelist, "");
+	replace_entry(_dirlist, "..");
+	*filelist = _filelist;
 	return False;
     }
     /* process any events to ensure cursor is set to wait_cursor */
@@ -628,10 +679,13 @@ MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
     }
     if (*cmask == '\0')
 	strcpy(cmask,"*");
-    wild[0] = strtok(cmask," \t");
+    wild[0] = strtok(cmask, delims);
     nmasks = 1;
-    while ((wild[nmasks]=strtok((char*) NULL, " \t")) && nmasks < MAX_MASKS)
+    while ((wild[nmasks]=strtok((char*)NULL, delims)) && nmasks < MAX_MASKS)
 	nmasks++;
+    if (nmasks == MAX_MASKS && strtok(NULL, delims))
+	file_msg("Maximum number of filename masks exceeded, only first "
+				STRINGIFY(MAX_MASKS) " considered.");
     for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
 	/* skip over '.' (current dir) */
 	if (!strcmp(dp->d_name, "."))
@@ -641,13 +695,11 @@ MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
 	    continue;
 
 	if (IsDirectory(dir_name, dp->d_name)) {
+	    if (*cur_directory)
+		    free(*cur_directory);
 	    *cur_directory++ = strdup(dp->d_name);
-	    if (cur_directory == last_dir) {	/* out of space, make more */
-		dirlist = realloc(dirlist, 2 * dir_entry_cnt * sizeof(char *));
-		cur_directory = dirlist + dir_entry_cnt - 1;
-		dir_entry_cnt = 2 * dir_entry_cnt;
-		last_dir = dirlist + dir_entry_cnt - 1;
-	    }
+	    if (cur_directory == _dirlist + dir_entry_cnt - 1)
+		extend_list(&_dirlist, &cur_directory, &dir_entry_cnt);
 	} else {
 	    /* check if matches regular expression */
 	    match=False;
@@ -662,28 +714,34 @@ MakeFileList(char *dir_name, char *mask, char ***dir_list, char ***file_list)
 		continue;	/* no, do next */
 	    if (wild[i][0] == '*' && dp->d_name[0] == '.')
 		continue;	/* skip files with leading . */
+	    if (*cur_file)
+		    free(*cur_file);
 	    *cur_file++ = strdup(dp->d_name);
-	    if (cur_file == last_file) {	/* out of space, make more */
-		filelist = realloc(filelist,
-				       2 * file_entry_cnt * sizeof(char *));
-		cur_file = filelist + file_entry_cnt - 1;
-		file_entry_cnt = 2 * file_entry_cnt;
-		last_file = filelist + file_entry_cnt - 1;
+	    if (cur_file == _filelist + file_entry_cnt - 1) {
+		extend_list(&_filelist, &cur_file, &file_entry_cnt);
 	    }
 	}
     }
-    *cur_file = NULL;
-    *cur_directory = NULL;
-    if (cur_file != filelist)
-	qsort(filelist, cur_file - filelist, sizeof(char *), (int(*)())SPComp);
-    if (cur_directory != dirlist)
-	qsort(dirlist, cur_directory - dirlist, sizeof(char *), (int(*)())SPComp);
-    *file_list = filelist;
-    *dir_list = dirlist;
-    reset_cursor();
-    closedir(dirp);
+    if (*cur_file) {
+	    free(*cur_file);
+	    *cur_file = NULL;
+    }
+    if (*cur_directory) {
+	    free(*cur_directory);
+	    *cur_directory = NULL;
+    }
     if (cmask != buf)
-	    free(cmask);	/* free copy of mask */
+	    free(cmask);
+    closedir(dirp);
+
+    *filelist = _filelist;
+    *dirlist = _dirlist;
+
+    if (cur_file != _filelist)
+	qsort(_filelist, cur_file - _filelist, sizeof(char *), SPComp);
+    if (cur_directory != _dirlist)
+	qsort(_dirlist, cur_directory - _dirlist, sizeof(char *), SPComp);
+    reset_cursor();
     return True;
 }
 
@@ -713,13 +771,14 @@ void
 DoChangeDir(char *dir)
 {
 	char	*abs_path = NULL;
+	char	**filelist, **dirlist;
 
 	/* resolve the path given in dir to abs_path */
 	if (!(abs_path = realpath(dir && *dir ? dir : ".", NULL))) {
 		/* realpath knows about the current directory and
 		   correctly resolves relative paths. */
 		file_msg("Cannot infer absolute path for %s: %s",
-				dir, strerror(errno));
+				dir && *dir ? dir : "." , strerror(errno));
 		return;
 	}
 
@@ -762,17 +821,10 @@ DoChangeDir(char *dir)
 }
 
 void
-CallbackRescan(Widget widget, XtPointer closure, XtPointer call_data)
+Rescan(Widget w, XEvent *ev, String *params, Cardinal *num_params)
 {
-	(void)widget; (void)closure; (void)call_data;
-     Rescan(0, 0, 0, 0);
-}
-
-void
-Rescan(Widget widget, XEvent *event, String *params, Cardinal *num_params)
-{
-	(void)widget; (void)event; (void)params; (void)num_params;
     char	*dir;
+    char	**filelist, **dirlist;
 
     /*
      * get the mask string from the File or Export mask widget and put in
@@ -786,9 +838,10 @@ Rescan(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 	if (change_directory(dir))	/* make sure we are there */
 	    return;
 	strcpy(cur_browse_dir,dir);	/* save in global var */
-	(void) MakeFileList(dir, dirmask, &dir_list, &file_list);
-	NewList(browse_flist, file_list);
-	NewList(browse_dlist, dir_list);
+	(void) MakeFileList(dir, dirmask, &dirlist, &filelist);
+	/* List Widgets need to have the string array remain available. */
+	NewList(browse_flist, filelist);
+	NewList(browse_dlist, dirlist);
     } else if (file_up) {
 	FirstArg(XtNstring, &dirmask);
 	GetValues(file_mask);
@@ -797,9 +850,9 @@ Rescan(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 	if (change_directory(dir))	/* make sure we are there */
 	    return;
 	update_file_export_dir(dir);
-	(void) MakeFileList(dir, dirmask, &dir_list, &file_list);
-	NewList(file_flist,file_list);
-	NewList(file_dlist,dir_list);
+	(void) MakeFileList(dir, dirmask, &dirlist, &filelist);
+	NewList(file_flist,filelist);
+	NewList(file_dlist,dirlist);
     } else if (export_up) {
 	FirstArg(XtNstring, &dirmask);
 	GetValues(exp_mask);
@@ -808,13 +861,14 @@ Rescan(Widget widget, XEvent *event, String *params, Cardinal *num_params)
 	if (change_directory(dir))	/* make sure we are there */
 	    return;
 	strcpy(cur_export_dir,dir);	/* save in global var */
-	(void) MakeFileList(dir, dirmask, &dir_list, &file_list);
-	NewList(exp_flist, file_list);
-	NewList(exp_dlist, dir_list);
+	(void) MakeFileList(dir, dirmask, &dirlist, &filelist);
+	NewList(exp_flist, filelist);
+	NewList(exp_dlist, dirlist);
     }
 }
 
-void NewList(Widget listwidget, String *list)
+static void
+NewList(Widget listwidget, String *list)
 {
 	/* install the new list */
 	XawListChange(listwidget, list, 0, 0, True);
@@ -915,8 +969,9 @@ wild_match(char *string, char *pattern)
     for (; *pattern; string++, pattern++)
 	switch (*pattern) {
 	case '\\':
-	    /* Literal match with following character; fall through. */
+	    /* Literal match with following character */
 	    pattern++;
+	    /* intentionally fall through. */
 	default:
 	    if (*string != *pattern)
 		return 0;
