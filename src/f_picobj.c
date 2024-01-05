@@ -434,7 +434,8 @@ read_picobj(F_pic *pic, char *file, int color, Boolean force, Boolean *existing)
 
 	close_stream(&pic_stream);
 	free_stream(&pic_stream);
-	if (reread)
+
+	if (pics->refcount > 1)
 		free(file);
 }
 
