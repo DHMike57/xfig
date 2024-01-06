@@ -681,7 +681,7 @@ MakeFileList(char *dir_name, char *mask, char ***dirlist, char ***filelist)
 	strcpy(cmask,"*");
     wild[0] = strtok(cmask, delims);
     nmasks = 1;
-    while ((wild[nmasks]=strtok((char*)NULL, delims)) && nmasks < MAX_MASKS)
+    while (nmasks < MAX_MASKS && (wild[nmasks]=strtok((char*)NULL, delims)))
 	nmasks++;
     if (nmasks == MAX_MASKS && strtok(NULL, delims))
 	file_msg("Maximum number of filename masks exceeded, only first "
