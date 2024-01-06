@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -30,6 +30,7 @@
 #include "object.h"
 #include "paintop.h"
 #include "u_fonts.h"
+#include "u_undo.h"		/* saved_objects */
 #include "w_drawprim.h"
 
 
@@ -296,3 +297,30 @@ free_Fonts(void)
 		XFreeGC(tool_d, fill_gc[i]);
 	}
 }
+
+#ifdef FREEMEM
+/*
+ * Free F_compound objects, but not saved_objects.
+ * There are many other pointers to various objects,
+ * in undo.h: F_compound object_tails;
+ * F_arrow saved_for_arrow, saved_back_arrow;
+ * F_line latest_line; F_spline latest_spline;
+ * In object.h: cur_l, new_l, old_l; and so on for all objects.
+ * These may point to objects already stored in objects,
+ * therefore, do not try to free them.
+ */
+void
+free_objects(void)
+{
+	free_arc(&objects.arcs);
+	free_compound(&objects.compounds);
+	free_ellipse(&objects.ellipses);
+	free_line(&objects.lines);
+	free_spline(&objects.splines);
+	free_text(&objects.texts);
+	if (objects.comments) {
+		free(objects.comments);
+	}
+}
+
+#endif /* FREEMEM */

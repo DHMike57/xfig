@@ -683,6 +683,9 @@ void goodbye(Boolean abortflag)
 	 *	If I understand libXft sources correctly, Xft cares
 	 *	itself about font closing durig XCloseDisplay.
 	 */
+#ifdef FREEMEM
+	free_objects();
+#endif
 
 	XtDestroyWidget(tool);
 
