@@ -428,7 +428,7 @@ altlength_msg(int type, int fx, int fy)
 		if (dy < 0)
 		    t1y = cur_y + sdy - 3.0/zoomscale;			/* above the line */
 		else
-		    t1y = cur_y + sdy + sizey.ascent + 3.0/zoomscale;	/* below the line */
+		    t1y = cur_y + sdy + (sizey.ascent/ZOOM_FACTOR + 3.0)/zoomscale;	/* below the line */
 		pw_text(canvas_win, t1x, t1y, INV_PAINT, MAX_DEPTH+1, roman_font,
 				bufx, RED, COLOR_NONE);
 
@@ -437,17 +437,17 @@ altlength_msg(int type, int fx, int fy)
 		if (dx < 0)
 		    t2x = fx + sdx + 4.0/zoomscale;			/* right of the line */
 		else
-		    t2x = fx + sdx - sizex.length - 4.0/zoomscale;	/* left of the line */
+		    t2x = fx + sdx - (sizex.length/ZOOM_FACTOR + 4.0)/zoomscale;	/* left of the line */
 		pw_text(canvas_win, t2x, t2y, INV_PAINT, MAX_DEPTH+1, roman_font,
 				bufy, RED, COLOR_NONE);
 
 		/* finally, the hypotenuse */
-		if (dx > 0)
+		if (dx >= 0)
 		    t3x = t1x + 4.0/zoomscale;			/* right of the hyp */
 		else
-		    t3x = t1x - sizehyp.length - 4.0/zoomscale;	/* left of the hyp */
+		    t3x = t1x - (sizehyp.length/ZOOM_FACTOR + 4.0)/zoomscale;	/* left of the hyp */
 		if (dy < 0)
-		    t3y = t2y + sizehyp.ascent + 3.0/zoomscale;	/* below the hyp */
+		    t3y = t2y + (sizehyp.ascent/ZOOM_FACTOR + 3.0)/zoomscale;	/* below the hyp */
 		else
 		    t3y = t2y - 3.0/zoomscale;			/* above the hyp */
 		pw_text(canvas_win, t3x, t3y, INV_PAINT, MAX_DEPTH+1, roman_font,
