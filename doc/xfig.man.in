@@ -962,8 +962,8 @@ mode for text objects.
 This means that characters that have a special meaning to TeX/LaTeX,
 e.g., '$' or '\e', are not quoted but left untouched in the text string.
 This is most useful for writing LaTeX equations.
-If this flag is not set, then the backslash character '\\' is changed
-to the \\backslash command, a brace '{' is turned into a brace command \\{, etc.
+If this flag is not set, then the backslash character '\e' is changed
+to the \ebackslash command, a brace '{' is turned into a brace command \e{, etc.
 .\"-------
 .At
 .BR \-spel [ lcheckcommand ]
