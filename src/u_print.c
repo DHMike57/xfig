@@ -3,7 +3,7 @@
  * Copyright (c) 1985-1988 by Supoj Sutanthavibul
  * Parts Copyright (c) 1989-2015 by Brian V. Smith
  * Parts Copyright (c) 1991 by Paul King
- * Parts Copyright (c) 2016-2023 by Thomas Loimer
+ * Parts Copyright (c) 2016-2024 by Thomas Loimer
  *
  * Any party obtaining a copy of these files is granted, free of charge, a
  * full and unrestricted irrevocable, world-wide, paid up, royalty-free,
@@ -150,47 +150,45 @@ start_argumentlist(char *arg[restrict], char argbuf[restrict][ARGBUF_SIZE],
 }
 
 /*
- * Add up to 15 arguments for postscript output, starting from 2,
- * making a total of 17 arguments.
+ * Write the output language "ps" as argument 2 and
+ * add up to 15 arguments at the end of the argument list.
  */
 static void
-addargs_postscript(char *args[restrict], const char *grid,
+addargs_postscript(char *args[restrict], int *restrict a, const char *grid,
 			const char *backgrnd)
 {
-	int	a;
+	args[2] = "ps";			/* output language */
 
-	args[a = 2] = "ps";		/* output language */
-
-	args[++a] = "-z";
-	args[++a] = paper_sizes[appres.papersize].sname;
+	args[++*a] = "-z";
+	args[++*a] = paper_sizes[appres.papersize].sname;
 
 	if (strlen(cur_filename)) {
-		args[++a] = "-n";
-		args[++a] = cur_filename;
+		args[++*a] = "-n";
+		args[++*a] = cur_filename;
 	}
-	args[++a] = appres.landscape ? "-l" : "-p";
-	args[++a] = "xxx";
+	args[++*a] = appres.landscape ? "-l" : "-p";
+	args[++*a] = "xxx";
 
 	if (appres.correct_font_size)
-		args[++a] = "-F";
+		args[++*a] = "-F";
 
 	if (!appres.multiple && !appres.flushleft)
-		args[++a] = "-c";
+		args[++*a] = "-c";
 
 	if (appres.multiple)
-		args[++a] = "-M";
+		args[++*a] = "-M";
 
 	if (grid[0] && strcasecmp(grid,"none") != 0) {
-		args[++a] = "-G";
-		args[++a] = (char *)grid;
+		args[++*a] = "-G";
+		args[++*a] = (char *)grid;
 	}
 
 	if (backgrnd[0]) {
-		args[++a] = "-g";
-		args[++a] = (char *)backgrnd;
+		args[++*a] = "-g";
+		args[++*a] = (char *)backgrnd;
 	}
 
-	args[++a] = NULL;
+	args[++*a] = NULL;
 }
 
 static void
@@ -267,7 +265,7 @@ print_to_printer(int lpcommand, char *printer, char *backgrnd, float mag,
 
 	start_argumentlist(args, argbuf, &a, &b, layers);
 
-	addargs_postscript(args, grid, backgrnd);
+	addargs_postscript(args, &a, grid, backgrnd);
 
 	/* Build up the pipeline from the end, catching printer errors */
 	/* These commands already report their errors */
@@ -322,7 +320,7 @@ print_to_batchfile(int fdout, const char *restrict backgrnd,
 
 	start_argumentlist(args, argbuf, &a, &b, layers);
 
-	addargs_postscript(args, grid, backgrnd);
+	addargs_postscript(args, &a, grid, backgrnd);
 
 	b = 0;
 	if ((a = spawn_popen_fd(args, "w", fdout)) > -1) {
