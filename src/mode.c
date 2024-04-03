@@ -124,6 +124,7 @@ char	*lang_items[] = {
 	"mp",
 	"tk",
 	"ptk",
+    "pstk",
 	"shape",
 	"svg",
 /* bitmap formats start here */
@@ -163,6 +164,7 @@ char	*lang_texts[] = {
 	"MP  (MetaPost)                   ",
 	"Tk  (Tcl/Tk toolkit)             ",
 	"PTk (Perl/Tk toolkit)            ",
+    "PSTk (Scheme/Tk toolkit)         ",
 	"SHAPE (ShapePar definition )     ",
 	"SVG (Scalable Vector Graphics)   ",
 

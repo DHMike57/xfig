@@ -363,6 +363,7 @@ mf	MF (MetaFont)
 mp	MP (MetaPost)
 tk	Tk (Tcl/Tk toolkit)
 ptk	Perl/Tk
+pstk Scheme/Tk
 shape	LaTeX shape paragraph definition
 svg	SVG (Scalable Vector Graphics)
 
